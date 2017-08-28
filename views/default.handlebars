@@ -107,7 +107,7 @@
                             &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type="button" id="GroupActionButton" disabled="disabled" value="Group Action" onclick="groupActionFunction();" />&nbsp;
                             <input id="SearchInput" type="text" style=width:120px placeholder=Search onchange="onSearchInputChanged()" onkeyup="onSearchInputChanged()" autocomplete=off onfocus="onSearchFocus(1)" onblur="onSearchFocus(0)" />&nbsp;
-                            <input type="checkbox" id="HostnameCheckBox" onclick="onHostnameCheckBox()" /><span title="Show device hostnames">Hostname</span>
+                            <input type=checkbox id=HostnameCheckBox onclick=onHostnameCheckBox() /><span title="Show device hostnames">Hostname</span>
                         </div>
                         <div class="auto-style1" style="height: 100%; float: right">
                             <div style="height:100%;width:4px;float:right;background-color:#ffffff"></div>
@@ -593,7 +593,7 @@
         var wssessions = null;
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024 };
         var terminal;
         var files;
         var debugLevel = {{{debuglevel}}};
@@ -628,7 +628,7 @@
             // Setup page controls
             document.getElementById("sortselect").selectedIndex = sort = getstore("sort", 0);
             Q('SearchInput').value = getstore("search", "");
-            showHostnames = (getstore("showHostnames", 1) == 1);
+            showHostnames = (getstore("showHostnames", 0) == 1);
             Q('HostnameCheckBox').checked = showHostnames;
             Q('viewselect').value = getstore("deviceView", 1);
 
@@ -2135,6 +2135,7 @@
         }
 
         function applyDesktopSettings() {
+            console.log(desktopsettings);
             d7desktopmode.value = desktopsettings.encoding;
             d7showfocus.checked = desktopsettings.showfocus;
             d7showcursor.checked = desktopsettings.showmouse;
