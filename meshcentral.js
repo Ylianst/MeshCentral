@@ -634,7 +634,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } });
 
 // Build the list of required modules
-var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'archiver', 'mongojs', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
 if (require('os').platform() == 'win32') { modules.push("node-windows"); }
 
 // Run as a command line, if we are not using service arguments, don't need to install the service package.
