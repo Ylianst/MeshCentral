@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <title>MeshCentral - Login</title>
+</head>
+<body onload="if (typeof(startup) !== 'undefined') startup();">
+    <div id=container style=max-height:100vh>
+        <div id=mastheadx></div>
+        <div id=masthead style="background:url(images/logoback.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden">
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:20px;padding-top:8px">
+                <strong><font style="font-size:46px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
+            </div>
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:14px">
+                <strong><font style="font-size:14px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
+            </div>
+        </div>
+        <div id=page_content style="max-height:calc(100vh-138px)">
+            <div id=column_l>
+                <h1>Welcome</h1>
+                <p>Connect to your home or office devices from anywhere in the world using MeshCentral, the remote monitoring and management web site. You will need to download and install a special management agent on your computers. Once installed, each mesh enabled computer will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them, power them on and off and take control of them.</p>
+                <table style=width:100%>
+                    <tr>
+                        <td style=width:500px valign=top>
+                            <img alt="" height=310 src=images/mainwelcome.png width=359 style="margin-left:70px" />
+                        </td>
+                        <td>
+                            <div id=loginpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                                <form action="login" method=post>
+                                    <div id=message1>
+                                        {{{message}}}
+                                    </div>
+                                    <div>
+                                        <b>Log In</b>
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td align="right" width="100">Username:</td>
+                                            <td><input id=username type=text name=username onchange=validateLogin() onkeyup=validateLogin() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right">Password:</td>
+                                            <td><input id=password type=password name=password autocomplete=off onchange=validateLogin() onkeyup=validateLogin() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td align=right><input id=loginButton type=submit value="Log In" disabled="disabled" /></td>
+                                        </tr>
+                                    </table>
+                                    <div id="newAccountDiv" style="display:none">
+                                        <hr />Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
+                                    </div>
+                                </form>
+                            </div>
+                            <div id=createpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                                <form action="createaccount" method="post">
+                                    <div id=message2>
+                                        {{{message}}}
+                                    </div>
+                                    <div>
+                                        <b>Account Creation</b>
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td align=right width=100>Username:</td>
+                                            <td><input id="ausername" type="text" name=username onchange=validateCreate() onkeyup=validateCreate() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align=right width=100>Email:</td>
+                                            <td><input id="aemail" type="text" name=email onchange=validateCreate() onkeyup=validateCreate() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align=right>Password:</td>
+                                            <td><input id="apassword1" type=password name=password1 autocomplete="off" onchange=validateCreate() onkeyup=validateCreate() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td align=right>Password:</td>
+                                            <td><input id="apassword2" type=password name=password2 autocomplete="off" onchange=validateCreate() onkeyup=validateCreate() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan=2>
+                                                <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
+                                                <div id=passWarning style="padding-top:6px"></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <br />
+            </div>
+            <div id=footer>
+                <table cellpadding=0 cellspacing=10 style=width:100%>
+                    <tr>
+                        <td style=text-align:left></td>
+                        <td style=text-align:right>
+                            {{{rootCertLink}}}
+                            &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        function startup() {
+            validateLogin();
+            validateCreate();
+            if ('{{loginmode}}' != '') { go({{loginmode}}); } else { go(1); }
+            QV('newAccountDiv', '{{{newAccount}}}' != '0' );
+        }
+
+        function xgo(x) {
+            QV('message1', false);
+            QV('message2', false);
+            go(x);
+        }
+
+        function go(x) {
+            QV('loginpanel', x == 1);
+            QV('createpanel', x == 2);
+        }
+
+        function validateLogin() {
+            var ok = (Q('username').value.length > 0 && Q('password').value.length > 0);
+            QE('loginButton', ok);
+        }
+
+        function validateCreate() {
+            var ok = (Q('ausername').value.length > 0 && Q('aemail').value.length > 0 && Q('apassword1').value.length > 0 && Q('apassword2').value == Q('apassword1').value);
+            QE('createButton', ok);
+            if (Q('apassword1').value == '') {
+                QH('passWarning', '');
+            } else {
+                var passStrength = checkPasswordStrength(Q('apassword1').value);
+                if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
+                else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>Good Password</b><span>'); }
+                else { QH('passWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+            }
+
+            console.log(passStrength);
+        }
+
+        // Return a password strength score
+        function checkPasswordStrength(password) {
+            var r = 0, letters = {}, varCount = 0, variations = { digits: /\d/.test(password), lower: /[a-z]/.test(password), upper: /[A-Z]/.test(password), nonWords: /\W/.test(password) }
+            if (!password) return 0;
+            for (var i = 0; i< password.length; i++) { letters[password[i]] = (letters[password[i]] || 0) + 1; r += 5.0 / letters[password[i]]; }
+            for (var c in variations) { varCount += (variations[c] == true) ? 1 : 0; }
+            return parseInt(r + (varCount - 1) * 10);
+        }
+    </script>
+</body>
+</html>

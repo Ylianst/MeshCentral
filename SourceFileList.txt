@@ -1,0 +1,12 @@
+readme.txt
+license.txt
+package.json
+*.js
+views/*
+public/*
+public/images/*
+public/scripts/*
+public/styles/*
+agents/MeshAgent-Win32.exe
+MeshCentral.sln
+MeshCentralServer.njsproj

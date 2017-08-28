@@ -1,0 +1,1057 @@
+{
+  "scriptText": "##### Starting Block #####\nprint \"Script Started\"\n\n##### Block: Remote - Remove Trigger #####\nHighlightBlock __t 0\njsonparse hMapPolicies \"%7B%220%22:%20%22User%20Initiated%22,%09%221%22:%20%22Alert%22,%20%222%22:%20%22Periodic%22%7D\"\nsplit policiesArr \"0,1,2\" \",\"\nlength policiesArrLen policiesArr\nset i 0\n:loop-0\nset curPolicy hMapPolicies.{policiesArr.{i}}\njsonparse ws_args \"%7B%22PolicyRuleName%22:%22{curPolicy}%22%7D\"\nwsdelete \"AMT_RemoteAccessPolicyRule\" ws_args\nadd i i 1\njump :loop-0 i \"<\" policiesArrLen\nprint \"INFO: Policies removed successfully\"\nset PullRemoteAccess 1\nset AMT_RemoteAccessPolicyRule\nset curPolicy\nset hMapPolicies\nset i\nset policiesArr\nset policiesArrLen\nset ws_args\nset wsman_result\n\n##### Block: Remote - Remove All MPS #####\nHighlightBlock __t 1\nsplit ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\n:loop-1\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\nadd i i 1\njump :loop-1 i \"<\" arr_len\n:end-1\nset AMT_ManagementPresenceRemoteSAP\nset arr\nset i\nset instanceName\nset selector\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset arr_len\nset PullRemoteAccess 1\n\n\n##### Block: Security - Add Certificate #####\nHighlightBlock __t 2\njsonparse wsargs \"%7B%7D\"\nset wsargs.CertificateBlob \"MIIDKDCCAhCgAwIBAgIDBVZ2MA0GCSqGSIb3DQEBCwUAMEQxHzAdBgNVBAMTFk1lc2hDZW50cmFsUm9vdC1mYWM4NGUxCzAJBgNVBAYTAlVTMRQwEgYDVQQKEwtNZXNoQ2VudHJhbDAeFw0xNTA3MTkxODE3NTVaFw00NjA3MTkxODE3NTVaMEQxHzAdBgNVBAMTFk1lc2hDZW50cmFsUm9vdC1mYWM4NGUxCzAJBgNVBAYTAlVTMRQwEgYDVQQKEwtNZXNoQ2VudHJhbDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJyN61TmYjDS8PJQGQ8OB2V0ccJ3kKZ4LkrwPhx+qRpZBqQ1MpUfjhjjMngjiEwVu04t729xekRjamwU6sorNZbp2l1OZNA2TIs5WCg1llXyxTkRqtfim83rwXQNu+6ivz5dAux46zKFGOcVdtMlyKEjZj16zuAQ/2xg6qgyQFYwwArq9Cy5qzWMA5cjqugqA106adkOQRCatdWHYxaMXRJaBJuKQnp1HGPefyITK1UEshEZYqmBKnbD9NwxqsC+Sp/diRWrGIEKkx1GsrepQcEXIzIMSdq7+LApwhl84pgNkzKJXHTPHqQaQSejPj3FprsQh2bgsbRJUwBTWIBru/MCAwEAAaMjMCEwDAYDVR0TBAUwAwEB/zARBglghkgBhvhCAQEEBAMCAAUwDQYJKoZIhvcNAQELBQADggEBAA+eOSMF7b82S3faGV7jKAFzkRwOUoZnCVFV6eGBK1iyPC/xrIbWncSc59DjnHMyXWCmc0OVknTgfeyqIS2OD2DkW1zU1gNuQksDbETzV6Db3ExQyv1BXCasLPop2CkC3WCwLFa2bXG7AEheFFfqwZz1mRwPnr8AiHS2zG6RjepZts+zQvVhTftiW1aFmYVHDWlhHFIVJ4xw2KHPfuufSxyOO7YOosjzGHUYiEP1zOQKmwm1Rcz+QZRmj/O8PfQsiKnUHpHAhx0GTqwgoL7hi2bkbC9IX04pDX8Vd5uABDLfU3+S3vjBvUe+XYSRknDnFiivOtAY6fFwLqu+OnbwiIA=\"\njump :certroot 1 \"=\" 1\nprint \"Adding certificate...\"\nwsexec \"AMT_PublicKeyManagementService\" \"AddCertificate\" wsargs\njump :certdone\n:certroot\nprint \"Adding root certificate...\"\nwsexec \"AMT_PublicKeyManagementService\" \"AddTrustedRootCertificate\" wsargs\n:certdone\nset wsargs\nset AMT_PublicKeyManagementService\nset PullCertificates 1\n\n\n##### Block: Remote - Add MPS FQDN/User #####\nHighlightBlock __t 3\n# Set method parameters\njsonparse wsargs \"%7B%22AccessInfo%22:%22devbox.mesh.meshcentral.com%22,%22InfoFormat%22:201,%22Port%22:4433,%22AuthMethod%22:2,%22Username%22:%22B6367516FC563665%22,%22Password%22:%22P@ssw0rd%22%7D\"\n# Execute call to AddMpServer\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\njump :error-3 wsman_result \"!=\" 200\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\nset PullRemoteAccess 1\njump :end-3\n:error-3\nprint \"Call failed: {wsman_result_str}\"\n:end-3\nset AMT_RemoteAccessService\nset certHandle\nset curSubject\nset i\nset pos\nset ws_general_query\nset wsargs\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset certInstanceId\nset wsman_ans_length\n\n##### Block: Remote - Add Trigger (Periodic) #####\nHighlightBlock __t 4\n# *** Verify valid input ***\nsplit period_arr \"10\" \":\"\nlength period_arr_len period_arr\njump :INVALID_ARG_AccessInfo1 \"devbox.mesh.meshcentral.com:4433\" \"=\" \"\"\njump :DailyPeriod \"0\" \"!=\" \"0\"\njump :INVALID_PeriodType \"0\" \"!=\" \"0\"\njump :INVALID_ARG_Period period_arr.0 \"<=\" \"0\"\njump :INVALID_ARG_Period period_arr.0 \">\" \"4294967295\"\nIntToStr extendedData \"0\"\nIntToStr bPeriod period_arr.0\nadd extendedData extendedData bPeriod\njump :SET_PERIOD\n:DailyPeriod\njump :INVALID_PeriodType period_arr_len \"!=\" \"2\"\njump :INVALID_ARG_PeriodDaily period_arr.0 \"<=\" \"0\"\njump :INVALID_ARG_PeriodDaily period_arr.0 \">\" \"23\"\njump :INVALID_ARG_PeriodDaily period_arr.1 \">\" \"59\"\njump :INVALID_ARG_PeriodDaily period_arr.1 \"<=\" \"0\"\nIntToStr extendedData \"1\"\nIntToStr bPeriodHour period_arr.0\nIntToStr bPeriodMinute period_arr.1\nadd extendedData extendedData bPeriodHour\nadd extendedData extendedData bPeriodMinute\njump :SET_PERIOD\n:INVALID_PeriodType\nprint \"ERROR: The period type and value must correspond, aborting operation...\"\njump :end-4\n:INVALID_ARG_PeriodDaily\nprint \"ERROR: Field %22Period%22 must be a value HH:MM 0<=HH<24 && 0<=MM<60, aborting operation...\"\njump :end-4\n:INVALID_ARG_AccessInfo1\nprint \"ERROR: Field %22AccessInfo1%22 must not be empty, aborting operation...\"\njump :end-4\n:INVALID_ARG_Period\nprint \"ERROR: Field %22Period%22 must be a value 0<=t<MAX_INT, aborting operation...\"\njump :end-4\n:SET_PERIOD\n# *** Prepare arguments for AMT_RemoteAccessService.AddRemoteAccessPolicyRule ***\njsonparse ws_args \"%7B%22Trigger%22:%222%22,%22TunnelLifeTime%22:%220%22%7D\"\nbtoa extendedData extendedData\nset ws_args.ExtendedData extendedData\n# *** Set a EPR selector matching user input ***\nsplit ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\nset mpsEpr1 \"*\"\nset mpsEpr2 \"*\"\n:loop-4\nset curAccessInfo arr.{i}.AccessInfo\nadd curAccessInfo curAccessInfo \":\"\nadd curAccessInfo curAccessInfo arr.{i}.Port\njump :MPS1_NO_MATCH curAccessInfo \"!=\" \"devbox.mesh.meshcentral.com:4433\"\nset mpsEpr1 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nprint \"INFO: Found matching (primary) mps: {mpsEpr1}\"\njump :MPS2_NOTSET \"\" \"=\" \"\"\n:MPS1_NO_MATCH\njump :MPS2_NO_MATCH curAccessInfo \"!=\" \"\"\nset mpsEpr2 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nprint \"INFO: Found matching (secondary) mps: {mpsEpr2}\"\n:MPS2_NO_MATCH\nadd i i 1\njump :loop-4 i \"<\" arr_len\n:MPS2_NOTSET\njump :MPS1_FOUND mpsEpr1 \"!=\" \"*\"\nprint \"ERROR: MPS server: %22devbox.mesh.meshcentral.com:4433%22 could not be found, aborting operation...\"\njump :end-4\n:MPS1_FOUND\njump :MPS2_FOUND \"\" \"=\" \"\"\njump :MPS2_FOUND mpsEpr2 \"!=\" \"*\"\nprint \"ERROR: MPS server: %22%22 could not be found, aborting operation...\"\njump :end-4\n:MPS2_FOUND\nprint \"INFO: Setting policy...\"\njsonparse ws_args.MpServer \"%7B%7D\"\nset MpServer \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr1}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\njump :SKIP_ADD_MPS2 \"\" \"=\" \"\"\nadd MpServer MpServer \"|%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr2}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\n:SKIP_ADD_MPS2\nsplit ws_args.MpServer MpServer \"|\"\n# *** Call AMT_RemoteAccessService.AddRemoteAccessPolicyRule with policy details. ***\nwsexec \"AMT_RemoteAccessService\" \"AddRemoteAccessPolicyRule\" ws_args selector\njump :error-4 wsman_result \"!=\" 200\nprint \"Policy addedd successfully\"\njump :end-4\n:error-4\nprint \"WSMAN call failed: {wsman_result_str}\"\n:end-4\nset PullRemoteAccess 1\nset mpsEpr1\nset mpsEpr2\nset i\nset curAccessInfo\nset arr_len\nset MpServer\nset arr\nset AMT_RemoteAccessService\nset wsman_result\nset wsman_result_str\nset ws_args\nset ws_general_query\nset wsman_answer\nset bPeriod\nset extendedData\nset period_arr\nset period_arr_len\nset bPeriodHour\nset bPeriodMinute\n\n##### Block: Remote - Set User Initiation #####\nHighlightBlock __t 5\n# Set method parameters\njsonparse wsargs \"%7B%22RequestedState%22:%2232771%22%7D\"\njsonparse EnumState \"%7B%2232768%22:%22Disabled%22,%2232769%22:%22BIOS Enabled%22,%2232770%22:%22OS enable%22,%2232771%22:%22BIOS & OS Enabed%22%7D\"\n# Execute call to change the state\nwsexec \"AMT_UserInitiatedConnectionService\" \"RequestStateChange\" wsargs \"\"\njump :error-5 wsman_result \"!=\" 200\nprint \"SUCCESS: Remote Access user interfaces set to: {EnumState.32771}\"\n\nset PullRemoteAccess 1\njump :end-5\n:error-5\nprint \"Call failed: {wsman_result_str}\"\n:end-5\nset wsargs\nset wsman_result\nset wsman_result_str\nset EnumState\nset AMT_UserInitiatedConnectionService\n\n##### Block: Network - Set Environment Detection #####\nHighlightBlock __t 6\n# *** Validate user input ***\nprint \"INFO: Parsing block parameters\"\njump :EMPTY_DETECTIONSTR-6 \"aabbccddeeffgg\" \"=\" \"\"\nsplit arrDetectionStrings \"aabbccddeeffgg\" \",\"\nsplit arrDetectionIPv6LocalPrefixes \"\" \",\"\nprint \"INFO: Setting Environment Detection\"\nsplit ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\nwsbatchenum \"wsman_answer\" ws_general_query\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\njump :DetectionStringsDefined-6 envDetectionInstance.DetectionStrings \"!=\"\nset envDetectionInstance.DetectionStrings arrDetectionStrings\njump :SET_IPV6_PREFIX-6\n:DetectionStringsDefined-6\nadd arrDetectionStrings \",\" arrDetectionStrings\nadd envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings arrDetectionStrings\nmaketoarray envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings\nlength arrDetectionStringsLen envDetectionInstance.DetectionStrings\njump :INVALID_LEN_DetectionStrings-6 arrDetectionStringsLen \">\" \"5\"\n:SET_IPV6_PREFIX-6\njump :IPv6StringsDefined-6 envDetectionInstance.DetectionIPv6LocalPrefixes \"!=\"\njump :EMPTY_IPV6PRFX \"\" \"=\" \"\" \nset envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\njump :CALL_WSPUT-6\n:IPv6StringsDefined-6\nadd arrDetectionIPv6LocalPrefixes \",\" arrDetectionIPv6LocalPrefixes\nadd envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\nmaketoarray envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes\n:EMPTY_IPV6PRFX\nlength arrDetectionIPv6LocalPrefixesLen envDetectionInstance.DetectionIPv6LocalPrefixes\njump :INVALID_LEN_DetectionIPv6LocalPrefixes-6 arrDetectionIPv6LocalPrefixesLen \">\" \"5\"\n:CALL_WSPUT-6\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\njump :error-6 wsman_result \"!=\" 200\nprint \"INFO: Environment Detection set successfully\"\njump :end-6\n:error-6\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\njump :end-6\n:INVALID_LEN_DetectionStrings-6\nprint \"ERROR: detection strings count must be at most 5\"\njump :end-6\n:INVALID_LEN_DetectionIPv6LocalPrefixes-6\nprint \"ERROR: IPv6 prefixes count must be at most 5\"\njump :end-6\n:EMPTY_DETECTIONSTR-6\nprint \"ERROR: %22Detection Strings%22 field cannot be empty, aborting operation...\"\n:end-6\n set PullRemoteAccess \"1\"\nset AMT_EnvironmentDetectionSettingData\nset arrDetectionIPv6LocalPrefixes\nset arrDetectionStrings\nset envDetectionInstance\nset ws_general_query\nset wsman_answer \nset wsman_result\n\n##### Ending Block #####\n:end\njump :SkipPullSystemStatus PullSystemStatus \"!=\" 1\nPullSystemStatus\n:SkipPullSystemStatus\njump :SkipPullEventLog PullEventLog \"!=\" 1\nPullEventLog\n:SkipPullEventLog\njump :SkipPullAuditLog PullAuditLog \"!=\" 1\nPullAuditLog\n:SkipPullAuditLog\njump :SkipPullCertificates PullCertificates \"!=\" 1\nPullCertificates\n:SkipPullCertificates\njump :SkipPullWatchdog PullWatchdog \"!=\" 1\nPullWatchdog\n:SkipPullWatchdog\njump :SkipPullSystemDefense PullSystemDefense \"!=\" 1\nPullSystemDefense\n:SkipPullSystemDefense\njump :SkipPullHardware PullHardware \"!=\" 1\nPullHardware\n:SkipPullHardware\njump :SkipPullUserInfo PullUserInfo \"!=\" 1\nPullUserInfo\n:SkipPullUserInfo\njump :SkipPullRemoteAccess PullRemoteAccess \"!=\" 1\nPullRemoteAccess\n:SkipPullRemoteAccess\nprint \"Script Completed\"\nHighlightBlock\n",
+  "mescript": "JH0pRQABAAMAFwABAA8BU2NyaXB0IFN0YXJ0ZWROKQATAAIABABfX3QABQIAAAAAAAsAdgACAA0AaE1hcFBvbGljaWVzAF8BJTdCJTIyMCUyMjolMjAlMjJVc2VyJTIwSW5pdGlhdGVkJTIyLCUwOSUyMjElMjI6JTIwJTIyQWxlcnQlMjIsJTIwJTIyMiUyMjolMjAlMjJQZXJpb2RpYyUyMiU3RAAIACAAAwAMAHBvbGljaWVzQXJyAAYBMCwxLDIAAgEsAAoAJQACAA8AcG9saWNpZXNBcnJMZW4ADABwb2xpY2llc0FycgACABEAAgACAGkABQIAAAAAAAIAMwACAAoAY3VyUG9saWN5AB8AaE1hcFBvbGljaWVzLntwb2xpY2llc0Fyci57aX19AAsAPwACAAgAd3NfYXJncwAtASU3QiUyMlBvbGljeVJ1bGVOYW1lJTIyOiUyMntjdXJQb2xpY3l9JTIyJTdEABMALQACABsBQU1UX1JlbW90ZUFjY2Vzc1BvbGljeVJ1bGUACAB3c19hcmdzAA0AFQADAAIAaQACAGkABQIAAAABAAEAJgAEAAUDAAAA9gACAGkAAgE8AA8AcG9saWNpZXNBcnJMZW4AAwAsAAEAJAFJTkZPOiBQb2xpY2llcyByZW1vdmVkIHN1Y2Nlc3NmdWxseQACACAAAgARAFB1bGxSZW1vdGVBY2Nlc3MABQIAAAABAAIAIwABABsAQU1UX1JlbW90ZUFjY2Vzc1BvbGljeVJ1bGUAAgASAAEACgBjdXJQb2xpY3kAAgAVAAEADQBoTWFwUG9saWNpZXMAAgAKAAEAAgBpAAIAFAABAAwAcG9saWNpZXNBcnIAAgAXAAEADwBwb2xpY2llc0FyckxlbgACABAAAQAIAHdzX2FyZ3MAAgAVAAEADQB3c21hbl9yZXN1bHROKQATAAIABABfX3QABQIAAAABAAgAPwADABEAd3NfZ2VuZXJhbF9xdWVyeQAgAUFNVF9NYW5hZ2VtZW50UHJlc2VuY2VSZW1vdGVTQVAAAgAsABAAKAACAA0Bd3NtYW5fYW5zd2VyABEAd3NfZ2VuZXJhbF9xdWVyeQACABEAAgACAGkABQIAAAAAAAIARQACAAQAYXJyADcAd3NtYW5fYW5zd2VyLkFNVF9NYW5hZ2VtZW50UHJlc2VuY2VSZW1vdGVTQVAucmVzcG9uc2VzAAoAFgACAAgAYXJyX2xlbgAEAGFycgACAFcAAgANAGluc3RhbmNlTmFtZQBAAHdzbWFuX2Fuc3dlci5BTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQLnJlc3BvbnNlcy57aX0uTmFtZQACAHwAAgAJAHNlbGVjdG9yAGkBJTNDdzpTZWxlY3RvclNldCUzRSUzQ3c6U2VsZWN0b3IlMjBOYW1lPSUyMk5hbWUlMjIlM0V7aW5zdGFuY2VOYW1lfSUzQy93OlNlbGVjdG9yJTNFJTNDL3c6U2VsZWN0b3JTZXQlM0UAEwAzAAIAIAFBTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQAAkAc2VsZWN0b3IADQAVAAMAAgBpAAIAaQAFAgAAAAEAAQAfAAQABQMAAAOmAAIAaQACATwACABhcnJfbGVuAAIAKAABACAAQU1UX01hbmFnZW1lbnRQcmVzZW5jZVJlbW90ZVNBUAACAAwAAQAEAGFycgACAAoAAQACAGkAAgAVAAEADQBpbnN0YW5jZU5hbWUAAgARAAEACQBzZWxlY3RvcgACABkAAQARAHdzX2dlbmVyYWxfcXVlcnkAAgAVAAEADQB3c21hbl9hbnN3ZXIAAgAVAAEADQB3c21hbl9yZXN1bHQAAgAZAAEAEQB3c21hbl9yZXN1bHRfc3RyAAIAEAABAAgAYXJyX2xlbgACACAAAgARAFB1bGxSZW1vdGVBY2Nlc3MABQIAAAABTikAEwACAAQAX190AAUCAAAAAgALABgAAgAHAHdzYXJncwAHASU3QiU3RAACBF4AAgAXAHdzYXJncy5DZXJ0aWZpY2F0ZUJsb2IEPQFNSUlES0RDQ0FoQ2dBd0lCQWdJREJWWjJNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1FUXhIekFkQmdOVkJBTVRGazFsYzJoRFpXNTBjbUZzVW05dmRDMW1ZV000TkdVeEN6QUpCZ05WQkFZVEFsVlRNUlF3RWdZRFZRUUtFd3ROWlhOb1EyVnVkSEpoYkRBZUZ3MHhOVEEzTVRreE9ERTNOVFZhRncwME5qQTNNVGt4T0RFM05UVmFNRVF4SHpBZEJnTlZCQU1URmsxbGMyaERaVzUwY21Gc1VtOXZkQzFtWVdNNE5HVXhDekFKQmdOVkJBWVRBbFZUTVJRd0VnWURWUVFLRXd0TlpYTm9RMlZ1ZEhKaGJEQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUp5TjYxVG1ZakRTOFBKUUdROE9CMlYwY2NKM2tLWjRMa3J3UGh4K3FScFpCcVExTXBVZmpoampNbmdqaUV3VnUwNHQ3Mjl4ZWtSamFtd1U2c29yTlpicDJsMU9aTkEyVElzNVdDZzFsbFh5eFRrUnF0ZmltODNyd1hRTnUrNml2ejVkQXV4NDZ6S0ZHT2NWZHRNbHlLRWpaajE2enVBUS8yeGc2cWd5UUZZd3dBcnE5Q3k1cXpXTUE1Y2pxdWdxQTEwNmFka09RUkNhdGRXSFl4YU1YUkphQkp1S1FucDFIR1BlZnlJVEsxVUVzaEVaWXFtQktuYkQ5Tnd4cXNDK1NwL2RpUldyR0lFS2t4MUdzcmVwUWNFWEl6SU1TZHE3K0xBcHdobDg0cGdOa3pLSlhIVFBIcVFhUVNlalBqM0ZwcnNRaDJiZ3NiUkpVd0JUV0lCcnUvTUNBd0VBQWFNak1DRXdEQVlEVlIwVEJBVXdBd0VCL3pBUkJnbGdoa2dCaHZoQ0FRRUVCQU1DQUFVd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBK2VPU01GN2I4MlMzZmFHVjdqS0FGemtSd09Vb1puQ1ZGVjZlR0JLMWl5UEMveHJJYlduY1NjNTlEam5ITXlYV0NtYzBPVmtuVGdmZXlxSVMyT0QyRGtXMXpVMWdOdVFrc0RiRVR6VjZEYjNFeFF5djFCWENhc0xQb3AyQ2tDM1dDd0xGYTJiWEc3QUVoZUZGZnF3WnoxbVJ3UG5yOEFpSFMyekc2UmplcFp0cyt6UXZWaFRmdGlXMWFGbVlWSERXbGhIRklWSjR4dzJLSFBmdXVmU3h5T083WU9vc2p6R0hVWWlFUDF6T1FLbXdtMVJjeitRWlJtai9POFBmUXNpS25VSHBIQWh4MEdUcXdnb0w3aGkyYmtiQzlJWDA0cERYOFZkNXVBQkRMZlUzK1MzdmpCdlVlK1hZU1JrbkRuRmlpdk90QVk2ZkZ3THF1K09uYndpSUE9AAEAHwAEAAUDAAAK5AAFAgAAAAEAAgE9AAUCAAAAAQADAB4AAQAWAUFkZGluZyBjZXJ0aWZpY2F0ZS4uLgAUAEEAAwAfAUFNVF9QdWJsaWNLZXlNYW5hZ2VtZW50U2VydmljZQAPAUFkZENlcnRpZmljYXRlAAcAd3NhcmdzAAEADQABAAUDAAALUwADACMAAQAbAUFkZGluZyByb290IGNlcnRpZmljYXRlLi4uABQATAADAB8BQU1UX1B1YmxpY0tleU1hbmFnZW1lbnRTZXJ2aWNlABoBQWRkVHJ1c3RlZFJvb3RDZXJ0aWZpY2F0ZQAHAHdzYXJncwACAA8AAQAHAHdzYXJncwACACcAAQAfAEFNVF9QdWJsaWNLZXlNYW5hZ2VtZW50U2VydmljZQACACAAAgARAFB1bGxDZXJ0aWZpY2F0ZXMABQIAAAABTikAEwACAAQAX190AAUCAAAAAwALAMYAAgAHAHdzYXJncwC1ASU3QiUyMkFjY2Vzc0luZm8lMjI6JTIyZGV2Ym94Lm1lc2gubWVzaGNlbnRyYWwuY29tJTIyLCUyMkluZm9Gb3JtYXQlMjI6MjAxLCUyMlBvcnQlMjI6NDQzMywlMjJBdXRoTWV0aG9kJTIyOjIsJTIyVXNlcm5hbWUlMjI6JTIyQjYzNjc1MTZGQzU2MzY2NSUyMiwlMjJQYXNzd29yZCUyMjolMjJQQHNzdzByZCUyMiU3RAAUADoABAAYAUFNVF9SZW1vdGVBY2Nlc3NTZXJ2aWNlAAwBQWRkTXBTZXJ2ZXIABwB3c2FyZ3MAAQEAAQAoAAQABQMAAA1sAA0Ad3NtYW5fcmVzdWx0AAMBIT0ABQIAAADIAAMAWwABAFMBTWFuYWdlbWVudCBQcmVzY2VuY2UgU2VydmVyIChNUFMpIHN1Y2Nlc3NmdWxseSBhZGRlZCB0byB0aGUgSW50ZWwoUikgQU1UIFN1YnN5c3RlbQACACAAAgARAFB1bGxSZW1vdGVBY2Nlc3MABQIAAAABAAEADQABAAUDAAANlAADACgAAQAgAUNhbGwgZmFpbGVkOiB7d3NtYW5fcmVzdWx0X3N0cn0AAgAgAAEAGABBTVRfUmVtb3RlQWNjZXNzU2VydmljZQACABMAAQALAGNlcnRIYW5kbGUAAgATAAEACwBjdXJTdWJqZWN0AAIACgABAAIAaQACAAwAAQAEAHBvcwACABkAAQARAHdzX2dlbmVyYWxfcXVlcnkAAgAPAAEABwB3c2FyZ3MAAgAVAAEADQB3c21hbl9hbnN3ZXIAAgAVAAEADQB3c21hbl9yZXN1bHQAAgAZAAEAEQB3c21hbl9yZXN1bHRfc3RyAAIAFwABAA8AY2VydEluc3RhbmNlSWQAAgAZAAEAEQB3c21hbl9hbnNfbGVuZ3RoTikAEwACAAQAX190AAUCAAAABAAIABwAAwALAHBlcmlvZF9hcnIAAwExMAACAToACgAkAAIADwBwZXJpb2RfYXJyX2xlbgALAHBlcmlvZF9hcnIAAQA3AAQABQMAABJrACEBZGV2Ym94Lm1lc2gubWVzaGNlbnRyYWwuY29tOjQ0MzMAAgE9AAEBAAEAGgAEAAUDAAAQDgACATAAAwEhPQACATAAAQAaAAQABQMAABGdAAIBMAADASE9AAIBMAABACUABAAFAwAAEsgADQBwZXJpb2RfYXJyLjAAAwE8PQACATAAAQAtAAQABQMAABLIAA0AcGVyaW9kX2Fyci4wAAIBPgALATQyOTQ5NjcyOTUnIQAZAAIADQBleHRlbmRlZERhdGEAAgEwJyEAHwACAAgAYlBlcmlvZAANAHBlcmlvZF9hcnIuMAANAC4AAwANAGV4dGVuZGVkRGF0YQANAGV4dGVuZGVkRGF0YQAIAGJQZXJpb2QAAQANAAEABQMAABMrAAEAJwAEAAUDAAARnQAPAHBlcmlvZF9hcnJfbGVuAAMBIT0AAgEyAAEAJQAEAAUDAAAR+gANAHBlcmlvZF9hcnIuMAADATw9AAIBMAABACUABAAFAwAAEfoADQBwZXJpb2RfYXJyLjAAAgE+AAMBMjMAAQAlAAQABQMAABH6AA0AcGVyaW9kX2Fyci4xAAIBPgADATU5AAEAJQAEAAUDAAAR+gANAHBlcmlvZF9hcnIuMQADATw9AAIBMCchABkAAgANAGV4dGVuZGVkRGF0YQACATEnIQAjAAIADABiUGVyaW9kSG91cgANAHBlcmlvZF9hcnIuMCchACUAAgAOAGJQZXJpb2RNaW51dGUADQBwZXJpb2RfYXJyLjEADQAyAAMADQBleHRlbmRlZERhdGEADQBleHRlbmRlZERhdGEADABiUGVyaW9kSG91cgANADQAAwANAGV4dGVuZGVkRGF0YQANAGV4dGVuZGVkRGF0YQAOAGJQZXJpb2RNaW51dGUAAQANAAEABQMAABMrAAMAUAABAEgBRVJST1I6IFRoZSBwZXJpb2QgdHlwZSBhbmQgdmFsdWUgbXVzdCBjb3JyZXNwb25kLCBhYm9ydGluZyBvcGVyYXRpb24uLi4AAQANAAEABQMAAB5hAAMAZAABAFwBRVJST1I6IEZpZWxkICUyMlBlcmlvZCUyMiBtdXN0IGJlIGEgdmFsdWUgSEg6TU0gMDw9SEg8MjQgJiYgMDw9TU08NjAsIGFib3J0aW5nIG9wZXJhdGlvbi4uLgABAA0AAQAFAwAAHmEAAwBQAAEASAFFUlJPUjogRmllbGQgJTIyQWNjZXNzSW5mbzElMjIgbXVzdCBub3QgYmUgZW1wdHksIGFib3J0aW5nIG9wZXJhdGlvbi4uLgABAA0AAQAFAwAAHmEAAwBWAAEATgFFUlJPUjogRmllbGQgJTIyUGVyaW9kJTIyIG11c3QgYmUgYSB2YWx1ZSAwPD10PE1BWF9JTlQsIGFib3J0aW5nIG9wZXJhdGlvbi4uLgABAA0AAQAFAwAAHmEACwBLAAIACAB3c19hcmdzADkBJTdCJTIyVHJpZ2dlciUyMjolMjIyJTIyLCUyMlR1bm5lbExpZmVUaW1lJTIyOiUyMjAlMjIlN0QnFAAkAAIADQBleHRlbmRlZERhdGEADQBleHRlbmRlZERhdGEAAgAsAAIAFQB3c19hcmdzLkV4dGVuZGVkRGF0YQANAGV4dGVuZGVkRGF0YQAIAD8AAwARAHdzX2dlbmVyYWxfcXVlcnkAIAFBTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQAAIALAAQACgAAgANAXdzbWFuX2Fuc3dlcgARAHdzX2dlbmVyYWxfcXVlcnkAAgARAAIAAgBpAAUCAAAAAAACAEUAAgAEAGFycgA3AHdzbWFuX2Fuc3dlci5BTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQLnJlc3BvbnNlcwAKABYAAgAIAGFycl9sZW4ABABhcnIAAgAUAAIACABtcHNFcHIxAAIBKgACABQAAgAIAG1wc0VwcjIAAgEqAAIAKwACAA4AY3VyQWNjZXNzSW5mbwATAGFyci57aX0uQWNjZXNzSW5mbwANACoAAwAOAGN1ckFjY2Vzc0luZm8ADgBjdXJBY2Nlc3NJbmZvAAIBOgANADUAAwAOAGN1ckFjY2Vzc0luZm8ADgBjdXJBY2Nlc3NJbmZvAA0AYXJyLntpfS5Qb3J0AAEARQAEAAUDAAAWLwAOAGN1ckFjY2Vzc0luZm8AAwEhPQAhAWRldmJveC5tZXNoLm1lc2hjZW50cmFsLmNvbTo0NDMzAAIAUgACAAgAbXBzRXByMQBAAHdzbWFuX2Fuc3dlci5BTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQLnJlc3BvbnNlcy57aX0uTmFtZQADADYAAQAuAUlORk86IEZvdW5kIG1hdGNoaW5nIChwcmltYXJ5KSBtcHM6IHttcHNFcHIxfQABABcABAAFAwAAFxIAAQEAAgE9AAEBAAEAJQAEAAUDAAAW3gAOAGN1ckFjY2Vzc0luZm8AAwEhPQABAQACAFIAAgAIAG1wc0VwcjIAQAB3c21hbl9hbnN3ZXIuQU1UX01hbmFnZW1lbnRQcmVzZW5jZVJlbW90ZVNBUC5yZXNwb25zZXMue2l9Lk5hbWUAAwA4AAEAMAFJTkZPOiBGb3VuZCBtYXRjaGluZyAoc2Vjb25kYXJ5KSBtcHM6IHttcHNFcHIyfQANABUAAwACAGkAAgBpAAUCAAAAAQABAB8ABAAFAwAAFMEAAgBpAAIBPAAIAGFycl9sZW4AAQAgAAQABQMAABerAAgAbXBzRXByMQADASE9AAIBKgADAGwAAQBkAUVSUk9SOiBNUFMgc2VydmVyOiAlMjJkZXZib3gubWVzaC5tZXNoY2VudHJhbC5jb206NDQzMyUyMiBjb3VsZCBub3QgYmUgZm91bmQsIGFib3J0aW5nIG9wZXJhdGlvbi4uLgABAA0AAQAFAwAAHmEAAQAXAAQABQMAABg7AAEBAAIBPQABAQABACAABAAFAwAAGDsACABtcHNFcHIyAAMBIT0AAgEqAAMATAABAEQBRVJST1I6IE1QUyBzZXJ2ZXI6ICUyMiUyMiBjb3VsZCBub3QgYmUgZm91bmQsIGFib3J0aW5nIG9wZXJhdGlvbi4uLgABAA0AAQAFAwAAHmEAAwAgAAEAGAFJTkZPOiBTZXR0aW5nIHBvbGljeS4uLgALACIAAgARAHdzX2FyZ3MuTXBTZXJ2ZXIABwElN0IlN0QAAgJhAAIACQBNcFNlcnZlcgJOASUzQ0FkZHJlc3MlMjB4bWxucz0lMjJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA0LzA4L2FkZHJlc3NpbmclMjIlM0VodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA0LzA4L2FkZHJlc3Npbmcvcm9sZS9hbm9ueW1vdXMlM0MvQWRkcmVzcyUzRSUzQ1JlZmVyZW5jZVBhcmFtZXRlcnMlMjB4bWxucz0lMjJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA0LzA4L2FkZHJlc3NpbmclMjIlM0UlM0NSZXNvdXJjZVVSSSUyMHhtbG5zPSUyMmh0dHA6Ly9zY2hlbWFzLmRtdGYub3JnL3diZW0vd3NtYW4vMS93c21hbi54c2QlMjIlM0VodHRwOi8vaW50ZWwuY29tL3diZW0vd3NjaW0vMS9hbXQtc2NoZW1hLzEvQU1UX01hbmFnZW1lbnRQcmVzZW5jZVJlbW90ZVNBUCUzQy9SZXNvdXJjZVVSSSUzRSUzQ1NlbGVjdG9yU2V0JTIweG1sbnM9JTIyaHR0cDovL3NjaGVtYXMuZG10Zi5vcmcvd2JlbS93c21hbi8xL3dzbWFuLnhzZCUyMiUzRSUzQ1NlbGVjdG9yJTIwTmFtZT0lMjJOYW1lJTIyJTNFe21wc0VwcjF9JTNDL1NlbGVjdG9yJTNFJTNDL1NlbGVjdG9yU2V0JTNFJTNDL1JlZmVyZW5jZVBhcmFtZXRlcnMlM0UAAQAXAAQABQMAAB1iAAEBAAIBPQABAQANAm0AAwAJAE1wU2VydmVyAAkATXBTZXJ2ZXICTwF8JTNDQWRkcmVzcyUyMHhtbG5zPSUyMmh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDQvMDgvYWRkcmVzc2luZyUyMiUzRWh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDQvMDgvYWRkcmVzc2luZy9yb2xlL2Fub255bW91cyUzQy9BZGRyZXNzJTNFJTNDUmVmZXJlbmNlUGFyYW1ldGVycyUyMHhtbG5zPSUyMmh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDQvMDgvYWRkcmVzc2luZyUyMiUzRSUzQ1Jlc291cmNlVVJJJTIweG1sbnM9JTIyaHR0cDovL3NjaGVtYXMuZG10Zi5vcmcvd2JlbS93c21hbi8xL3dzbWFuLnhzZCUyMiUzRWh0dHA6Ly9pbnRlbC5jb20vd2JlbS93c2NpbS8xL2FtdC1zY2hlbWEvMS9BTVRfTWFuYWdlbWVudFByZXNlbmNlUmVtb3RlU0FQJTNDL1Jlc291cmNlVVJJJTNFJTNDU2VsZWN0b3JTZXQlMjB4bWxucz0lMjJodHRwOi8vc2NoZW1hcy5kbXRmLm9yZy93YmVtL3dzbWFuLzEvd3NtYW4ueHNkJTIyJTNFJTNDU2VsZWN0b3IlMjBOYW1lPSUyMk5hbWUlMjIlM0V7bXBzRXByMn0lM0MvU2VsZWN0b3IlM0UlM0MvU2VsZWN0b3JTZXQlM0UlM0MvUmVmZXJlbmNlUGFyYW1ldGVycyUzRQAIACgAAwARAHdzX2FyZ3MuTXBTZXJ2ZXIACQBNcFNlcnZlcgACAXwAFABRAAQAGAFBTVRfUmVtb3RlQWNjZXNzU2VydmljZQAaAUFkZFJlbW90ZUFjY2Vzc1BvbGljeVJ1bGUACAB3c19hcmdzAAkAc2VsZWN0b3IAAQAoAAQABQMAAB4zAA0Ad3NtYW5fcmVzdWx0AAMBIT0ABQIAAADIAAMAIwABABsBUG9saWN5IGFkZGVkZCBzdWNjZXNzZnVsbHkAAQANAAEABQMAAB5hAAMALgABACYBV1NNQU4gY2FsbCBmYWlsZWQ6IHt3c21hbl9yZXN1bHRfc3RyfQACACAAAgARAFB1bGxSZW1vdGVBY2Nlc3MABQIAAAABAAIAEAABAAgAbXBzRXByMQACABAAAQAIAG1wc0VwcjIAAgAKAAEAAgBpAAIAFgABAA4AY3VyQWNjZXNzSW5mbwACABAAAQAIAGFycl9sZW4AAgARAAEACQBNcFNlcnZlcgACAAwAAQAEAGFycgACACAAAQAYAEFNVF9SZW1vdGVBY2Nlc3NTZXJ2aWNlAAIAFQABAA0Ad3NtYW5fcmVzdWx0AAIAGQABABEAd3NtYW5fcmVzdWx0X3N0cgACABAAAQAIAHdzX2FyZ3MAAgAZAAEAEQB3c19nZW5lcmFsX3F1ZXJ5AAIAFQABAA0Ad3NtYW5fYW5zd2VyAAIAEAABAAgAYlBlcmlvZAACABUAAQANAGV4dGVuZGVkRGF0YQACABMAAQALAHBlcmlvZF9hcnIAAgAXAAEADwBwZXJpb2RfYXJyX2xlbgACABQAAQAMAGJQZXJpb2RIb3VyAAIAFgABAA4AYlBlcmlvZE1pbnV0ZU4pABMAAgAEAF9fdAAFAgAAAAUACwA4AAIABwB3c2FyZ3MAJwElN0IlMjJSZXF1ZXN0ZWRTdGF0ZSUyMjolMjIzMjc3MSUyMiU3RAALAJMAAgAKAEVudW1TdGF0ZQB/ASU3QiUyMjMyNzY4JTIyOiUyMkRpc2FibGVkJTIyLCUyMjMyNzY5JTIyOiUyMkJJT1MgRW5hYmxlZCUyMiwlMjIzMjc3MCUyMjolMjJPUyBlbmFibGUlMjIsJTIyMzI3NzElMjI6JTIyQklPUyAmIE9TIEVuYWJlZCUyMiU3RAAUAEwABAAjAUFNVF9Vc2VySW5pdGlhdGVkQ29ubmVjdGlvblNlcnZpY2UAEwFSZXF1ZXN0U3RhdGVDaGFuZ2UABwB3c2FyZ3MAAQEAAQAoAAQABQMAACG7AA0Ad3NtYW5fcmVzdWx0AAMBIT0ABQIAAADIAAMASQABAEEBU1VDQ0VTUzogUmVtb3RlIEFjY2VzcyB1c2VyIGludGVyZmFjZXMgc2V0IHRvOiB7RW51bVN0YXRlLjMyNzcxfQACACAAAgARAFB1bGxSZW1vdGVBY2Nlc3MABQIAAAABAAEADQABAAUDAAAh4wADACgAAQAgAUNhbGwgZmFpbGVkOiB7d3NtYW5fcmVzdWx0X3N0cn0AAgAPAAEABwB3c2FyZ3MAAgAVAAEADQB3c21hbl9yZXN1bHQAAgAZAAEAEQB3c21hbl9yZXN1bHRfc3RyAAIAEgABAAoARW51bVN0YXRlAAIAKwABACMAQU1UX1VzZXJJbml0aWF0ZWRDb25uZWN0aW9uU2VydmljZU4pABMAAgAEAF9fdAAFAgAAAAYAAwAnAAEAHwFJTkZPOiBQYXJzaW5nIGJsb2NrIHBhcmFtZXRlcnMAAQAlAAQABQMAACoLAA8BYWFiYmNjZGRlZWZmZ2cAAgE9AAEBAAgAMQADABQAYXJyRGV0ZWN0aW9uU3RyaW5ncwAPAWFhYmJjY2RkZWVmZmdnAAIBLAAIAC0AAwAeAGFyckRldGVjdGlvbklQdjZMb2NhbFByZWZpeGVzAAEBAAIBLAADACwAAQAkAUlORk86IFNldHRpbmcgRW52aXJvbm1lbnQgRGV0ZWN0aW9uAAgARAADABEAd3NfZ2VuZXJhbF9xdWVyeQAlASpBTVRfRW52aXJvbm1lbnREZXRlY3Rpb25TZXR0aW5nRGF0YQACASwAEAAoAAIADQF3c21hbl9hbnN3ZXIAEQB3c19nZW5lcmFsX3F1ZXJ5AAIAWQACABUAZW52RGV0ZWN0aW9uSW5zdGFuY2UAOgB3c21hbl9hbnN3ZXIuQU1UX0Vudmlyb25tZW50RGV0ZWN0aW9uU2V0dGluZ0RhdGEucmVzcG9uc2UAAQA6AAMABQMAACSWACYAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uU3RyaW5ncwADASE9AAIARAACACYAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uU3RyaW5ncwAUAGFyckRldGVjdGlvblN0cmluZ3MAAQANAAEABQMAACYDAA0ANgADABQAYXJyRGV0ZWN0aW9uU3RyaW5ncwACASwAFABhcnJEZXRlY3Rpb25TdHJpbmdzAA0AbAADACYAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uU3RyaW5ncwAmAGVudkRldGVjdGlvbkluc3RhbmNlLkRldGVjdGlvblN0cmluZ3MAFABhcnJEZXRlY3Rpb25TdHJpbmdzJxkAVgACACYAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uU3RyaW5ncwAmAGVudkRldGVjdGlvbkluc3RhbmNlLkRldGVjdGlvblN0cmluZ3MACgBHAAIAFwBhcnJEZXRlY3Rpb25TdHJpbmdzTGVuACYAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uU3RyaW5ncwABAC4ABAAFAwAAKYMAFwBhcnJEZXRlY3Rpb25TdHJpbmdzTGVuAAIBPgACATUAAQBEAAMABQMAACbDADAAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uSVB2NkxvY2FsUHJlZml4ZXMAAwEhPQABABcABAAFAwAAKAEAAQEAAgE9AAEBAAIAWAACADAAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uSVB2NkxvY2FsUHJlZml4ZXMAHgBhcnJEZXRlY3Rpb25JUHY2TG9jYWxQcmVmaXhlcwABAA0AAQAFAwAAKJQADQBKAAMAHgBhcnJEZXRlY3Rpb25JUHY2TG9jYWxQcmVmaXhlcwACASwAHgBhcnJEZXRlY3Rpb25JUHY2TG9jYWxQcmVmaXhlcwANAIoAAwAwAGVudkRldGVjdGlvbkluc3RhbmNlLkRldGVjdGlvbklQdjZMb2NhbFByZWZpeGVzADAAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uSVB2NkxvY2FsUHJlZml4ZXMAHgBhcnJEZXRlY3Rpb25JUHY2TG9jYWxQcmVmaXhlcycZAGoAAgAwAGVudkRldGVjdGlvbkluc3RhbmNlLkRldGVjdGlvbklQdjZMb2NhbFByZWZpeGVzADAAZW52RGV0ZWN0aW9uSW5zdGFuY2UuRGV0ZWN0aW9uSVB2NkxvY2FsUHJlZml4ZXMACgBbAAIAIQBhcnJEZXRlY3Rpb25JUHY2TG9jYWxQcmVmaXhlc0xlbgAwAGVudkRldGVjdGlvbkluc3RhbmNlLkRldGVjdGlvbklQdjZMb2NhbFByZWZpeGVzAAEAOAAEAAUDAAApyQAhAGFyckRldGVjdGlvbklQdjZMb2NhbFByZWZpeGVzTGVuAAIBPgACATUAEQBDAAIAJAFBTVRfRW52aXJvbm1lbnREZXRlY3Rpb25TZXR0aW5nRGF0YQAVAGVudkRldGVjdGlvbkluc3RhbmNlAAEAKAAEAAUDAAApQQANAHdzbWFuX3Jlc3VsdAADASE9AAUCAAAAyAADADUAAQAtAUlORk86IEVudmlyb25tZW50IERldGVjdGlvbiBzZXQgc3VjY2Vzc2Z1bGx5AAEADQABAAUDAAAqXwADADUAAQAtAUVSUk9SOiBXU01BTiBjYWxsIGZhaWxlZDoge3dzbWFuX3Jlc3VsdF9zdHJ9AAEADQABAAUDAAAqXwADADkAAQAxAUVSUk9SOiBkZXRlY3Rpb24gc3RyaW5ncyBjb3VudCBtdXN0IGJlIGF0IG1vc3QgNQABAA0AAQAFAwAAKl8AAwA1AAEALQFFUlJPUjogSVB2NiBwcmVmaXhlcyBjb3VudCBtdXN0IGJlIGF0IG1vc3QgNQABAA0AAQAFAwAAKl8AAwBUAAEATAFFUlJPUjogJTIyRGV0ZWN0aW9uIFN0cmluZ3MlMjIgZmllbGQgY2Fubm90IGJlIGVtcHR5LCBhYm9ydGluZyBvcGVyYXRpb24uLi4AAgAdAAIAEQBQdWxsUmVtb3RlQWNjZXNzAAIBMQACACwAAQAkAEFNVF9FbnZpcm9ubWVudERldGVjdGlvblNldHRpbmdEYXRhAAIAJgABAB4AYXJyRGV0ZWN0aW9uSVB2NkxvY2FsUHJlZml4ZXMAAgAcAAEAFABhcnJEZXRlY3Rpb25TdHJpbmdzAAIAHQABABUAZW52RGV0ZWN0aW9uSW5zdGFuY2UAAgAZAAEAEQB3c19nZW5lcmFsX3F1ZXJ5AAIAFQABAA0Ad3NtYW5fYW5zd2VyAAIAFQABAA0Ad3NtYW5fcmVzdWx0AAEALAAEAAUDAAArfAARAFB1bGxTeXN0ZW1TdGF0dXMAAwEhPQAFAgAAAAFOIAAGAAAAAQAoAAQABQMAACuqAA0AUHVsbEV2ZW50TG9nAAMBIT0ABQIAAAABTiEABgAAAAEAKAAEAAUDAAAr2AANAFB1bGxBdWRpdExvZwADASE9AAUCAAAAAU4iAAYAAAABACwABAAFAwAALAoAEQBQdWxsQ2VydGlmaWNhdGVzAAMBIT0ABQIAAAABTiMABgAAAAEAKAAEAAUDAAAsOAANAFB1bGxXYXRjaGRvZwADASE9AAUCAAAAAU4kAAYAAAABAC0ABAAFAwAALGsAEgBQdWxsU3lzdGVtRGVmZW5zZQADASE9AAUCAAAAAU4lAAYAAAABACgABAAFAwAALJkADQBQdWxsSGFyZHdhcmUAAwEhPQAFAgAAAAFOJgAGAAAAAQAoAAQABQMAACzHAA0AUHVsbFVzZXJJbmZvAAMBIT0ABQIAAAABTicABgAAAAEALAAEAAUDAAAs+QARAFB1bGxSZW1vdGVBY2Nlc3MAAwEhPQAFAgAAAAFOKAAGAAAAAwAZAAEAEQFTY3JpcHQgQ29tcGxldGVkTikABgAA",
+  "blocks": {
+    "_start": {
+      "name": "Start",
+      "desc": "Starting Block",
+      "code": "print \"Script Started\""
+    },
+    "_end": {
+      "name": "End",
+      "desc": "Ending Block",
+      "code": ":end\r\njump :SkipPullSystemStatus PullSystemStatus \"!=\" 1\r\nPullSystemStatus\r\n:SkipPullSystemStatus\r\njump :SkipPullEventLog PullEventLog \"!=\" 1\r\nPullEventLog\r\n:SkipPullEventLog\r\njump :SkipPullAuditLog PullAuditLog \"!=\" 1\r\nPullAuditLog\r\n:SkipPullAuditLog\r\njump :SkipPullCertificates PullCertificates \"!=\" 1\r\nPullCertificates\r\n:SkipPullCertificates\r\njump :SkipPullWatchdog PullWatchdog \"!=\" 1\r\nPullWatchdog\r\n:SkipPullWatchdog\r\njump :SkipPullSystemDefense PullSystemDefense \"!=\" 1\r\nPullSystemDefense\r\n:SkipPullSystemDefense\r\njump :SkipPullHardware PullHardware \"!=\" 1\r\nPullHardware\r\n:SkipPullHardware\r\njump :SkipPullUserInfo PullUserInfo \"!=\" 1\r\nPullUserInfo\r\n:SkipPullUserInfo\r\njump :SkipPullRemoteAccess PullRemoteAccess \"!=\" 1\r\nPullRemoteAccess\r\n:SkipPullRemoteAccess\r\nprint \"Script Completed\""
+    },
+    "AMT-Accounts-AddDigestUser": {
+      "name": "Accounts - Add Digest User",
+      "desc": "Add a new digest user account to Intel AMT",
+      "code": "# Get the DigestRealm\r\njump :SkipDigestRealm-%%%~%%% DigestRealm \"!=\"\r\nprint \"Fetching digest realm...\"\r\nsplit ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset DigestRealm wsman_answer.AMT_GeneralSettings.response.DigestRealm\r\n:SkipDigestRealm-%%%~%%%\r\n\r\n# Create account\r\nset AccountName \"%%%name%%%\"\r\nset AccountPass \"%%%password%%%\"\r\nset digest \"{AccountName}:{DigestRealm}:{AccountPass}\"\r\nmd5 digestmd5 digest\r\nbtoa digestmd5 digestmd5\r\njsonparse wsargs \"%7B %22DigestUsername%22:%22{AccountName}%22, %22DigestPassword%22:%22{digestmd5}%22, %22AccessPermission%22:%%%accessPermission%%%, %22Realms%22:[%%%realms%%%] %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"AddUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Account {AccountName} create: {AMT_AuthorizationService.Body.ReturnValueStr}\"\r\n\r\nset PullUserInfo 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "name": {
+          "name": "Name",
+          "desc": "Name of the user account to create",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        },
+        "password": {
+          "name": "Password",
+          "desc": "Password of the user account to create",
+          "type": 4,
+          "maxlength": 30,
+          "value": ""
+        },
+        "accessPermission": {
+          "name": "Access Permission",
+          "desc": "Set account to be local, remote or both",
+          "type": 3,
+          "values": {
+            "0": "Local only",
+            "1": "Network only",
+            "2": "All (Local & Network)"
+          },
+          "value": "2"
+        },
+        "realms": {
+          "name": "Realms",
+          "desc": "Set account permissions",
+          "type": 5,
+          "values": {
+            "2": "Redirection",
+            "3": "PT Administration",
+            "4": "Hardware Asset",
+            "5": "Remote Control",
+            "6": "Storage",
+            "7": "Event Manager",
+            "8": "Storage Admin",
+            "9": "Agent Presence Local",
+            "10": "Agent Presence Remote",
+            "11": "Circuit Breaker",
+            "12": "Network Time",
+            "13": "General Information",
+            "14": "Firmware Update",
+            "15": "EIT",
+            "16": "LocalUN",
+            "17": "Endpoint Access Control",
+            "18": "Endpoint Access Control Admin",
+            "19": "Event Log Reader",
+            "20": "Audit Log",
+            "21": "ACL Realm",
+            "24": "Local System"
+          },
+          "value": [
+            "3"
+          ]
+        }
+      }
+    },
+    "AMT-Accounts-RemoveDigestUser": {
+      "name": "Accounts - Remove Digest User",
+      "desc": "Remove a digest user account from Intel AMT",
+      "code": "set ToggleAccount \"%%%name%%%\"\r\n\r\n# Fetch all of the account handles\r\nprint \"Fetching account handles...\"\r\njsonparse wsargs \"%7B %22StartIndex%22:1 %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"EnumerateUserAclEntries\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountHandles AMT_AuthorizationService.Body.Handles\r\nset wsargs\r\nset AMT_AuthorizationService\r\nset wsman_result\r\nset wsman_result_str\r\nlength AccountHandlesCount AccountHandles\r\n\r\n# Get all of the account information\r\nprint \"Fetching all account information...\"\r\nset i 0\r\n:fetchAccountLoop-%%%~%%%\r\nset fetchHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{fetchHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"GetAclEnabledState\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountEnabled{i} AMT_AuthorizationService.Body.Enabled\r\nwsexec \"AMT_AuthorizationService\" \"GetUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountName{i} AMT_AuthorizationService.Body.DigestUsername\r\nset AccountAccess{i} AMT_AuthorizationService.Body.AccessPermission\r\nset AccountRealms{i} AMT_AuthorizationService.Body.Realms\r\nadd i i 1\r\njump :fetchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\nset AMT_AuthorizationService\r\nset fetchHandle\r\nset wsargs\r\n\r\n# Search for a matching account\r\nprint \"Searching accounts...\"\r\nset i 0\r\n:searchAccountLoop-%%%~%%%\r\nset searchHandle AccountHandles.{i}\r\njump :foundAccount AccountName{i} \"=\" ToggleAccount\r\nadd i i 1\r\njump :searchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\njump :end-%%%~%%%\r\n\r\n# Account found, delete it\r\n:foundAccount\r\nprint \"Account {ToggleAccount} found at index {i}, deleting it...\"\r\nset deleteHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{deleteHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"RemoveUserAclEntry\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Done, account {ToggleAccount} deleted.\"\r\nset PullUserInfo 1\r\njump :end\r\n\r\n# End of script\r\njump :end\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "name": {
+          "name": "Name",
+          "desc": "Name of the user account to remove",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        }
+      }
+    },
+    "AMT-Accounts-AddKerberosUser": {
+      "name": "Accounts - Add Kerberos User",
+      "desc": "Add a new kerberos user account to Intel AMT",
+      "code": "# Set kerberos sid value as a byte array string\r\nset KerberosUserString \"%%%sid%%%\"\r\nGetSidByteArray x KerberosUserString\r\nbtoa KerberosUserSid x\r\njsonparse wsargs \"%7B%22KerberosUserSid%22:%22{KerberosUserSid}%22,%22AccessPermission%22:%%%accessPermission%%%,%22Realms%22:[%%%realms%%%]%7D\"\r\nwsexec \"AMT_AuthorizationService\" \"AddUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Account {KerberosUserString} return value: {AMT_AuthorizationService.Body.ReturnValueStr}\"\r\n\r\nset PullUserInfo 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "sid": {
+          "name": "Sid",
+          "desc": "The Security ID (SID) of the user account to create",
+          "type": 1,
+          "maxlength": 45,
+          "value": ""
+        },
+        "accessPermission": {
+          "name": "Access Permission",
+          "desc": "Set account to be local, remote or both",
+          "type": 3,
+          "values": {
+            "0": "Local only",
+            "1": "Network only",
+            "2": "All (Local & Network)"
+          },
+          "value": "2"
+        },
+        "realms": {
+          "name": "Realms",
+          "desc": "Set account permissions",
+          "type": 5,
+          "values": {
+            "2": "Redirection",
+            "3": "PT Administration",
+            "4": "Hardware Asset",
+            "5": "Remote Control",
+            "6": "Storage",
+            "7": "Event Manager",
+            "8": "Storage Admin",
+            "9": "Agent Presence Local",
+            "10": "Agent Presence Remote",
+            "11": "Circuit Breaker",
+            "12": "Network Time",
+            "13": "General Information",
+            "14": "Firmware Update",
+            "15": "EIT",
+            "16": "LocalUN",
+            "17": "Endpoint Access Control",
+            "18": "Endpoint Access Control Admin",
+            "19": "Event Log Reader",
+            "20": "Audit Log",
+            "21": "ACL Realm",
+            "24": "Local System"
+          },
+          "value": [
+            "3"
+          ]
+        }
+      }
+    },
+    "AMT-Accounts-RemoveKerberosUser": {
+      "name": "Accounts - Remove Kerberos User",
+      "desc": "Remove a digest user account from Intel AMT",
+      "code": "GetSidByteArray ToggleAccount \"%%%sid%%%\"\r\nbtoa ToggleAccount ToggleAccount\r\n# Fetch all of the account handles\r\nprint \"Fetching account handles...\"\r\njsonparse wsargs \"%7B %22StartIndex%22:1 %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"EnumerateUserAclEntries\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountHandles AMT_AuthorizationService.Body.Handles\r\nset wsargs\r\nset AMT_AuthorizationService\r\nset wsman_result\r\nset wsman_result_str\r\nlength AccountHandlesCount AccountHandles\r\n\r\n# Get all of the account information\r\nprint \"Fetching all account information...\"\r\nset i 0\r\n:fetchAccountLoop-%%%~%%%\r\nset fetchHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{fetchHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"GetAclEnabledState\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountEnabled{i} AMT_AuthorizationService.Body.Enabled\r\nwsexec \"AMT_AuthorizationService\" \"GetUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountName{i} AMT_AuthorizationService.Body.KerberosUserSid\r\nset AccountAccess{i} AMT_AuthorizationService.Body.AccessPermission\r\nset AccountRealms{i} AMT_AuthorizationService.Body.Realms\r\nadd i i 1\r\njump :fetchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\nset AMT_AuthorizationService\r\nset fetchHandle\r\nset wsargs\r\n\r\n# Search for a matching account\r\nprint \"Searching accounts...\"\r\nset i 0\r\n:searchAccountLoop-%%%~%%%\r\nset searchHandle AccountHandles.{i}\r\njump :foundAccount AccountName{i} \"=\" ToggleAccount\r\nadd i i 1\r\njump :searchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\njump :end-%%%~%%%\r\n\r\n# Account found, delete it\r\n:foundAccount\r\nprint \"Account %%%sid%%% found at index {i}, deleting it...\"\r\nset deleteHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{deleteHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"RemoveUserAclEntry\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Done, account %%%sid%%% deleted.\"\r\nset PullUserInfo 1\r\njump :end\r\n\r\n# End of script\r\njump :end\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "sid": {
+          "name": "Sid",
+          "desc": "Sid of the user account to remove",
+          "type": 1,
+          "maxlength": 45,
+          "value": ""
+        }
+      }
+    },
+    "AMT-Accounts-PrintAll": {
+      "name": "Accounts - Print Users",
+      "desc": "Display all digest user accounts from Intel AMT",
+      "code": "# Fetch all of the account handles\r\nprint \"Fetching account handles...\"\r\njsonparse wsargs \"%7B %22StartIndex%22:1 %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"EnumerateUserAclEntries\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountHandles AMT_AuthorizationService.Body.Handles\r\nset wsargs\r\nset AMT_AuthorizationService\r\nset wsman_result\r\nset wsman_result_str\r\nlength AccountHandlesCount AccountHandles\r\n\r\n# Get all of the account information\r\nprint \"Fetching all account information...\"\r\nset i 0\r\n:fetchAccountLoop-%%%~%%%\r\nset fetchHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{fetchHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"GetAclEnabledState\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountEnabled{i} AMT_AuthorizationService.Body.Enabled\r\nwsexec \"AMT_AuthorizationService\" \"GetUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"AMT-ACCOUNT: {AMT_AuthorizationService.Body.DigestUsername}, {AMT_AuthorizationService.Body.AccessPermission}, [{AMT_AuthorizationService.Body.Realms}]\"\r\nadd i i 1\r\njump :fetchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\nset AMT_AuthorizationService\r\nset fetchHandle\r\nset wsargs\r\n\r\n# End of script\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%"
+    },
+    "Basic-Add": {
+      "name": "Basic - Add",
+      "desc": "Add a value to a given variable",
+      "code": "add %%%var%%% %%%var%%% %%%value%%%",
+      "vars": {
+        "var": {
+          "name": "Name",
+          "desc": "Name of the variable to add to",
+          "type": 1,
+          "maxlength": 20,
+          "value": "SampleVariable"
+        },
+        "value": {
+          "name": "Value",
+          "desc": "Value to add to the variable",
+          "type": 1,
+          "value": "1"
+        }
+      }
+    },
+    "Basic-Disconnect": {
+      "name": "Basic - Disconnect",
+      "desc": "Disconnect from Intel AMT",
+      "code": "Disconnect"
+    },
+    "Basic-JumpLabel": {
+      "name": "Basic - Jump Target",
+      "desc": "Set a jump label. Other blocks can jump here.",
+      "code": ":%%%label%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        }
+      }
+    },
+    "Basic-Jump": {
+      "name": "Basic - Jump",
+      "desc": "Jump to a given label",
+      "code": "jump :%%%label%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        }
+      }
+    },
+    "Basic-JumpIf": {
+      "name": "Basic - Jump if",
+      "desc": "Jump to a given label if the condition is met",
+      "code": "jump :%%%label%%% %%%arg1%%% \"%%%comparator%%%\" %%%arg2%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        },
+        "arg1": {
+          "name": "arg1",
+          "desc": "First variable to compare, use \"x\" for a string",
+          "type": 1,
+          "value": ""
+        },
+        "comparator": {
+          "name": "Comparator",
+          "desc": "How to compare both arguments",
+          "type": 3,
+          "values": {
+            "=": "=",
+            "!=": "!=",
+            "<": "<",
+            ">": ">",
+            "<=": "<=",
+            ">=": ">="
+          },
+          "value": "="
+        },
+        "arg2": {
+          "name": "arg2",
+          "desc": "Second variable to compare, use \"x\" for a string",
+          "type": 1,
+          "value": ""
+        }
+      }
+    },
+    "Basic-Print": {
+      "name": "Basic - Print",
+      "desc": "Print a string to the console",
+      "code": "print \"%%%printstring%%%\"",
+      "vars": {
+        "printstring": {
+          "name": "Value",
+          "desc": "String that will be printed to console, use urlescaping for special chars and use {x} to print variable x.",
+          "type": 1,
+          "value": "Sample String"
+        }
+      }
+    },
+    "Basic-ScriptSpeed": {
+      "name": "Basic - Script Speed",
+      "desc": "Set the speed of the script",
+      "code": "scriptspeed %%%delay%%%",
+      "vars": {
+        "delay": {
+          "name": "Delay",
+          "desc": "The delay in millisecond between execution of each script step. 200ms is 5 steps per second.",
+          "type": 2,
+          "maxlength": 4,
+          "value": 200
+        }
+      }
+    },
+    "Basic-Set": {
+      "name": "Basic - Set",
+      "desc": "Set a variable to a given value",
+      "code": "set %%%var%%% %%%value%%%",
+      "vars": {
+        "var": {
+          "name": "Name",
+          "desc": "Name of the variable to set",
+          "type": 1,
+          "maxlength": 20,
+          "value": "SampleVariable"
+        },
+        "value": {
+          "name": "Value",
+          "desc": "The new value to set to the variable",
+          "type": 1,
+          "value": "0"
+        }
+      }
+    },
+    "AMT-General-SetUserConsent": {
+      "name": "General - Set User Consent",
+      "desc": "Set the Intel AMT user consent mode",
+      "code": "split ws_optIn_query \"*IPS_OptInService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset wsman_answer.IPS_OptInService.response.OptInRequired %%%consentMode%%%\r\nwsput \"IPS_OptInService\" wsman_answer.IPS_OptInService.response\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "consentMode": {
+          "name": "Consent Mode",
+          "desc": "Intel AMT user consent mode",
+          "type": 3,
+          "values": {
+            "0": "Not Required",
+            "1": "Required for KVM only",
+            "0xFFFFFFFF": "Always Required"
+          },
+          "value": "0"
+        }
+      }
+    },
+    "AMT-General-ActiveFeatures": {
+      "name": "General - Set Active Features",
+      "desc": "Set the Intel AMT active features",
+      "code": "split ws_optIn_query \"*AMT_RedirectionService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset wsman_answer.AMT_RedirectionService.response.ListenerEnabled \"%%%listenerEnabled%%%\"\r\nset wsman_answer.AMT_RedirectionService.response.EnabledState \"%%%enabledState%%%\"\r\njsonparse wsargs \"%7B %22RequestedState%22:%22%%%enabledState%%%%22 %7D\"\r\nwsexec \"AMT_RedirectionService\" \"RequestStateChange\" wsargs\r\nwsput \"AMT_RedirectionService\" wsman_answer.AMT_RedirectionService.response\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "listenerEnabled": {
+          "name": "Redirection Port",
+          "desc": "Enable or disable the Intel AMT redirection port (TCP:16993/16995)",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        },
+        "enabledState": {
+          "name": "SOL/IDER Feature",
+          "desc": "Enable or disable the Intel AMT Serial-over-LAN and IDER features",
+          "type": 3,
+          "values": {
+            "32768": "Disabled",
+            "32769": "IDER only",
+            "32770": "Serial-over-LAN only",
+            "32771": "IDER & SOL enabled"
+          },
+          "value": "32771"
+        }
+      }
+    },
+    "AMT-General-GetCoreVersion": {
+      "name": "General - Get Version",
+      "desc": "Retrieves the Intel AMT release version, prints it to the console and stores it in variable AmtCoreVersion",
+      "code": "split ws_general_query \"CIM_SoftwareIdentity\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i 0\r\nset arr wsman_answer.CIM_SoftwareIdentity.responses\r\nlength arr_len arr\r\n:loop-%%%~%%%\r\nset curInstanceId arr.{i}.InstanceID\r\njump :AmtCoreVersionFound-%%%~%%% curInstanceId \"=\" \"AMT FW Core Version\"\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" arr_len\r\nprint \"Error: Intel AMT version was not found\"\r\njump :end-%%%~%%%\r\n:AmtCoreVersionFound-%%%~%%%\r\nset AmtCoreVersion arr.{i}.VersionString\r\nprint \"Intel AMT version: {AmtCoreVersion}\"\r\n:end-%%%~%%%\r\nset arr\r\nset arr_len\r\nset curInstanceId\r\nset i\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result"
+    },
+    "AMT-General-GetPlatformType": {
+      "name": "General - Get Platform Type",
+      "desc": "Retrieves the platfrom type of the target, prints it to the console and stores it in variable PlatformType",
+      "code": "jsonparse sysTypeHmap \"%7B%2232%22:%22Desktop%22,%2233%22:%22Notebook%22%7D\"\r\nsplit ws_general_query \"CIM_ComputerSystem\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i -1\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\ngetitem i wsman_answer.CIM_ComputerSystem.responses \"ElementName\" \"Managed System\"\r\njump :amtCoreError-%%%~%%% i \"<\" 0\r\nset i wsman_answer.CIM_ComputerSystem.responses.{i}.Dedicated\r\nset PlatformType sysTypeHmap.{i}\r\nprint \"Platform Type: {PlatformType}\"\r\njump :end-%%%~%%%\r\n:amtCoreError-%%%~%%%\r\nprint \"Error: couldn't find CIM_ComputerSystem.ElementName = %22Managed System%22\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset i\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset sysTypeHmap"
+    },
+    "AMT-General-GetProvState": {
+      "name": "General - Get Provisisoning State",
+      "desc": "Retrieves the current Provisioning State of Intel AMT, prints it to the console and stores it in variable AmtProvState",
+      "code": "jsonparse provStateHmap \"%7B%220%22:%22Pre%22,%221%22:%22In%22,%222%22:%22Post%22%7D\"\r\nsplit ws_general_query \"*AMT_SetupAndConfigurationService\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset key wsman_answer.AMT_SetupAndConfigurationService.response.ProvisioningState\r\nset AmtProvState provStateHmap.{key}\r\nadd AmtProvState AmtProvState \"-Provisioning\"\r\nprint \"Intel AMT Provisioning State: {AmtProvState}\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset provStateHmap\r\nset key"
+    },
+    "AMT-General-GetProvMode": {
+      "name": "General - Get Provisisoning Mode",
+      "desc": "Retrieves the current Provisioning Mode of Intel AMT, prints it to the console and stores it in variable AmtProvMode",
+      "code": "jsonparse provModeHmap \"%7B%221%22:%22Admin%20Control%20Mode%20(ACM)%22,%222%22:%22Reserved1%22,%223%22:%22Client%20Control%20Mode%20(CCM)%22,%224%22:%22Reserved2%22%7D\"\r\nsplit ws_general_query \"*AMT_SetupAndConfigurationService\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset key wsman_answer.AMT_SetupAndConfigurationService.response.ProvisioningMode\r\nset AmtProvMode provModeHmap.{key}\r\nprint \"Intel AMT Provisioning Mode: {AmtProvMode}\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset provModeHmap\r\nset key"
+    },
+    "AMT-General-PrintUserConsent": {
+      "name": "General - Print User Consent",
+      "desc": "Display the Intel AMT user consent mode",
+      "code": "jsonparse OptInStateEnum \"%7B%220%22:%22Not Required%22,%221%22:%22Required for KVM only%22,%224294967295%22:%22Always Required%22%7D\"\r\nsplit ws_optIn_query \"*IPS_OptInService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"User Consent mode: {OptInStateEnum.{wsman_answer.IPS_OptInService.response.OptInRequired}}\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n"
+    },
+    "AMT-General-SetHostname": {
+      "name": "General - Set Hostname",
+      "desc": "Set the Intel AMT KVM feature to enabled or disabled",
+      "code": "split ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-2 wsman_result \"!=\" 200\r\nset wsman_answer.AMT_GeneralSettings.response.HostName \"%%%hostname%%%\"\r\nset wsman_answer.AMT_GeneralSettings.response.DomainName \"%%%domainname%%%\"\r\nwsput \"AMT_GeneralSettings\" wsman_answer.AMT_GeneralSettings.response\r\njump :error-2 wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-2\r\n:error-2\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-2\r\n",
+      "vars": {
+        "hostname": {
+          "name": "Hostname",
+          "desc": "The hostname Intel AMT will use while in Sx state",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        },
+        "domainname": {
+          "name": "Domain",
+          "desc": "The domain name Intel AMT will use while in Sx state",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        }
+      }
+    },
+    "AMT-General-SetPingResponse": {
+      "name": "General - Set Ping Response",
+      "desc": "Set the Intel AMT response to ICMP and RMCP ping requests",
+      "code": "split ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-2 wsman_result \"!=\" 200\r\nset wsman_answer.AMT_GeneralSettings.response.PingResponseEnabled \"%%%icmpPingResponse%%%\"\r\nset wsman_answer.AMT_GeneralSettings.response.RmcpPingResponseEnabled \"%%%rmcpPingResponse%%%\"\r\nwsput \"AMT_GeneralSettings\" wsman_answer.AMT_GeneralSettings.response\r\njump :error-2 wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-2\r\n:error-2\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-2\r\n",
+      "vars": {
+        "icmpPingResponse": {
+          "name": "ICMP Ping",
+          "desc": "Enable or disable the Intel AMT response to ICMP ping",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        },
+        "rmcpPingResponse": {
+          "name": "RMCP Ping",
+          "desc": "Enable or disable the Intel AMT response to RMCP ping",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        }
+      }
+    },
+    "AMT-General-GetAmtUuid": {
+      "name": "General - Get UUID",
+      "desc": "Retrieves the Intel AMT UUID, prints it to the console and stores it in variable AmtUuid",
+      "code": "split ws_general_query \"CIM_ComputerSystem\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i -1\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\ngetitem i wsman_answer.CIM_ComputerSystem.responses \"ElementName\" \"Managed System\"\r\njump :amtCoreError-%%%~%%% i \"<\" 0\r\nset AmtUuid wsman_answer.CIM_ComputerSystem.responses.{i}.OtherIdentifyingInfo\r\nprint \"Intel AMT UUID: {AmtUuid}\"\r\njump :end-%%%~%%%\r\n:amtCoreError-%%%~%%%\r\nprint \"Error: couldn't find CIM_ComputerSystem.ElementName = %22Managed System%22\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset i\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result"
+    },
+    "AMT-KVM-SetState": {
+      "name": "KVM - Set State",
+      "desc": "Set the Intel AMT KVM feature to enabled or disabled",
+      "code": "jsonparse wsargs \"%7B %22RequestedState%22:%22%%%kvmEnabled%%%%22 %7D\"\r\nwsexec \"CIM_KVMRedirectionSAP\" \"RequestStateChange\" wsargs\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "kvmEnabled": {
+          "name": "KVM State",
+          "desc": "Enable or disable the Intel AMT KVM feature",
+          "type": 3,
+          "values": {
+            "2": "Enabled",
+            "3": "Disabled"
+          },
+          "value": "2"
+        }
+      }
+    },
+    "AMT-KVM-SetSessionTimeout": {
+      "name": "KVM - Set Session Timeout",
+      "desc": "Set the Intel AMT KVM session timeout",
+      "vars": {
+        "kvmTimeout": {
+          "name": "KVM Timeout",
+          "desc": "Intel AMT KVM session timeout in minutes",
+          "type": "2",
+          "value": "4"
+        }
+      },
+      "code": "split ws_general_query \"*IPS_KVMRedirectionSettingData\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nset wsman_answer.IPS_KVMRedirectionSettingData.response.SessionTimeout \"%%%kvmTimeout%%%\"\nwsput \"IPS_KVMRedirectionSettingData\" wsman_answer.IPS_KVMRedirectionSettingData.response\njump :error-%%%~%%% wsman_result \"!=\" 200\nset PullSystemStatus \"1\"\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\n\n"
+    },
+    "AMT-Network-DetectWiredNic": {
+      "name": "Network - Wired NIC",
+      "desc": "Detects if the platfrom has a wired Intel AMT network interface controller (NIC), logs to the console and stores the result in WiredAmtNic",
+      "code": "split ws_general_query \"CIM_EthernetPort\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i -1\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\ngetitem i wsman_answer.CIM_EthernetPort.responses \"DeviceID\" \"Intel(r) AMT Ethernet Port 0\"\r\njump :amtCoreError-%%%~%%% i \"<\" 0\r\nset WiredAmtNic \"true\"\r\nprint \"Wired AMT NIC found: true\"\r\njump :end-%%%~%%%\r\n:amtCoreError-%%%~%%%\r\nprint \"Wired AMT NIC found: false\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset i\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result"
+    },
+    "AMT-Network-DetectWifiNic": {
+      "name": "Network - Wireless NIC",
+      "desc": "Detects if the platfrom has a WiFi interface, logs to the console and stores the result in WiFiAmtNic",
+      "code": "split ws_general_query \"CIM_EthernetPort\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i -1\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\ngetitem i wsman_answer.CIM_EthernetPort.responses \"DeviceID\" \"Intel(r) AMT Ethernet Port 1\"\r\njump :amtCoreError-%%%~%%% i \"<\" 0\r\nset WiFiAmtNic \"true\"\r\nprint \"WiFi AMT NIC found: true\"\r\njump :end-%%%~%%%\r\n:amtCoreError-%%%~%%%\r\nprint \"Wifi AMT NIC found: false\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset i\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result"
+    },
+    "AMT-Network-GetAmtFqdn": {
+      "name": "Network - Get FQDN",
+      "desc": "Retrieves the FQDN of Intel AMT, prints it to the console and stores it in variable AmtFqdn",
+      "code": "split ws_general_query \"*AMT_GeneralSettings\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AmtFqdn wsman_answer.AMT_GeneralSettings.response.HostName\r\nadd AmtFqdn AmtFqdn \".\"\r\nadd AmtFqdn AmtFqdn wsman_answer.AMT_GeneralSettings.response.DomainName\r\nprint \"Intel AMT FQDN: {AmtFqdn}\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result"
+    },
+    "AMT-Network-AddEnvDetection": {
+      "name": "Network - Set Environment Detection",
+      "desc": "Configures the DNS information that will be used by Intel AMT to dynamically determine the network it is operating in",
+      "code": "# *** Validate user input ***\r\nprint \"INFO: Parsing block parameters\"\r\njump :EMPTY_DETECTIONSTR-%%%~%%% \"%%%DetectionStrings%%%\" \"=\" \"\"\r\nsplit arrDetectionStrings \"%%%DetectionStrings%%%\" \",\"\r\nsplit arrDetectionIPv6LocalPrefixes \"%%%DetectionIPv6LocalPrefixes%%%\" \",\"\r\nprint \"INFO: Setting Environment Detection\"\r\nsplit ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\r\njump :DetectionStringsDefined-%%%~%%% envDetectionInstance.DetectionStrings \"!=\"\r\nset envDetectionInstance.DetectionStrings arrDetectionStrings\r\njump :SET_IPV6_PREFIX-%%%~%%%\r\n:DetectionStringsDefined-%%%~%%%\r\nadd arrDetectionStrings \",\" arrDetectionStrings\r\nadd envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings arrDetectionStrings\r\nmaketoarray envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings\r\nlength arrDetectionStringsLen envDetectionInstance.DetectionStrings\r\njump :INVALID_LEN_DetectionStrings-%%%~%%% arrDetectionStringsLen \">\" \"5\"\r\n:SET_IPV6_PREFIX-%%%~%%%\r\njump :IPv6StringsDefined-%%%~%%% envDetectionInstance.DetectionIPv6LocalPrefixes \"!=\"\r\njump :EMPTY_IPV6PRFX \"%%%DetectionIPv6LocalPrefixes%%%\" \"=\" \"\" \r\nset envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\r\njump :CALL_WSPUT-%%%~%%%\r\n:IPv6StringsDefined-%%%~%%%\r\nadd arrDetectionIPv6LocalPrefixes \",\" arrDetectionIPv6LocalPrefixes\r\nadd envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\r\nmaketoarray envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes\r\n:EMPTY_IPV6PRFX\r\nlength arrDetectionIPv6LocalPrefixesLen envDetectionInstance.DetectionIPv6LocalPrefixes\r\njump :INVALID_LEN_DetectionIPv6LocalPrefixes-%%%~%%% arrDetectionIPv6LocalPrefixesLen \">\" \"5\"\r\n:CALL_WSPUT-%%%~%%%\r\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"INFO: Environment Detection set successfully\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\r\njump :end-%%%~%%%\r\n:INVALID_LEN_DetectionStrings-%%%~%%%\r\nprint \"ERROR: detection strings count must be at most 5\"\r\njump :end-%%%~%%%\r\n:INVALID_LEN_DetectionIPv6LocalPrefixes-%%%~%%%\r\nprint \"ERROR: IPv6 prefixes count must be at most 5\"\r\njump :end-%%%~%%%\r\n:EMPTY_DETECTIONSTR-%%%~%%%\r\nprint \"ERROR: %22Detection Strings%22 field cannot be empty, aborting operation...\"\r\n:end-%%%~%%%\r\n set PullRemoteAccess \"1\"\r\nset AMT_EnvironmentDetectionSettingData\r\nset arrDetectionIPv6LocalPrefixes\r\nset arrDetectionStrings\r\nset envDetectionInstance\r\nset ws_general_query\r\nset wsman_answer \r\nset wsman_result",
+      "vars": {
+        "DetectionStrings": {
+          "name": "Detection Strings",
+          "desc": "A comma separated list of up to 4 strings to use in the environment detection algorithm (e.g. intel.com,contoso.com)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "DetectionIPv6LocalPrefixes": {
+          "name": "IPv6 Local Prefixes",
+          "desc": "A comma separated list of IPv6 local prefixes (strings) to use  independently of or in conjunction with Detection Strings. (e.g. 1234::/64,4321::/46)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        }
+      }
+    },
+    "AMT-Network-ClearEnvDetection": {
+      "name": "Network - Clear Environment Detection",
+      "desc": "Clears the DNS information that is used by Intel AMT to dynamically determine the network it is operating in",
+      "vars": {},
+      "code": "split ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\nwsbatchenum \"wsman_answer\" ws_general_query\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\nset envDetectionInstance.DetectionStrings\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\njump :error-0 wsman_result \"==\" 200\nprint \"Cleared environment detection\"\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\njump :end-%%%~%%%\n:end-%%%~%%%\nset envDetectionInstance\nset ws_general_query\nset AMT_EnvironmentDetectionSettingData\nset PullRemoteAccess \"1\"\nset wsman_answer \nset wsman_result\n"
+    },
+    "AMT-Power-PowerAction": {
+      "name": "Power - Power Action",
+      "desc": "Perform an Intel AMT power action",
+      "code": "set ManagedElementXml \"%3CAddress xmlns=\\%22http://schemas.xmlsoap.org/ws/2004/08/addressing\\%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing%3C/Address%3E%3CReferenceParameters xmlns=\\%22http://schemas.xmlsoap.org/ws/2004/08/addressing\\%22%3E%3CResourceURI xmlns=\\%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\\%22%3Ehttp://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem%3C/ResourceURI%3E%3CSelectorSet xmlns=\\%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\\%22%3E%3CSelector Name=\\%22CreationClassName\\%22%3ECIM_ComputerSystem%3C/Selector%3E%3CSelector Name=\\%22Name\\%22%3EManagedSystem%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\njsonparse wsargs \"%7B %22PowerState%22:%22%%%powerAction%%%%22, %22ManagedElement%22:%22{ManagedElementXml}%22 %7D\"\r\nset ManagedElementXml\r\nwsexec \"CIM_PowerManagementService\" \"RequestPowerStateChange\" wsargs\r\nset wsargs\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\nprint \"Power action completed\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "powerAction": {
+          "name": "Power Action",
+          "desc": "Indicate the power action to perform",
+          "type": 3,
+          "values": {
+            "2": "Power on",
+            "5": "Power cycle",
+            "8": "Power down",
+            "10": "Reset"
+          },
+          "value": "2"
+        }
+      }
+    },
+    "AMT-RemoteAccess-AddMpsServerFqdnCert": {
+      "name": "Remote - Add MPS FQDN/Cert",
+      "desc": "Add a new CIRA server (MPS) using the server's hostname and authentication using certificate",
+      "code": "# Get the input from user for the CN to look for\r\n# Get available certificates\r\nsplit ws_general_query \"AMT_PublicKeyCertificate\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nlength wsman_ans_length wsman_answer.AMT_PublicKeyCertificate.responses\r\nset i 0\r\n:loop_ans-%%%~%%%\r\n# Get the current subject name\r\nset curSubject wsman_answer.AMT_PublicKeyCertificate.responses.{i}.Subject\r\nIndexOf pos curSubject \"CN=%%%CN%%%\" \r\njump :cnFound-%%%~%%% pos \">=\" 0\r\nadd i i 1\r\njump :loop_ans-%%%~%%% i \"<\" wsman_ans_length\r\njump :cnNotFound-%%%~%%%\r\n:cnFound-%%%~%%%\r\n# Set the reference to the certificate\r\nset certInstanceId wsman_answer.AMT_PublicKeyCertificate.responses.{i}.InstanceID\r\nset certHandle \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22InstanceID%22%3E{certInstanceId}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\n# Set method parameters\r\njsonparse wsargs \"%7B%22AccessInfo%22:%22%%%FQDN%%%%22,%22InfoFormat%22:%22201%22,%22Port%22:%%%Port%%%,%22AuthMethod%22:%221%22%7D\"\r\nset wsargs.Certificate certHandle\r\n# Execute call to AddMpServer\r\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:cnNotFound-%%%~%%%\r\nprint \"Couldn't find a certificate matching the value of CN=%%%CN%%%\"\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%\r\nset AMT_RemoteAccessService\r\nset certHandle\r\nset curSubject\r\nset i\r\nset pos\r\nset ws_general_query\r\nset wsargs\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset certInstanceId\r\nset wsman_ans_length",
+      "vars": {
+        "FQDN": {
+          "name": "MPS Hostname",
+          "desc": "The Fully Qualified Domain Name of the MPS to add",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        },
+        "CN": {
+          "name": "Certificate CN",
+          "desc": "The common name of the authentication certificate",
+          "type": 1,
+          "maxlength": 100,
+          "value": ""
+        }
+      }
+    },
+    "AMT-RemoteAccess-AddMpsServerFqdnUpa": {
+      "name": "Remote - Add MPS FQDN/User",
+      "desc": "Add a new CIRA server (MPS) using the server's hostname authentication using username/password",
+      "code": "# Set method parameters\r\njsonparse wsargs \"%7B%22AccessInfo%22:%22%%%FQDN%%%%22,%22InfoFormat%22:201,%22Port%22:%%%Port%%%,%22AuthMethod%22:2,%22Username%22:%22%%%username%%%%22,%22Password%22:%22%%%password%%%%22%7D\"\r\n# Execute call to AddMpServer\r\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset AMT_RemoteAccessService\r\nset certHandle\r\nset curSubject\r\nset i\r\nset pos\r\nset ws_general_query\r\nset wsargs\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset certInstanceId\r\nset wsman_ans_length",
+      "vars": {
+        "FQDN": {
+          "name": "MPS Hostname",
+          "desc": "The Fully Qualified Domain Name of the MPS to add",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        },
+        "username": {
+          "name": "Username",
+          "desc": "A Username to be used for the connection with the MPS",
+          "type": 1,
+          "maxlength": 16,
+          "value": ""
+        },
+        "password": {
+          "name": "Password",
+          "desc": "The Password matching the username above",
+          "type": 4,
+          "maxlength": 16,
+          "value": ""
+        }
+      }
+    },
+    "AMT-RemoteAccess-AddMpsIpCertServer": {
+      "name": "Remote - Add MPS IP/Cert",
+      "desc": "Add a new CIRA server (MPS) using the server's IP address and authentication using certificate",
+      "code": "# Get the input from user for the CN to look for\r\n# Get available certificates\r\nsplit ws_general_query \"AMT_PublicKeyCertificate\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nlength wsman_ans_length wsman_answer.AMT_PublicKeyCertificate.responses\r\nset i 0\r\n:loop_ans-%%%~%%%\r\n# Get the current subject name\r\nset curSubject wsman_answer.AMT_PublicKeyCertificate.responses.{i}.Subject\r\nIndexOf pos curSubject \"CN=%%%CN%%%\" \r\njump :cnFound-%%%~%%% pos \">=\" 0\r\nadd i i 1\r\njump :loop_ans-%%%~%%% i \"<\" wsman_ans_length\r\njump :cnNotFound-%%%~%%%\r\n:cnFound-%%%~%%%\r\n# Set the reference to the certificate\r\nset certInstanceId wsman_answer.AMT_PublicKeyCertificate.responses.{i}.InstanceID\r\nset certHandle \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22InstanceID%22%3E{certInstanceId}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\n# Set method parameters\r\njsonparse wsargs \"%7B%22AccessInfo%22:%22%%%IP%%%%22,%22InfoFormat%22:%223%22,%22Port%22:%%%Port%%%,%22AuthMethod%22:%221%22%7D\"\r\nset wsargs.Certificate certHandle\r\nset wsargs.CN \"%%%ServerName%%%\"\r\n# Execute call to AddMpServer\r\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:cnNotFound-%%%~%%%\r\nprint \"Couldn't find a certificate matching the value of CN=%%%CN%%%\"\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset AMT_RemoteAccessService\r\nset certHandle\r\nset curSubject\r\nset i\r\nset pos\r\nset ws_general_query\r\nset wsargs\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset certInstanceId\r\nset wsman_ans_length",
+      "vars": {
+        "IP": {
+          "name": "IPv4 Address",
+          "desc": "The IPv4 address of the MPS server",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        },
+        "ServerName": {
+          "name": "Server Name",
+          "desc": "The server name, this must be the exact Common Name in the MPS server certificate",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "CN": {
+          "name": "Certificate CN",
+          "desc": "The common name of the authentication certificate",
+          "type": 1,
+          "maxlength": 100,
+          "value": ""
+        }
+      }
+    },
+    "AMT-RemoteAccess-AddMpsIpUpa": {
+      "name": "Remote - Add MPS IP/User",
+      "desc": "Add a new CIRA server (MPS) using the servers IP address and authenticating using a username/password",
+      "code": "# Set method parameters\r\njsonparse wsargs \"%7B%22AccessInfo%22:%22%%%IP%%%%22,%22InfoFormat%22:%223%22,%22Port%22:%%%Port%%%,%22AuthMethod%22:%222%22,%22Username%22:%22%%%username%%%%22,%22Password%22:%22%%%password%%%%22%7D\"\r\nset wsargs.CN \"%%%ServerName%%%\"\r\n# Execute call to AddMpServer\r\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset AMT_RemoteAccessService\r\nset wsargs\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset wsman_ans_length",
+      "vars": {
+        "IP": {
+          "name": "IPv4 Address",
+          "desc": "The IPv4 address of the MPS server",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        },
+        "ServerName": {
+          "name": "Server Name",
+          "desc": "The server name, this must be the exact Common Name in the MPS server certificate",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "username": {
+          "name": "Username",
+          "desc": "A Username to be used for the connection with the MPS",
+          "type": 1,
+          "maxlength": 16,
+          "value": ""
+        },
+        "password": {
+          "name": "Password",
+          "desc": "The Password matching the username above",
+          "type": 4,
+          "maxlength": 16,
+          "value": ""
+        }
+      }
+    },
+    "AMT-RemoteAccess-Remove-MPS": {
+      "name": "Remote - Remove MPS",
+      "desc": "Remove MPS identified by its IP/FQDN and port",
+      "code": "split ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i 0\r\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\r\nLength arr_len arr\r\n:loop-%%%~%%%\r\nset curAccessInfo arr.{i}.AccessInfo\r\nadd curAccessInfo curAccessInfo \":\"\r\nadd curAccessInfo curAccessInfo arr.{i}.Port\r\njump :mpsFound-%%%~%%% curAccessInfo \"=\" \"%%%AccessInfo%%%:%%%Port%%%\"\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" arr_len\r\nprint \"No MPS was found matching the input parameters\"\r\njump :end-%%%~%%%\r\n:mpsFound-%%%~%%%\r\nprint \"Found matching MPS, starting removal process\"\r\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\r\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\r\n:end-%%%~%%%\r\nset AMT_ManagementPresenceRemoteSAP\r\nset arr\r\nset curAccessInfo\r\nset i\r\nset instanceName\r\nset selector\r\nset ws_general_query\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset arr_len\r\nset PullRemoteAccess 1",
+      "vars": {
+        "AccessInfo": {
+          "name": "FQDN/Address",
+          "desc": "The FQDN/IPv4 address of the MPS server to be deleted",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        }
+      }
+    },
+    "AMT-RemoteAccess-RemoveAll-MPS": {
+      "name": "Remote - Remove All MPS",
+      "desc": "Remove all MPS",
+      "vars": {},
+      "code": "split ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\n:loop-%%%~%%%\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\nadd i i 1\njump :loop-%%%~%%% i \"<\" arr_len\n:end-%%%~%%%\nset AMT_ManagementPresenceRemoteSAP\nset arr\nset i\nset instanceName\nset selector\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset arr_len\nset PullRemoteAccess 1\n"
+    },
+    "AMT-RemoteAccess-AddRemoteAccessPolicyRule": {
+      "name": "Remote - Add Trigger (User / Alert)",
+      "desc": "Set a remote access trigger policy, used to establish a secure tunnel between a management console and the Intel AMT platform.",
+      "code": "# *** Prepare arguments for AMT_RemoteAccessService.AddRemoteAccessPolicyRule ***\r\njsonparse ws_args \"%7B%22Trigger%22:%220%22,%22TunnelLifeTime%22:%22%%%tLifeTime%%%%22%7D\"\r\n# *** Verify valid input ***\r\njump :VALID_INPUT \"%%%AccessInfo1%%%\" \"!=\" \"\"\r\nprint \"ERROR: Field %22AccessInfo1%22 must not be empty, aborting operation...\"\r\njump :end-%%%~%%%\r\n:VALID_INPUT\r\n# *** Set a EPR selector matching user input ***\r\nsplit ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i 0\r\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\r\nLength arr_len arr\r\nset mpsEpr1 \"*\"\r\nset mpsEpr2 \"*\"\r\n:loop-%%%~%%%\r\nset curAccessInfo arr.{i}.AccessInfo\r\nadd curAccessInfo curAccessInfo \":\"\r\nadd curAccessInfo curAccessInfo arr.{i}.Port\r\njump :MPS1_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo1%%%\"\r\nset mpsEpr1 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (primary) mps: {mpsEpr1}\"\r\njump :MPS2_NOTSET \"%%%AccessInfo2%%%\" \"=\" \"\"\r\n:MPS1_NO_MATCH\r\njump :MPS2_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo2%%%\"\r\nset mpsEpr2 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (secondary) mps: {mpsEpr2}\"\r\n:MPS2_NO_MATCH\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" arr_len\r\n:MPS2_NOTSET\r\njump :MPS1_FOUND mpsEpr1 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo1%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS1_FOUND\r\njump :MPS2_FOUND \"%%%AccessInfo2%%%\" \"=\" \"\"\r\njump :MPS2_FOUND mpsEpr2 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo2%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS2_FOUND\r\nprint \"INFO: Setting policy...\"\r\njsonparse ws_args.MpServer \"%7B%7D\"\r\nset MpServer \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr1}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\njump :SKIP_ADD_MPS2 \"%%%AccessInfo2%%%\" \"=\" \"\"\r\nadd MpServer MpServer \"|%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr2}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\n:SKIP_ADD_MPS2\r\nsplit ws_args.MpServer MpServer \"|\"\r\n# *** Call AMT_RemoteAccessService.AddRemoteAccessPolicyRule with policy details. ***\r\nwsexec \"AMT_RemoteAccessService\" \"AddRemoteAccessPolicyRule\" ws_args selector\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Policy addedd successfully\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset PullRemoteAccess 1\r\nset mpsEpr1\r\nset mpsEpr2\r\nset i\r\nset curAccessInfo\r\nset arr_len\r\nset MpServer\r\nset arr\r\nset AMT_RemoteAccessService\r\nset wsman_result\r\nset wsman_result_str\r\nset ws_args\r\nset ws_general_query\r\nset wsman_answer",
+      "vars": {
+        "AccessInfo1": {
+          "name": "MPS 1 Address",
+          "desc": "The FQDN/IPv4 & Port of the MPS targeted for this policy. (e.g. mps1.mydomain.com:1234, 1.2.3.4:2233)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "AccessInfo2": {
+          "name": "MPS 2 Address",
+          "desc": "Optional, leave empty value if not applicable. Sames as above. In case you wish to apply this policy to 2 (two) mps instances",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Trigger": {
+          "name": "Trigger",
+          "desc": "The event that will trigger the establishment of the remote connection to the MPS.",
+          "type": 3,
+          "values": {
+            "0": "User Initiated",
+            "1": "Alert"
+          },
+          "value": "0"
+        },
+        "tLifeTime": {
+          "name": "Tunnel Lifetime",
+          "desc": "Defines the tunnel�s lifetime in seconds. A value of 0 means that the tunnel should stay open until it is closed by the server, the CloseRemoteAccessConnection method or when a different policy with a higher priority needs to be processed.",
+          "type": 2,
+          "maxlength": 5,
+          "value": "0"
+        }
+      }
+    },
+    "AMT-RemoteAccess-AddRemoteAccessPolicyRule2": {
+      "name": "Remote - Add Trigger (Periodic)",
+      "desc": "Set a remote access trigger policy, used to establish a secure tunnel between a management console and the Intel AMT platform.",
+      "code": "# *** Verify valid input ***\r\nsplit period_arr \"%%%Period%%%\" \":\"\r\nlength period_arr_len period_arr\r\njump :INVALID_ARG_AccessInfo1 \"%%%AccessInfo1%%%\" \"=\" \"\"\r\njump :DailyPeriod \"%%%PeriodType%%%\" \"!=\" \"0\"\r\njump :INVALID_PeriodType \"%%%PeriodType%%%\" \"!=\" \"0\"\r\njump :INVALID_ARG_Period period_arr.0 \"<=\" \"0\"\r\njump :INVALID_ARG_Period period_arr.0 \">\" \"4294967295\"\r\nIntToStr extendedData \"0\"\r\nIntToStr bPeriod period_arr.0\r\nadd extendedData extendedData bPeriod\r\njump :SET_PERIOD\r\n:DailyPeriod\r\njump :INVALID_PeriodType period_arr_len \"!=\" \"2\"\r\njump :INVALID_ARG_PeriodDaily period_arr.0 \"<=\" \"0\"\r\njump :INVALID_ARG_PeriodDaily period_arr.0 \">\" \"23\"\r\njump :INVALID_ARG_PeriodDaily period_arr.1 \">\" \"59\"\r\njump :INVALID_ARG_PeriodDaily period_arr.1 \"<=\" \"0\"\r\nIntToStr extendedData \"1\"\r\nIntToStr bPeriodHour period_arr.0\r\nIntToStr bPeriodMinute period_arr.1\r\nadd extendedData extendedData bPeriodHour\r\nadd extendedData extendedData bPeriodMinute\r\njump :SET_PERIOD\r\n:INVALID_PeriodType\r\nprint \"ERROR: The period type and value must correspond, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_PeriodDaily\r\nprint \"ERROR: Field %22Period%22 must be a value HH:MM 0<=HH<24 && 0<=MM<60, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_AccessInfo1\r\nprint \"ERROR: Field %22AccessInfo1%22 must not be empty, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_Period\r\nprint \"ERROR: Field %22Period%22 must be a value 0<=t<MAX_INT, aborting operation...\"\r\njump :end-%%%~%%%\r\n:SET_PERIOD\r\n# *** Prepare arguments for AMT_RemoteAccessService.AddRemoteAccessPolicyRule ***\r\njsonparse ws_args \"%7B%22Trigger%22:%222%22,%22TunnelLifeTime%22:%22%%%tLifeTime%%%%22%7D\"\r\nbtoa extendedData extendedData\r\nset ws_args.ExtendedData extendedData\r\n# *** Set a EPR selector matching user input ***\r\nsplit ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i 0\r\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\r\nLength arr_len arr\r\nset mpsEpr1 \"*\"\r\nset mpsEpr2 \"*\"\r\n:loop-%%%~%%%\r\nset curAccessInfo arr.{i}.AccessInfo\r\nadd curAccessInfo curAccessInfo \":\"\r\nadd curAccessInfo curAccessInfo arr.{i}.Port\r\njump :MPS1_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo1%%%\"\r\nset mpsEpr1 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (primary) mps: {mpsEpr1}\"\r\njump :MPS2_NOTSET \"%%%AccessInfo2%%%\" \"=\" \"\"\r\n:MPS1_NO_MATCH\r\njump :MPS2_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo2%%%\"\r\nset mpsEpr2 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (secondary) mps: {mpsEpr2}\"\r\n:MPS2_NO_MATCH\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" arr_len\r\n:MPS2_NOTSET\r\njump :MPS1_FOUND mpsEpr1 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo1%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS1_FOUND\r\njump :MPS2_FOUND \"%%%AccessInfo2%%%\" \"=\" \"\"\r\njump :MPS2_FOUND mpsEpr2 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo2%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS2_FOUND\r\nprint \"INFO: Setting policy...\"\r\njsonparse ws_args.MpServer \"%7B%7D\"\r\nset MpServer \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr1}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\njump :SKIP_ADD_MPS2 \"%%%AccessInfo2%%%\" \"=\" \"\"\r\nadd MpServer MpServer \"|%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr2}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\n:SKIP_ADD_MPS2\r\nsplit ws_args.MpServer MpServer \"|\"\r\n# *** Call AMT_RemoteAccessService.AddRemoteAccessPolicyRule with policy details. ***\r\nwsexec \"AMT_RemoteAccessService\" \"AddRemoteAccessPolicyRule\" ws_args selector\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Policy addedd successfully\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset PullRemoteAccess 1\r\nset mpsEpr1\r\nset mpsEpr2\r\nset i\r\nset curAccessInfo\r\nset arr_len\r\nset MpServer\r\nset arr\r\nset AMT_RemoteAccessService\r\nset wsman_result\r\nset wsman_result_str\r\nset ws_args\r\nset ws_general_query\r\nset wsman_answer\r\nset bPeriod\r\nset extendedData\r\nset period_arr\r\nset period_arr_len\r\nset bPeriodHour\r\nset bPeriodMinute",
+      "vars": {
+        "AccessInfo1": {
+          "name": "MPS 1 Address",
+          "desc": "The FQDN/IPv4 & Port of the MPS targeted for this policy. (e.g. mps1.mydomain.com:1234, 1.2.3.4:2233)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "AccessInfo2": {
+          "name": "MPS 2 Address",
+          "desc": "Optional, leave empty if not applicable. Sames as above. In case you wish to apply this policy to 2 (two) mps instances",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "PeriodType": {
+          "name": "Interval Type",
+          "desc": "Defines the idle periods of the connection. Data can be in one of two formats: periodic interval (seconds) or daily interval (HH:MM).",
+          "type": 3,
+          "values": {
+            "0": "Periodic (Seconds)",
+            "1": "Daily (HH:MM)"
+          },
+          "value": "0"
+        },
+        "Period": {
+          "name": "Interval Value",
+          "desc": "Set the interval to an integer value (0 <= t < MAX_INT in seconds) or a time format (HH:MM s.t 0 <= HH < 24, 0 <= MM < 60) depending on the selection above",
+          "type": 1,
+          "maxlength": 11,
+          "value": ""
+        },
+        "tLifeTime": {
+          "name": "Tunnel Lifetime",
+          "desc": "Defines the tunnel�s lifetime in seconds. A value of 0 means that the tunnel should stay open until it is closed by the CloseRemoteAccessConnection method or when a different policy with a higher priority needs to be processed.",
+          "type": 2,
+          "maxlength": 5,
+          "value": "0"
+        }
+      }
+    },
+    "AMT-RemoteAccess-RemoveAccessPolicyRule": {
+      "name": "Remote - Remove Trigger",
+      "desc": "Removes the remote access trigger policies",
+      "code": "jsonparse hMapPolicies \"%7B%220%22:%20%22User%20Initiated%22,%09%221%22:%20%22Alert%22,%20%222%22:%20%22Periodic%22%7D\"\r\nsplit policiesArr \"%%%policies%%%\" \",\"\r\nlength policiesArrLen policiesArr\r\nset i 0\r\n:loop-%%%~%%%\r\nset curPolicy hMapPolicies.{policiesArr.{i}}\r\njsonparse ws_args \"%7B%22PolicyRuleName%22:%22{curPolicy}%22%7D\"\r\nwsdelete \"AMT_RemoteAccessPolicyRule\" ws_args\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" policiesArrLen\r\nprint \"INFO: Policies removed successfully\"\r\nset PullRemoteAccess 1\r\nset AMT_RemoteAccessPolicyRule\r\nset curPolicy\r\nset hMapPolicies\r\nset i\r\nset policiesArr\r\nset policiesArrLen\r\nset ws_args\r\nset wsman_result",
+      "vars": {
+        "policies": {
+          "name": "Policies",
+          "desc": "Set policies to be removed",
+          "type": 5,
+          "values": {
+            "0": "User Initiated",
+            "1": "Alert",
+            "2": "Periodic"
+          },
+          "value": [
+            ""
+          ]
+        }
+      }
+    },
+    "AMT-RemoteAccess-SetUserInterface": {
+      "name": "Remote - Set User Initiation",
+      "desc": "A local or user or application may initiation the Intel AMT Client Initiation Remote Access (CIRA) connection to the server. Use this script block to enabled or disable this feature.",
+      "code": "# Set method parameters\r\njsonparse wsargs \"%7B%22RequestedState%22:%22%%%ReqState%%%%22%7D\"\r\njsonparse EnumState \"%7B%2232768%22:%22Disabled%22,%2232769%22:%22BIOS Enabled%22,%2232770%22:%22OS enable%22,%2232771%22:%22BIOS & OS Enabed%22%7D\"\r\n# Execute call to change the state\r\nwsexec \"AMT_UserInitiatedConnectionService\" \"RequestStateChange\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"SUCCESS: Remote Access user interfaces set to: {EnumState.%%%ReqState%%%}\"\r\n\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset wsargs\r\nset wsman_result\r\nset wsman_result_str\r\nset EnumState\r\nset AMT_UserInitiatedConnectionService",
+      "vars": {
+        "ReqState": {
+          "name": "User Initiation",
+          "desc": "Select the configuration to be set for Remote Access user initiated interface",
+          "type": 3,
+          "values": {
+            "32768": "Disabled",
+            "32769": "BIOS only",
+            "32770": "OS only",
+            "32771": "BIOS & OS"
+          },
+          "value": "32771"
+        }
+      }
+    },
+    "AMT-Security-AddCertificate": {
+      "name": "Security - Add Certificate",
+      "desc": "Add a trusted or chain certificate to Intel AMT certificate store.",
+      "code": "jsonparse wsargs \"%7B%7D\"\r\nset wsargs.CertificateBlob \"%%%CertBin%%%\"\r\njump :certroot %%%CertType%%% \"=\" 1\r\nprint \"Adding certificate...\"\r\nwsexec \"AMT_PublicKeyManagementService\" \"AddCertificate\" wsargs\r\njump :certdone\r\n:certroot\r\nprint \"Adding root certificate...\"\r\nwsexec \"AMT_PublicKeyManagementService\" \"AddTrustedRootCertificate\" wsargs\r\n:certdone\r\nset wsargs\r\nset AMT_PublicKeyManagementService\r\nset PullCertificates 1\r\n",
+      "vars": {
+        "CertType": {
+          "name": "Certificate Type",
+          "desc": "Select if this is a certificate that should be used by Intel AMT as trusted root.",
+          "type": 3,
+          "values": {
+            "0": "Chain Certificate",
+            "1": "Trusted Root Certificate"
+          },
+          "value": "0"
+        },
+        "CertBin": {
+          "name": "Certificate",
+          "desc": "A .cer file, this is the certificate that will be uploaded to Intel AMT.",
+          "type": 6
+        }
+      }
+    },
+    "AMT-Security-IssueUntrustedCertificate": {
+      "name": "Security - Issue Untrusted Certificate",
+      "desc": "Create a run Intel AMT certificate with private key that is signed by an untrusted dummy root.",
+      "code": "jump :certificateSupport-%%%~%%% _certificates \"=\" 1\nprint \"ERROR: No certificate support, this script block can't run in thei environment\"\njump :end2-%%%~%%%\n:certificateSupport-%%%~%%%\n\nset CommonName \"%%%CommonName%%%\"\"\nlength x CommonName \njump :skipSetCommonName-%%%~%%% x \"!=\" 0\n\nsplit ws_general_query \"*AMT_GeneralSettings\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nset CommonName \"{wsman_answer.AMT_GeneralSettings.response.HostName}\"\nlength x CommonName \njump :skipSetDomainName-%%%~%%% x \"=\" 0\nset CommonName \"{wsman_answer.AMT_GeneralSettings.response.HostName}.{wsman_answer.AMT_GeneralSettings.response.DomainName}\"\n:skipSetDomainName-%%%~%%%\n:skipSetCommonName-%%%~%%%\n\njsonparse certattributes \"%7B %22CN%22:%22{CommonName}%22, %22O%22:%22%%%Organization%%%%22, %22ST%22:%22%%%StateProvince%%%%22, %22C%22:%22%%%Country%%%%22 %7D\"\njsonparse wsargs \"%7B %22KeyAlgorithm%22:%220%22, %22KeyLength%22:%222048%22 %7D\"\nwsexec \"AMT_PublicKeyManagementService\" \"GenerateKeyPair\" wsargs\njump :error-%%%~%%% wsman_result \"!=\" 200\nset selector AMT_PublicKeyManagementService.Body.KeyPair.ReferenceParameters.SelectorSet.Selector.Value\nsplit ws_query \"AMT_PublicPrivateKeyPair\" ,\nwsbatchenum \"wsman_answer\" ws_query\njump :error-%%%~%%% wsman_result \"!=\" 200\ngetitem i wsman_answer.AMT_PublicPrivateKeyPair.responses \"InstanceID\" selector\nset DERKey wsman_answer.AMT_PublicPrivateKeyPair.responses.{i}.DERKey\nsignwithdummyca DERKey certattributes\njsonparse wsargs \"%7B %22CertificateBlob%22:%22{signed_cert}%22 %7D\"\nwsexec \"AMT_PublicKeyManagementService\" \"AddCertificate\" wsargs\njump :error-%%%~%%% wsman_result \"!=\" 200\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset PullCertificates 1\n:end2-%%%~%%%\n\nset i\nset x\nset wsman_answer\nset selector\nset AMT_PublicKeyManagementService\nset ws_query\nset AMT_PublicKeyManagementService\nset DERKey\nset wsargs\n",
+      "vars": {
+        "CommonName": {
+          "name": "Common Name",
+          "desc": "Common name of the certificate, leave blank to use the Intel AMT host and domain name",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Organization": {
+          "name": "Organization",
+          "desc": "Certificate organization name",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "StateProvince": {
+          "name": "State/Province",
+          "desc": "Certificate state or province name",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Country": {
+          "name": "Country",
+          "desc": "Certificate country name",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        }
+      }
+    }
+  },
+  "scriptBlocks": [
+    {
+      "name": "Remote - Remove Trigger",
+      "desc": "Removes the remote access trigger policies",
+      "code": "jsonparse hMapPolicies \"%7B%220%22:%20%22User%20Initiated%22,%09%221%22:%20%22Alert%22,%20%222%22:%20%22Periodic%22%7D\"\r\nsplit policiesArr \"%%%policies%%%\" \",\"\r\nlength policiesArrLen policiesArr\r\nset i 0\r\n:loop-%%%~%%%\r\nset curPolicy hMapPolicies.{policiesArr.{i}}\r\njsonparse ws_args \"%7B%22PolicyRuleName%22:%22{curPolicy}%22%7D\"\r\nwsdelete \"AMT_RemoteAccessPolicyRule\" ws_args\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" policiesArrLen\r\nprint \"INFO: Policies removed successfully\"\r\nset PullRemoteAccess 1\r\nset AMT_RemoteAccessPolicyRule\r\nset curPolicy\r\nset hMapPolicies\r\nset i\r\nset policiesArr\r\nset policiesArrLen\r\nset ws_args\r\nset wsman_result",
+      "vars": {
+        "policies": {
+          "name": "Policies",
+          "desc": "Set policies to be removed",
+          "type": 5,
+          "values": {
+            "0": "User Initiated",
+            "1": "Alert",
+            "2": "Periodic"
+          },
+          "value": [
+            "0",
+            "1",
+            "2"
+          ]
+        }
+      },
+      "id": 0.25368680036626756,
+      "xname": "AMT-RemoteAccess-RemoveAccessPolicyRule"
+    },
+    {
+      "name": "Remote - Remove All MPS",
+      "desc": "Remove all MPS",
+      "vars": {},
+      "code": "split ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\n:loop-%%%~%%%\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\nadd i i 1\njump :loop-%%%~%%% i \"<\" arr_len\n:end-%%%~%%%\nset AMT_ManagementPresenceRemoteSAP\nset arr\nset i\nset instanceName\nset selector\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset arr_len\nset PullRemoteAccess 1\n",
+      "id": 0.9684545958880335,
+      "xname": "AMT-RemoteAccess-RemoveAll-MPS"
+    },
+    {
+      "name": "Security - Add Certificate",
+      "desc": "Add a trusted or chain certificate to Intel AMT certificate store.",
+      "code": "jsonparse wsargs \"%7B%7D\"\r\nset wsargs.CertificateBlob \"%%%CertBin%%%\"\r\njump :certroot %%%CertType%%% \"=\" 1\r\nprint \"Adding certificate...\"\r\nwsexec \"AMT_PublicKeyManagementService\" \"AddCertificate\" wsargs\r\njump :certdone\r\n:certroot\r\nprint \"Adding root certificate...\"\r\nwsexec \"AMT_PublicKeyManagementService\" \"AddTrustedRootCertificate\" wsargs\r\n:certdone\r\nset wsargs\r\nset AMT_PublicKeyManagementService\r\nset PullCertificates 1\r\n",
+      "vars": {
+        "CertType": {
+          "name": "Certificate Type",
+          "desc": "Select if this is a certificate that should be used by Intel AMT as trusted root.",
+          "type": 3,
+          "values": {
+            "0": "Chain Certificate",
+            "1": "Trusted Root Certificate"
+          },
+          "value": "1"
+        },
+        "CertBin": {
+          "name": "Certificate",
+          "desc": "A .cer file, this is the certificate that will be uploaded to Intel AMT.",
+          "type": 6,
+          "value": ""
+        }
+      },
+      "id": 0.1299614377785474,
+      "xname": "AMT-Security-AddCertificate"
+    },
+    {
+      "name": "Remote - Add MPS FQDN/User",
+      "desc": "Add a new CIRA server (MPS) using the server's hostname authentication using username/password",
+      "code": "# Set method parameters\r\njsonparse wsargs \"%7B%22AccessInfo%22:%22%%%FQDN%%%%22,%22InfoFormat%22:201,%22Port%22:%%%Port%%%,%22AuthMethod%22:2,%22Username%22:%22%%%username%%%%22,%22Password%22:%22%%%password%%%%22%7D\"\r\n# Execute call to AddMpServer\r\nwsexec \"AMT_RemoteAccessService\" \"AddMpServer\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Management Prescence Server (MPS) successfully added to the Intel(R) AMT Subsystem\"\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset AMT_RemoteAccessService\r\nset certHandle\r\nset curSubject\r\nset i\r\nset pos\r\nset ws_general_query\r\nset wsargs\r\nset wsman_answer\r\nset wsman_result\r\nset wsman_result_str\r\nset certInstanceId\r\nset wsman_ans_length",
+      "vars": {
+        "FQDN": {
+          "name": "MPS Hostname",
+          "desc": "The Fully Qualified Domain Name of the MPS to add",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "Port": {
+          "name": "Port Number",
+          "desc": "The MPS server port number",
+          "type": 2,
+          "maxlength": 5,
+          "value": ""
+        },
+        "username": {
+          "name": "Username",
+          "desc": "A Username to be used for the connection with the MPS",
+          "type": 1,
+          "maxlength": 16,
+          "value": ""
+        },
+        "password": {
+          "name": "Password",
+          "desc": "The Password matching the username above",
+          "type": 4,
+          "maxlength": 16,
+          "value": ""
+        }
+      },
+      "id": 0.4291338548064232,
+      "xname": "AMT-RemoteAccess-AddMpsServerFqdnUpa"
+    },
+    {
+      "name": "Remote - Add Trigger (Periodic)",
+      "desc": "Set a remote access trigger policy, used to establish a secure tunnel between a management console and the Intel AMT platform.",
+      "code": "# *** Verify valid input ***\r\nsplit period_arr \"%%%Period%%%\" \":\"\r\nlength period_arr_len period_arr\r\njump :INVALID_ARG_AccessInfo1 \"%%%AccessInfo1%%%\" \"=\" \"\"\r\njump :DailyPeriod \"%%%PeriodType%%%\" \"!=\" \"0\"\r\njump :INVALID_PeriodType \"%%%PeriodType%%%\" \"!=\" \"0\"\r\njump :INVALID_ARG_Period period_arr.0 \"<=\" \"0\"\r\njump :INVALID_ARG_Period period_arr.0 \">\" \"4294967295\"\r\nIntToStr extendedData \"0\"\r\nIntToStr bPeriod period_arr.0\r\nadd extendedData extendedData bPeriod\r\njump :SET_PERIOD\r\n:DailyPeriod\r\njump :INVALID_PeriodType period_arr_len \"!=\" \"2\"\r\njump :INVALID_ARG_PeriodDaily period_arr.0 \"<=\" \"0\"\r\njump :INVALID_ARG_PeriodDaily period_arr.0 \">\" \"23\"\r\njump :INVALID_ARG_PeriodDaily period_arr.1 \">\" \"59\"\r\njump :INVALID_ARG_PeriodDaily period_arr.1 \"<=\" \"0\"\r\nIntToStr extendedData \"1\"\r\nIntToStr bPeriodHour period_arr.0\r\nIntToStr bPeriodMinute period_arr.1\r\nadd extendedData extendedData bPeriodHour\r\nadd extendedData extendedData bPeriodMinute\r\njump :SET_PERIOD\r\n:INVALID_PeriodType\r\nprint \"ERROR: The period type and value must correspond, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_PeriodDaily\r\nprint \"ERROR: Field %22Period%22 must be a value HH:MM 0<=HH<24 && 0<=MM<60, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_AccessInfo1\r\nprint \"ERROR: Field %22AccessInfo1%22 must not be empty, aborting operation...\"\r\njump :end-%%%~%%%\r\n:INVALID_ARG_Period\r\nprint \"ERROR: Field %22Period%22 must be a value 0<=t<MAX_INT, aborting operation...\"\r\njump :end-%%%~%%%\r\n:SET_PERIOD\r\n# *** Prepare arguments for AMT_RemoteAccessService.AddRemoteAccessPolicyRule ***\r\njsonparse ws_args \"%7B%22Trigger%22:%222%22,%22TunnelLifeTime%22:%22%%%tLifeTime%%%%22%7D\"\r\nbtoa extendedData extendedData\r\nset ws_args.ExtendedData extendedData\r\n# *** Set a EPR selector matching user input ***\r\nsplit ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset i 0\r\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\r\nLength arr_len arr\r\nset mpsEpr1 \"*\"\r\nset mpsEpr2 \"*\"\r\n:loop-%%%~%%%\r\nset curAccessInfo arr.{i}.AccessInfo\r\nadd curAccessInfo curAccessInfo \":\"\r\nadd curAccessInfo curAccessInfo arr.{i}.Port\r\njump :MPS1_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo1%%%\"\r\nset mpsEpr1 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (primary) mps: {mpsEpr1}\"\r\njump :MPS2_NOTSET \"%%%AccessInfo2%%%\" \"=\" \"\"\r\n:MPS1_NO_MATCH\r\njump :MPS2_NO_MATCH curAccessInfo \"!=\" \"%%%AccessInfo2%%%\"\r\nset mpsEpr2 wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\r\nprint \"INFO: Found matching (secondary) mps: {mpsEpr2}\"\r\n:MPS2_NO_MATCH\r\nadd i i 1\r\njump :loop-%%%~%%% i \"<\" arr_len\r\n:MPS2_NOTSET\r\njump :MPS1_FOUND mpsEpr1 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo1%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS1_FOUND\r\njump :MPS2_FOUND \"%%%AccessInfo2%%%\" \"=\" \"\"\r\njump :MPS2_FOUND mpsEpr2 \"!=\" \"*\"\r\nprint \"ERROR: MPS server: %22%%%AccessInfo2%%%%22 could not be found, aborting operation...\"\r\njump :end-%%%~%%%\r\n:MPS2_FOUND\r\nprint \"INFO: Setting policy...\"\r\njsonparse ws_args.MpServer \"%7B%7D\"\r\nset MpServer \"%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr1}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\njump :SKIP_ADD_MPS2 \"%%%AccessInfo2%%%\" \"=\" \"\"\r\nadd MpServer MpServer \"|%3CAddress%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous%3C/Address%3E%3CReferenceParameters%20xmlns=%22http://schemas.xmlsoap.org/ws/2004/08/addressing%22%3E%3CResourceURI%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3Ehttp://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP%3C/ResourceURI%3E%3CSelectorSet%20xmlns=%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd%22%3E%3CSelector%20Name=%22Name%22%3E{mpsEpr2}%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\n:SKIP_ADD_MPS2\r\nsplit ws_args.MpServer MpServer \"|\"\r\n# *** Call AMT_RemoteAccessService.AddRemoteAccessPolicyRule with policy details. ***\r\nwsexec \"AMT_RemoteAccessService\" \"AddRemoteAccessPolicyRule\" ws_args selector\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Policy addedd successfully\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"WSMAN call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset PullRemoteAccess 1\r\nset mpsEpr1\r\nset mpsEpr2\r\nset i\r\nset curAccessInfo\r\nset arr_len\r\nset MpServer\r\nset arr\r\nset AMT_RemoteAccessService\r\nset wsman_result\r\nset wsman_result_str\r\nset ws_args\r\nset ws_general_query\r\nset wsman_answer\r\nset bPeriod\r\nset extendedData\r\nset period_arr\r\nset period_arr_len\r\nset bPeriodHour\r\nset bPeriodMinute",
+      "vars": {
+        "AccessInfo1": {
+          "name": "MPS 1 Address",
+          "desc": "The FQDN/IPv4 & Port of the MPS targeted for this policy. (e.g. mps1.mydomain.com:1234, 1.2.3.4:2233)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "AccessInfo2": {
+          "name": "MPS 2 Address",
+          "desc": "Optional, leave empty if not applicable. Sames as above. In case you wish to apply this policy to 2 (two) mps instances",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        },
+        "PeriodType": {
+          "name": "Interval Type",
+          "desc": "Defines the idle periods of the connection. Data can be in one of two formats: periodic interval (seconds) or daily interval (HH:MM).",
+          "type": 3,
+          "values": {
+            "0": "Periodic (Seconds)",
+            "1": "Daily (HH:MM)"
+          },
+          "value": "0"
+        },
+        "Period": {
+          "name": "Interval Value",
+          "desc": "Set the interval to an integer value (0 <= t < MAX_INT in seconds) or a time format (HH:MM s.t 0 <= HH < 24, 0 <= MM < 60) depending on the selection above",
+          "type": 1,
+          "maxlength": 11,
+          "value": "10"
+        },
+        "tLifeTime": {
+          "name": "Tunnel Lifetime",
+          "desc": "Defines the tunnelï¿½s lifetime in seconds. A value of 0 means that the tunnel should stay open until it is closed by the CloseRemoteAccessConnection method or when a different policy with a higher priority needs to be processed.",
+          "type": 2,
+          "maxlength": 5,
+          "value": "0"
+        }
+      },
+      "id": 0.12209012731909752,
+      "xname": "AMT-RemoteAccess-AddRemoteAccessPolicyRule2"
+    },
+    {
+      "name": "Remote - Set User Initiation",
+      "desc": "A local or user or application may initiation the Intel AMT Client Initiation Remote Access (CIRA) connection to the server. Use this script block to enabled or disable this feature.",
+      "code": "# Set method parameters\r\njsonparse wsargs \"%7B%22RequestedState%22:%22%%%ReqState%%%%22%7D\"\r\njsonparse EnumState \"%7B%2232768%22:%22Disabled%22,%2232769%22:%22BIOS Enabled%22,%2232770%22:%22OS enable%22,%2232771%22:%22BIOS & OS Enabed%22%7D\"\r\n# Execute call to change the state\r\nwsexec \"AMT_UserInitiatedConnectionService\" \"RequestStateChange\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"SUCCESS: Remote Access user interfaces set to: {EnumState.%%%ReqState%%%}\"\r\n\r\nset PullRemoteAccess 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\nset wsargs\r\nset wsman_result\r\nset wsman_result_str\r\nset EnumState\r\nset AMT_UserInitiatedConnectionService",
+      "vars": {
+        "ReqState": {
+          "name": "User Initiation",
+          "desc": "Select the configuration to be set for Remote Access user initiated interface",
+          "type": 3,
+          "values": {
+            "32768": "Disabled",
+            "32769": "BIOS only",
+            "32770": "OS only",
+            "32771": "BIOS & OS"
+          },
+          "value": "32771"
+        }
+      },
+      "id": 0.3209191190544516,
+      "xname": "AMT-RemoteAccess-SetUserInterface"
+    },
+    {
+      "name": "Network - Set Environment Detection",
+      "desc": "Configures the DNS information that will be used by Intel AMT to dynamically determine the network it is operating in",
+      "code": "# *** Validate user input ***\r\nprint \"INFO: Parsing block parameters\"\r\njump :EMPTY_DETECTIONSTR-%%%~%%% \"%%%DetectionStrings%%%\" \"=\" \"\"\r\nsplit arrDetectionStrings \"%%%DetectionStrings%%%\" \",\"\r\nsplit arrDetectionIPv6LocalPrefixes \"%%%DetectionIPv6LocalPrefixes%%%\" \",\"\r\nprint \"INFO: Setting Environment Detection\"\r\nsplit ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\r\njump :DetectionStringsDefined-%%%~%%% envDetectionInstance.DetectionStrings \"!=\"\r\nset envDetectionInstance.DetectionStrings arrDetectionStrings\r\njump :SET_IPV6_PREFIX-%%%~%%%\r\n:DetectionStringsDefined-%%%~%%%\r\nadd arrDetectionStrings \",\" arrDetectionStrings\r\nadd envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings arrDetectionStrings\r\nmaketoarray envDetectionInstance.DetectionStrings envDetectionInstance.DetectionStrings\r\nlength arrDetectionStringsLen envDetectionInstance.DetectionStrings\r\njump :INVALID_LEN_DetectionStrings-%%%~%%% arrDetectionStringsLen \">\" \"5\"\r\n:SET_IPV6_PREFIX-%%%~%%%\r\njump :IPv6StringsDefined-%%%~%%% envDetectionInstance.DetectionIPv6LocalPrefixes \"!=\"\r\njump :EMPTY_IPV6PRFX \"%%%DetectionIPv6LocalPrefixes%%%\" \"=\" \"\" \r\nset envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\r\njump :CALL_WSPUT-%%%~%%%\r\n:IPv6StringsDefined-%%%~%%%\r\nadd arrDetectionIPv6LocalPrefixes \",\" arrDetectionIPv6LocalPrefixes\r\nadd envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes arrDetectionIPv6LocalPrefixes\r\nmaketoarray envDetectionInstance.DetectionIPv6LocalPrefixes envDetectionInstance.DetectionIPv6LocalPrefixes\r\n:EMPTY_IPV6PRFX\r\nlength arrDetectionIPv6LocalPrefixesLen envDetectionInstance.DetectionIPv6LocalPrefixes\r\njump :INVALID_LEN_DetectionIPv6LocalPrefixes-%%%~%%% arrDetectionIPv6LocalPrefixesLen \">\" \"5\"\r\n:CALL_WSPUT-%%%~%%%\r\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"INFO: Environment Detection set successfully\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\r\njump :end-%%%~%%%\r\n:INVALID_LEN_DetectionStrings-%%%~%%%\r\nprint \"ERROR: detection strings count must be at most 5\"\r\njump :end-%%%~%%%\r\n:INVALID_LEN_DetectionIPv6LocalPrefixes-%%%~%%%\r\nprint \"ERROR: IPv6 prefixes count must be at most 5\"\r\njump :end-%%%~%%%\r\n:EMPTY_DETECTIONSTR-%%%~%%%\r\nprint \"ERROR: %22Detection Strings%22 field cannot be empty, aborting operation...\"\r\n:end-%%%~%%%\r\n set PullRemoteAccess \"1\"\r\nset AMT_EnvironmentDetectionSettingData\r\nset arrDetectionIPv6LocalPrefixes\r\nset arrDetectionStrings\r\nset envDetectionInstance\r\nset ws_general_query\r\nset wsman_answer \r\nset wsman_result",
+      "vars": {
+        "DetectionStrings": {
+          "name": "Detection Strings",
+          "desc": "A comma separated list of up to 4 strings to use in the environment detection algorithm (e.g. intel.com,contoso.com)",
+          "type": 1,
+          "maxlength": 255,
+          "value": "aabbccddeeffgg"
+        },
+        "DetectionIPv6LocalPrefixes": {
+          "name": "IPv6 Local Prefixes",
+          "desc": "A comma separated list of IPv6 local prefixes (strings) to use  independently of or in conjunction with Detection Strings. (e.g. 1234::/64,4321::/46)",
+          "type": 1,
+          "maxlength": 255,
+          "value": ""
+        }
+      },
+      "id": 0.7945251814089715,
+      "xname": "AMT-Network-AddEnvDetection"
+    }
+  ]
+}

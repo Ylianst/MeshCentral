@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{00c71e60-81cc-4b15-b486-10d27935d7eb}</ProjectGuid>
+    <ProjectHome />
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartupFile>meshcentral.js</StartupFile>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Name>MeshCentralServer</Name>
+    <StartWebBrowser>False</StartWebBrowser>
+    <ScriptArguments>
+    </ScriptArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Compile Include="agents\meshcore.js" />
+    <Compile Include="agents\tinycore.js" />
+    <Compile Include="amtevents.js" />
+    <Compile Include="amtscanner.js" />
+    <Compile Include="amtscript.js" />
+    <Compile Include="meshscanner.js" />
+    <Compile Include="certoperations.js" />
+    <Compile Include="common.js" />
+    <Compile Include="db.js" />
+    <Compile Include="interceptor.js" />
+    <Compile Include="meshcentral.js" />
+    <Compile Include="meshagent.js" />
+    <Compile Include="meshrelay.js" />
+    <Compile Include="mpsserver.js" />
+    <Compile Include="multiserver.js" />
+    <Compile Include="pass.js" />
+    <Compile Include="public\scripts\amt-0.2.0.js" />
+    <Compile Include="public\scripts\agent-desktop-0.0.2.js" />
+    <Compile Include="public\scripts\amt-desktop-0.0.2.js" />
+    <Compile Include="public\scripts\amt-ider-ws-0.0.1.js" />
+    <Compile Include="public\scripts\agent-redir-ws-0.1.0.js" />
+    <Compile Include="public\scripts\amt-redir-ws-0.1.0.js" />
+    <Compile Include="public\scripts\amt-script-0.2.0.js" />
+    <Compile Include="public\scripts\amt-setupbin-0.1.0.js" />
+    <Compile Include="public\scripts\amt-terminal-0.0.2.js" />
+    <Compile Include="public\scripts\amt-wsman-0.2.0.js" />
+    <Compile Include="public\scripts\amt-wsman-ws-0.2.0.js" />
+    <Compile Include="public\scripts\common-0.0.1.js" />
+    <Compile Include="public\scripts\filesaver.1.1.20151003.js" />
+    <Compile Include="public\scripts\inflate.js" />
+    <Compile Include="public\scripts\meshcentral.js" />
+    <Compile Include="redirserver.js" />
+    <Compile Include="webserver.js" />
+    <Content Include="package.json" />
+    <Content Include="public\images-isdu\ComputerIcon.png" />
+    <Content Include="public\images-isdu\ComputerIcon2.png" />
+    <Content Include="public\images-isdu\IntelLogo.png" />
+    <Content Include="public\images-isdu\IntelLogoWhite42.png" />
+    <Content Include="public\images-isdu\ISDUTitle.png" />
+    <Content Include="public\images-isdu\TabConfig.png" />
+    <Content Include="public\images-isdu\TabConnection.png" />
+    <Content Include="public\images-isdu\TabDesktop.png" />
+    <Content Include="public\images-isdu\TabDiscovery.png" />
+    <Content Include="public\images-isdu\TabEvents.png" />
+    <Content Include="public\images-isdu\TabNetwork.png" />
+    <Content Include="public\images-isdu\TabPolicies.png" />
+    <Content Include="public\images-isdu\TabRemote.png" />
+    <Content Include="public\images-isdu\caution.gif" />
+    <Content Include="public\images-isdu\info.gif" />
+    <Content Include="public\images-isdu\warning.gif" />
+    <Content Include="public\images-isdu\isdu.ico" />
+    <Content Include="public\styles\style.css" />
+    <Content Include="readme.txt" />
+    <Content Include="views\default.handlebars" />
+    <Content Include="views\download.handlebars" />
+    <Content Include="views\login.handlebars" />
+    <Content Include="views\terms.handlebars" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="agents\" />
+    <Folder Include="public" />
+    <Folder Include="public\images-isdu" />
+    <Folder Include="public\scripts\" />
+    <Folder Include="public\styles\" />
+    <Folder Include="typings\" />
+    <Folder Include="typings\globals\" />
+    <Folder Include="typings\globals\connect-redis\" />
+    <Folder Include="typings\globals\express-handlebars\" />
+    <Folder Include="typings\globals\express-session\" />
+    <Folder Include="typings\globals\node-forge\" />
+    <Folder Include="typings\globals\node\" />
+    <Folder Include="views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\express-handlebars\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\express-session\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
+    <TypeScriptCompile Include="typings\index.d.ts" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

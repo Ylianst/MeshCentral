@@ -1,0 +1,802 @@
+/*
+Copyright 2017 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+function createMeshCore(agent) {
+    var obj = {};
+
+    // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
+    obj.meshCoreInfo = "MeshCore v3k";
+    obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
+    var meshServerConnectionState = 0;
+    var tunnels = {};
+    var lastSelfInfo = null;
+    var lastNetworkInfo = null;
+    var selfInfoUpdateTimer = null;
+
+    var http = require('http');
+    var fs = require('fs');
+
+    // If we are running in Duktape, agent will be null
+    if (agent == null) {
+        // Running in native agent, Import libraries
+        var db = require('SimpleDataStore').Shared();
+        var sha = require('SHA256Stream');
+        var mesh = require('MeshAgent');
+        var processManager = require('ILibProcessPipe');
+        if (mesh.hasKVM == 1) { obj.meshCoreCapabilities |= 1; }
+    } else {
+        // Running in nodejs
+        obj.meshCoreInfo += '-NodeJS';
+        obj.meshCoreCapabilities = 8;
+        var mesh = agent.getMeshApi();
+    }
+
+    // Polyfill String.endsWith
+    if (!String.prototype.endsWith) {
+        String.prototype.endsWith = function (searchString, position) {
+            var subjectString = this.toString();
+            if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) { position = subjectString.length; }
+            position -= searchString.length;
+            var lastIndex = subjectString.lastIndexOf(searchString, position);
+            return lastIndex !== -1 && lastIndex === position;
+        };
+    }
+
+    // Polyfill path.join
+    obj.path = {
+        join: function () {
+            var x = [];
+            for (var i in arguments) {
+                var w = arguments[i];
+                if (w != null) {
+                    while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
+                    while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
+                    x.push(w);
+                }
+            }
+            if (x.length == 0) return '/';
+            return x.join('/');
+        }
+    };
+
+    // Replace a string with a number if the string is an exact number
+    function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) == x)) { x = parseInt(x); } return x; }
+
+    // Convert decimal to hex
+    function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }
+
+    // Convert a raw string to a hex string
+    function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }
+
+    // Convert a buffer into a string
+    function buf2rstr(buf) { var r = ''; for (var i = 0; i < buf.length; i++) { r += String.fromCharCode(buf[i]); } return r; }
+
+    // Convert a hex string to a raw string // TODO: Do this using Buffer(), will be MUCH faster
+    function hex2rstr(d) {
+        if (typeof d != "string" || d.length == 0) return '';
+        var r = '', m = ('' + d).match(/../g), t;
+        while (t = m.shift()) r += String.fromCharCode('0x' + t);
+        return r
+    }
+
+    // Convert an object to string with all functions
+    function objToString(x, p, ret) {
+        if (ret == undefined) ret = '';
+        if (p == undefined) p = 0;
+        if (x == null) { return '[null]'; }
+        if (p > 8) { return '[...]'; }
+        if (x == undefined) { return '[undefined]'; }
+        if (typeof x == 'string') { if (p == 0) return x; return '"' + x + '"'; }
+        if (typeof x == 'buffer') { return '[buffer]'; }
+        if (typeof x != 'object') { return x; }
+        var r = '{' + (ret ? '\r\n' : ' ');
+        for (var i in x) { r += (addPad(p + 2, ret) + i + ': ' + objToString(x[i], p + 2, ret) + (ret ? '\r\n' : ' ')); }
+        return r + addPad(p, ret) + '}';
+    }
+
+    // Return p number of spaces 
+    function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ret; } return r; }
+
+    // Split a string taking into account the quoats. Used for command line parsing
+    function splitArgs(str) {
+        var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi;
+        do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null);
+        return myArray;
+    }
+
+    // Parse arguments string array into an object
+    function parseArgs(argv) {
+        var results = { '_': [] }, current = null;
+        for (var i = 1, len = argv.length; i < len; i++) {
+            var x = argv[i];
+            if (x.length > 2 && x[0] == '-' && x[1] == '-') {
+                if (current != null) { results[current] = true; }
+                current = x.substring(2);
+            } else {
+                if (current != null) { results[current] = toNumberIfNumber(x); current = null; } else { results['_'].push(toNumberIfNumber(x)); }
+            }
+        }
+        if (current != null) { results[current] = true; }
+        return results;
+    }
+
+    // Parge a URL string into an options object
+    function parseUrl(url) {
+        var x = url.split('/');
+        if (x.length < 4) return null;
+        var y = x[2].split(':');
+        var options = {};
+        var options = { protocol: x[0], hostname: y[0], path: '/' + x.splice(3).join('/') };
+        if (y.length == 1) { options.port = ((x[0] == 'https:') || (x[0] == 'wss:')) ? 443 : 80; } else { options.port = parseInt(y[1]); }
+        if (isNaN(options.port) == true) return null;
+        return options;
+    }
+
+    // Handle a mesh agent command
+    function handleServerCommand(data) {
+        if (typeof data == 'object') {
+            // If this is a console command, parse it and call the console handler
+            if (data.action == 'msg') {
+                if (data.type == 'console') { // Process a console command
+                    if (data.value && data.sessionid) {
+                        var args = splitArgs(data.value);
+                        processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
+                    }
+                }
+                else if (data.type == 'tunnel') { // Process a new tunnel connection request
+                    if (data.value && data.sessionid) {
+                        // Create a new tunnel object
+                        var tunnel = http.request(parseUrl(data.value));
+                        tunnel.upgrade = onTunnelUpgrade;
+                        tunnel.sessionid = data.sessionid;
+                        tunnel.rights = data.rights;
+                        tunnel.state = 0;
+                        tunnel.url = data.value;
+                        tunnel.protocol = 0;
+
+                        // Put the tunnel in the tunnels list
+                        var index = 1;
+                        while (tunnels[index]) { index++; }
+                        tunnel.index = index;
+                        tunnels[index] = tunnel;
+
+                        sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                    }
+                }
+            }
+            else if (data.action == 'wakeonlan') {
+                // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
+                sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));
+                // TODO!!!!
+            }
+        }
+    }
+
+    // Called when a file changed in the file system
+    function onFileWatcher(a, b) {
+        //console.log('onFileWatcher', a, b, this.path);
+        var response = getDirectoryInfo(this.path);
+        if ((response != undefined) && (response != null)) { this.tunnel.s.write(JSON.stringify(response)); }
+    }
+
+    // Get a formated response for a given directory path
+    function getDirectoryInfo(reqpath) {
+        var response = { path: reqpath, dir: [] };
+        if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
+            // List all the drives in the root, or the root itself
+            var results = null;
+            try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+            //console.log('a', objToString(results, 0, '.'));
+            if (results != null) {
+                for (var i = 0; i < results.length; ++i) {
+                    var drive = { n: results[i].name, t: 1 };
+                    if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
+                    response.dir.push(drive);
+                }
+            }
+        } else {
+            // List all the files and folders in this path
+            if (reqpath == '') { reqpath = '/'; }
+            var xpath = obj.path.join(reqpath, '*');
+            var results = null;
+            try { results = fs.readdirSync(xpath); } catch (e) { }
+            if (results != null) {
+                for (var i = 0; i < results.length; ++i) {
+                    if ((results[i] != '.') && (results[i] != '..')) {
+                        var stat = null, p = obj.path.join(reqpath, results[i]);
+                        try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
+                        if ((stat != null) && (stat != undefined)) {
+                            if (stat.isDirectory() == true) {
+                                response.dir.push({ n: results[i], t: 2, d: stat.mtime });
+                            } else {
+                                response.dir.push({ n: results[i], t: 3, s: stat.size, d: stat.mtime });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return response;
+    }
+
+    // Tunnel callback operations
+    function onTunnelUpgrade(response, s, head) { this.s = s; s.httprequest = this; s.end = onTunnelClosed; s.data = onTunnelData; }
+    function onTunnelClosed() {
+        sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
+        if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }
+        delete tunnels[this.httprequest.index];
+
+        // Close the watcher if required
+        if (this.httprequest.watcher != undefined) {
+            //console.log('Closing watcher: ' + this.httprequest.watcher.path);
+            //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
+            delete this.httprequest.watcher; 
+        }
+
+        // If there is a upload or download active on this connection, close the file
+        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
+        if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; }
+    }
+    function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
+    function onTunnelData(data) {
+        // If this is upload data, save it to file
+        if (this.httprequest.uploadFile) {
+            try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(JSON.stringify({ action: 'uploaderror' })); return; } // Write to the file, if there is a problem, error out.
+            this.write(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid })); // Ask for more data
+            return;
+        }
+        // If this is a download, send more of the file
+        if (this.httprequest.downloadFile) {
+            var buf = new Buffer(4096);
+            var len = fs.readSync(this.httprequest.downloadFile, buf, 0, 4096, null);
+            this.httprequest.downloadFilePtr += len;
+            if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
+            return;
+        }
+        // (****) Remote Desktop without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
+        if (this.httprequest.desktop) { this.httprequest.desktop.kvm.write(data); return; }
+        // (****) Remote Terminal without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
+        if (this.httprequest.terminal) { this.httprequest.terminal.write(data); return; }
+
+        if (this.httprequest.state == 0) {
+            // Check if this is a relay connection
+            if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
+        } else {
+            // Handle tunnel data
+            if (this.httprequest.protocol == 0) { // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
+                // Take a look at the protocolab
+                this.httprequest.protocol = parseInt(data);
+                if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
+                if (this.httprequest.protocol == 1) {
+                    // (****) Remote Terminal without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
+                    if (process.platform == "win32") {
+                        this.httprequest.terminal = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                    } else {
+                        this.httprequest.terminal = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                    }
+                    this.httprequest.terminal.tunnel = this;
+                    this.httprequest.terminal.on('data', function (chunk) { this.tunnel.write(chunk); });
+                    this.httprequest.terminal.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
+
+                    /*
+                    // Remote terminal using native pipes
+                    if (process.platform == "win32") {
+                        this.httprequest.process = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                    } else {
+                        this.httprequest.process = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                    }
+                    this.httprequest.process.tunnel = this;
+                    this.httprequest.process.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
+                    this.httprequest.process.pipe(this);
+                    this.pipe(this.httprequest.process);
+                    */
+                }
+                if (this.httprequest.protocol == 2) {
+                    // (****) Remote Desktop without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
+                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                    this.httprequest.desktop.kvm.tunnel = this;
+                    this.httprequest.desktop.kvm.on('data', function (data) { this.tunnel.write(data); });
+                    this.desktop = this.httprequest.desktop;
+                    this.end = function () { if (--this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); } };
+                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+
+                    /*
+                    // Remote desktop using native pipes
+                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                    this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
+                    this.desktop = this.httprequest.desktop;
+                    this.end = function () {
+                        --this.desktop.kvm.connectionCount;
+                        this.unpipe(this.httprequest.desktop.kvm);
+                        this.httprequest.desktop.kvm.unpipe(this);
+                        if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
+                    };
+                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+                    this.pipe(this.httprequest.desktop.kvm);
+                    this.httprequest.desktop.kvm.pipe(this);
+                    */
+                }
+                else if (this.httprequest.protocol == 5) {
+                    // Setup files
+                    // NOP
+                }
+            } else if (this.httprequest.protocol == 1) {
+                // Send data into terminal stdin
+                //this.write(data); // Echo back the keys (Does not seem to be a good idea)
+                this.httprequest.process.write(data);
+            } else if (this.httprequest.protocol == 2) {
+                // Send data into remote desktop
+                // TODO ADD REMOTE DESKTOP (This is test code)
+                if (this.httprequest.desktop.state == 0) {
+                    this.write(new Buffer(String.fromCharCode(0x11, 0xFE, 0x00, 0x00, 0x4D, 0x45, 0x53, 0x48, 0x00, 0x00, 0x00, 0x00, 0x02)));
+                    this.httprequest.desktop.state = 1;
+                } else {
+                    this.httprequest.desktop.write(data);
+                }
+            } else if (this.httprequest.protocol == 5) {
+                // Process files commands
+                var cmd = null;
+                try { cmd = JSON.parse(data); } catch (e) { };
+                if ((cmd == null) || (cmd.action == undefined)) { return; }
+                //console.log(objToString(cmd, 0, '.'));
+                switch (cmd.action) {
+                    case 'ls': {
+                        // Close the watcher if required
+                        var samepath = ((this.httprequest.watcher != undefined) && (cmd.path == this.httprequest.watcher.path));
+                        if ((this.httprequest.watcher != undefined) && (samepath == false)) {
+                            //console.log('Closing watcher: ' + this.httprequest.watcher.path);
+                            //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
+                            delete this.httprequest.watcher;
+                        }
+
+                        // Send the folder content to the browser
+                        var response = getDirectoryInfo(cmd.path);
+                        if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
+                        this.write(JSON.stringify(response));
+
+                        // Start the directory watcher
+                        if ((cmd.path != '') && (samepath == false)) {
+                            var watcher = fs.watch(cmd.path, onFileWatcher);
+                            watcher.tunnel = this.httprequest;
+                            watcher.path = cmd.path;
+                            this.httprequest.watcher = watcher;
+                            //console.log('Starting watcher: ' + this.httprequest.watcher.path);
+                        }
+                        break;
+                    }
+                    case 'mkdir': {
+                        // Create a new empty folder
+                        fs.mkdirSync(cmd.path);
+                        break;
+                    }
+                    case 'rm': {
+                        // Remove many files or folders
+                        for (var i in cmd.delfiles) {
+                            var fullpath = obj.path.join(cmd.path, cmd.delfiles[i]);
+                            try { fs.unlinkSync(fullpath); } catch (e) { console.log(e); }
+                        }
+                        break;
+                    }
+                    case 'rename': {
+                        // Rename a file or folder
+                        var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
+                        var newfullpath = obj.path.join(cmd.path, cmd.newname);
+                        try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
+                        break;
+                    }
+                    case 'download': {
+                        // Packet download of a file, agent to browser
+                        if (cmd.path == undefined) break;
+                        var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        //console.log('Download: ' + filepath);
+                        try { this.httprequest.downloadFile = fs.openSync(filepath, 'rbN'); } catch (e) { this.write(JSON.stringify({ action: 'downloaderror', reqid: cmd.reqid })); break; }
+                        this.httprequest.downloadFileId = cmd.reqid;
+                        this.httprequest.downloadFilePtr = 0;
+                        if (this.httprequest.downloadFile) { this.write(JSON.stringify({ action: 'downloadstart', reqid: this.httprequest.downloadFileId })); }
+                        break;
+                    }
+                    case 'download2': {
+                        // Stream download of a file, agent to browser
+                        if (cmd.path == undefined) break;
+                        var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        try { this.httprequest.downloadFile = fs.createReadStream(filepath, { flags: 'rbN' }); } catch (e) { console.log(e); }
+                        this.httprequest.downloadFile.pipe(this);
+                        this.httprequest.downloadFile.end = function () { }
+                        break;
+                    }
+                    case 'upload': {
+                        // Upload a file, browser to agent
+                        if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
+                        if (cmd.path == undefined) break;
+                        var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid })); break; }
+                        this.httprequest.uploadFileid = cmd.reqid;
+                        if (this.httprequest.uploadFile) { this.write(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid })); }
+                        break;
+                    }
+                }
+            }
+            //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
+        }
+    }
+    
+    // Console state
+    var consoleWebSockets = {};
+    var consoleHttpRequest = null;
+    
+    // Console HTTP response
+    function consoleHttpResponse(response) {
+        response.data = function (data) { sendConsoleText(rstr2hex(buf2rstr(data)), this.sessionid); consoleHttpRequest = null; }
+        response.close = function () { sendConsoleText('httprequest.response.close', this.sessionid); consoleHttpRequest = null; }
+    };
+
+    // Process a mesh agent console command
+    function processConsoleCommand(cmd, args, rights, sessionid) {
+        try {
+            var response = null;
+            switch (cmd) {
+                case 'help': { // Displays available commands
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo.';
+                    break;
+                }
+                case 'notify': { // Send a notification message to the mesh
+                    if (args['_'].length != 1) {
+                        response = 'Proper usage: notify "message" [--session]'; // Display correct command usage
+                    } else {
+                        var notification = { "action": "msg", "type": "notify", "value": args['_'][0], "tag": "console" };
+                        if (args.session) { notification.sessionid = sessionid; } // If "--session" is specified, notify only this session, if not, the server will notify the mesh
+                        mesh.SendCommand(notification); // no sessionid or userid specified, notification will go to the entire mesh
+                        response = 'ok';
+                    }
+                    break;
+                }
+                case 'info': { // Return information about the agent and agent core module
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\Capabilities: ' + obj.meshCoreCapabilities + '.';
+                    break;
+                }
+                case 'selfinfo': { // Return self information block
+                    response = JSON.stringify(buildSelfInfo());
+                    break;
+                }
+                case 'args': { // Displays parsed command arguments
+                    response = 'args ' + objToString(args, 0, '.');
+                    break;
+                }
+                case 'print': { // Print a message on the mesh agent console, does nothing when running in the background
+                    var r = [];
+                    for (var i in args['_']) { r.push(args['_'][i]); }
+                    console.log(r.join(' '));
+                    response = 'Message printed on agent console.';
+                    break;
+                }
+                case 'type': { // Returns the content of a file
+                    if (args['_'].length == 0) {
+                        response = 'Proper usage: type (filepath) [maxlength]'; // Display correct command usage
+                    } else {
+                        var max = 4096;
+                        if ((args['_'].length > 1) && (typeof args['_'][1] == 'number')) { max = args['_'][1]; }
+                        if (max > 4096) max = 4096;
+                        var buf = new Buffer(max), fd = fs.openSync(args['_'][0], "r"), r = fs.readSync(fd, buf, 0, max); // Read the file content
+                        response = buf.toString();
+                        var i = response.indexOf('\n');
+                        if ((i > 0) && (response[i - 1] != '\r')) { response = response.split('\n').join('\r\n'); }
+                        if (r == max) response += '...';
+                        fs.closeSync(fd);
+                    }
+                    break;
+                }
+                case 'dbget': { // Return the data store value for a given key
+                    if (db == null) { response = 'Database not accessible.'; break; }
+                    if (args['_'].length != 1) {
+                        response = 'Proper usage: dbget (key)'; // Display the value for a given database key
+                    } else {
+                        response = db.Get(args['_'][0]);
+                    }
+                    break;
+                }
+                case 'dbset': { // Set a data store key and value pair
+                    if (db == null) { response = 'Database not accessible.'; break; }
+                    if (args['_'].length != 2) {
+                        response = 'Proper usage: dbset (key) (value)'; // Set a database key
+                    } else {
+                        var r = db.Put(args['_'][0], args['_'][1]);
+                        response = 'Key set: ' + r;
+                    }
+                    break;
+                }
+                case 'dbcompact': { // Compact the data store
+                    if (db == null) { response = 'Database not accessible.'; break; }
+                    var r = db.Compact();
+                    response = 'Database compacted: ' + r;
+                    break;
+                }
+                case 'parseurl': {
+                    response = objToString(parseUrl(args['_'][0]));
+                    break;
+                }
+                case 'httpget': {
+                    if (consoleHttpRequest != null) {
+                        response = 'HTTP operation already in progress.';
+                    } else {
+                        if (args['_'].length != 1) {
+                            response = 'Proper usage: httpget (url)';
+                        } else {
+                            var options = parseUrl(args['_'][0]);
+                            options.method = 'GET';
+                            if (options == null) {
+                                response = 'Invalid url.';
+                            } else {
+                                try { consoleHttpRequest = http.request(options, consoleHttpResponse); } catch (e) { response = 'Invalid HTTP GET request'; }
+                                consoleHttpRequest.sessionid = sessionid;
+                                if (consoleHttpRequest != null) {
+                                    consoleHttpRequest.end();
+                                    response = 'HTTPGET ' + options.protocol + '//' + options.hostname + ':' + options.port + options.path;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 'wslist': { // List all web sockets
+                    response = '';
+                    for (var i in consoleWebSockets) {
+                        var httprequest = consoleWebSockets[i];
+                        response += 'Websocket #' + i + ', ' + httprequest.url + '\r\n';
+                    }
+                    if (response == '') { response = 'no websocket sessions.'; }
+                    break;
+                }
+                case 'wsconnect': { // Setup a web socket
+                    if (args['_'].length == 0) {
+                        response = 'Proper usage: wsconnect (url)\r\nFor example: wsconnect wss://localhost:443/meshrelay.ashx?id=abc'; // Display correct command usage
+                    } else {
+                        var httprequest = null;
+                        try { http.request(parseUrl(args['_'][0])); } catch (e) { response = 'Invalid HTTP websocket request'; }
+                        if (httprequest != null) {
+                            httprequest.upgrade = onWebSocketUpgrade;
+
+                            var index = 1;
+                            while (consoleWebSockets[index]) { index++; }
+                            httprequest.sessionid = sessionid;
+                            httprequest.index = index;
+                            httprequest.url = args['_'][0];
+                            consoleWebSockets[index] = httprequest;
+                            response = 'New websocket session #' + index;
+                        }
+                    }
+                    break;
+                }
+                case 'wssend': { // Send data on a web socket
+                    if (args['_'].length == 0) {
+                        response = 'Proper usage: wssend (socketnumber)\r\n'; // Display correct command usage
+                        for (var i in consoleWebSockets) {
+                            var httprequest = consoleWebSockets[i];
+                            response += 'Websocket #' + i + ', ' + httprequest.url + '\r\n';
+                        }
+                    } else {
+                        var i = parseInt(args['_'][0]);
+                        var httprequest = consoleWebSockets[i];
+                        if (httprequest != undefined) {
+                            httprequest.s.write(args['_'][1]);
+                            response = 'ok';
+                        } else {
+                            response = 'Invalid web socket number';
+                        }
+                    }
+                    break;
+                }
+                case 'wsclose': { // Close a websocket
+                    if (args['_'].length == 0) {
+                        response = 'Proper usage: wsclose (socketnumber)'; // Display correct command usage
+                    } else {
+                        var i = parseInt(args['_'][0]);
+                        var httprequest = consoleWebSockets[i];
+                        if (httprequest != undefined) {
+                            httprequest.s.end();
+                            response = 'ok';
+                        } else {
+                            response = 'Invalid web socket number';
+                        }
+                    }
+                    break;
+                }
+                case 'tunnels': { // Show the list of current tunnels
+                    response = '';
+                    for (var i in tunnels) { response += 'Tunnel #' + i + ', ' + tunnels[i].url + '\r\n'; }
+                    if (response == '') { response = 'No websocket sessions.'; }
+                    break;
+                }
+                case 'ls': { // Show list of files and folders
+                    response = '';
+                    var xpath = '*';
+                    if (args['_'].length > 0) { xpath = obj.path.join(args['_'][0], '*'); }
+                    response = 'List of ' + xpath + '\r\n';
+                    var results = fs.readdirSync(xpath);
+                    for (var i = 0; i < results.length; ++i) {
+                        var stat = null, p = obj.path.join(args['_'][0], results[i]);
+                        try { stat = fs.statSync(p); } catch (e) { }
+                        if ((stat == null) || (stat == undefined)) {
+                            response += (results[i] + "\r\n");
+                        } else {
+                            response += (results[i] + " " + ((stat.isDirectory()) ? "(Folder)" : "(File)") + "\r\n");
+                        }   
+                    }
+                    break;
+                }
+                case 'amt': { // Show Intel AMT status
+                    //response = 'KVM: ' + mesh.hasKVM + ', HECI: ' + mesh.hasHECI + ', MicroLMS: ' + mesh.activeMicroLMS + '\r\n';
+                    //response += JSON.stringify(mesh.MEInfo);
+                    if (mesh.hasHECI == 1) {
+                        var meinfo = mesh.MEInfo;
+                        delete meinfo.TrustedHashes;
+                        response = objToString(meinfo, 0, '.');
+                    } else {
+                        response = 'This mesh agent does not support Intel AMT.';
+                    }
+                    break;
+                }
+                case 'netinfo': { // Show network interface information
+                    response = objToString(mesh.NetInfo, 0, '.');
+                    break;
+                }
+                case 'sendall': { // Send a message to all consoles on this mesh
+                    sendConsoleText(args['_'].join(' '));
+                    break;
+                }
+                default: { // This is an unknown command, return an error message
+                    response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
+                    break;
+                }
+            }
+        } catch (e) { response = 'Command returned an exception error: ' + e; console.log(e); }
+        if (response != null) { sendConsoleText(response, sessionid); }
+    }
+
+    // Send a mesh agent console command
+    function sendConsoleText(text, sessionid) { mesh.SendCommand({ "action": "msg", "type": "console", "value": text, "sessionid": sessionid }); }
+
+    // Called before the process exits
+    //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
+
+    // Called when the server connection state changes
+    function handleServerConnection(state) {
+        meshServerConnectionState = state;
+        if (meshServerConnectionState == 0) {
+            // Server disconnected
+            if (selfInfoUpdateTimer != null) { clearInterval(selfInfoUpdateTimer); selfInfoUpdateTimer = null; }
+            lastSelfInfo = null;
+        } else {
+            // Server connected, send mesh core information
+            sendPeriodicServerUpdate(true);
+            if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 60000); } // Should be a long time, like 20 minutes. For now, 1 minute.
+        }
+    }
+
+    // Build a bunch a self information data that will be sent to the server
+    // We need to do this periodically and if anything changes, send the update to the server.
+    function buildSelfInfo() {
+        var r = { "action": "coreinfo", "value": obj.meshCoreInfo, "caps": obj.meshCoreCapabilities };
+        if (mesh.hasHECI == 1) {
+            var meinfo = mesh.MEInfo;
+            var amtPresent = false, intelamt = {};
+            if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; amtPresent = true; }
+            if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; amtPresent = true; }
+            if (meinfo.flags) { intelamt.flags = meinfo.Flags; amtPresent = true; }
+            if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; amtPresent = true; }
+            if (amtPresent == true) { r.intelamt = intelamt }
+        }
+        return JSON.stringify(r);
+    }
+
+    // Called periodically to check if we need to send updates to the server
+    function sendPeriodicServerUpdate(force) {
+        // Update the self information data
+        var selfInfo = buildSelfInfo();
+        var selfInfoStr = JSON.stringify(selfInfo);
+        if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
+
+        // Update the network interfaces information data
+        var netInfo = mesh.NetInfo;
+        netInfo.action = 'netinfo';
+        var netInfoStr = JSON.stringify(netInfo);
+        if ((force == true) || (netInfoStr != lastNetworkInfo)) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+    }
+
+    // Called on MicroLMS Intel AMT user notification
+    function handleAmtNotification(notification) {
+        var amtMessage = notification.messageId;
+        var amtMessageArg = notification.messageArguments;
+        var notify = null;
+
+        switch (amtMessage) {
+            case 'iAMT0050': {
+                // Serial over lan
+                if (amtMessageArg == '48') {
+                    // Connected
+                    notify = 'Intel&reg; AMT Serial-over-LAN connected';
+                }
+                else if (amtMessageArg == '49') {
+                    // Disconnected
+                    notify = 'Intel&reg; AMT Serial-over-LAN disconnected';
+                }
+            }
+            case 'iAMT0052': {
+                // HWKVM
+                if (amtMessageArg == '1') {
+                    // Connected
+                    notify = 'Intel&reg; AMT KVM connected';
+                }
+                else if (amtMessageArg == '2') {
+                    // Disconnected
+                    notify = 'Intel&reg; AMT KVM disconnected';
+                }
+                break;
+            }
+        }
+
+        if (notify != null) {
+            var notification = { "action": "msg", "type": "notify", "value": notify, "tag": "general" };
+            //mesh.SendCommand(notification); // no sessionid or userid specified, notification will go to the entire mesh
+            //console.log("handleAmtNotification", JSON.stringify(notification));
+        }
+    }
+
+    // Starting function
+    obj.start = function () {
+        // Setup the mesh agent event handlers
+        mesh.AddCommandHandler(handleServerCommand);
+        mesh.AddConnectHandler(handleServerConnection);
+        mesh.lmsNotification = handleAmtNotification;
+        sendPeriodicServerUpdate(); // TODO: Check if connected before sending
+
+        // Parse input arguments
+        //var args = parseArgs(process.argv);
+        //console.log(args);
+
+        //console.log('Stopping.');
+        //process.exit();
+    }
+
+    obj.stop = function () {
+        mesh.AddCommandHandler(null);
+        mesh.AddConnectHandler(null);
+    }
+
+    function onWebSocketClosed() { sendConsoleText("WebSocket #" + this.httprequest.index + " closed.", this.httprequest.sessionid); delete consoleWebSockets[this.httprequest.index]; }
+    function onWebSocketData(data) { sendConsoleText("Got WebSocket #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid); }
+    function onWebSocketSendOk() { sendConsoleText("WebSocket #" + this.index + " SendOK.", this.sessionid); }
+        
+    function onWebSocketUpgrade(response, s, head) {
+        sendConsoleText("WebSocket #" + this.index + " connected.", this.sessionid);
+        this.s = s;
+        s.httprequest = this;
+        s.end = onWebSocketClosed;
+        s.data = onWebSocketData;
+    }
+
+    return obj;
+}
+
+var xexports = null;
+try { xexports = module.exports; } catch (e) { }
+
+if (xexports != null) {
+    // If we are running within NodeJS, export the core
+    module.exports.createMeshCore = createMeshCore;
+} else {
+    // If we are not running in NodeJS, launch the core
+    createMeshCore().start(null);
+}
