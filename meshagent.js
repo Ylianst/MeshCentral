@@ -390,6 +390,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         break;
                     }
+                case 'location':
+                    {
+                        // Sent by the agent to update location information
+                        console.log(JSON.stringify(command));
+                        break;
+                    }
             }
         }
     }

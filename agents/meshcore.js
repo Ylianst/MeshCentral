@@ -24,6 +24,7 @@ function createMeshCore(agent) {
     var tunnels = {};
     var lastSelfInfo = null;
     var lastNetworkInfo = null;
+    var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
 
     var http = require('http');
@@ -42,6 +43,67 @@ function createMeshCore(agent) {
         obj.meshCoreInfo += '-NodeJS';
         obj.meshCoreCapabilities = 8;
         var mesh = agent.getMeshApi();
+    }
+
+    // Get our location (lat/long) using our public IP address
+    function getIpLocationDataEx(func) {
+        try {
+            http.request({
+                host: 'ipinfo.io', // TODO: Use a HTTP proxy if needed!!!!
+                port: 80,
+                path: 'http://ipinfo.io/json', // Use this service to get our geolocation
+                headers: { Host: "ipinfo.io" }
+            },
+                function (resp) {
+                    var geoData = '';
+                    resp.data = function (geoipdata) { geoData += geoipdata; };
+                    resp.end = function () {
+                        var location = null;
+                        try { if (typeof geoData == 'string') { var result = JSON.parse(geoData); if (result.ip && result.loc) { location = result; } } } catch (e) { }
+                        if (func) { func(location); }
+                    }
+                }).end();
+        }
+        catch (e) { }
+    }
+
+    // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
+    function clearGatewayMac(str) {
+        if (str == null) return null;
+        var x = JSON.parse(str);
+        for (var i in x.netif) { if (x.netif[i].gatewaymac) { delete x.netif[i].gatewaymac } }
+        return JSON.stringify(x);
+    }
+
+    function getIpLocationData(func) {
+        // Get the location information for the cache if possible
+        var publicLocationInfo = db.Get('publicLocationInfo');
+        if (publicLocationInfo != null) { publicLocationInfo = JSON.parse(publicLocationInfo); }
+        if (publicLocationInfo == null) {
+            // Nothing in the cache, fetch the data
+            getIpLocationDataEx(function (locationData) {
+                publicLocationInfo = {};
+                publicLocationInfo.netInfoStr = lastNetworkInfo;
+                publicLocationInfo.locationData = locationData;
+                var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
+                if (func) func(locationData);
+            });
+        } else {
+            // Check the cache
+            if (clearGatewayMac(publicLocationInfo.netInfoStr) == clearGatewayMac(lastNetworkInfo)) {
+                // Cache match
+                if (func) func(publicLocationInfo.locationData);
+            } else {
+                // Cache mismatch
+                getIpLocationDataEx(function (locationData) {
+                    publicLocationInfo = {};
+                    publicLocationInfo.netInfoStr = lastNetworkInfo;
+                    publicLocationInfo.locationData = locationData;
+                    var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
+                    if (func) func(locationData);
+                });
+            }
+        }
     }
 
     // Polyfill String.endsWith
@@ -149,38 +211,47 @@ function createMeshCore(agent) {
     function handleServerCommand(data) {
         if (typeof data == 'object') {
             // If this is a console command, parse it and call the console handler
-            if (data.action == 'msg') {
-                if (data.type == 'console') { // Process a console command
-                    if (data.value && data.sessionid) {
-                        var args = splitArgs(data.value);
-                        processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
+            switch (data.action) {
+                case 'msg': {
+                    if (data.type == 'console') { // Process a console command
+                        if (data.value && data.sessionid) {
+                            var args = splitArgs(data.value);
+                            processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
+                        }
                     }
-                }
-                else if (data.type == 'tunnel') { // Process a new tunnel connection request
-                    if (data.value && data.sessionid) {
-                        // Create a new tunnel object
-                        var tunnel = http.request(parseUrl(data.value));
-                        tunnel.upgrade = onTunnelUpgrade;
-                        tunnel.sessionid = data.sessionid;
-                        tunnel.rights = data.rights;
-                        tunnel.state = 0;
-                        tunnel.url = data.value;
-                        tunnel.protocol = 0;
+                    else if (data.type == 'tunnel') { // Process a new tunnel connection request
+                        if (data.value && data.sessionid) {
+                            // Create a new tunnel object
+                            var tunnel = http.request(parseUrl(data.value));
+                            tunnel.upgrade = onTunnelUpgrade;
+                            tunnel.sessionid = data.sessionid;
+                            tunnel.rights = data.rights;
+                            tunnel.state = 0;
+                            tunnel.url = data.value;
+                            tunnel.protocol = 0;
 
-                        // Put the tunnel in the tunnels list
-                        var index = 1;
-                        while (tunnels[index]) { index++; }
-                        tunnel.index = index;
-                        tunnels[index] = tunnel;
+                            // Put the tunnel in the tunnels list
+                            var index = 1;
+                            while (tunnels[index]) { index++; }
+                            tunnel.index = index;
+                            tunnels[index] = tunnel;
 
-                        sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                            sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                        }
                     }
+                    break;
                 }
-            }
-            else if (data.action == 'wakeonlan') {
-                // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
-                sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));
-                // TODO!!!!
+                case 'wakeonlan': {
+                    // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
+                    sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));
+                    // TODO!!!!
+                    break;
+                }
+                case 'location': {
+                    // Update the location information of this node
+                    getIpLocationData(function (location) { mesh.SendCommand({ "action": "location", "type": "publicip", "value": location }); });
+                    break;
+                }
             }
         }
     }
@@ -449,7 +520,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -656,6 +727,10 @@ function createMeshCore(agent) {
                     sendConsoleText(args['_'].join(' '));
                     break;
                 }
+                case 'location': {
+                    getIpLocationData(function (location) { sendConsoleText("Public IP location:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                    break;
+                }
                 default: { // This is an unknown command, return an error message
                     response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                     break;
@@ -666,7 +741,10 @@ function createMeshCore(agent) {
     }
 
     // Send a mesh agent console command
-    function sendConsoleText(text, sessionid) { mesh.SendCommand({ "action": "msg", "type": "console", "value": text, "sessionid": sessionid }); }
+    function sendConsoleText(text, sessionid) {
+        if (typeof text == 'object') { text = JSON.stringify(text); }
+        mesh.SendCommand({ "action": "msg", "type": "console", "value": text, "sessionid": sessionid });
+    }
 
     // Called before the process exits
     //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
@@ -712,7 +790,13 @@ function createMeshCore(agent) {
         var netInfo = mesh.NetInfo;
         netInfo.action = 'netinfo';
         var netInfoStr = JSON.stringify(netInfo);
-        if ((force == true) || (netInfoStr != lastNetworkInfo)) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+
+        // Update public IP location information, location caching will be used
+        getIpLocationData(function (location) {
+            var locationStr = JSON.stringify(location);
+            if ((force == true) || (locationStr != lastPublicLocationInfo)) { mesh.SendCommand({ "action": "location", "type": "publicip", "value": location }); lastPublicLocationInfo = locationStr; }
+        });
     }
 
     // Called on MicroLMS Intel AMT user notification
