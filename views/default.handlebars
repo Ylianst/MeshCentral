@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
@@ -19,6 +20,7 @@
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
+    <script type="text/javascript" src="scripts/ol.js"></script>
     <title>MeshCentral</title>
 </head>
 
@@ -807,6 +809,7 @@
                         } else {
                             var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow-y:auto;line-height:160%>';
                             x += addHtmlValue2('Last Updated', new Date(message.updateTime).toLocaleString());
+                            if (currentNode.publicip) { x += addHtmlValue2('Public IP address', currentNode.publicip); }
                             for (var i in message.netif) {
                                 var net = message.netif[i];
                                 x += '<hr />'
@@ -972,6 +975,8 @@
                                 node.name = message.event.node.name;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
+                                node.publicip = message.event.node.publicip;
+                                node.iploc = message.event.node.iploc;
                                 if (message.event.node.agent != undefined) {
                                     if (node.agent == undefined) node.agent = {};
                                     if (message.event.node.agent.ver != undefined) { node.agent.ver = message.event.node.agent.ver; }
@@ -1702,7 +1707,8 @@
                 x = '<div style=float:right;font-size:x-small>';
                 if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>';
+                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
+                if (node.iploc) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -1901,6 +1907,43 @@
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
             meshserver.Send({ action: 'removedevices', nodeids: [ nodeid ] });
+        }
+
+        // Show current location
+        var d2map = null;
+        function p10showNodeLocationDialog() {
+            if (xxdialogMode) return;
+            var loc = currentNode.iploc.split(',');
+            var lat = parseFloat(loc[0]);
+            var lng = parseFloat(loc[1]);
+            //var x = '<div><a href="https://www.google.com/maps/preview/@' + lat + ',' + lng + ',12z" target=_blank>Open in Google maps</a></div>';
+            var x = '<div id=d2map style=width:100%;height:300px></div>';
+            setDialogMode(2, "Device Location", 1, null, x);
+
+            // Setup the device mark layer
+            var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])) });
+            //deviceMark.setStyle(new ol.style.Style({ image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
+            deviceMark.setStyle(new ol.style.Style({
+                
+                text: new ol.style.Text({
+                    //font: '12px helvetica,sans-serif',
+                    text: currentNode.name,
+                    textAlign: 'right',
+                    offsetX: -10,
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+                    }),
+                image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
+            var vectorSource = new ol.source.Vector({ features: [deviceMark] });
+            var vectorLayer = new ol.layer.Vector({ source: vectorSource });
+
+            // Setup the map
+            d2map = new ol.Map({
+                target: 'd2map',
+                interactions: ol.interaction.defaults({dragPan:false, mouseWheelZoom:false}),
+                layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer ],
+                view: new ol.View({ center: ol.proj.fromLonLat([lng, lat]), zoom: 8 })
+            });
         }
 
         // Show network interfaces

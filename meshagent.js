@@ -393,7 +393,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'location':
                     {
                         // Sent by the agent to update location information
-                        console.log(JSON.stringify(command));
+                        if ((command.type == 'publicip') && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
+                            var x = {};
+                            x.publicip = command.value.ip;
+                            x.iploc = command.value.loc;
+                            ChangeAgentLocationInfo(x);
+                        }
                         break;
                     }
             }
@@ -434,6 +439,41 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (device.host != remoteaddr) { device.host = remoteaddr; change = 1; changes.push('host'); }
                         // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                     }
+
+                    // If there are changes, save and event
+                    if (change == 1) {
+                        obj.db.Set(device);
+
+                        // Event the node change
+                        var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
+                        var device2 = obj.common.Clone(device);
+                        if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                        event.node = device;
+                        obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
+                    }
+                }
+            });
+        });
+    }
+
+    // Change the current core information string and event it
+    function ChangeAgentLocationInfo(command) {
+        if ((command == undefined) || (command == null)) return; // Safety, should never happen.
+
+        // Check that the mesh exists
+        obj.db.Get(obj.dbMeshKey, function (err, meshes) {
+            if (meshes.length != 1) return;
+            var mesh = meshes[0];
+            // Get the node and change it if needed
+            obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+                if (nodes.length != 1) return;
+                var device = nodes[0];
+                if (device.agent) {
+                    var changes = [], change = 0;
+
+                    // Check if anything changes
+                    if ((command.publicip) && (device.publicip != command.publicip)) { device.publicip = command.publicip; change = 1; changes.push('public ip'); }
+                    if ((command.iploc) && (device.iploc != command.iploc)) { device.iploc = command.iploc; change = 1; changes.push('ip location'); }
 
                     // If there are changes, save and event
                     if (change == 1) {
