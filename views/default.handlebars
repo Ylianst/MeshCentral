@@ -105,9 +105,14 @@
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
                         <div id=devListToolbar class=style14 style=height:100%;float:left>
                             &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
-                            <input type="button" id="GroupActionButton" disabled="disabled" value="Group Action" onclick="groupActionFunction();" />&nbsp;
-                            <input id="SearchInput" type="text" style=width:120px placeholder=Search onchange="onSearchInputChanged()" onkeyup="onSearchInputChanged()" autocomplete=off onfocus="onSearchFocus(1)" onblur="onSearchFocus(0)" />&nbsp;
+                            <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
+                            <input id=SearchInput type=text style=width:120px placeholder=Search onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <input type=checkbox id=HostnameCheckBox onclick=onHostnameCheckBox() /><span title="Show device hostnames">Hostname</span>
+                        </div>
+                        <div id=devMapToolbar class=style14 style=height:100%;float:left>
+                            &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
+                            <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
+                            <input type=button id=refreshmap title="Reset map view" value=Reset style=margin-left:5px onclick=refreshMap(false,true) />
                         </div>
                         <div class="auto-style1" style="height: 100%; float: right">
                             <div style="height:100%;width:4px;float:right;background-color:#ffffff"></div>
@@ -145,7 +150,17 @@
                         <p></p>
                     </div>
                     <div id="xdevices" style="max-height:calc(100vh - 228px);overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
-                    <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden"></div>
+                    <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden;position:relative">
+                        <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
+                            <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+                                <div id=xmapSearchClose style=float:right;padding:5px;cursor:pointer onclick=mapCloseSearchWindow()><b>X</b></div>
+                                <div style=padding:5px>Location Results</div>
+                                <div style=width:100%;margin:6px></div>
+                            </div>
+                            <div id=xmapSearchResults style=margin:6px></div>
+                        </div>
+                    </div>
+                    <div id="xmap-info-window" style="text-shadow: 0px 0px 15px #FFF"></div>
                 </div>
                 <div id=p2 style=display:none>
                     <h1>My Account</h1>
@@ -580,6 +595,7 @@
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
         var sort = 0;
         var searchFocus = 0;
+        var mapSearchFocus = 0;
         var consoleFocus = 0;
         var showHostnames = false;
         var meshserver = null;
@@ -600,7 +616,7 @@
         var features = {{{features}}};
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
-        var xxmap = null;
+        //var xxmap = null;
 
         function startup() {
             // Guard against other site's top frames (web bugs).
@@ -662,13 +678,6 @@
             var x = '';
             for (var c = 1; c < 27; c++) x += "<option value='" + c + "'>Ctrl-" + String.fromCharCode(64 + c) + " (" + c + ")</option>";
             QH('specialkeylist', x);
-
-            // Setup the map
-            xxmap = new ol.Map({
-                target: 'xdevicesmap',
-                layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }) ],
-                view: new ol.View({ center: ol.proj.fromLonLat([0, 0]), zoom: 1.8, minZoom: 1.8 })
-            });
         }
 
         function getNodeFromId(id) {
@@ -784,6 +793,7 @@
                     onSortSelectChange();
                     onSearchInputChanged();
                     updateDevices();
+                    refreshMap(false, true);
                     if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',{{viewmode}});}
                     break;
@@ -961,6 +971,7 @@
                             onSortSelectChange();
                             onSearchInputChanged();
                             updateDevices();
+                            updateMapMarkers();
                             break;
                         }
                         case 'removenode': {
@@ -974,6 +985,7 @@
                                 }
                                 nodes.splice(index, 1);
                                 updateDevices();
+                                updateMapMarkers();
                             }
                             break;
                         }
@@ -1012,6 +1024,7 @@
                                 onSortSelectChange(true);
                                 drawNotifications();
                                 refreshDevice(node._id);
+                                updateMapMarkers();
                             }
                             break;
                         }
@@ -1026,6 +1039,7 @@
                                 node.conn = message.event.conn;
                                 node.pwr = message.event.pwr;
                                 updateDevices();
+                                updateMapMarkers();
                                 refreshDevice(node._id);
                             }
                             break;
@@ -1113,15 +1127,27 @@
                 return;
             }
             if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
-            var processed = 0;
-            if (e.key) {
-                if (e.key.length === 1 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
-                if (e.keyCode == 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
-                if (e.keyCode == 27) { Q('SearchInput').value = ''; processed = 1; }
-            } else {
-                if (e.charCode != 0 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
+            if (Q('viewselect').value < 3) {
+                var processed = 0;
+                if (e.key) {
+                    if (e.key.length === 1 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
+                    if (e.keyCode == 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
+                    if (e.keyCode == 27) { Q('SearchInput').value = ''; processed = 1; }
+                } else {
+                    if (e.charCode != 0 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
+                }
+                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
             }
-            if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+            if (Q('viewselect').value == 3) {
+                if (e.key) {
+                    if (e.key.length === 1 && mapSearchFocus == 0) { Q('mapSearchLocation').value = ((Q('mapSearchLocation').value + e.key)); processed = 1; }
+                    //if (e.keyCode == 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = x.substring(0, x.length - 1); processed = 1; }
+                    if (e.keyCode == 27) { Q('mapSearchLocation').value = ''; mapCloseSearchWindow(); processed = 1; }
+                    if (e.keyCode == 13) { getSearchLocation(); }
+                } else {
+                    if (e.charCode != 0 && mapSearchFocus == 0) { Q('mapSearchLocation').value = ((Q('mapSearchLocation').value + String.fromCharCode(e.charCode))); processed = 1; }
+                }
+            }
         }
 
         function ondockeydown(e) {
@@ -1130,9 +1156,15 @@
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             var processed = 0;
-            if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
-            if (e.keyCode === 27) { Q('SearchInput').value = ''; processed = 1; }
-            if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+            if (Q('viewselect').value < 3) {
+                if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if (e.keyCode === 27) { Q('SearchInput').value = ''; processed = 1; }
+                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+            }
+            if (Q('viewselect').value == 3) {
+                if (e.keyCode === 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if (e.keyCode === 27) { Q('mapSearchLocation').value = ''; mapCloseSearchWindow(); processed = 1; }
+            }
         }
 
         function ondockeyup(e) {
@@ -1140,7 +1172,8 @@
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
-            if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); }
+            if (Q('viewselect').value < 3) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
+            if (Q('viewselect').value == 3) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
         }
 
         var deviceHeaderId = 0;
@@ -1151,9 +1184,10 @@
             QV('xdevices', view < 3);
             QV('xdevicesmap', view == 3);
             QV('devListToolbar', view < 3);
+            QV('devMapToolbar', view == 3);
             QV('devListToolbarSort', view < 3);
             if (view == 3) {
-                setTimeout( function() { xxmap.updateSize();}, 200);
+                setTimeout( function() { xxmap.map.updateSize();}, 200);
                 // TODO
             } else {
                 // 3 wide or list view
@@ -1546,6 +1580,7 @@
         function deviceHostSort(a, b) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; }
         function onSearchInputChanged() { var x = Q('SearchInput').value.toLowerCase(); putstore("search", x); if (x == '') { for (var d in nodes) { nodes[d].v = true; } } else { for (var d in nodes) { nodes[d].v = (nodes[d].name.toLowerCase().indexOf(x) >= 0) || (nodes[d].hostl != undefined && nodes[d].hostl.toLowerCase().indexOf(x) >= 0); } } updateDevices(); }
         function onSearchFocus(x) { searchFocus = x; }
+        function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
 
         var contextelement = null;
@@ -1601,6 +1636,661 @@
             QV('meshContextMenu', false);
             contextelement = null;
         }
+
+        //
+        // DEVICES MAP
+        //
+
+        // Maps code starts from here. Initialize all the variables
+        var xxmap = {
+            map: null,
+            contextmenu: null,
+            activeInteractions: [], // Save Modified features in this list
+            showindex: 0,
+            markersSource: null, // Initialize a Source Vector
+            markersLayer: null,
+            mapLayer: null, // Create a tile and use OSM source
+            mapView: null, // Sets the initial view
+            selectedNodes: {} // Save details of Node that was selected from 'Put a node' option from contextmenu
+        }
+
+        // Add a feature for every Node and change style if connection status changes
+        function updateMapMarkers(selectedMesh) {
+            var boundingBox = null;
+            if (xxmap.map == null) loadmap();
+            for (var i in nodes) {
+                var loc = map_parseNodeLoc(nodes[i]);
+                if (loc) { // Draw markers for devices with locations
+                    lat = loc[0];
+                    lon = loc[1];
+                    if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
+                    var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
+                    if (nodes[i].meshid == selectedMesh || selectedMesh == undefined) {
+                        if (feature == null || feature == undefined) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); } // Update Feature
+                    } else {
+                        if (feature) { xxmap.markersSource.removeFeature(feature); } // Remove if it does not belong to that mesh
+                    }
+                }
+            }
+            return boundingBox;
+        }
+
+        // Show node details on hovering over a feature
+        var map_cm_popup = new ol.Overlay({ element: Q('xmap-info-window'), positioning: 'bottom-center', stopEvent: false });
+
+        // Edit Marker item
+        var map_cm_editMarker = { text: "Modify Node location", callback: function (obj) { modifyMarkerloc(obj.data); } };
+
+        // Save Marker item
+        var map_cm_saveMarker = { text: "Save Node location", callback: function (obj) { saveMarkerloc(obj.data); } };
+
+        // Build a context menu for a feature
+        var map_cm_nodemenu_items = [
+            { text: "General information", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 10); } } },
+            { text: "Desktop", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 11); } } },
+            { text: "Terminal", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 12); } } },
+            { text: "Intel&reg; AMT", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 14); } } },
+            '-',
+            { text: 'Zoom-in to extent', callback: function(obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 19); } },
+            { text: 'Zoom-out to extent', callback: function(obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 2); } }
+        ];
+
+        // Context menu for clicks other than on feature
+        var contextmenu_items = [
+          { text: 'Refresh', callback: function () { refreshMap(false, true); } },
+          { text: 'Zoom to fit extent', callback: function () { zoomToFitExtent(); } },
+          { text: 'Center map here', callback: function(obj) { xxmap.mapView.animate({ center: obj.coordinate } ); } },
+          { text: 'Place a node', callback: function (obj) { placeNode(obj.coordinate); } }
+        ];
+
+        function stringToIntHash(str) {
+            var hash = 0, i;
+            for (i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
+            return hash;
+        };
+
+        // Get the lat/lon from a node
+        function map_parseNodeLoc(node) {
+            if (!node.iploc) return;
+            var loc = node.iploc.split(',');
+            return [parseFloat(loc[0]) + (stringToIntHash(node._id.substring(0, 20)) / 100000000000), parseFloat(loc[1]) + (stringToIntHash(node._id.substring(20)) / 100000000000)]
+        }
+
+        // Load the entire map
+        function loadmap() {
+            // Initialize a Source Vector
+            xxmap.markersSource = new ol.source.Vector();
+
+            xxmap.markersLayer = new ol.layer.Vector({
+                source: xxmap.markersSource
+            });
+
+            // Create a tile and use OSM source
+            xxmap.mapLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
+
+            xxmap.mapView = new ol.View({ // Set the initial view
+                center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+                zoom: 2,
+                minZoom: 2,
+                maxZoom: 20,
+                extent: ol.proj.transformExtent([-100000, -69.55, 100000, 69.55], 'EPSG:4326', 'EPSG:3857')
+            });
+
+            xxmap.map = new ol.Map({
+                target: 'xdevicesmap',
+                layers: [xxmap.mapLayer, xxmap.markersLayer],
+                view: xxmap.mapView
+            });
+
+            xxmap.map.addOverlay(map_cm_popup);
+
+            // Goto information tab if a user clicks on a feature
+            xxmap.map.on('click', function(evt) {
+                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) { return feat; });
+                if (feature) {
+                    var nodeid = feature.getId();
+                    if (nodeid != undefined) { gotoDevice(nodeid, 10); } // Goto general info tab
+                    else { // For pointer
+                        var nodeFeatgoto = getCorrespondingFeature(feature); gotoDevice(nodeFeatgoto.getId(), 10);
+                    }
+                }
+            });
+
+            // On hover feature show the name of the node. Also add pointer style
+            xxmap.map.on('pointermove', function(evt) {
+                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) {  return feat; });
+                if (feature) {
+                    xxmap.map.getTargetElement().style.cursor = 'pointer';
+                    var coord = feature.getGeometry().getCoordinates();
+                    // map_cm_popup.setPosition(evt.coordinate);
+                    map_cm_popup.setPosition(coord);
+                    featid = feature.getId();
+                    if (featid) {
+                        QH('xmap-info-window', feature.get('name'));
+                    } else {
+                        var nodeFeat = getCorrespondingFeature(feature); // Return the node feature associated to pointer.
+                        QH('xmap-info-window', nodeFeat.get('name'));
+                    }
+                } else {
+                    xxmap.map.getTargetElement().style.cursor = '';
+                    QH('xmap-info-window', '');
+                }
+            });
+
+            /*
+            // Initialize context menu for openlayers
+            contextmenu = new ContextMenu({
+                width: 160,
+                defaultItems: false, // defaultItems are Zoom In/Zoom Out
+                items: contextmenu_items
+            });
+
+            // On right click open the context menu
+            contextmenu.on("open", function (evt) {
+                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(ft, l){ return ft;  });
+                xxmap.contextmenu.clear(); //Clear the context menu
+                if (feature) {
+                    var featId=feature.getId();
+                    if (featId) { // Node feature will have an id
+                        addContextMenuItems(feature);
+                    }
+                    else { // If the feature is a pointer, Get its corresponding Node feature
+                        var nodeFeature= getCorrespondingFeature(feature); //return the node feature associated to pointer.
+                        if (nodeFeature) { addContextMenuItems(nodeFeature); }
+                        else{ xxmap.contextmenu.extend(contextmenu_items);    }
+                    }
+                }
+                else { xxmap.contextmenu.extend(contextmenu_items); }
+            });
+            xxmap.map.addControl(xxmap.contextmenu);
+            */
+            //addMeshOptions(); // Adds Mesh names to mesh dropdown
+        }
+
+        // Add feature on to Map for a Node
+        function addFeature(node, lat, lon){
+            var existingfeature = getModifiedFeature(node._id); // Check if Corresponding feature was Modified ( Modifed feature are in active interactions list)
+            if (existingfeature) { xxmap.markersSource.addFeature(existingfeature); } // Add that existing feature
+            else { // Add new feature for this node
+                if (!lat && !lon) { var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1]; }
+                var feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326','EPSG:3857')), name: node.name, status: node.conn, lat: lat, lon: lon });
+                feature.setId(node._id); // Set id for the device as nodeid
+                feature.setStyle(markerStyle(node));
+                xxmap.markersSource.addFeature(feature); // Add the feature to Marker Source
+            }
+        }
+
+        // Removing any feature from map
+        function removeFeature(node) {
+            if (node.iploc) {
+                var feature = xxmap.markersSource.getFeatureById(node._id);
+                if (feature) { xxmap.markersSource.removeFeature(feature); }
+            }
+        }
+
+        // Update feature
+        function updateFeature(node, feature) {
+            if (node.conn != feature.get('status') ) { // Update status if changed
+                feature.set('status',node.conn)
+                feature.setStyle(markerStyle(node));
+            }
+
+            // Since this is IP address location, add some fixed randomness to the location. Avoid pin pile-up.
+            var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1];
+
+            if ((lat != feature.get('lat')) || (lon != feature.get('lon'))) { // Update lat and lon if changed
+                feature.set('lat', lat); feature.set('lon', lon);
+                var modifiedCoordinates = ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326','EPSG:3857');
+                feature.getGeometry().setCoordinates(modifiedCoordinates);
+            }
+
+            if (node.name != feature.get('name') ) {  feature.set('name', node.name); } // Update name
+        }
+
+        // Enable dragging of a marker after edit option is clicked in context menu
+        function modifyMarkerloc(ft){
+            var featid = ft.getId();
+            if (featid) {
+                if ( !getActiveInteractions(ft)) {
+                    var dragInteration = new ol.interaction.Modify({
+                        features: new ol.Collection([ft]),
+                        pixelTolerance: 10
+                    });
+                    xxmap.activeInteractions.push({ featureid: featid, feature:ft, interaction: dragInteration  }); // Also keep track of Interactions
+                    xxmap.map.addInteraction(dragInteration);
+                }
+            }
+        }
+
+        // This will be called when save location option is clicked in context menu
+        function saveMarkerloc(ft){
+            var featid = ft.getId()
+            if (featid) {
+                var actInteraction = getActiveInteractions(ft);
+                if (actInteraction) { // Check if the interaction exists
+                    xxmap.map.removeInteraction(actInteraction); //Clear Interaction for that node
+                    removeInteraction(featid);
+                    var coord = ft.getGeometry().getCoordinates();
+                    var v = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
+                    meshserver.Send({ action: 'changelocation', nodeid: featid, value: v }); // Send them to server to save changes
+                }
+            }
+        }
+
+        // Style the Markers
+        function markerStyle(node) {
+            var color = connStateColor(node);
+            var style = new ol.style.Style({
+                image: new ol.style.Icon({ color: color, anchor: [0.5, 1], src: 'images/mapmarker.png' })
+                //stroke: new ol.style.Stroke({ color: '#000', width: 20 })
+                //text: new ol.style.Text({ text: 'bob!', textAlign: 'right', offsetX: -10, fill: new ol.style.Fill({ color: '#000' }), stroke: new ol.style.Stroke({ color: '#fff', width: 2 }) })
+            });
+
+            /*
+            deviceMark.setStyle(new ol.style.Style({
+                text: new ol.style.Text({
+                    //font: '12px helvetica,sans-serif',
+                    text: currentNode.name,
+                    textAlign: 'right',
+                    offsetX: -10,
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+                    }),
+                image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
+            */
+
+            return [ style ];
+        }
+
+        // TODO: Add more connection status types. Currently we only change color if connection status changes
+        function connStateColor(nodeConn){
+            if (nodeConn.conn == 1 || nodeConn.conn == 5) { return '#00ffdd'; } // Green for connected devices
+            return '#C70039'; // Red if the Agent is not connected
+        }
+
+        // Add save/edit option to context menu
+        function addContextMenuItems(feature) {
+            if (getActiveInteractions(feature)) { // If this feature is modified then display save option in contextmenu
+                map_cm_saveMarker.data = feature;
+                xxmap.contextmenu.push(map_cm_saveMarker);
+            } else {
+                map_cm_editMarker.data = feature;
+                xxmap.contextmenu.push(map_cm_editMarker);
+            }
+            map_cm_nodemenu_items.forEach(function (item){
+                if (item.text == 'Zoom-in to extent' || item.text == 'Zoom-out to extent') { item.data = feature; }
+                else { item.data = feature.getId(); }
+            });
+            xxmap.contextmenu.extend(map_cm_nodemenu_items);
+        }
+
+        // Return a active Interaction if it exists in activeInteractions list
+        function getActiveInteractions(feature) {
+            var featid = feature.getId();
+            for (var i = 0; i < xxmap.activeInteractions.length; i++) {
+                if (xxmap.activeInteractions[i].featureid == featid) { return xxmap.activeInteractions[i].interaction; }
+            }
+            return false;
+        }
+
+        // Return Modified feature based on Id
+        function getModifiedFeature(featid) {
+            if (featid) {
+                for (var i = 0; i < xxmap.activeInteractions.length; i++) {
+                    if (xxmap.activeInteractions[i].featureid == featid) { return xxmap.activeInteractions[i].feature; }
+                }
+            }
+            return null;
+        }
+
+        // Remove Interaction
+        function removeInteraction(ftid) {
+            var index = -1;
+            for (var i = 0; i < xxmap.activeInteractions.length; i++) {
+                if (xxmap.activeInteractions[i].featureid === ftid) { index = i; break; }
+            }
+            if (index >= 0) { xxmap.activeInteractions.splice(index, 1); }
+        }
+
+        // Check if pointer coordinates are equal to features and return node feature
+        function getCorrespondingFeature(pointerFeat) {
+            var pointerCoord = pointerFeat.getGeometry().getCoordinates();
+            for (var i = 0; i < xxmap.activeInteractions.length ; i++) {
+                var modifiedFeatures = xxmap.activeInteractions[i].feature;
+                var fearCoord = modifiedFeatures.getGeometry().getCoordinates();
+                if (fearCoord[0].toFixed(5) == pointerCoord[0].toFixed(5) && fearCoord[1].toFixed(5) == pointerCoord[1].toFixed(5) ) { return modifiedFeatures; }
+            }
+            return null;
+        }
+
+        // Refresh the map and clear list
+        function refreshMap(reset, rebound){
+            if (reset) {
+                xxmap.map.setTarget(null);
+                xxmap.map = null;
+                xxmap.markersSource = null;
+                xxmap.mapView = null;
+                xxmap.mapLayer = null;
+                xxmap.activeInteractions = []; // Clear Active Interaction list
+            }
+            //clearMeshOptions();
+            //onSelectMeshChange();
+            var box = updateMapMarkers();
+            if ((box != null) && (rebound || (box[4] == 1))) {
+                var clat = (box[0] + box[2]) / 2;
+                var clon = (box[1] + box[3]) / 2;
+                var cscale = Math.max(Math.abs(box[0] - box[2]), Math.abs(box[1] - box[3]));
+                var view = xxmap.map.getView();
+                view.setCenter(ol.proj.transform([clon, clat], 'EPSG:4326', 'EPSG:3857'));
+                var i = 360, j = -2;
+                while (i > cscale) { j++; i = i / 2; }
+                view.setZoom(j);
+            }
+        }
+
+        // Called When Place a node option is clicked from context menu
+        function placeNode(coords) {
+            if (xxdialogMode) return;
+            clearSelectedNode();
+            var x = '<div style="float: left; margin-bottom: 6px"><label for="selectnode-search">Search</label>&nbsp&nbsp<input type="text" placeholder="Device Name" id="selectnode-search" onchange="onPNSearchInputChange()" onkeyup="onPNSearchInputChange()" autocomplete="off" style="width: 120px"></div>';
+            var selectMeshElement = Q("select-mesh");
+            var selectedIndex = selectMeshElement.selectedIndex;
+            var selectedMeshValue = 'all';
+            if (selectedIndex != 0) {
+                x += '<div class="selectedmesh"> Mesh: ' + selectMeshElement[selectedIndex].text + '</div>';
+                selectedMeshValue=selectMeshElement[selectedIndex].value;
+            }
+            x += '<div id="placenode" style="max-height:258px;overflow-y:auto;width:100%;">';
+            var count = 0;
+            var table = updatePlaceNodeTable('', selectedIndex, selectedMeshValue);
+            if (table != 0) { x += table; count = 1; x += '</div>'; } else { count = 0;}
+            if (count == 0) {
+                if (selectedIndex != 0) {
+                    var noMeshNodes='<div class="flexboxdiv"><div style="margin-right:10px"><i class="fa fa-info-circle fa-3x" style="color:green" aria-hidden="true"></i></div><div style="max-width: 300px">No nodes found in Mesh '+ selectMeshElement[selectedIndex].text + '. Go to mesh <a onclick="closePNDialog(\''+selectMeshElement[selectedIndex].value+'\')" style="cursor:pointer">'+ selectMeshElement[selectedIndex].text +'</a> in My Account page to add a node.</div></div>';
+                    setDialogMode(2, "Select a Node to place marker", 1, null, noMeshNodes, null);
+                } else {
+                    var noNodesFound = '';
+                    if (!meshExists()) {
+                        noNodesFound = '<div class="flexboxdiv"><div style="margin-right:10px"><i class="fa fa-info-circle fa-3x" style="color:green" aria-hidden="true"></i></div><div style="max-width: 300px"> No nodes found. To create a mesh network and add devices, go to <a onclick="closePNDialog(2)" style="cursor:pointer">My Account</a> page.</div></div>';
+                    } else {
+                        noNodesFound = '<div class="flexboxdiv"><div style="margin-right:10px"><i class="fa fa-info-circle fa-3x" style="color:green" aria-hidden="true"></i></div><div style="max-width: 300px"> No nodes found. To add devices, go to <a onclick="closePNDialog(1)" style="cursor:pointer">My Devices</a> page.</div></div>';
+                    }
+                    setDialogMode(2, "Select a Node to place marker", 1, null, noNodesFound, null);
+                }
+            } else {
+                setDialogMode(2, "Select a Node to place marker", 18, placeNodeEx, x, coords);
+            }
+        }
+
+        function placeNodeEx(button, coords){
+            for (var i in xxmap.selectedNodes) {
+                var node = getNodeFromId(i);
+                if (node) {
+                    var feature = markersSource.getFeatureById(i);
+                    var v = ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');
+                    if (button == 2) {
+                        if (feature) {
+                            feature.getGeometry().setCoordinates(coords);
+                            var activeInteraction = getActiveInteractions(feature);
+                            if (activeInteraction) {
+                                saveMarkerloc(feature);
+                            } else { // If this feature is not modified, then send updated coords to server.
+                                meshserver.Send({ action: 'changelocation', nodeid: node._id, value: v }); // Send them to server to save changes
+                            }
+                        } else {
+                            meshserver.Send({ action: 'changelocation', nodeid: node._id, value: v }); // This Node is not yet added to maps.
+                        }
+                    }
+                    else if (button == 1) {
+                        if (feature) {
+                            feature.getGeometry().setCoordinates(coords);
+                            modifyMarkerloc(feature);
+                        } else {
+                            if (!node.iploc) {
+                                addFeature(node, v[0], v[1]);
+                                var newFeature = markersSource.getFeatureById(node._id);
+                                modifyMarkerloc(newFeature);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Close place node dialog
+        function closePNDialog(id){
+            dialogclose(1);
+            switch (id) {
+                case 1:
+                    Q("showselect")[0].selected = true;
+                    onShowSelectChange();
+                    go(1);
+                    break;
+                case 2:
+                    go(2);
+                    break;
+                default:
+                    gotoMesh(id);
+            }
+        }
+
+        // On input search change
+        function onPNSearchInputChange() {
+            QH('placenode', '');
+            var inputSearchData = Q('selectnode-search').value.toLowerCase();
+            var selectMeshElement=Q("select-mesh");
+            var selectedIndex = selectMeshElement.selectedIndex;
+            var selectedMeshValue=selectMeshElement[selectedIndex].value;
+            updatePlaceNodeTable(inputSearchData, selectedIndex, selectedMeshValue, 1);
+        }
+
+        function updatePlaceNodeTable(inputSearch, selectedIndex, selectedMeshValue, innerHtmlflag) {
+            var x = '<table id="placenode-table" class="selectnode-table"><tbody>';
+            var count = 0;
+            for (var i in nodes) {
+                if (nodes[i].mtype == 2) {
+                    if ((nodes[i].meshid == selectedMeshValue || selectedIndex == 0) && ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0))) {
+                        count++;
+                        x+='<tr id="'+ nodes[i]._id +'-rowid" onclick=selectNodetoplace(\''+ nodes[i]._id +'\') onmouseover="changeRadioImg(\''+ nodes[i]._id +'!#!mouseover'+ '\')" onmouseout="changeRadioImg(\''+ nodes[i]._id +'!#!mouseout'+ '\')">';
+                        x+='<td style="width: 30px; border-radius: 4px; text-align: center;"><i class="fa fa-square-o fa-lg selectnode-checkbox " id="'+ nodes[i]._id +'-img' +'" style="border-color: #7CFC00;" aria-hidden="true"></i></td>';
+                        x+='<td class="selectnode-td">'+ nodes[i].name + '</td>';
+                        x+='</tr>';
+                    }
+                }
+            }
+            x+='</tbody></table>';
+            if (innerHtmlflag) {
+                if (count == 0) { QH('placenode', '<div class="flexboxdiv"><div style="margin: 0px 10px 0px 4px"><i class="fa fa-exclamation-circle fa-2x" style="color:red" aria-hidden="true"></i></div><div style="max-width: 300px"><b>No Nodes found with this Search Criteria.</b></div></div>'); } else { QH('placenode', x);}
+            }else {
+                if (count == 0) { return 0; }
+                else { return x; }
+            }
+        }   
+
+        function selectNodetoplace(id){
+            var imgeElement = Q(id + '-img');
+            if (xxmap.selectedNodes[id]) {
+                imgeElement.classList.remove('fa-check-square-o');
+                imgeElement.classList.add('fa-square');
+                delete xxmap.selectedNodes[id];
+                CheckedNodesforPN();
+            } else {
+                imgeElement.classList.remove('fa-square');
+                imgeElement.classList.add('fa-check-square-o');
+                xxmap.selectedNodes[id] = { color: Q(id+'-rowid').style.backgroundColor};
+                QE('idx_dlgPlaceandSave', true);
+                QE('idx_dlgPlaceButton', true);
+            }
+        }
+
+        function CheckedNodesforPN() {
+            var c = 0;
+            for (var i in xxmap.selectedNodes) { if (xxmap.selectedNodes[i]) { c++; } }
+            if (c == 0) {
+                QE('idx_dlgPlaceandSave', false);
+                QE('idx_dlgPlaceButton', false);
+            }
+        }
+
+        // Set selected node to null
+        function clearSelectedNode() {
+            xxmap.selectedNodes = {};
+            QE('idx_dlgPlaceandSave', false);
+            QE('idx_dlgPlaceButton', false);
+        }
+
+        // Change radio button on mouseover and out for 'select a node to place dialog'
+        function changeRadioImg(name) {
+            var index = name.indexOf("mouseout");
+            var element = name.split('!#!');
+            if (!xxmap.selectedNodes[element[0]]) {
+                var imgeElement= Q(element[0]+'-img');
+                if (index > -1) {
+                    imgeElement.classList.remove('fa-square');
+                    imgeElement.classList.add('fa-square-o');
+                } else {
+                    imgeElement.classList.remove('fa-square-o');
+                    imgeElement.classList.add('fa-square');
+                }
+            }
+        }
+
+        // Add option for available meshes in mesh Dropdown
+        function addMeshOptions(addMeshid, meshName) {
+            /*
+            var meshOptions = Q('select-mesh');
+            if (addMeshid && meshName) {
+                var option = document.createElement('option');
+                option.value =addMeshid;
+                option.text = meshName;
+                meshOptions.add(option); // Add specific option
+            }
+            else {
+                for (var i in meshes) { // Add all options
+                    var option = document.createElement('option');
+                    option.value = i;
+                    option.text = meshes[i].name;
+                    meshOptions.add(option);
+                }
+            }
+            */
+        }
+
+        // Remove/Modify options in Mesh dropdown (if modMeshname is defined then Modify else Remove)
+        function meshOptionRmvMod(delMeshid, modMeshname){
+            /*
+            var meshOptions = Q('select-mesh');
+            if (delMeshid) {
+                var index=-1;
+                for (var i = 1; i < meshOptions.options.length; i++) {
+                    if (meshOptions[i].value === delMeshid) { index=i; }
+                }
+                if (index > 0) {
+                    if (modMeshname) {
+                        meshOptions[index].innerHTML=modMeshname; // If Mesh name is Modified
+                    }
+                    else { meshOptions.remove(index); }
+                }
+            }
+            */
+        }
+
+        //Check if there is any mesh created
+        function meshExists() {
+            for (var i in meshes) { if (meshes[i]) { return true; } }
+            return false;
+        }
+
+        // Reset Mesh dropdown option to 'All' when a current view mesh is deleted.
+        function setMeshView(emeshid) {
+            var selectMeshElement=Q("select-mesh");
+            var selectedIndex = selectMeshElement.selectedIndex;
+            if (selectMeshElement[selectedIndex].value == emeshid) { selectMeshElement[0].selected = true; onSelectMeshChange(); }
+        }
+
+        // Clear all mesh options except 'All'
+        function clearMeshOptions() {
+            /*
+            var meshOptions=Q('select-mesh');
+            for(var i = meshOptions.options.length - 1 ; i > 0 ; i--) { meshOptions.remove(i); }
+            */
+        }
+
+        // Make a http get call- Replace this with AJAX get if jquery  is used
+        function getSearchLocation() {
+            try {
+                var searchdata = Q('mapSearchLocation').value.trim();
+                if (searchdata.length > 0) {
+                    var xmlhttp = new XMLHttpRequest(); // Compatible with Chrome, Opera, Safari, IE7+, Firefox.
+                    xmlhttp.onreadystatechange = function() { if (xmlhttp.readyState == 4 && xmlhttp.status == 200) { formatSearchData(xmlhttp.responseText); } }
+                    xmlhttp.open("GET", 'https://nominatim.openstreetmap.org/search?q=' + searchdata + '&format=json', true); // Get request
+                    xmlhttp.send();
+                }
+            } catch (e) {}
+        }
+
+        // Format data recieved from nominatim API and display it on content window
+        function formatSearchData(data) {
+            try {
+                QH('xmapSearchResults','');
+                var dataInfo = JSON.parse(data), count = 0, x = '<div style="overflow-y:auto;width:100%;max-height:240px">';
+                for (var i = 0; i < dataInfo.length; i++) {
+                    if (dataInfo[i].display_name && dataInfo[i].boundingbox[0] && dataInfo[i].boundingbox[1] && dataInfo[i].boundingbox[2] && dataInfo[i].boundingbox[3]) {
+                        count++;
+                        var color = (i % 2 == 0)?'F5F5F5':'EBEBEB';
+                        x += '<div style=cursor:pointer;padding:5px;background-color:#' + color + ' onclick=mapGotoSelectedLocation(this)><div>' + dataInfo[i].display_name + '</div><div style=display:none>' + dataInfo[i].boundingbox[0] + '!#!' + dataInfo[i].boundingbox[1] + '!#!' + dataInfo[i].boundingbox[2] + '!#!' + dataInfo[i].boundingbox[3] + '</div></div>';
+                    }
+                }
+                x += '</div>';
+                if (count == 1) {
+                    // If only one result is returned then zoom to that location
+                    var extent = [ parseFloat(dataInfo[0].boundingbox[2]), parseFloat(dataInfo[0].boundingbox[0]), parseFloat(dataInfo[0].boundingbox[3]), parseFloat(dataInfo[0].boundingbox[1]) ];
+                    zoomToExtent(extent);
+                } else {
+                    if (count == 0) { x = '<div style=width:200px>No location found.<div>'; }
+                    QV('xmapSearchResultsDlg', true);
+                }
+                QH('xmapSearchResults', x);
+            }
+            catch (e) {}
+        }
+
+        // Zoom into the bounding box
+        function mapGotoSelectedLocation(obj) {
+            var objchildren = obj.children;
+            var boundingBox = objchildren[1].innerHTML.split('!#!');
+            var extent = [parseFloat(boundingBox[2]), parseFloat(boundingBox[0]), parseFloat(boundingBox[3]), parseFloat(boundingBox[1])];
+            //Q('search-location').value = objchildren[0].innerHTML;
+            zoomToExtent(extent);
+            mapCloseSearchWindow();
+        }
+
+        // Close the search window
+        function mapCloseSearchWindow() {
+            QH('xmapSearchResults', '');
+            QV('xmapSearchResultsDlg', false);
+        }
+
+        // Zoom to specific cordinates
+        function zoomToLocation(coordinates, zoomVal) {
+            var view = xxmap.map.getView();
+            view.setCenter(coordinates);
+            view.setZoom(zoomVal);
+        }
+
+        function zoomToFitExtent() {
+            var features = xxmap.markersSource.getFeatures();
+            if (features.length > 0) {
+                var extent = xxmap.markersSource.getExtent();
+                xxmap.map.getView().fit(extent, xxmap.map.getSize());
+            }
+        }
+
+        function zoomToExtent(extent){
+            var boundingExtent = ol.proj.transformExtent(extent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
+            xxmap.map.getView().fit(boundingExtent, xxmap.map.getSize());
+        }
+
 
         //
         // MY DEVICE
@@ -1943,18 +2633,7 @@
 
             // Setup the device mark layer
             var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])) });
-            //deviceMark.setStyle(new ol.style.Style({ image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
-            deviceMark.setStyle(new ol.style.Style({
-                
-                text: new ol.style.Text({
-                    //font: '12px helvetica,sans-serif',
-                    text: currentNode.name,
-                    textAlign: 'right',
-                    offsetX: -10,
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
-                    }),
-                image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
+            deviceMark.setStyle(markerStyle(currentNode));
             var vectorSource = new ol.source.Vector({ features: [deviceMark] });
             var vectorLayer = new ol.layer.Vector({ source: vectorSource });
 
@@ -2135,7 +2814,6 @@
         }
 
         function applyDesktopSettings() {
-            console.log(desktopsettings);
             d7desktopmode.value = desktopsettings.encoding;
             d7showfocus.checked = desktopsettings.showfocus;
             d7showcursor.checked = desktopsettings.showmouse;
