@@ -3515,7 +3515,7 @@
             if (e.shiftKey == true) { meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' }); } // Upload default core
             else if (e.altKey == true) { meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=3>Upload a core file</option><option value=4>Force disconnect agent</option></select><div>Change Core</div>'); }
+            else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select><div>Change Core</div>'); }
         }
 
         function p15uploadCoreEx() {
@@ -3529,8 +3529,11 @@
                 // Upload file as core
                 p15uploadCore2();
             } else if (Q('d3coreMode').value == 4) {
-                // Force disconnect the mesh agent
-                meshserver.Send({ action: 'agentdisconnect', nodeid: consoleNode._id });
+                // Soft disconnect the mesh agent
+                meshserver.Send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 1 });
+            } else if (Q('d3coreMode').value == 5) {
+                // Hard disconnect the mesh agent
+                meshserver.Send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
             }
         }
 

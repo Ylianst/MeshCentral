@@ -1545,7 +1545,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     case 'agentdisconnect':
                         {
                             // Force mesh agent disconnection
-                            forceMeshAgentDisconnect(user, domain, command.nodeid);
+                            forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
                             break;
                         }
                     case 'close':
@@ -1913,7 +1913,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
 
     // Force mesh agent disconnection
-    function forceMeshAgentDisconnect(user, domain, nodeid) {
+    function forceMeshAgentDisconnect(user, domain, nodeid, disconnectMode) {
         if ((nodeid == undefined) || (nodeid == null)) return;
         var splitnode = nodeid.split('/');
         if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
@@ -1922,7 +1922,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != undefined) && ((rights & 16) != 0) && (user.siteadmin == 0xFFFFFFFF)) { agent.close(); }
+        if ((rights != undefined) && ((rights & 16) != 0) && (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
     }
 
     // Send the core module to the mesh agent

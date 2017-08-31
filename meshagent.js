@@ -32,8 +32,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Disconnect this agent
     obj.close = function (arg) {
-        //console.log('MeshAgent.close(' + arg + ')');
-        if (arg !== 1) { try { obj.ws.close(); } catch (e) { } }
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid);  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
             obj.parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
@@ -211,7 +211,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log(err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { obj.close(1); });
+    ws.on('close', function (req) { obj.close(0); });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 256 bits SHA256 hash of TLS cert public key + 256 bits nonce
