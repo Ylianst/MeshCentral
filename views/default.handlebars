@@ -1535,25 +1535,29 @@
         }
 
         function groupActionFunction() {
-            var x = "Select an operation to perform on all selected devices.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=1>Wake-up devices</option><option value=2>Delete devices</option></select>');
+            var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights.<br /><br />";
+            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=101>Delete devices</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
         function groupActionFunctionEx() {
             var op = Q('d2groupop').value;
-            if (op == 1) {
+            if (op == 100) {
                 // Group wake
                 var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
                 for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
                 meshserver.Send({ action: 'wakedevices', nodeids: nodeids });
-            }
-            if (op == 2) {
+            } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var x = "Confirm delete selected devices(s)?<br /><br />";
                 x += "<input id=d2check type=checkbox onchange=d2groupActionFunctionDelEx() />Confirm";
                 setDialogMode(2, "Delete Nodes", 3, groupActionFunctionDelEx, x);
                 QE('idx_dlgOkButton', false);
+            } else {
+                // Power operation
+                var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
+                for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
+                meshserver.Send({ action: 'poweraction', nodeids: nodeids, actiontype: op });
             }
         }
 
@@ -2463,9 +2467,9 @@
                 Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
 
                 // Display "action" button on desktop/terminal/files
-                QV('deskActionsBtn', (meshrights & 76) != 0);
-                QV('termActionsBtn', (meshrights & 76) != 0);
-                QV('filesActionsBtn', (meshrights & 76) != 0);
+                QV('deskActionsBtn', (meshrights & 72) != 0); // 72 = Wake-up + Remote Control permissions
+                QV('termActionsBtn', (meshrights & 72) != 0);
+                QV('filesActionsBtn', (meshrights & 72) != 0);
 
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.Send({ action: 'powertimeline', nodeid: currentNode._id }); }
@@ -2475,16 +2479,24 @@
         }
 
         function deviceActionFunction() {
+            var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2deviceop style=float:right;width:250px><option value=1>Wake-up</option></select>');
+            var y = '<select id=d2deviceop style=float:right;width:250px>';
+            if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
+            if ((meshrights & 8) != 0) { y += '<option value=4>Sleep</option><option value=3>Reset</option><option value=2>Power off</option>'; } // Remote control permission
+            y += '</select>';
+            x += addHtmlValue('Operation', y);
             setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
         }
 
         function deviceActionFunctionEx() {
             var op = Q('d2deviceop').value;
-            if (op == 1) {
+            if (op == 100) {
                 // Device wake
                 meshserver.Send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
+            } else {
+                // Power operation
+                meshserver.Send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
             }
         }
 

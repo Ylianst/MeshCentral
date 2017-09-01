@@ -1391,6 +1391,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         }
                     case 'wakedevices':
                         {
+                            // TODO: INPUT VALIDATION!!!
                             // TODO: We can optimize this a lot.
                             // - We should get a full list of all MAC's to wake first.
                             // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
@@ -1443,6 +1444,40 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                 ws.send(JSON.stringify({ action: 'wakedevices' }));
                             }
 
+                            break;
+                        }
+                    case 'poweraction':
+                        {
+                            // TODO: INPUT VALIDATION!!!
+                            for (var i in command.nodeids) {
+                                var nodeid = command.nodeids[i], powerActions = 0;
+                                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                                    // Get the device
+                                    obj.db.Get(nodeid, function (err, nodes) {
+                                        if (nodes.length != 1) return;
+                                        var node = nodes[0];
+
+                                        // Get the mesh for this device
+                                        var mesh = obj.meshes[node.meshid];
+                                        if (mesh) {
+
+                                            // Check if this user has rights to do this
+                                            if (mesh.links[user._id] != undefined && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
+
+                                                // Get this device
+                                                var agent = obj.wsagents[node._id];
+                                                if (agent != null) {
+                                                    // Send the power command
+                                                    agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype }));
+                                                    powerActions++;
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                                // Confirm we may be doing something (TODO)
+                                ws.send(JSON.stringify({ action: 'poweraction' }));
+                            }
                             break;
                         }
                     case 'getnetworkinfo':

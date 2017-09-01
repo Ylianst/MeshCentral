@@ -26,14 +26,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentInfo;
     obj.agentUpdate = null;
     var agentUpdateBlockSize = 65520;
+    obj.remoteaddr = obj.ws._socket.remoteAddress;
+    if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
     // Send a message to the mesh agent
     obj.send = function (data) { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } }
 
     // Disconnect this agent
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid);  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')');  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
             obj.parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
@@ -211,7 +213,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log(err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { obj.close(0); });
+    ws.on('close', function (req) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });
+    // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 256 bits SHA256 hash of TLS cert public key + 256 bits nonce
@@ -223,9 +226,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.authenticated =! 1 || obj.meshid == null) return;
         // Check that the mesh exists
         obj.db.Get(obj.dbMeshKey, function (err, meshes) {
-            if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection.'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+            if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
             var mesh = meshes[0];
-            if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection.'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+            if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
 
             // Check that the node exists
             obj.db.Get(obj.dbNodeKey, function (err, nodes) {
@@ -269,6 +272,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.parent.wsagents[obj.dbNodeKey] = obj;
                 if (dupAgent) {
                     // Close the duplicate agent
+                    obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')');
                     dupAgent.close();
                 } else {
                     // Indicate the agent is connected
@@ -306,7 +310,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.agentnonce;
         delete obj.unauth;
         if (obj.unauthsign) delete obj.unauthsign;
-        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid);
+        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ').');
         obj.authenticated = 1;
         return true;
     }
@@ -315,7 +319,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function processAgentData(msg) {
         var str = msg.toString('utf8');
         if (str[0] == '{') {
-            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse JSON'); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
             switch (command.action) {
                 case 'msg':
                     {
@@ -434,9 +438,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (device.intelamt.host != command.intelamt.host) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
                     }
                     if (mesh.mtype == 2) {
-                        var remoteaddr = obj.ws._socket.remoteAddress;
-                        if (remoteaddr.startsWith('::ffff:')) { remoteaddr = remoteaddr.substring(7); }
-                        if (device.host != remoteaddr) { device.host = remoteaddr; change = 1; changes.push('host'); }
+                        if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
                         // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                     }
 

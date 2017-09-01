@@ -46,8 +46,13 @@ function createMeshCore(agent) {
     }
 
     // Get our location (lat/long) using our public IP address
+    var getIpLocationDataExInProgress = false;
+    var getIpLocationDataExCounts = [ 0, 0 ];
     function getIpLocationDataEx(func) {
+        if (getIpLocationDataExInProgress == true) { return false; }
         try {
+            getIpLocationDataExInProgress = true;
+            getIpLocationDataExCounts[0]++;
             http.request({
                 host: 'ipinfo.io', // TODO: Use a HTTP proxy if needed!!!!
                 port: 80,
@@ -60,11 +65,13 @@ function createMeshCore(agent) {
                     resp.end = function () {
                         var location = null;
                         try { if (typeof geoData == 'string') { var result = JSON.parse(geoData); if (result.ip && result.loc) { location = result; } } } catch (e) { }
-                        if (func) { func(location); }
+                        if (func) { getIpLocationDataExCounts[1]++; func(location); }
                     }
+                    getIpLocationDataExInProgress = false;
                 }).end();
+            return true;
         }
-        catch (e) { }
+        catch (e) { return false; }
     }
 
     // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
@@ -245,6 +252,18 @@ function createMeshCore(agent) {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
                     sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));
                     // TODO!!!!
+                    break;
+                }
+                case 'poweraction': {
+                    // Server telling us to execute a power action
+                    if ((mesh.ExecPowerState != undefined) && (data.actiontype)) {
+                        var forced = 0;
+                        if (data.forced == 1) { forced = 1; }
+                        data.actiontype = parseInt(data.actiontype);
+                        sendConsoleText('Performing power action=' + data.actiontype + ', forced=' + forced + '.');
+                        var r = mesh.ExecPowerState(data.actiontype, forced);
+                        sendConsoleText('ExecPowerState returned code: ' + r);
+                    }
                     break;
                 }
                 case 'location': {
@@ -520,7 +539,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -727,8 +746,21 @@ function createMeshCore(agent) {
                     sendConsoleText(args['_'].join(' '));
                     break;
                 }
-                case 'location': {
-                    getIpLocationData(function (location) { sendConsoleText("Public IP location:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                case 'location': { // Get location information about this computer
+                    getIpLocationData(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                    break;
+                }
+                case 'power': { // Execute a power action on this computer
+                    if (mesh.ExecPowerState == undefined) {
+                        response = 'Power command not supported on this agent.';
+                    } else {
+                        if ((args['_'].length == 0) || (typeof args['_'][0] != 'number')) {
+                            response = 'Proper usage: power (actionNumber), where actionNumber is:\r\n  LOGOFF = 1\r\n  SHUTDOWN = 2\r\n  REBOOT = 3\r\n  SLEEP = 4\r\n  HIBERNATE = 5\r\n  DISPLAYON = 6\r\n  KEEPAWAKE = 7\r\n  BEEP = 8\r\n  CTRLALTDEL = 9\r\n  VIBRATE = 13\r\n  FLASH = 14'; // Display correct command usage
+                        } else {
+                            var r = mesh.ExecPowerState(args['_'][0], args['_'][1]);
+                            response = 'Power action executed with return code: ' + r + '.';
+                        }
+                    }
                     break;
                 }
                 default: { // This is an unknown command, return an error message

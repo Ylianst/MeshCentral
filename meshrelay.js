@@ -17,9 +17,11 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     var obj = {};
     obj.ws = ws;
     obj.peer = null;
+    obj.parent = parent;
     obj.id = req.query['id'];
+    obj.remoteaddr = obj.ws._socket.remoteAddress;
+    if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
-    //console.log('Got relay connection for: ' + obj.id);
     if (obj.id == undefined) { obj.ws.close(); obj.id = null; return null; } // Attempt to connect without id, drop this.
 
     // Validate that the id is valid, we only need to do this on non-authenticated sessions.
@@ -51,15 +53,18 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
                 relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
                 relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
 
+                obj.parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + obj.peer.remoteaddr +  ')');
             } else {
                 // Connected already, drop (TODO: maybe we should re-connect?)
                 obj.id = null;
                 obj.ws.close();
+                obj.parent.parent.debug(1, 'Relay duplicate: ' + obj.id + ' (' + obj.remoteaddr + ')');
                 return null;
             }
         } else {
             // Setup the connection, wait for peer
-            parent.wsrelays[obj.id] = { peer1 : obj, state : 1 };
+            parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
+            obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ')');
         }
     }
     
@@ -68,24 +73,26 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     };
 
     // When data is received from the mesh relay web socket
-    ws.on('message', function (data) 
-        {
-            if (this.peer != null) { try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { } }
-        });
+    ws.on('message', function (data) {
+        if (this.peer != null) { try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { } }
+    });
 
     // If error, do nothing
     ws.on('error', function (err) { console.log(err); });
 
     // If the mesh relay web socket is closed
     ws.on('close', function (req) {
-        //console.log('Got relay disconnection for: ' + obj.id);
         if (obj.id != null) {
             var relayinfo = parent.wsrelays[obj.id];
             if (relayinfo.state == 2) {
                 // Disconnect the peer
-                var peer = (relayinfo.peer1 == obj)?relayinfo.peer2:relayinfo.peer1;
+                var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
+                obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + peer.remoteaddr + ')');
                 peer.id = null;
-                peer.ws._socket.end();
+                try { peer.ws.close(); } catch (e) { } // Soft disconnect
+                try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
+            } else {
+                obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ')');
             }
             delete parent.wsrelays[obj.id];
             obj.peer = null;

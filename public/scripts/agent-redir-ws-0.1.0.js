@@ -30,6 +30,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         obj.socket = new WebSocket(url);
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
+        obj.socket.onerror = function (e) { console.error(e); }
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
         obj.meshserver.Send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: url2 });
