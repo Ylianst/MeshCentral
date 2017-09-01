@@ -11,14 +11,99 @@ module.exports.CreateMeshScanner = function (parent) {
     obj.parent = parent;
     obj.dgram = require('dgram');
     obj.common = require('./common.js');
-    obj.server4 = null;
-    obj.server6 = null;
+    obj.servers4 = {};
+    obj.servers6 = {};
     obj.mainTimer = null;
     var periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
     var membershipIPv4 = '239.255.255.235';
     var membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
     obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
     obj.error = 0;
+
+    // Get a list of IPv4 and IPv6 interface addresses
+    function getInterfaceList() {
+        var ipv4 = [];
+        var ipv6 = [];
+        var interfaces = require('os').networkInterfaces();
+        for (var i in interfaces) {
+            var interface = interfaces[i];
+            for (var j in interface) {
+                var interface2 = interface[j];
+                if ((interface2.mac != '00:00:00:00:00:00') && (interface2.internal == false)) {
+                    if (interface2.family == 'IPv4') { ipv4.push(interface2.address); }
+                    if (interface2.family == 'IPv6') { ipv6.push(interface2.address); }
+                }
+            }
+        }
+        return { ipv4: ipv4, ipv6: ipv6 };
+    }
+
+    // Setup all IPv4 and IPv6 servers
+    function setupServers() {
+        var addresses = getInterfaceList();
+        for (var i in obj.servers4) { obj.servers4[i].xxclear = true; }
+        for (var i in obj.servers6) { obj.servers6[i].xxclear = true; }
+        for (var i in addresses.ipv4) {
+            var localAddress = addresses.ipv4[i];
+            if (obj.servers4[localAddress] != null) {
+                // Server already exists
+                obj.servers4[localAddress].xxclear = false;
+            } else {
+                // Create a new IPv4 server
+                var server4 = obj.dgram.createSocket("udp4");
+                server4.xxclear = false;
+                server4.xxtype = 4;
+                server4.xxlocal = localAddress;
+                server4.on('error', function (err) { console.log("ERROR: Server port " + server4.xxlocal + ":16989 not available, check if server is running twice."); server4.close(); server4 = null; });
+                server4.bind({ address: server4.xxlocal, port: 16989, exclusive: false }, function () {
+                    try {
+                        server4.setBroadcast(true);
+                        server4.setMulticastTTL(128);
+                        server4.addMembership(membershipIPv4);
+                        server4.on('error', function (error) { console.log('Error: ' + error); });
+                        server4.on('message', function (msg, info) { onUdpPacket(msg, info, server4); });
+                        obj.performScan(server4);
+                        obj.performScan(server4);
+                    } catch (e) { }
+                });
+                obj.servers4[localAddress] = server4;
+            }
+        }
+        for (var i in addresses.ipv6) {
+            var localAddress = addresses.ipv6[i];
+            if (obj.servers6[localAddress] != null) {
+                // Server already exists
+                obj.servers6[localAddress].xxclear = false;
+            } else {
+                // Create a new IPv6 server
+                var server6 = obj.dgram.createSocket("udp6", localAddress);
+                server6.xxclear = false;
+                server6.xxtype = 6;
+                server6.xxlocal = localAddress;
+                server6.on('error', function (err) { console.log("ERROR: Server port " + server6.xxlocal + ":16989 not available, check if server is running twice.");server6.close(); obj.server6 = null; });
+                server6.bind({ address: server6.xxlocal, port: 16989, exclusive: false }, function () {
+                    try {
+                        server6.setBroadcast(true); 
+                        server6.setMulticastTTL(128);
+                        server6.addMembership(membershipIPv6);
+                        server6.on('error', function (error) { console.log('Error: ' + error); });
+                        server6.on('message', function (msg, info) { onUdpPacket(msg, info, server6); });
+                        performScan(server6);
+                        performScan(server6);
+                    } catch (e) { }
+                });
+                obj.servers6[localAddress] = server6;
+            }
+        }
+        for (var i in obj.servers4) { if (obj.servers4[i].xxclear == true) { obj.servers4[i].close(); delete obj.servers4[i]; }; }
+        for (var i in obj.servers6) { if (obj.servers6[i].xxclear == true) { obj.servers6[i].close(); delete obj.servers6[i]; }; }
+    }
+
+    // Clear all IPv4 and IPv6 servers
+    function clearServers() {
+        for (var i in obj.servers4) { obj.servers4[i].close(); delete obj.servers4[i]; }
+        for (var i in obj.servers6) { obj.servers6[i].close(); delete obj.servers6[i]; }
+    }
 
     // Start scanning for local network Mesh Agents
     obj.start = function () {
@@ -27,28 +112,7 @@ module.exports.CreateMeshScanner = function (parent) {
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex.toUpperCase() + '|' + url, 'ascii');
         url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex.toUpperCase() + '|' + url, 'ascii');
-        obj.server4 = obj.dgram.createSocket("udp4");
-        obj.server4.on('error', function(err) { if (obj.error++ == 0) { console.log("ERROR: Server port 16989 not available, check if server is running twice."); } obj.server4.close(); obj.server4 = null; });
-        obj.server4.bind(16989, function () {
-            obj.server4.setBroadcast(true)
-            obj.server4.setMulticastTTL(128);
-            obj.server4.addMembership(membershipIPv4);
-            obj.server4.on('error', function (error) { console.log('Error: ' + error); });
-            obj.server4.on('message', onUdpPacket); // TODO!!! We can't use this server for receive, instead we have to bind a seperate UDP server for each of the network interfaces.
-            obj.performScan(4);
-            obj.performScan(4);
-        });
-        obj.server6 = obj.dgram.createSocket("udp6");
-        obj.server6.on('error', function(err) { obj.server6.close(); obj.server6 = null; }); // IPv6 may not be supported.
-        obj.server6.bind(16989, function () {
-            obj.server6.setBroadcast(true)
-            obj.server6.setMulticastTTL(128);
-            obj.server6.addMembership(membershipIPv6);
-            obj.server6.on('error', function (error) { console.log('Error: ' + error); });
-            obj.server6.on('message', onUdpPacket); // TODO!!! We can't use this server for receive, instead we have to bind a seperate UDP server for each of the network interfaces.
-            obj.performScan(6);
-            obj.performScan(6);
-        });
+        setupServers();
         obj.mainTimer = setInterval(obj.performScan, periodicScanTime);
         return obj;
     }
@@ -56,22 +120,27 @@ module.exports.CreateMeshScanner = function (parent) {
     // Stop scanning for local network Mesh Agents
     obj.stop = function () {
         if (obj.mainTimer != null) { clearInterval(obj.mainTimer); obj.mainTimer = null; }
-        if (obj.server4 != null) { obj.server4.close(); obj.server4 = null; }
-        if (obj.server6 != null) { obj.server6.close(); obj.server6 = null; }
+        clearServers();
     }
 
     // Look for all Mesh Agents that may be locally reachable, indicating the presense of this server.
-    obj.performScan = function (mode) {
-        if ((mode != 6) && (obj.server4 != null)) { obj.server4.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); }
-        if ((mode != 4) && (obj.server6 != null)) { obj.server6.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); }
+    obj.performScan = function (server) {
+        if (server != null) {
+            if (server.xxtype == 4) { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); }
+            if (server.xxtype == 6) { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); }
+        } else {
+            for (var i in obj.servers4) { obj.servers4[i].send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); }
+            for (var i in obj.servers6) { obj.servers6[i].send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); }
+            setupServers(); // Check if any network interfaces where added or removed
+        }
     }
 
     // Called when a UDP packet is received from an agent.
-    function onUdpPacket(msg, info) {
-        //console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + '\n');
+    function onUdpPacket(msg, info, server) {
+        // console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + ', on interface: ' + server.xxlocal + '.');
         if ((msg.length == 64) && (msg.toString('ascii') == obj.agentCertificatHashHex.toUpperCase())) {
-            if (info.family == 'IPv4') { obj.server4.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); }
-            if (info.family == 'IPv6') { obj.server6.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); }
+            if (server.xxtype == 4) { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); }
+            if (server.xxtype == 6) { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); }
         }
     }
 
@@ -85,15 +154,15 @@ module.exports.CreateMeshScanner = function (parent) {
             //console.log(wakepacket.toString('hex'));
 
             // Send the wake packet 3 times with small time intervals
-            if (obj.server4) { obj.server4.send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.server4.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-            if (obj.server6) { obj.server6.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
+            for (var i in obj.servers4) { obj.servers4[i].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
+            for (var i in obj.servers6) { obj.servers6[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
             setTimeout(function () {
-                if (obj.server4) { obj.server4.send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.server4.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-                if (obj.server6) { obj.server6.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
+                for (var i in obj.servers4) { obj.servers4[i].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
+                for (var i in obj.servers6) { obj.servers6[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
             }, 200);
             setTimeout(function () {
-                if (obj.server4) { obj.server4.send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.server4.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-                if (obj.server6) { obj.server6.send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
+                for (var i in obj.servers4) { obj.servers4[i].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
+                for (var i in obj.servers6) { obj.servers6[i].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
             }, 500);
         }
     }
