@@ -145,11 +145,14 @@ module.exports.CreateDB = function (args, datapath) {
 
     obj.Set = function (data) { obj.file.update({ _id: data._id }, data, { upsert: true }); }
     obj.Get = function (id, func) { obj.file.find({ _id: id }, func); }
+    obj.GetAll = function (func) { obj.file.find({}, func); }
     obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type : 0 }, func); }
     obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, func) { obj.file.find({ type: type, domain: domain, meshid: { $in: meshes } }, { type : 0 }, func); }
     obj.GetAllType = function (type, func) { obj.file.find({ type: type }, func); }
     obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, func); }
     obj.Remove = function (id) { obj.file.remove({ _id: id }); }
+    obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); }
+    obj.InsertMany = function (data, func) { obj.file.insert(data, func); }
     obj.StoreEvent = function (ids, source, event) { obj.file.insert(event); }
     obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }, func) } }
     obj.RemoveMesh = function (id) { obj.file.remove({ mesh: id }, { multi: true }); obj.file.remove({ _id: id }); }

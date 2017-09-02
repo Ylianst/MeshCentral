@@ -54,7 +54,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport'];
         for (var arg in obj.args) { if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
@@ -121,12 +121,15 @@ function CreateMeshCentralServer() {
             if (xprocess.xrestart == true) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // If exit with restart requested, restart the server. 
             } else {
-                if (error != null) { console.log('ERROR: Unable to start MeshCentral: ' + error); process.exit(); }
+                if (error != null) {
+                    console.log('ERROR: MeshCentral failed with critical error, restarting...');
+                    setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
+                } 
             }
         });
         xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = true; } console.log(data); });
-        xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } console.error(data); });
-        xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { console.log("Exited with code " + code); } });
+        xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync('mesherrors.txt', '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
+        xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
 
     // Get current and latest MeshCentral server versions using NPM
@@ -201,6 +204,22 @@ function CreateMeshCentralServer() {
             if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showevents) { obj.db.GetAllType('event', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showpower) { obj.db.GetAllType('power', function (err, docs) { console.log(docs); process.exit(); }); return; }
+            if (obj.args.dbexport) {
+                // Export the entire database to a JSON file
+                if (obj.args.dbexport == true) { console.log('Use --dbexport [filename]'); process.exit(); } else { obj.db.GetAll(function (err, docs) { obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs)); console.log('Exported ' + docs.length + ' document(s).'); process.exit(); }); }
+                return;
+            }
+            if (obj.args.dbimport) {
+                // Import the entire database from a JSON file
+                if (obj.args.dbimport == true) { console.log('Use --dbimport [filename]'); process.exit(); } else {
+                    var json = null;
+                    try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file'); process.exit(); }
+                    try { json = JSON.parse(json); } catch (e) { console.log('Invalid JSON format'); process.exit(); }
+                    if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format'); }
+                    obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' document(s)'); process.exit(); }); });
+                }
+                return;
+            }
 
             // Clear old event entries and power entires
             obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.

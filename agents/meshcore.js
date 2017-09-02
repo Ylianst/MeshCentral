@@ -60,13 +60,20 @@ function createMeshCore(agent) {
                 headers: { Host: "ipinfo.io" }
             },
                 function (resp) {
-                    var geoData = '';
-                    resp.data = function (geoipdata) { geoData += geoipdata; };
-                    resp.end = function () {
-                        var location = null;
-                        try { if (typeof geoData == 'string') { var result = JSON.parse(geoData); if (result.ip && result.loc) { location = result; } } } catch (e) { }
-                        if (func) { getIpLocationDataExCounts[1]++; func(location); }
-                    }
+                    if (resp.statusCode == 200) {
+                        var geoData = '';
+                        resp.data = function (geoipdata) { geoData += geoipdata; };
+                        resp.end = function () {
+                            var location = null;
+                            try {
+                                if (typeof geoData == 'string') {
+                                    var result = JSON.parse(geoData);
+                                    if (result.ip && result.loc) { location = result; }
+                                }
+                            } catch (e) { }
+                            if (func) { getIpLocationDataExCounts[1]++; func(location); }
+                        }
+                    } else { func(null); }
                     getIpLocationDataExInProgress = false;
                 }).end();
             return true;
@@ -89,11 +96,15 @@ function createMeshCore(agent) {
         if (publicLocationInfo == null) {
             // Nothing in the cache, fetch the data
             getIpLocationDataEx(function (locationData) {
-                publicLocationInfo = {};
-                publicLocationInfo.netInfoStr = lastNetworkInfo;
-                publicLocationInfo.locationData = locationData;
-                var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
-                if (func) func(locationData);
+                if (locationData != null) {
+                    publicLocationInfo = {};
+                    publicLocationInfo.netInfoStr = lastNetworkInfo;
+                    publicLocationInfo.locationData = locationData;
+                    var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
+                    if (func) func(locationData); // Report the new location
+                } else {
+                    if (func) func(null); // Report no location
+                }
             });
         } else {
             // Check the cache
@@ -103,11 +114,15 @@ function createMeshCore(agent) {
             } else {
                 // Cache mismatch
                 getIpLocationDataEx(function (locationData) {
-                    publicLocationInfo = {};
-                    publicLocationInfo.netInfoStr = lastNetworkInfo;
-                    publicLocationInfo.locationData = locationData;
-                    var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
-                    if (func) func(locationData);
+                    if (locationData != null) {
+                        publicLocationInfo = {};
+                        publicLocationInfo.netInfoStr = lastNetworkInfo;
+                        publicLocationInfo.locationData = locationData;
+                        var x = db.Put('publicLocationInfo', JSON.stringify(publicLocationInfo)); // Save to database
+                        if (func) func(locationData); // Report the new location
+                    } else {
+                        if (func) func(publicLocationInfo.locationData); // Can't get new location, report the old location
+                    }
                 });
             }
         }
@@ -539,7 +554,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -654,7 +669,9 @@ function createMeshCore(agent) {
                         response = 'Proper usage: wsconnect (url)\r\nFor example: wsconnect wss://localhost:443/meshrelay.ashx?id=abc'; // Display correct command usage
                     } else {
                         var httprequest = null;
-                        try { http.request(parseUrl(args['_'][0])); } catch (e) { response = 'Invalid HTTP websocket request'; }
+                        try {
+                            httprequest = http.request(parseUrl(args['_'][0]));
+                        } catch (e) { response = 'Invalid HTTP websocket request'; }
                         if (httprequest != null) {
                             httprequest.upgrade = onWebSocketUpgrade;
 
@@ -695,7 +712,7 @@ function createMeshCore(agent) {
                         var i = parseInt(args['_'][0]);
                         var httprequest = consoleWebSockets[i];
                         if (httprequest != undefined) {
-                            httprequest.s.end();
+                            if (httprequest.s != null) { httprequest.s.end(); } else { httprequest.end(); }
                             response = 'ok';
                         } else {
                             response = 'Invalid web socket number';
@@ -747,7 +764,11 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'location': { // Get location information about this computer
-                    getIpLocationData(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                    if (args['_'][0] == 'force') {
+                        getIpLocationDataEx(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                    } else {
+                        getIpLocationData(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
+                    }
                     break;
                 }
                 case 'power': { // Execute a power action on this computer
