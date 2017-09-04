@@ -9,6 +9,15 @@ CheckStartupType() {
   return 0;
 }
 
+# Add "StartupType=(type)" to .msh file
+UpdateMshFile() {
+  # Remove all lines that start with "StartupType="
+  sed '/^StartupType=/ d' < /usr/local/mesh/meshagent.msh >> /usr/local/mesh/meshagent2.msh
+  # Add the startup type to the file
+  echo "StartupType=$starttype" >> /usr/local/mesh/meshagent2.msh
+  mv /usr/local/mesh/meshagent2.msh /usr/local/mesh/meshagent.msh
+}
+
 CheckInstallAgent() {
 #  echo "Checking mesh identifier..."
   if [ -e "/usr/local" ]
@@ -70,11 +79,12 @@ DownloadAgent() {
   if [ $? -eq 0 ]
   then
     echo "Mesh agent download."
-# TODO: Check meshagent sha256 hash
+# TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
     wget $url/meshsettings?id=$meshid -q --no-check-certificate -O /usr/local/mesh/meshagent.msh
     if [ $? -eq 0 ]
     then
+	  UpdateMshFile
       if [ $starttype -eq 1 ]
       then
         echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\n[Install]\nWantedBy=multi-user.target\nAlias=meshcentral.service\n" > /lib/systemd/system/meshcentral.service

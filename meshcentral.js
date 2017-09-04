@@ -118,16 +118,21 @@ function CreateMeshCentralServer() {
     obj.launchChildServer = function (startLine) {
         var child_process = require('child_process');
         var xprocess = child_process.exec(startLine + ' --launch', function (error, stdout, stderr) {
-            if (xprocess.xrestart == true) {
-                setTimeout(function () { obj.launchChildServer(startLine); }, 500); // If exit with restart requested, restart the server. 
+            console.log(xprocess.xrestart);
+            if (xprocess.xrestart == 1) {
+                setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
+            } else if (xprocess.xrestart == 2) {
+                console.log('Expected exit...');
+                process.exit(); // User CTRL-C exit.
             } else {
                 if (error != null) {
+                    // This is an un-expected restart
                     console.log('ERROR: MeshCentral failed with critical error, restarting...');
                     setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
                 } 
             }
         });
-        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = true; } console.log(data); });
+        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } console.log(data); });
         xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync('mesherrors.txt', '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
@@ -650,7 +655,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 }
 
 // Detect CTRL-C on Linux and stop nicely
-process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } });
+process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Build the list of required modules
 var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];

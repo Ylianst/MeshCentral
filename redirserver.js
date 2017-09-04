@@ -22,7 +22,7 @@ module.exports.CreateRedirServer = function (parent, db, args, certificates) {
     // Perform an HTTP to HTTPS redirection
     function performRedirection(req, res) {
         var host = certificates.CommonName;
-        if (certificates.CommonName == 'sample.org') { host = req.headers.host; }
+        if ((certificates.CommonName == 'sample.org') || (certificates.CommonName == 'un-configured')) { host = req.headers.host; }
         if (req.headers && req.headers.host && (req.headers.host.split(':')[0].toLowerCase() == 'localhost')) { res.redirect('https://localhost:' + args.port + req.url); } else { res.redirect('https://' + host + ':' + args.port + req.url); }
     }
     
