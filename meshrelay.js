@@ -24,6 +24,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
 
     if (obj.id == undefined) { obj.ws.close(); obj.id = null; return null; } // Attempt to connect without id, drop this.
 
+    // Check if this session is a logged in user, at least one of the two connections will need to be authenticated.
+    try { if ((req.session) && (req.session.userid) || (req.session.domainid == getDomain(req).id)) { obj.authenticated = true; } } catch (e) { }
+
     // Validate that the id is valid, we only need to do this on non-authenticated sessions.
     // TODO: Figure out when this needs to be done.
     /*
@@ -42,6 +45,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
         var relayinfo = parent.wsrelays[obj.id];
         if (relayinfo) {
             if (relayinfo.state == 1) {
+                // Check that at least one connection is authenticated
+                if ((obj.authenticated != true) && (relayinfo.peer1.authenticated != true)) {
+                    obj.id = null;
+                    obj.ws.close();
+                    obj.parent.parent.debug(1, 'Relay without-auth: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                    return null;
+                }
+
                 // Connect to peer
                 obj.peer = relayinfo.peer1;
                 obj.peer.peer = obj;
