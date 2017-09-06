@@ -48,10 +48,10 @@ On Windows, you can install MeshCentral to run as a background service, just run
 Update and uninstall
 --------------------
 
-Upgrading or uninstalling MeshCentral is super easy, just use npm as usual. From the parent folder of node_module, enter ether:
+Uninstalling MeshCentral is super easy, just use npm as usual. For updating, just install over the previous version by installing again, data files will not be changed. From the parent folder of node_module, enter ether:
 
 ```
-	npm upgrade meshcentral
+	npm install meshcentral
 	npm uninstall meshcentral
 ```
 
