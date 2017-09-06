@@ -373,10 +373,8 @@ function createMeshCore(agent) {
             return;
         }
         // Setup remote desktop & terminal without using native pipes
-        if (useNativePipes == false) {
-            if (this.httprequest.desktop) { this.httprequest.desktop.kvm.write(data); return; }
-            if (this.httprequest.terminal) { this.httprequest.terminal.write(data); return; }
-        }
+        if ((this.httprequest.desktop) && (obj.useNativePipes == false)) { this.httprequest.desktop.kvm.write(data); return; }
+        if ((this.httprequest.terminal) && (obj.useNativePipes == false)) { this.httprequest.terminal.write(data); return; }
 
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
@@ -388,7 +386,7 @@ function createMeshCore(agent) {
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
-                    if (useNativePipes == false) {
+                    if (obj.useNativePipes == false) {
                         // Remote Terminal without using native pipes
                         if (process.platform == "win32") {
                             this.httprequest.terminal = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
@@ -412,7 +410,7 @@ function createMeshCore(agent) {
                     }
                 }
                 if (this.httprequest.protocol == 2) {
-                    if (useNativePipes == false) {
+                    if (obj.useNativePipes == false) {
                         // Remote Desktop without using native pipes
                         this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                         this.httprequest.desktop.kvm.tunnel = this;

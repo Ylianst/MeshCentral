@@ -294,31 +294,42 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
                 if ((obj.agentInfo != undefined) && (obj.agentInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
 
-                // Check if we need to ask for the IP location
-                var doIpLocation = 0;
-                if (device.iploc == null) {
-                    doIpLocation = 1;
-                } else {
-                    var loc = device.iploc.split(',');
-                    if (loc.length < 3) {
-                        doIpLocation = 2;
+                // Check if we already have IP location information for this node
+                obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
+                    if (iplocs.length == 1) {
+                        // We have a location in the database for this remote IP
+                        var iploc = nodes[0], x = {};
+                        x.publicip = iploc.ip;
+                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(command.value.date)) / 1000));
+                        ChangeAgentLocationInfo(x);
                     } else {
-                        var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
-                        t.setDate(t.getDate() + 20);
-                        if (t < now) { doIpLocation = 3; }
-                    }
-                }
-
-                // If we need to ask for IP location, see if we have the quota to do it.
-                if (doIpLocation > 0) {
-                    obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
-                        if (ipLocationLimitor.value > 0) {
-                            ipLocationLimitor.value--;
-                            obj.db.Set(ipLocationLimitor);
-                            obj.send(JSON.stringify({ action: 'iplocation' }));
+                        // Check if we need to ask for the IP location
+                        var doIpLocation = 0;
+                        if (device.iploc == null) {
+                            doIpLocation = 1;
+                        } else {
+                            var loc = device.iploc.split(',');
+                            if (loc.length < 3) {
+                                doIpLocation = 2;
+                            } else {
+                                var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
+                                t.setDate(t.getDate() + 20);
+                                if (t < now) { doIpLocation = 3; }
+                            }
                         }
-                    });
-                }
+
+                        // If we need to ask for IP location, see if we have the quota to do it.
+                        if (doIpLocation > 0) {
+                            obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                                if (ipLocationLimitor.value > 0) {
+                                    ipLocationLimitor.value--;
+                                    obj.db.Set(ipLocationLimitor);
+                                    obj.send(JSON.stringify({ action: 'iplocation' }));
+                                }
+                            });
+                        }
+                    }
+                });
             });
         });
     }
@@ -425,11 +436,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'iplocation':
                     {
                         // Sent by the agent to update location information
+                        console.log(command);
                         if ((command.type == 'publicip') && (command.value != null) && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
                             var x = {};
                             x.publicip = command.value.ip;
                             x.iploc = command.value.loc + ',' + (Math.floor(Date.now() / 1000) );
                             ChangeAgentLocationInfo(x);
+                            command.value._id = 'iploc_' + command.value.ip;
+                            command.value.type = 'iploc';
+                            command.value.date = Date.now();
+                            obj.db.Set(command.value); // Store the IP to location data in the database
+                            // Sample Value: { ip: '192.55.64.246', city: 'Hillsboro', region: 'Oregon', country: 'US', loc: '45.4443,-122.9663', org: 'AS4983 Intel Corporation', postal: '97123' }
                         }
                         break;
                     }
