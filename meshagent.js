@@ -232,12 +232,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
             // Check that the node exists
             obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+                var device;
+
                 // Mark when we connected to this agent
                 obj.connectTime = Date.now();
 
                 if (nodes.length == 0) {
                     // This node does not exist, create it.
-                    var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+                    device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
                     obj.db.Set(device);
 
                     // Event the new node
@@ -245,7 +247,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: change, domain: domain.id })
                 } else {
                     // Device already exists, look if changes has occured
-                    var device = nodes[0];
+                    device = nodes[0];
                     if (device.agent == undefined) {
                         device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
                     } else {
@@ -291,6 +293,32 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Check if we need to make an native update check
                 obj.agentInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
                 if ((obj.agentInfo != undefined) && (obj.agentInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
+
+                // Check if we need to ask for the IP location
+                var doIpLocation = 0;
+                if (device.iploc == null) {
+                    doIpLocation = 1;
+                } else {
+                    var loc = device.iploc.split(',');
+                    if (loc.length < 3) {
+                        doIpLocation = 2;
+                    } else {
+                        var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
+                        t.setDate(t.getDate() + 20);
+                        if (t < now) { doIpLocation = 3; }
+                    }
+                }
+
+                // If we need to ask for IP location, see if we have the quota to do it.
+                if (doIpLocation > 0) {
+                    obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                        if (ipLocationLimitor.value > 0) {
+                            ipLocationLimitor.value--;
+                            obj.db.Set(ipLocationLimitor);
+                            obj.send(JSON.stringify({ action: 'iplocation' }));
+                        }
+                    });
+                }
             });
         });
     }
@@ -394,13 +422,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         break;
                     }
-                case 'location':
+                case 'iplocation':
                     {
                         // Sent by the agent to update location information
                         if ((command.type == 'publicip') && (command.value != null) && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
                             var x = {};
                             x.publicip = command.value.ip;
-                            x.iploc = command.value.loc;
+                            x.iploc = command.value.loc + ',' + (Math.floor(Date.now() / 1000) );
                             ChangeAgentLocationInfo(x);
                         }
                         break;

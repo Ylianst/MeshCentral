@@ -118,7 +118,6 @@ function CreateMeshCentralServer() {
     obj.launchChildServer = function (startLine) {
         var child_process = require('child_process');
         var xprocess = child_process.exec(startLine + ' --launch', function (error, stdout, stderr) {
-            console.log(xprocess.xrestart);
             if (xprocess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
             } else if (xprocess.xrestart == 2) {
@@ -127,7 +126,7 @@ function CreateMeshCentralServer() {
             } else {
                 if (error != null) {
                     // This is an un-expected restart
-                    console.log('ERROR: MeshCentral failed with critical error, restarting...');
+                    console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting...');
                     setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
                 } 
             }

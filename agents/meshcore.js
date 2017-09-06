@@ -26,6 +26,7 @@ function createMeshCore(agent) {
     var lastNetworkInfo = null;
     var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
+    obj.useNativePipes = (process.platform == 'win32');
 
     var http = require('http');
     var fs = require('fs');
@@ -281,9 +282,9 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
-                case 'location': {
-                    // Update the location information of this node
-                    getIpLocationData(function (location) { mesh.SendCommand({ "action": "location", "type": "publicip", "value": location }); });
+                case 'iplocation': {
+                    // Update the IP location information of this node. Only do this when requested by the server since we have a limited amount of time we can call this per day
+                    getIpLocationData(function (location) { mesh.SendCommand({ "action": "iplocation", "type": "publicip", "value": location }); });
                     break;
                 }
             }
@@ -371,10 +372,11 @@ function createMeshCore(agent) {
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
             return;
         }
-        // (****) Remote Desktop without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
-        if (this.httprequest.desktop) { this.httprequest.desktop.kvm.write(data); return; }
-        // (****) Remote Terminal without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
-        if (this.httprequest.terminal) { this.httprequest.terminal.write(data); return; }
+        // Setup remote desktop & terminal without using native pipes
+        if (useNativePipes == false) {
+            if (this.httprequest.desktop) { this.httprequest.desktop.kvm.write(data); return; }
+            if (this.httprequest.terminal) { this.httprequest.terminal.write(data); return; }
+        }
 
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
@@ -386,53 +388,53 @@ function createMeshCore(agent) {
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
-                    // (****) Remote Terminal without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
-                    if (process.platform == "win32") {
-                        this.httprequest.terminal = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                    if (useNativePipes == false) {
+                        // Remote Terminal without using native pipes
+                        if (process.platform == "win32") {
+                            this.httprequest.terminal = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                        } else {
+                            this.httprequest.terminal = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                        }
+                        this.httprequest.terminal.tunnel = this;
+                        this.httprequest.terminal.on('data', function (chunk) { this.tunnel.write(chunk); });
+                        this.httprequest.terminal.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
                     } else {
-                        this.httprequest.terminal = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                        // Remote terminal using native pipes
+                        if (process.platform == "win32") {
+                            this.httprequest.process = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                        } else {
+                            this.httprequest.process = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                        }
+                        this.httprequest.process.tunnel = this;
+                        this.httprequest.process.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
+                        this.httprequest.process.pipe(this);
+                        this.pipe(this.httprequest.process);
                     }
-                    this.httprequest.terminal.tunnel = this;
-                    this.httprequest.terminal.on('data', function (chunk) { this.tunnel.write(chunk); });
-                    this.httprequest.terminal.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
-
-                    /*
-                    // Remote terminal using native pipes
-                    if (process.platform == "win32") {
-                        this.httprequest.process = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
-                    } else {
-                        this.httprequest.process = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
-                    }
-                    this.httprequest.process.tunnel = this;
-                    this.httprequest.process.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
-                    this.httprequest.process.pipe(this);
-                    this.pipe(this.httprequest.process);
-                    */
                 }
                 if (this.httprequest.protocol == 2) {
-                    // (****) Remote Desktop without using native pipes (TODO: This is in use now because native pipes don't work correctly on Linux)
-                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
-                    this.httprequest.desktop.kvm.tunnel = this;
-                    this.httprequest.desktop.kvm.on('data', function (data) { this.tunnel.write(data); });
-                    this.desktop = this.httprequest.desktop;
-                    this.end = function () { if (--this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); } };
-                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-
-                    /*
-                    // Remote desktop using native pipes
-                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
-                    this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
-                    this.desktop = this.httprequest.desktop;
-                    this.end = function () {
-                        --this.desktop.kvm.connectionCount;
-                        this.unpipe(this.httprequest.desktop.kvm);
-                        this.httprequest.desktop.kvm.unpipe(this);
-                        if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
-                    };
-                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    this.pipe(this.httprequest.desktop.kvm);
-                    this.httprequest.desktop.kvm.pipe(this);
-                    */
+                    if (useNativePipes == false) {
+                        // Remote Desktop without using native pipes
+                        this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                        this.httprequest.desktop.kvm.tunnel = this;
+                        this.httprequest.desktop.kvm.on('data', function (data) { this.tunnel.write(data); });
+                        this.desktop = this.httprequest.desktop;
+                        this.end = function () { if (--this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); } };
+                        if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+                    } else {
+                        // Remote desktop using native pipes
+                        this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                        this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
+                        this.desktop = this.httprequest.desktop;
+                        this.end = function () {
+                            --this.desktop.kvm.connectionCount;
+                            this.unpipe(this.httprequest.desktop.kvm);
+                            this.httprequest.desktop.kvm.unpipe(this);
+                            if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
+                        };
+                        if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+                        this.pipe(this.httprequest.desktop.kvm);
+                        this.httprequest.desktop.kvm.pipe(this);
+                    }
                 }
                 else if (this.httprequest.protocol == 5) {
                     // Setup files
@@ -569,7 +571,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\Capabilities: ' + obj.meshCoreCapabilities + '.';
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.';
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -763,14 +765,6 @@ function createMeshCore(agent) {
                     sendConsoleText(args['_'].join(' '));
                     break;
                 }
-                case 'location': { // Get location information about this computer
-                    if (args['_'][0] == 'force') {
-                        getIpLocationDataEx(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
-                    } else {
-                        getIpLocationData(function (location) { sendConsoleText('IpLocation: ' + getIpLocationDataExCounts[0] + ' querie(s), ' + getIpLocationDataExCounts[1] + ' response(s), inProgress: ' + getIpLocationDataExInProgress + "\r\nPublic IP location data:\r\n" + objToString(location, 0, '.'), sessionid); }, args['_'][0]);
-                    }
-                    break;
-                }
                 case 'power': { // Execute a power action on this computer
                     if (mesh.ExecPowerState == undefined) {
                         response = 'Power command not supported on this agent.';
@@ -844,12 +838,6 @@ function createMeshCore(agent) {
         netInfo.action = 'netinfo';
         var netInfoStr = JSON.stringify(netInfo);
         if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
-
-        // Update public IP location information, location caching will be used
-        getIpLocationData(function (location) {
-            var locationStr = JSON.stringify(location);
-            if ((force == true) || (locationStr != lastPublicLocationInfo)) { mesh.SendCommand({ "action": "location", "type": "publicip", "value": location }); lastPublicLocationInfo = locationStr; }
-        });
     }
 
     // Called on MicroLMS Intel AMT user notification

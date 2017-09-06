@@ -1,0 +1,247 @@
+-------- 9/5/2017, 4:28:13 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:167
+    obj.getValueOfTheDay = function (id, startValue) { obj.Get(id, function (err, docs) { var t = Date.now().toLocaleDateString(); if (docs.length == 1) { var r = docs[0]; if (r.t == t) { return { _id: id, value: r.v, day: t } } } return { _id: id, value: startValue, day: t }; }); }
+                                                                                                             ^
+
+TypeError: Date.now(...).toLocaleDateString is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:167:110
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:29:52 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:169
+            var t = Date.now().toLocaleDateString();
+                               ^
+
+TypeError: Date.now(...).toLocaleDateString is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:169:32
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:29:54 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:169
+            var t = Date.now().toLocaleDateString();
+                               ^
+
+TypeError: Date.now(...).toLocaleDateString is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:169:32
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:30:37 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170
+            var t = data.toLocaleDateString();
+                    ^
+
+ReferenceError: data is not defined
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170:21
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:30:54 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170
+            var t = date.toLocaleDateString();
+                         ^
+
+TypeError: date.toLocaleDateString is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170:26
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:31:59 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170
+            console.log(date, t);
+                        ^
+
+ReferenceError: date is not defined
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\db.js:170:25
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:45:04 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:305
+                    var loc = doIpLocation.split(',');
+                                           ^
+
+TypeError: doIpLocation.split is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:305:44
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:45:07 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:305
+                    var loc = doIpLocation.split(',');
+                                           ^
+
+TypeError: doIpLocation.split is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:305:44
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:50:24 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:308
+                        if (t < new Date.now()) { doIpLocation = 3; }
+                                ^
+
+TypeError: Date.now is not a constructor
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:308:33
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:51:11 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309
+                        if (t < new Date.now()) { doIpLocation = 3; }
+                                ^
+
+TypeError: Date.now is not a constructor
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309:33
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:51:42 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309
+                        if (t < new Date.now()) { doIpLocation = 3; }
+                                ^
+
+TypeError: Date.now is not a constructor
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309:33
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:52:05 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309
+                        if (t < new Date.now()) { doIpLocation = 3; }
+                                ^
+
+TypeError: Date.now is not a constructor
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:309:33
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/5/2017, 4:52:42 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:307
+                        var now = new Date.now();
+                                  ^
+
+TypeError: Date.now is not a constructor
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshagent.js:307:35
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+

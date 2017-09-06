@@ -31,7 +31,7 @@ module.exports.CreateMeshScanner = function (parent) {
                 var interface2 = interface[j];
                 if ((interface2.mac != '00:00:00:00:00:00') && (interface2.internal == false)) {
                     if (interface2.family == 'IPv4') { ipv4.push(interface2.address); }
-                    if (interface2.family == 'IPv6') { ipv6.push(interface2.address); }
+                    if (interface2.family == 'IPv6') { ipv6.push(interface2.address + '%' + i); }
                 }
             }
         }
@@ -80,7 +80,7 @@ module.exports.CreateMeshScanner = function (parent) {
                 server6.xxclear = false;
                 server6.xxtype = 6;
                 server6.xxlocal = localAddress;
-                server6.on('error', function (err) { console.log("ERROR: Server port " + server6.xxlocal + ":16989 not available, check if server is running twice.");server6.close(); obj.server6 = null; });
+                server6.on('error', function (err) { console.log("ERROR: Server port [" + server6.xxlocal + "]:16989 not available, check if server is running twice.");server6.close(); obj.server6 = null; });
                 server6.bind({ address: server6.xxlocal, port: 16989, exclusive: false }, function () {
                     try {
                         server6.setBroadcast(true); 
