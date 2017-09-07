@@ -299,7 +299,7 @@ function CreateMeshCentralServer() {
                         }
 
                         // Setup and start the redirection server if needed
-                        if (obj.args.redirport != undefined && typeof obj.args.redirport == 'number') {
+                        if ((obj.args.redirport != undefined) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
                             obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.certificates);
                         }
 

@@ -154,6 +154,19 @@ module.exports.CertificateOperations = function () {
             r.agent = { cert: agentCertificate, key: agentPrivateKey };
             rcount++;
         }
+
+        // If CA certificates are present, load them
+        var caok, caindex = 1, calist = [];
+        do {
+            caok = false;
+            if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
+                var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
+                calist.push(caCertificate);
+                caok = true;
+            }
+            caindex++;
+        } while (caok == true);
+        r.calist = calist;
                 
         // Decode certificate arguments
         var commonName = 'un-configured', country, organization;
@@ -226,7 +239,7 @@ module.exports.CertificateOperations = function () {
             agentPrivateKey = r.agent.key
         }
 
-        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, CommonName: commonName, RootName: rootName };
+        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, calist: calist, CommonName: commonName, RootName: rootName };
         if (func != undefined) { func(r); }
         return r;
     }

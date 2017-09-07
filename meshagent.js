@@ -436,7 +436,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'iplocation':
                     {
                         // Sent by the agent to update location information
-                        console.log(command);
                         if ((command.type == 'publicip') && (command.value != null) && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
                             var x = {};
                             x.publicip = command.value.ip;

@@ -89,7 +89,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // Setup the HTTP server with TLS
         //var certOperations = require('./certoperations.js').CertificateOperations();
         //var webServerCert = certOperations.GetWebServerCertificate('./data', 'SampleServer.org', 'US', 'SampleOrg');
-        obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, rejectUnauthorized: true }, obj.app);
+        obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.calist, rejectUnauthorized: true }, obj.app);
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
     
