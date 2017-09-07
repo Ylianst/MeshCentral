@@ -46,9 +46,9 @@ CheckInstallAgent() {
 #       Linux x86, 32 bit
         machineid=5
       fi
-      if [ $machinetype == 'armv7l' ]
+      if [ $machinetype == 'armv6l' ] || [ $machinetype == 'armv7l' ]
       then
-#       Raspberry Pi 2 or Raspberry Pi 3
+#       RaspberryPi 1 (armv6l) or RaspberryPi 2/3 (armv7l)
         machineid=25
       fi
 # TODO: Add more machine types, detect KVM support, etc.

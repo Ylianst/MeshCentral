@@ -245,3 +245,9 @@ TypeError: Date.now is not a constructor
     at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
 
 
+-------- 9/7/2017, 12:15:48 PM --------
+
+Error: ENOENT: no such file or directory, stat 'C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\agents\meshagent_pi2'
+    at Error (native)
+
+

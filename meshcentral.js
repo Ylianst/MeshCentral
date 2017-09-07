@@ -594,7 +594,7 @@ function CreateMeshCentralServer() {
         22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'MeshAgent.exe', desc: 'Windows MinCore Service x86-32', update: true },
         23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false }, // Get this one from NPM
         24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true },
-        25: { id: 25, localname: 'meshagent_pi2', rname: 'meshagent', desc: 'Linux ARMv7 - Raspberry Pi 2/3', update: true } // armv7l
+        25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true } // "armv6l" and "armv7l"
     };
 
     // Update the list of available mesh agents
