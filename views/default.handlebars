@@ -122,7 +122,7 @@
                                 <select id=viewselect onchange=onDeviceViewChange()>
                                     <option value=1>3 wide</option>
                                     <option value=2>List</option>
-                                    <option value=3>Map</option>
+                                    <option id=viewselectmapoption value=3>Map</option>
                                 </select>
                             </div>
                             <div style=float:right id=devListToolbarSort>
@@ -1662,8 +1662,9 @@
 
         // Add a feature for every Node and change style if connection status changes
         function updateMapMarkers(selectedMesh) {
+            if ((xxmap != null) && (xxmap.map == null)) loadmap();
+            if (xxmap == null) return;
             var boundingBox = null;
-            if (xxmap.map == null) loadmap();
             for (var i in nodes) {
                 var loc = map_parseNodeLoc(nodes[i]);
                 if (loc) { // Draw markers for devices with locations
@@ -1724,93 +1725,99 @@
 
         // Load the entire map
         function loadmap() {
-            // Initialize a Source Vector
-            xxmap.markersSource = new ol.source.Vector();
+            if (xxmap == null) return;
+            try {
+                // Initialize a Source Vector
+                xxmap.markersSource = new ol.source.Vector();
 
-            xxmap.markersLayer = new ol.layer.Vector({
-                source: xxmap.markersSource
-            });
+                xxmap.markersLayer = new ol.layer.Vector({
+                    source: xxmap.markersSource
+                });
 
-            // Create a tile and use OSM source
-            xxmap.mapLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
+                // Create a tile and use OSM source
+                xxmap.mapLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
 
-            xxmap.mapView = new ol.View({ // Set the initial view
-                center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
-                zoom: 2,
-                minZoom: 2,
-                maxZoom: 20,
-                extent: ol.proj.transformExtent([-100000, -69.55, 100000, 69.55], 'EPSG:4326', 'EPSG:3857')
-            });
+                xxmap.mapView = new ol.View({ // Set the initial view
+                    center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 2,
+                    minZoom: 2,
+                    maxZoom: 20,
+                    extent: ol.proj.transformExtent([-100000, -69.55, 100000, 69.55], 'EPSG:4326', 'EPSG:3857')
+                });
 
-            xxmap.map = new ol.Map({
-                target: 'xdevicesmap',
-                layers: [xxmap.mapLayer, xxmap.markersLayer],
-                view: xxmap.mapView
-            });
+                xxmap.map = new ol.Map({
+                    target: 'xdevicesmap',
+                    layers: [xxmap.mapLayer, xxmap.markersLayer],
+                    view: xxmap.mapView
+                });
 
-            xxmap.map.addOverlay(map_cm_popup);
+                xxmap.map.addOverlay(map_cm_popup);
 
-            // Goto information tab if a user clicks on a feature
-            xxmap.map.on('click', function(evt) {
-                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) { return feat; });
-                if (feature) {
-                    var nodeid = feature.getId();
-                    if (nodeid != undefined) { gotoDevice(nodeid, 10); } // Goto general info tab
-                    else { // For pointer
-                        var nodeFeatgoto = getCorrespondingFeature(feature); gotoDevice(nodeFeatgoto.getId(), 10);
+                // Goto information tab if a user clicks on a feature
+                xxmap.map.on('click', function(evt) {
+                    var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) { return feat; });
+                    if (feature) {
+                        var nodeid = feature.getId();
+                        if (nodeid != undefined) { gotoDevice(nodeid, 10); } // Goto general info tab
+                        else { // For pointer
+                            var nodeFeatgoto = getCorrespondingFeature(feature); gotoDevice(nodeFeatgoto.getId(), 10);
+                        }
                     }
-                }
-            });
+                });
 
-            // On hover feature show the name of the node. Also add pointer style
-            xxmap.map.on('pointermove', function(evt) {
-                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) {  return feat; });
-                if (feature) {
-                    xxmap.map.getTargetElement().style.cursor = 'pointer';
-                    var coord = feature.getGeometry().getCoordinates();
-                    // map_cm_popup.setPosition(evt.coordinate);
-                    map_cm_popup.setPosition(coord);
-                    featid = feature.getId();
-                    if (featid) {
-                        QH('xmap-info-window', feature.get('name'));
+                // On hover feature show the name of the node. Also add pointer style
+                xxmap.map.on('pointermove', function(evt) {
+                    var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) {  return feat; });
+                    if (feature) {
+                        xxmap.map.getTargetElement().style.cursor = 'pointer';
+                        var coord = feature.getGeometry().getCoordinates();
+                        // map_cm_popup.setPosition(evt.coordinate);
+                        map_cm_popup.setPosition(coord);
+                        featid = feature.getId();
+                        if (featid) {
+                            QH('xmap-info-window', feature.get('name'));
+                        } else {
+                            var nodeFeat = getCorrespondingFeature(feature); // Return the node feature associated to pointer.
+                            QH('xmap-info-window', nodeFeat.get('name'));
+                        }
                     } else {
-                        var nodeFeat = getCorrespondingFeature(feature); // Return the node feature associated to pointer.
-                        QH('xmap-info-window', nodeFeat.get('name'));
+                        xxmap.map.getTargetElement().style.cursor = '';
+                        QH('xmap-info-window', '');
                     }
-                } else {
-                    xxmap.map.getTargetElement().style.cursor = '';
-                    QH('xmap-info-window', '');
-                }
-            });
+                });
 
-            /*
-            // Initialize context menu for openlayers
-            contextmenu = new ContextMenu({
-                width: 160,
-                defaultItems: false, // defaultItems are Zoom In/Zoom Out
-                items: contextmenu_items
-            });
-
-            // On right click open the context menu
-            contextmenu.on("open", function (evt) {
-                var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(ft, l){ return ft;  });
-                xxmap.contextmenu.clear(); //Clear the context menu
-                if (feature) {
-                    var featId=feature.getId();
-                    if (featId) { // Node feature will have an id
-                        addContextMenuItems(feature);
+                /*
+                // Initialize context menu for openlayers
+                contextmenu = new ContextMenu({
+                    width: 160,
+                    defaultItems: false, // defaultItems are Zoom In/Zoom Out
+                    items: contextmenu_items
+                });
+    
+                // On right click open the context menu
+                contextmenu.on("open", function (evt) {
+                    var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(ft, l){ return ft;  });
+                    xxmap.contextmenu.clear(); //Clear the context menu
+                    if (feature) {
+                        var featId=feature.getId();
+                        if (featId) { // Node feature will have an id
+                            addContextMenuItems(feature);
+                        }
+                        else { // If the feature is a pointer, Get its corresponding Node feature
+                            var nodeFeature= getCorrespondingFeature(feature); //return the node feature associated to pointer.
+                            if (nodeFeature) { addContextMenuItems(nodeFeature); }
+                            else{ xxmap.contextmenu.extend(contextmenu_items);    }
+                        }
                     }
-                    else { // If the feature is a pointer, Get its corresponding Node feature
-                        var nodeFeature= getCorrespondingFeature(feature); //return the node feature associated to pointer.
-                        if (nodeFeature) { addContextMenuItems(nodeFeature); }
-                        else{ xxmap.contextmenu.extend(contextmenu_items);    }
-                    }
-                }
-                else { xxmap.contextmenu.extend(contextmenu_items); }
-            });
-            xxmap.map.addControl(xxmap.contextmenu);
-            */
-            //addMeshOptions(); // Adds Mesh names to mesh dropdown
+                    else { xxmap.contextmenu.extend(contextmenu_items); }
+                });
+                xxmap.map.addControl(xxmap.contextmenu);
+                */
+                //addMeshOptions(); // Adds Mesh names to mesh dropdown
+            } catch (e) {
+                QV('viewselectmapoption', false);
+                xxmap = null;
+            }
         }
 
         // Add feature on to Map for a Node
@@ -2425,7 +2432,7 @@
                 if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
-                if (node.iploc) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
+                if ((node.iploc) && (xxmap != null)) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
 
                 QH('p10html3', x);
