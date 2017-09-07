@@ -1165,6 +1165,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             obj.parent.getLatestServerVersion(function (currentVersion, latestVersion) { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); });
                             break;
                         }
+                    case 'serverupdate':
+                        {
+                            // Perform server update
+                            if ((user.siteadmin & 16) == 0) break;
+                            obj.parent.performServerUpdate();
+                            break;
+                        }
                     case 'createmesh':
                         {
                             // Create mesh

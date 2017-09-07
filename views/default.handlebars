@@ -616,7 +616,6 @@
         var features = {{{features}}};
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
-        //var xxmap = null;
 
         function startup() {
             // Guard against other site's top frames (web bugs).
@@ -852,14 +851,17 @@
                 }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate'))  {
-                        console.log(message);
                         var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow-y:auto;line-height:160%>';
                         if (!message.current) { message.current = 'Unknown'; }
                         if (!message.latest) { message.latest = 'Unknown'; }
                         x += addHtmlValue2('Current Version', '<b>' + EscapeHtml(message.current) + '</b>');
                         x += addHtmlValue2('Latest Version', '<b>' + EscapeHtml(message.latest) + '</b>');
                         x += '</div>';
-                        QH('d2verinfo', x);
+                        if (message.current == message.latest) {
+                            setDialogMode(2, "MeshCentral Version", 1, null, x);
+                        } else {
+                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x + '<br />Select OK to start server self-update.');
+                        }
                     }
                     break;
                 }
@@ -1187,7 +1189,7 @@
             QV('devMapToolbar', view == 3);
             QV('devListToolbarSort', view < 3);
             if (view == 3) {
-                setTimeout( function() { xxmap.map.updateSize();}, 200);
+                setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
                 // TODO
             } else {
                 // 3 wide or list view
@@ -3688,8 +3690,12 @@
 
         function server_showVersionDlg() {
             if (xxdialogMode) return;
-            setDialogMode(2, "MeshCentral Version", 1, null, "<div id=d2verinfo>Loading...</div>", 'MeshCentralServerUpdate');
+            setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
             meshserver.Send({ action: 'serverversion' });
+        }
+
+        function server_showVersionDlgEx() {
+            meshserver.Send({ action: 'serverupdate' });
         }
 
         //

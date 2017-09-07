@@ -300,7 +300,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // We have a location in the database for this remote IP
                         var iploc = nodes[0], x = {};
                         x.publicip = iploc.ip;
-                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(command.value.date)) / 1000));
+                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
                         ChangeAgentLocationInfo(x);
                     } else {
                         // Check if we need to ask for the IP location

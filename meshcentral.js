@@ -34,6 +34,8 @@ function CreateMeshCentralServer() {
     obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha256 hash), size:(binary size), path:(binary path) }
     obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha256 hash), size:(binary size), path:(binary path) }
     obj.multiServer = null;
+    obj.currentVer = null;
+    obj.maintenanceTimer = null;
     
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
@@ -54,7 +56,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate'];
         for (var arg in obj.args) { if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
@@ -123,6 +125,14 @@ function CreateMeshCentralServer() {
             } else if (xprocess.xrestart == 2) {
                 console.log('Expected exit...');
                 process.exit(); // User CTRL-C exit.
+            } else if (xprocess.xrestart == 3) {
+                // Server self-update exit
+                var child_process = require('child_process');
+                var xxprocess = child_process.exec('npm install meshcentral', { cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                xxprocess.data = '';
+                xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+                xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
+                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
@@ -131,7 +141,7 @@ function CreateMeshCentralServer() {
                 } 
             }
         });
-        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } console.log(data); });
+        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } console.log(data); });
         xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync('mesherrors.txt', '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
@@ -140,24 +150,21 @@ function CreateMeshCentralServer() {
     obj.getLatestServerVersion = function (callback) {
         if (callback == undefined) return;
         var child_process = require('child_process');
-        var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', function (error, stdout, stderr) {
-            if (xprocess.xrestart == true) {
-                setTimeout(function () { obj.launchChildServer(startLine); }, 500); // If exit with restart requested, restart the server. 
-            } else {
-                if (error != null) { console.log('ERROR: Unable to start MeshCentral: ' + error); process.exit(); }
-            }
-        });
+        var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', function (error, stdout, stderr) { });
         xprocess.data = '';
         xprocess.stdout.on('data', function (data) { xprocess.data += data; });
         xprocess.stderr.on('data', function (data) { });
         xprocess.on('close', function (code) {
             var currentVer = null;
-            try { currentVer = JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version; } catch (e) { }
+            try { currentVer = JSON.parse(require('fs').readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { }
             var latestVer = null;
             if (code == 0) { try { latestVer = xprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
             callback(currentVer, latestVer);
         });
     }
+
+    // Initiate server self-update
+    obj.performServerUpdate = function () { console.log('Starting self upgrade...'); process.exit(200); }
 
     obj.StartEx = function () {
         // Look to see if data and/or file path is specified
@@ -310,6 +317,9 @@ function CreateMeshCentralServer() {
                             obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
                         }
 
+                        // Start periodic maintenance
+                        obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+
                         // Dispatch an event that the server is now running
                         obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
 
@@ -319,7 +329,28 @@ function CreateMeshCentralServer() {
             });
         });
     }
-    
+
+    // Perform maintenance operations (called every hour)
+    obj.maintenanceActions = function () {
+        // Check if we need to perform server self-update
+        if (obj.args.selfupdate == true) {
+            obj.db.getValueOfTheDay('performSelfUpdate', 1, function (performSelfUpdate) {
+                if (performSelfUpdate.value > 0) {
+                    performSelfUpdate.value--;
+                    obj.db.Set(performSelfUpdate);
+                    obj.getLatestServerVersion(function (currentVer, latestVer) { if (currentVer != latestVer) { obj.performServerUpdate(); return; } });
+                }
+            });
+        }
+
+        // Clear old event entries and power entires
+        obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.
+        obj.db.clearOldEntries('power', 10); // Clear all event entires that are older than 10 days. If a node is connected longer than 10 days, current power state will be used for everything.
+
+        // Perform other database cleanup
+        obj.db.cleanup();
+    }
+
     // Stop the Meshcentral server
     obj.Stop = function (restoreFile) {
         // If the database is not setup, exit now.
