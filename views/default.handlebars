@@ -3605,9 +3605,11 @@
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
             x += "</tr><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
+            x += "</tr><tr>";
+            x += "<td align=right>Password Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
             x += '</tr></table><br /><div style="padding:10px;margin-bottom:4px">';
-            x += '<input id="account_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">';
-            x += '<input id="account_dlgOkButton" type="submit" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">';
+            x += '<input id=account_dlgCancelButton type=button value="Cancel" style="float:right;width:80px;margin-left:5px" onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value="OK" style="float:right;width:80px" onclick="dialogclose(1)">';
             x += '</div><br /></form>';
             setDialogMode(2, "Change Password", 0, null, x);
             account_validateDeleteAccount();

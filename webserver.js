@@ -82,6 +82,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
     obj.crypto.randomBytes(32, function (err, buf) { obj.relayRandom = buf; });
 
+    function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+
     if (obj.args.notls) {
         // Setup the HTTP server without TLS
         obj.expressWs = require('express-ws')(obj.app);
@@ -108,12 +111,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (req.session != undefined) {
             var err = req.session.error;
             var msg = req.session.success;
+            var passhint = req.session.passhint;
             delete req.session.error;
             delete req.session.success;
+            delete req.session.passhint;
         }
         res.locals.message = '';
         if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
         if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
+        if (passhint) res.locals.passhint = EscapeHtml(passhint);
         next();
     });
 
@@ -146,7 +152,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             obj.hash(pass, user.salt, function (err, hash) {
                 if (err) return fn(err);
                 if (hash == user.hash) return fn(null, user._id);
-                fn(new Error('invalid password'));
+                fn(new Error('invalid password'), null, user.passhint);
             });
         }
     }
@@ -187,7 +193,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     function handleLoginRequest(req, res) {
         var domain = getDomain(req);
-        obj.authenticate(req.body.username, req.body.password, domain, function (err, userid) {
+        obj.authenticate(req.body.username, req.body.password, domain, function (err, userid, passhint) {
             if (userid) {
                 var user = obj.users[userid];
                 
@@ -203,9 +209,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     req.session.userid = userid;
                     req.session.domainid = domain.id;
                     req.session.currentNode = '';
-                    if (req.body.viewmode) {
-                        req.session.viewmode = req.body.viewmode;
-                    }
+                    if (req.session.passhint) { delete req.session.passhint; }
+                    if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
                     if (req.body.host) {
                         obj.db.GetAllType('node', function (err, docs) {
                             for (var i = 0; i < docs.length; i++) {
@@ -227,6 +232,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             } else {
                 delete req.session.loginmode;
                 req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>';
+                if ((passhint != null) && (passhint.length > 0)) {
+                    req.session.passhint = passhint;
+                } else {
+                    if (req.session.passhint) { delete req.session.passhint; }
+                }
                 res.redirect(domain.url);
             }
         });
@@ -245,7 +255,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 req.session.loginmode = 2;
                 req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
             } else {
-                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id };
+                var hint = req.body.apasswordhint;
+                if (hint.length > 250) hint = hint.substring(0, 250);
+                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id, passhint: hint };
                 var usercount = 0;
                 for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                 if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newAccounts == 2) { domain.newAccounts = 0; } } // If this is the first user, give the account site admin.
@@ -295,10 +307,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // Update the password
         obj.hash(req.body.apassword1, function (err, salt, hash) {
             if (err) throw err;
+            var hint = req.body.apasswordhint;
+            if (hint.length > 250) hint = hint.substring(0, 250);
             var user = obj.users[req.session.userid];
             user.salt = salt;
             user.hash = hash;
             user.passchange = Date.now();
+            user.passhint = req.body.apasswordhint;
             obj.db.SetUser(user);
             req.session.viewmode = 2;
             res.redirect(domain.url);
