@@ -18,6 +18,8 @@
 module.exports.CreateDB = function (args, datapath) {
     var obj = {};
     obj.path = require('path');
+    obj.identifier = null;
+
     if (args.mongodb) {
         // Use MongoDB
         obj.databaseType = 2;
@@ -35,6 +37,17 @@ module.exports.CreateDB = function (args, datapath) {
     }
     
     obj.SetupDatabase = function (func) {
+        // Check if the database unique identifier is present
+        // This is used to check that in server peering mode, everyone is using the same database.
+        obj.Get('DatabaseIdentifier', function (err, docs) {
+            if ((docs.length == 1) && (docs[0].value != null)) {
+                obj.identifier = docs[0].value;
+            } else {
+                obj.identifier = new Buffer(require('crypto').randomBytes(32), 'binary').toString('hex');
+                obj.Set({ _id: 'DatabaseIdentifier', value: obj.identifier });
+            }
+        });
+
         // Load database schema version and check if we need to update
         obj.Get('SchemaVersion', function (err, docs) {
             var ver = 0;

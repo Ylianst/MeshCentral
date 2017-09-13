@@ -30,7 +30,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
     // Send a message to the mesh agent
-    obj.send = function (data) { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } }
+    obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
 
     // Disconnect this agent
     obj.close = function (arg) {
@@ -92,7 +92,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (err) { return console.error(err); }
                             obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: new Buffer(agentUpdateBlockSize + 4), fd: fd };
 
-                            // We got the agent file open ont he server side, tell the agent we are sending an update starting with the SHA256 hash of the result
+                            // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA256 hash of the result
                             //console.log("Agent update file open.");
                             obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0)); // Command 13, start mesh agent download
 

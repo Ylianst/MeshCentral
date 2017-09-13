@@ -625,7 +625,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if ((meshlinks.rights & 8) == 0) { console.log('ERR: Access denied (2)'); return; }
             
             // Check what connectivity is available for this node
-            var state = parent.connectivityByNode[req.query.host];
+            var state = parent.GetConnectivityState(req.query.host);
             var conn = 0;
             if (!state || state.connectivity == 0) {
                 conn = 4; // DEBUG: Allow local connections for now... change this later when we can monitor Intel AMT machines and confirm routing before connections.
@@ -958,7 +958,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                 var r = {};
                                 for (var i in docs) {
                                     // Add the connection state
-                                    var state = parent.connectivityByNode[docs[i]._id];
+                                    var state = parent.GetConnectivityState(docs[i]._id);
                                     if (state) {
                                         docs[i].conn = state.connectivity;
                                         docs[i].pwr = state.powerState;
@@ -1017,7 +1017,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                     ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline }));
                                 } else {
                                     // No records found, send current state if we have it
-                                    var state = obj.parent.connectivityByNode[command.nodeid];
+                                    var state = obj.parent.GetConnectivityState(command.nodeid);
                                     if (state != undefined) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState] })); }
                                 }
                             });
@@ -1400,7 +1400,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                         obj.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: change, domain: domain.id })
 
                                         // Disconnect all connections if needed
-                                        var state = obj.parent.connectivityByNode[command.nodeid];
+                                        var state = obj.parent.GetConnectivityState(command.nodeid);
                                         if ((state != undefined) && (state.connectivity != undefined)) {
                                             if ((state.connectivity & 1) != 0) { obj.wsagents[command.nodeid].close(); } // Disconnect mesh agent
                                             if ((state.connectivity & 2) != 0) { obj.parent.mpsserver.close(obj.parent.mpsserver.ciraConnections[command.nodeid]); } // Disconnect CIRA connection
@@ -1895,7 +1895,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     // Setup all HTTP handlers
     obj.app.get('/backup.zip', handleBackupRequest);
     obj.app.post('/restoreserver.ashx', handleRestoreRequest);
-    if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', parent.multiServer.handleServerWebSocket); }
+    if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); } ); }
     for (var i in parent.config.domains) {
         var url = parent.config.domains[i].url;
         obj.app.get(url, handleRootRequest);

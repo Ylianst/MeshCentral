@@ -21,8 +21,8 @@ function CreateMeshCentralServer() {
     obj.args = require('minimist')(process.argv.slice(2));
     obj.common = require('./common.js');
     obj.certificates = null;
-    obj.connectivityByMesh = {};      // This object keeps a list of all connected CIRA and agents, by meshid->nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
     obj.connectivityByNode = {};      // This object keeps a list of all connected CIRA and agents, by nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
+    obj.peerConnectivityByNode = {};  // This object keeps a list of all connected CIRA and agents of peers, by serverid->nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
     obj.debugLevel = 0;
     obj.config = {};                  // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
@@ -36,6 +36,7 @@ function CreateMeshCentralServer() {
     obj.multiServer = null;
     obj.currentVer = null;
     obj.maintenanceTimer = null;
+    obj.serverId = null;
     
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
@@ -136,6 +137,7 @@ function CreateMeshCentralServer() {
             } else {
                 if (error != null) {
                     // This is an un-expected restart
+                    console.log(error);
                     console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting...');
                     setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
                 } 
@@ -289,6 +291,10 @@ function CreateMeshCentralServer() {
                     require('crypto').randomBytes(32, function (err, buf) {
                         // Setup Mesh Multi-Server if needed
                         obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
+                        if (obj.multiServer != null) {
+                            obj.serverId = obj.config.peers.serverId;
+                            for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
+                        }
 
                         if (obj.args.secret) {
                             // This secret is used to encrypt HTTP session information, if specified, user it.
@@ -414,10 +420,54 @@ function CreateMeshCentralServer() {
                 }
             }
         }
-        if ((fromPeerServer == undefined) && (obj.multiServer != null)) { obj.multiServer.DispatchEvent(ids, source, event); }
+        if ((fromPeerServer == undefined) && (obj.multiServer != null) && (event.nopeers != 1)) { obj.multiServer.DispatchEvent(ids, source, event); }
         delete targets;
     }
 
+    // Get the connection state of a node
+    obj.GetConnectivityState = function (nodeid) { return obj.connectivityByNode[nodeid]; }
+
+    // Update the connection state of a node when in multi-server mode
+    // Update obj.connectivityByNode using obj.peerConnectivityByNode for the list of nodes in argument
+    obj.UpdateConnectivityState = function (nodeids) {
+        for (var nodeid in nodeids) {
+            var meshid = null, state = null, oldConnectivity = 0, oldPowerState = 0, newConnectivity = 0, newPowerState = 0;
+            var oldState = obj.connectivityByNode[nodeid];
+            if (oldState != null) { meshid = oldState.meshid;  oldConnectivity = oldState.connectivity; oldPowerState = oldState.powerState; }
+            for (serverid in obj.peerConnectivityByNode) {
+                var peerState = obj.peerConnectivityByNode[serverid][nodeid];
+                if (peerState != null) {
+                    if (state == null) {
+                        // Copy the state
+                        state = {};
+                        newConnectivity = state.connectivity = peerState.connectivity;
+                        newPowerState = state.powerState = peerState.powerState;
+                        meshid = state.meshid = peerState.meshid;
+                        //if (peerState.agentPower) { state.agentPower = peerState.agentPower; }
+                        //if (peerState.ciraPower) { state.ciraPower = peerState.ciraPower; }
+                        //if (peerState.amtPower) { state.amtPower = peerState.amtPower; }
+                    } else {
+                        // Merge the state
+                        state.connectivity |= peerState.connectivity;
+                        newConnectivity = state.connectivity;
+                        if ((peerState.powerState != 0) && ((state.powerState == 0) || (peerState.powerState < state.powerState))) { newPowerState = state.powerState = peerState.powerState; }
+                        meshid = state.meshid = peerState.meshid;
+                        //if (peerState.agentPower) { state.agentPower = peerState.agentPower; }
+                        //if (peerState.ciraPower) { state.ciraPower = peerState.ciraPower; }
+                        //if (peerState.amtPower) { state.amtPower = peerState.amtPower; }
+                    }
+                }
+            }
+            obj.connectivityByNode[nodeid] = state;
+
+            //console.log('xx', nodeid, meshid, newConnectivity, oldPowerState, newPowerState, oldPowerState);
+
+            // Event any changes on this server only
+            if ((newConnectivity != oldPowerState) || (newPowerState != oldPowerState)) {
+                obj.DispatchEvent(['*', meshid], obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: newConnectivity, pwr: newPowerState, nolog: 1, nopeers: 1 });
+            }
+        }
+    }
 
     // Set the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
@@ -427,79 +477,132 @@ function CreateMeshCentralServer() {
     // powerState: Value, 0 = Unknown, 1 = S0 power on, 2 = S1 Sleep, 3 = S2 Sleep, 4 = S3 Sleep, 5 = S4 Hibernate, 6 = S5 Soft-Off, 7 = Present
     var connectTypeStrings = ['', 'MeshAgent', 'Intel AMT CIRA', '', 'Intel AMT local'];
     var powerStateStrings = ['Unknown', 'Powered', 'Sleep', 'Sleep', 'Deep Sleep', 'Hibernating', 'Soft-Off', 'Present'];
-    obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState) {
-        //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState]);
+    obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid) {
+        //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState] + (serverid == null ? ('') : (', ServerId: ' + serverid)));
+        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState }); }
 
-        // Change the node connection state
-        var eventConnectChange = 0;
-        var state = obj.connectivityByNode[nodeid];
-        if (state) {
-            // Change the connection in the node and mesh state lists
-            if ((state.connectivity & connectType) == 0) {
-                state.connectivity |= connectType;
+        if (obj.multiServer == null) {
+            // Single server mode
+
+            // Change the node connection state
+            var eventConnectChange = 0;
+            var state = obj.connectivityByNode[nodeid];
+            if (state) {
+                // Change the connection in the node and mesh state lists
+                if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; eventConnectChange = 1; }
+                state.meshid = meshid;
+            } else {
+                // Add the connection to the node and mesh state list
+                obj.connectivityByNode[nodeid] = state = { connectivity: connectType, meshid: meshid };
                 eventConnectChange = 1;
             }
+
+            // Set node power state
+            if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
+            var powerState = 0, oldPowerState = state.powerState;
+            if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
+            if ((state.powerState == undefined) || (state.powerState != powerState)) {
+                state.powerState = powerState;
+                eventConnectChange = 1;
+
+                // Set new power state in database
+                obj.db.file.insert({ type: 'power', time: connectTime, node: nodeid, power: powerState, oldPower: oldPowerState });
+            }
+
+            // Event the node connection change
+            if (eventConnectChange == 1) { obj.DispatchEvent(['*', meshid], obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 }); }
         } else {
-            // Add the connection to the node and mesh state list
-            obj.connectivityByNode[nodeid] = state = { connectivity: connectType };
-            if (!obj.connectivityByMesh[meshid]) { obj.connectivityByMesh[meshid] = {}; }
-            obj.connectivityByMesh[meshid][nodeid] = state;
-            eventConnectChange = 1;
+            // Multi server mode
+
+            // Change the node connection state
+            if (serverid == null) { serverid = obj.serverId; }
+            if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            if (state) {
+                // Change the connection in the node and mesh state lists
+                if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; }
+                state.meshid = meshid;
+            } else {
+                // Add the connection to the node and mesh state list
+                obj.peerConnectivityByNode[serverid][nodeid] = state = { connectivity: connectType, meshid: meshid };
+            }
+
+            // Set node power state
+            if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
+            var powerState = 0;
+            if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
+            if ((state.powerState == undefined) || (state.powerState != powerState)) { state.powerState = powerState; }
+
+            // Update the combined node state
+            var x = {}; x[nodeid] = 1;
+            obj.UpdateConnectivityState(x);
         }
-
-        // Set node power state
-        if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
-        var powerState = 0, oldPowerState = state.powerState;
-        if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-        if ((state.powerState == undefined) || (state.powerState != powerState)) {
-            state.powerState = powerState;
-            eventConnectChange = 1;
-
-            // Set new power state in database
-            obj.db.file.insert({ type: 'power', time: connectTime, node: nodeid, power: powerState, oldPower: oldPowerState });
-        }
-
-        // Event the node connection change
-        if (eventConnectChange == 1) { obj.DispatchEvent(['*', meshid], obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1 }); }
     }
 
     // Clear the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex
     // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 3 = Intel AMT local.
-    obj.ClearConnectivityState = function (meshid, nodeid, connectType) {
-        //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType]);
+    obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid) {
+        //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + (serverid == null?(''):(', ServerId: ' + serverid)));
+        if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType }); }
 
-        // Remove the agent connection from the nodes connection list
-        var state = obj.connectivityByNode[nodeid];
-        if (state == undefined) return;
+        if (obj.multiServer == null) {
+            // Single server mode
 
-        if ((state.connectivity & connectType) != 0) {
-            state.connectivity -= connectType;
+            // Remove the agent connection from the nodes connection list
+            var state = obj.connectivityByNode[nodeid];
+            if (state == undefined) return;
 
-            // If the node is completely disconnected, clean it up completely
-            if (state.connectivity == 0) {
-                delete obj.connectivityByNode[nodeid];
-                delete obj.connectivityByMesh[meshid][nodeid];
-                state.powerState = 0;
+            if ((state.connectivity & connectType) != 0) {
+                state.connectivity -= connectType;
+
+                // If the node is completely disconnected, clean it up completely
+                if (state.connectivity == 0) { delete obj.connectivityByNode[nodeid]; state.powerState = 0; }
+                eventConnectChange = 1;
             }
-            eventConnectChange = 1;
+
+            // Clear node power state
+            if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
+            var powerState = 0, oldPowerState = state.powerState;
+            if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
+            if ((state.powerState == undefined) || (state.powerState != powerState)) {
+                state.powerState = powerState;
+                eventConnectChange = 1;
+
+                // Set new power state in database
+                obj.db.file.insert({ type: 'power', time: Date.now(), node: nodeid, power: powerState, oldPower: oldPowerState });
+            }
+
+            // Event the node connection change
+            if (eventConnectChange == 1) { obj.DispatchEvent(['*', meshid], obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 }); }
+        } else {
+            // Multi server mode
+
+            // Remove the agent connection from the nodes connection list
+            if (serverid == null) { serverid = obj.serverId; }
+            if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            if (state == undefined) return;
+
+            // If existing state exist, remove this connection
+            if ((state.connectivity & connectType) != 0) {
+                state.connectivity -= connectType; // Remove one connectivity mode
+
+                // If the node is completely disconnected, clean it up completely
+                if (state.connectivity == 0) { delete obj.peerConnectivityByNode[serverid][nodeid]; state.powerState = 0; }
+            }
+
+            // Clear node power state
+            if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
+            var powerState = 0;
+            if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
+            if ((state.powerState == undefined) || (state.powerState != powerState)) { state.powerState = powerState; }
+
+            // Update the combined node state
+            var x = {}; x[nodeid] = 1;
+            obj.UpdateConnectivityState(x);
         }
-
-        // Clear node power state
-        if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
-        var powerState = 0, oldPowerState = state.powerState;
-        if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-        if ((state.powerState == undefined) || (state.powerState != powerState)) {
-            state.powerState = powerState;
-            eventConnectChange = 1;
-
-            // Set new power state in database
-            obj.db.file.insert({ type: 'power', time: Date.now(), node: nodeid, power: powerState, oldPower: oldPowerState });
-        }
-
-        // Event the node connection change
-        if (eventConnectChange == 1) { obj.DispatchEvent(['*', meshid], obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, nolog: 1 }); }
     }
 
     // Update the default mesh core
@@ -689,7 +792,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Build the list of required modules
-var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'websocket', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
 if (require('os').platform() == 'win32') { modules.push("node-windows"); }
 
 // Run as a command line, if we are not using service arguments, don't need to install the service package.

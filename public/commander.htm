@@ -340,13 +340,13 @@ th {
                                     <div id="storagelinks" style="margin-top:4px"></div>
                                             </div>
         <div id="id_mainarea" class="maincell">
-                                    <div id="id_scriptstatus" style="height:21px;background:#8fac8d;padding:5px;margin-bottom:1px;display:none">
+                                    <div id="id_scriptstatus" style="height:21px;background:#8fac8d;padding:5px;margin-bottom:1px;display:none;overflow:hidden">
                 <div style="float:right"><input type="button" value="Stop Script" onclick="script_Stop()"></div>
-                <div style="font-size:16px;padding-top:2px">&nbsp;<b>Running Script</b><span id="id_scriptstatusstr"></span></div>
+                <div style="font-size:16px;padding-top:2px;overflow:hidden">&nbsp;<b>Running Script</b><span style="overflow:hidden" id="id_scriptstatusstr"></span></div>
             </div>
                                     <div id="id_versionWarning" style="height:21px;background:#8fac8d;padding:5px;margin-bottom:1px;display:none">
                 <div style="font-size:16px;float:right;cursor:pointer;padding-right:5px;padding-left:5px;padding-top:2px" onclick="QV('id_versionWarning', false)"><b>X</b></div>
-                <div style="font-size:14px;padding-top:2px">&nbsp;<b>This computer's firmware should be updated, <a style="cursor:pointer" onclick="require('nw.gui').Shell.openExternal('https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00075&languageid=en-fr')"><u>please check here</u></a>.</b><span id="id_scriptstatusstr"></span></div>
+                <div style="font-size:14px;padding-top:2px">&nbsp;<b>This computer's firmware should be updated, <a style="cursor:pointer" onclick="require('nw.gui').Shell.openExternal('https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00075&languageid=en-fr')"><u>please check here</u></a>.</b></div>
             </div>
                                     <div id="id_mainarea_frame" style="width:100%;height:100%">
                 <iframe id="id_StorageIFrame" style="width:100%;height:100%;border:0"></iframe>
@@ -2103,7 +2103,9 @@ function AmtStackCreateService(wsmanStack) {
             e = null;
             try {
                 // NodeJS detection
-                                            } catch (ex) { }
+                                
+                e = window.atob(ra[i]);
+                            } catch (ex) { }
             if (e != null) {
                 TimeStamp = ReadIntX(e, 0);
                 if ((TimeStamp > 0) && (TimeStamp < 0xFFFFFFFF)) {
@@ -35687,13 +35689,9 @@ if (typeof module !== "undefined" && module.exports) {
         }
 
         function editEnvironmentDetectionDlg2(stack, name, response, status) {
-            if (status != 200) {
-                messagebox('Environment Detection', 'Failed to add server, status ' + status);
-            } else if (response.Body["ReturnValue"] != 0) {
-                messagebox('Environment Detection', response.Body.ReturnValueStr.replace(/_/g, ' '));
-            } else {
-                PullRemoteAccess();
-            }
+            if (status != 200) { messagebox('Environment Detection', 'Failed to add server, status ' + status); }
+            else if ((response.Body["ReturnValue"]) && (response.Body["ReturnValue"] != 0)) { messagebox('Environment Detection', response.Body.ReturnValueStr.replace(/_/g, ' ')); }
+            else { PullRemoteAccess(); }
         }
 
         function edInputChg() {
@@ -36134,7 +36132,8 @@ if (typeof module !== "undefined" && module.exports) {
             addOption('d5actionSelect', 'Power down', 8);
             addOption('d5actionSelect', 'Reset', 10);
             if (amtPowerBootCapabilities["ForceDiagnosticBoot"] == true) {
-                addOption('d5actionSelect', 'Diagnostic', 11);
+                addOption('d5actionSelect', 'Power on to diagnostic', 300);
+                addOption('d5actionSelect', 'Reset to diagnostic', 301);
             }
             if (amtversion > 9) {
                 addOption('d5actionSelect', 'Soft-off', 12);
@@ -36267,7 +36266,7 @@ if (typeof module !== "undefined" && module.exports) {
                     consentChanged();
                     return;
                 }
-                // console.log("Opt-in Required.", response.Body["OptInRequired"]);
+                //console.log("Opt-in Required.", response.Body["OptInRequired"]);
                 statusbox("Power Action", "Starting opt-in...");
                 amtstack.IPS_OptInService_StartOptIn(powerActionResponseC1, 0, 1);
             } else {
@@ -36366,8 +36365,8 @@ if (typeof module !== "undefined" && module.exports) {
                 r["LockResetButton"] = false;
                 r["LockSleepButton"] = false;
                 r["ReflashBIOS"] = false;
-                r["UseIDER"] = (action > 199);
-                r["UseSOL"] = ((currentView == 13) && (action != 8)); // If we are looking at the terminal, turn on SOL.
+                r["UseIDER"] = ((action > 199) && (action < 300));
+                r["UseSOL"] = ((currentView == 13) && (action != 8) && (action != 300) && (action != 301)); // If we are looking at the terminal, turn on SOL. SOL can't be used with diagnostic mode (300/301)
                 r["UseSafeMode"] = false;
                 r["UserPasswordBypass"] = false;
                 if (r["SecureErase"]) { r["SecureErase"] = ((action == 104) && (amtPowerBootCapabilities["SecureErase"] == true)); }
@@ -36386,7 +36385,15 @@ if (typeof module !== "undefined" && module.exports) {
             //if (errcheck(status, stack)) return;
             //console.log("Setup next boot...");
             statusbox("Power Action", "Setting next boot...");
-            amtstack.SetBootConfigRole(1, powerActionResponse3, 0, 1);
+            amtstack.SetBootConfigRole(1, powerActionResponse3x, 0, 1);
+        }
+
+        function powerActionResponse3x(stack, name, response, status) {
+            //console.log("powerActionResponse3x(" + name + "," + response + "," + status + ")");
+            var action = d5actionSelect.value;
+            var bootSource = null;
+            if (action == 300 || action == 301) { bootSource = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: Force Diagnostic Boot</Selector></SelectorSet></ReferenceParameters>'; }
+            amtstack.CIM_BootConfigSetting_ChangeBootOrder(bootSource, powerActionResponse3);
         }
 
         var targetPowerAction = 0;
@@ -36396,12 +36403,14 @@ if (typeof module !== "undefined" && module.exports) {
             //console.log("Performing Power State Change...");
             statusbox("Power Action", "Performing power action...");
             var action = d5actionSelect.value;
-            if (action == 100 || action == 201 || action == 203) action = 2; // Power up
-            if (action == 101 || action == 200 || action == 202) action = 10; // Reset
+            if (action == 100 || action == 201 || action == 203 || action == 300) action = 2; // Power up
+            if (action == 101 || action == 200 || action == 202 || action == 301) action = 10; // Reset
             if (action == 104) action = 10; // Reset with Remote Secure Erase
 
             if (action == 999) action = AvdPowerDlg.Action;
             targetPowerAction = action;
+            //console.log('RequestPowerStateChange:' + action);
+            if (action == 11) { action = 10; }
             if (action < 999) { amtstack.RequestPowerStateChange(action, powerActionResponse4); } else { messagebox("Power Action", "Next boot action set."); }
         }
 
@@ -36910,6 +36919,9 @@ if (typeof module !== "undefined" && module.exports) {
 
         // Called by a running script to update the console. The last message in the console is displayed in the top green bar.
         function script_console(msg) {
+            if (msg.indexOf("INFO: ") == 0) { msg = msg.substring(6); }
+            if (msg.indexOf("SUCCESS: ") == 0) { msg = msg.substring(9); }
+            if (msg.indexOf("ERROR: ") == 0) { msg = msg.substring(7); }
             QH('id_scriptstatusstr', ', ' + msg);
         }
 
@@ -37062,7 +37074,8 @@ if (typeof module !== "undefined" && module.exports) {
         function script_fonkeypress(e) {
             if (xxdialogMode) return;
             if (e.key == 'Delete' && script_BlockScriptSelectedId != null) {
-                delete script_BlockScript[script_BlockScriptSelectedId];
+                //delete script_BlockScript[script_BlockScriptSelectedId];
+                script_BlockScript.splice(script_BlockScriptSelectedId, 1);
                 script_BlockScriptSelectedId = null;
                 fupdatescript();
             }
@@ -37182,7 +37195,7 @@ if (typeof module !== "undefined" && module.exports) {
             if (xxdialogMode) return;
             if (button == 2) {
                 // Delete this block
-                delete script_BlockScript[tag];
+                script_BlockScript.splice(tag, 1);
                 if (script_BlockScriptSelectedId == tag) { script_BlockScriptSelectedId = null; }
             } else {
                 // Change this block with new arguments

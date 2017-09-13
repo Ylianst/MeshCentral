@@ -158,6 +158,7 @@
         }
 
         function go(x) {
+            setDialogMode(0);
             QV("showPassHintLink", false);
             QV('loginpanel', x == 1);
             QV('createpanel', x == 2);
@@ -166,11 +167,11 @@
         function validateLogin() {
             var ok = (Q('username').value.length > 0 && Q('password').value.length > 0);
             QE('loginButton', ok);
-            QV("showPassHintLink", false);
+            setDialogMode(0);
         }
 
         function validateCreate() {
-            QV("showPassHintLink", false);
+            setDialogMode(0);
             var ok = (Q('ausername').value.length > 0 && Q('aemail').value.length > 0 && Q('apassword1').value.length > 0 && Q('apassword2').value == Q('apassword1').value);
             QE('createButton', ok);
             if (Q('apassword1').value == '') {

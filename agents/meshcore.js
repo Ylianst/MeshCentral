@@ -776,6 +776,12 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                case 'location': {
+                    getIpLocationData(function (location) {
+                        sendConsoleText(objToString({ "action": "iplocation", "type": "publicip", "value": location }, 0, '.'));
+                    });
+                    break;
+                }
                 default: { // This is an unknown command, return an error message
                     response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                     break;
