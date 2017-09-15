@@ -83,7 +83,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
             else if (cmdid == 12) { // MeshCommand_AgentHash
-                if ((msg.length == 36) && (obj.agentInfo != undefined) && (obj.agentInfo.update == true)) {
+                if ((msg.length == 36) && (obj.agentInfo != null) && (obj.agentInfo.update == true)) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
                     if (agenthash != obj.agentInfo.hash) {
                         // Mesh agent update required
@@ -168,7 +168,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(parent.agentCertificatAsn1.length) + parent.agentCertificatAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
 
                 // Check the agent signature if we can
-                if (obj.unauthsign != undefined) {
+                if (obj.unauthsign != null) {
                     if (processAgentSignature(obj.unauthsign) == false) { disonnect(); return; } else { completeAgentConnection(); }
                 }
             }
@@ -185,7 +185,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth.nodeid = obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { encoding: 'hex', md: obj.forge.md.sha256.create() });
 
                 // Check the agent signature if we can
-                if (obj.agentnonce == undefined) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { disonnect(); return; } }
+                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { disonnect(); return; } }
                 completeAgentConnection();
             }
             else if (cmd == 3) {
@@ -248,7 +248,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 } else {
                     // Device already exists, look if changes has occured
                     device = nodes[0];
-                    if (device.agent == undefined) {
+                    if (device.agent == null) {
                         device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
                     } else {
                         var changes = [], change = 0;
@@ -292,7 +292,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check if we need to make an native update check
                 obj.agentInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-                if ((obj.agentInfo != undefined) && (obj.agentInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
+                if ((obj.agentInfo != null) && (obj.agentInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
 
                 // Check if we already have IP location information for this node
                 obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
@@ -364,51 +364,63 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     {
                         // Route a message.
                         // If this command has a sessionid, that is the target.
-                        if (command.sessionid != undefined) {
+                        if (command.sessionid != null) {
                             var splitsessionid = command.sessionid.split('/');
                             // Check that we are in the same domain and the user has rights over this node.
                             if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domain.id)) {
                                 // Check if this user has rights to get this message
-                                //if (mesh.links[user._id] == undefined || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+                                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
                                 
-                                // See if the session is connected
+                                // See if the session is connected. If so, go ahead and send this message to the target node
                                 var ws = obj.parent.wssessions2[command.sessionid];
-                                
-                                // Go ahead and send this message to the target node
-                                if (ws != undefined) {
+                                if (ws != null) {
                                     command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
                                     delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
                                     ws.send(JSON.stringify(command));
+                                } else if (obj.parent.parent.multiServer != null) {
+                                    // We need to send this message to other servers
+                                    command.fromNodeid = obj.dbNodeKey;
+                                    obj.parent.parent.multiServer.DispatchMessage(command);
                                 }
                             }
-                        } else if (command.userid != undefined) { // If this command has a userid, that is the target.
+                        } else if (command.userid != null) { // If this command has a userid, that is the target.
                             var splituserid = command.userid.split('/');
                             // Check that we are in the same domain and the user has rights over this node.
                             if ((splituserid[0] == 'user') && (splituserid[1] == domain.id)) {
                                 // Check if this user has rights to get this message
-                                //if (mesh.links[user._id] == undefined || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+                                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
 
                                 // See if the session is connected
                                 var sessions = obj.parent.wssessions[command.userid];
 
                                 // Go ahead and send this message to the target node
-                                if (sessions != undefined) {
+                                if (sessions != null) {
                                     command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
                                     delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
                                     for (var i in sessions) { sessions[i].send(JSON.stringify(command)); }
                                 }
                             }
                         } else { // Route this command to the mesh
+                            command.nodeid = obj.dbNodeKey;
+                            var cmdstr = JSON.stringify(command);
                             for (var userid in obj.parent.wssessions) { // Find all connected users for this mesh and send the message
                                 var user = obj.parent.users[userid];
                                 if (user) {
                                     var rights = user.links[obj.dbMeshKey];
-                                    if (rights != undefined) { // TODO: Look at what rights are needed for message routing
-                                        command.nodeid = obj.dbNodeKey;
+                                    if (rights != null) { // TODO: Look at what rights are needed for message routing
                                         var sessions = obj.parent.wssessions[userid];
-                                        for (var i in sessions) { sessions[i].send(JSON.stringify(command)); }
+                                        // Send the message to all users on this server
+                                        for (var i in sessions) { sessions[i].send(cmdstr); }
                                     }
                                 }
+                            }
+
+                            // Send the message to all users of other servers
+                            if (obj.parent.parent.multiServer != null) {
+                                delete command.nodeid;
+                                command.fromNodeid = obj.dbNodeKey;
+                                command.meshid = obj.dbMeshKey;
+                                obj.parent.parent.multiServer.DispatchMessage(command);
                             }
                         }
                         break;
@@ -455,10 +467,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentCoreInfo(command) {
-        if ((command == undefined) || (command == null)) return; // Safety, should never happen.
+        if ((command == null) || (command == null)) return; // Safety, should never happen.
 
         // Check capabilities value
-        if (command.caps == undefined || command.caps == null) { command.caps = 0; } else { if (typeof command.caps != 'number') command.caps = 0; }
+        if (command.caps == null || command.caps == null) { command.caps = 0; } else { if (typeof command.caps != 'number') command.caps = 0; }
 
         // Check that the mesh exists
         obj.db.Get(obj.dbMeshKey, function (err, meshes) {
@@ -472,7 +484,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var changes = [], change = 0;
 
                     // Check if anything changes
-                    if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != undefined)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
+                    if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
                     if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
                     if (command.intelamt) {
                         if (!device.intelamt) { device.intelamt = {}; }
@@ -504,7 +516,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {
-        if ((command == undefined) || (command == null)) return; // Safety, should never happen.
+        if ((command == null) || (command == null)) return; // Safety, should never happen.
 
         // Check that the mesh exists
         obj.db.Get(obj.dbMeshKey, function (err, meshes) {
@@ -539,7 +551,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Update the mesh agent tab in the database
     function ChangeAgentTag(tag) {
-        if (tag.length == 0) { tag = undefined; }
+        if (tag.length == 0) { tag = null; }
         // Get the node and change it if needed
         obj.db.Get(obj.dbNodeKey, function (err, nodes) {
             if (nodes.length != 1) return;

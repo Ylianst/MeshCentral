@@ -1795,3 +1795,150 @@ TypeError: Cannot read property 'meshid' of null
     at emitErrorNT (net.js:1265:8)
 
 
+-------- 9/13/2017, 11:46:32 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1075
+                                        var r = obj.parent.GetRoutingServerId(command.nodeid, );
+                                                                                              ^
+SyntaxError: Unexpected token )
+    at exports.runInThisContext (vm.js:53:16)
+    at Module._compile (module.js:511:25)
+    at Object.Module._extensions..js (module.js:550:10)
+    at Module.load (module.js:456:32)
+    at tryModuleLoad (module.js:415:12)
+    at Function.Module._load (module.js:407:3)
+    at Module.require (module.js:466:17)
+    at require (internal/module.js:20:19)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:304:45)
+
+
+-------- 9/13/2017, 11:46:34 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1075
+                                        var r = obj.parent.GetRoutingServerId(command.nodeid, );
+                                                                                              ^
+SyntaxError: Unexpected token )
+    at exports.runInThisContext (vm.js:53:16)
+    at Module._compile (module.js:511:25)
+    at Object.Module._extensions..js (module.js:550:10)
+    at Module.load (module.js:456:32)
+    at tryModuleLoad (module.js:415:12)
+    at Function.Module._load (module.js:407:3)
+    at Module.require (module.js:466:17)
+    at require (internal/module.js:20:19)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:304:45)
+
+
+-------- 9/13/2017, 11:46:36 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1075
+                                        var r = obj.parent.GetRoutingServerId(command.nodeid, );
+                                                                                              ^
+SyntaxError: Unexpected token )
+    at exports.runInThisContext (vm.js:53:16)
+    at Module._compile (module.js:511:25)
+    at Object.Module._extensions..js (module.js:550:10)
+    at Module.load (module.js:456:32)
+    at tryModuleLoad (module.js:415:12)
+    at Function.Module._load (module.js:407:3)
+    at Module.require (module.js:466:17)
+    at require (internal/module.js:20:19)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:304:45)
+
+
+-------- 9/14/2017, 10:48:18 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451
+        console.log(ConnectToPeers);
+                    ^
+
+ReferenceError: ConnectToPeers is not defined
+    at Object.obj.ConnectToPeers (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451:21)
+    at Timeout._onTimeout (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:531:34)
+    at tryOnTimeout (timers.js:224:11)
+    at Timer.listOnTimeout (timers.js:198:5)
+
+
+-------- 9/14/2017, 10:48:21 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451
+        console.log(ConnectToPeers);
+                    ^
+
+ReferenceError: ConnectToPeers is not defined
+    at Object.obj.ConnectToPeers (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451:21)
+    at Timeout._onTimeout (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:531:34)
+    at tryOnTimeout (timers.js:224:11)
+    at Timer.listOnTimeout (timers.js:198:5)
+
+
+-------- 9/14/2017, 10:48:24 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451
+        console.log(ConnectToPeers);
+                    ^
+
+ReferenceError: ConnectToPeers is not defined
+    at Object.obj.ConnectToPeers (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:451:21)
+    at Timeout._onTimeout (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:531:34)
+    at tryOnTimeout (timers.js:224:11)
+    at Timer.listOnTimeout (timers.js:198:5)
+
+
+-------- 9/14/2017, 11:46:45 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:645
+                var serverid = obj.GetRoutingServerId(req.query.host, 2); // Check for Intel CIRA connection
+                                   ^
+
+TypeError: obj.GetRoutingServerId is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:645:36
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/14/2017, 3:09:49 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:573
+                for (var i in peerTunnel.pendingWs1Data) { peerTunnel.ws2.send(peerTunnel.pendingWs1Data[i]); }
+                                                                          ^
+
+TypeError: peerTunnel.ws2.send is not a function
+    at WebSocketClient.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:573:75)
+    at emitOne (events.js:96:13)
+    at WebSocketClient.emit (events.js:188:7)
+    at WebSocketClient.succeedHandshake (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:335:10)
+    at WebSocketClient.validateHandshake (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:319:10)
+    at ClientRequest.handleRequestUpgrade (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:248:14)
+    at emitThree (events.js:116:13)
+    at ClientRequest.emit (events.js:194:7)
+    at TLSSocket.socketOnData (_http_client.js:391:11)
+    at emitOne (events.js:96:13)
+
+
+-------- 9/14/2017, 3:14:06 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:573
+                for (var i in peerTunnel.pendingWs1Data) { peerTunnel.ws2.send(peerTunnel.pendingWs1Data[i]); }
+                                                                         ^
+
+TypeError: Cannot read property 'send' of null
+    at WebSocketClient.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:573:74)
+    at emitOne (events.js:96:13)
+    at WebSocketClient.emit (events.js:188:7)
+    at WebSocketClient.succeedHandshake (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:335:10)
+    at WebSocketClient.validateHandshake (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:319:10)
+    at ClientRequest.handleRequestUpgrade (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\websocket\lib\WebSocketClient.js:248:14)
+    at emitThree (events.js:116:13)
+    at ClientRequest.emit (events.js:194:7)
+    at TLSSocket.socketOnData (_http_client.js:391:11)
+    at emitOne (events.js:96:13)
+
+

@@ -13,6 +13,7 @@ module.exports.CreateMultiServer = function (parent, args) {
     obj.forge = require('node-forge');
     obj.outPeerServers = {}; // Outgoing peer servers
     obj.peerServers = {}; // All connected servers (in & out). Only present in this list if the connection is setup
+    obj.serverid = null;
 
     // Create a mesh server module that will connect to other servers
     obj.CreatePeerOutServer = function (parent, serverid, url) {
@@ -70,7 +71,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                 obj.conn.on('close', function () { obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Disconnected'); disconnect(); });
 
                 // Get the peer server's certificate and compute the server public key hash
-                if (obj.ws.socket == undefined) return;
+                if (obj.ws.socket == null) return;
                 var rawcertbuf = obj.ws.socket.getPeerCertificate().raw, rawcert = '';
                 for (var i = 0; i < rawcertbuf.length; i++) { rawcert += String.fromCharCode(rawcertbuf[i]); }
                 var serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(rawcert));
@@ -130,14 +131,14 @@ module.exports.CreateMultiServer = function (parent, args) {
                                 obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
 
                                 // Send information about our server to the peer
-                                if (obj.connectionState == 15) { obj.conn.send(JSON.stringify({ action: 'info', serverid: obj.parent.peerConfig.serverId, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey })); }
+                                if (obj.connectionState == 15) { obj.conn.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey })); }
                                 //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                                 break;
                             }
                             case 4: {
                                 // Server confirmed authentication, we are allowed to send commands to the server
                                 obj.connectionState |= 8;
-                                if (obj.connectionState == 15) { obj.conn.send(JSON.stringify({ action: 'info', serverid: obj.parent.peerConfig.serverId, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey })); }
+                                if (obj.connectionState == 15) { obj.conn.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey })); }
                                 //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                                 break;
                             }
@@ -196,7 +197,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
                         if ((command.serverid != null) && (command.dbid != null)) {
-                            if (command.serverid == obj.parent.peerConfig.serverId) { console.log('ERROR: Same server ID, trying to peer with self. (' + obj.url + ', ' + command.serverid + ').'); return; }
+                            if (command.serverid == obj.parent.serverid) { console.log('ERROR: Same server ID, trying to peer with self. (' + obj.url + ', ' + command.serverid + ').'); return; }
                             if (command.dbid != obj.parent.parent.db.identifier) { console.log('ERROR: Database ID mismatch. Trying to peer to a server with the wrong database. (' + obj.url + ', ' + command.serverid + ').'); return; }
                             obj.peerServerId = command.serverid;
                             obj.peerServerKey = command.key;
@@ -282,7 +283,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificatAsn1.length) + obj.agentCertificatAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
 
                     // Check the agent signature if we can
-                    if (obj.unauthsign != undefined) {
+                    if (obj.unauthsign != null) {
                         if (processAgentSignature(obj.unauthsign) == false) { disconnect(); return; } else { completePeerServerConnection(); }
                     }
                 }
@@ -299,7 +300,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.unauth.nodeid = obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { encoding: 'hex', md: obj.forge.md.sha256.create() });
 
                     // Check the agent signature if we can
-                    if (obj.agentnonce == undefined) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { disconnect(); return; } }
+                    if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { disconnect(); return; } }
                     completePeerServerConnection();
                 }
                 else if (cmd == 3) {
@@ -327,7 +328,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function completePeerServerConnection() {
             if (obj.authenticated != 1) return;
             obj.send(obj.common.ShortToStr(4));
-            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.peerConfig.serverId, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey }));
+            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey }));
             obj.authenticated = 2;
         }
 
@@ -359,7 +360,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
                         if ((command.serverid != null) && (command.dbid != null)) {
-                            if (command.serverid == obj.parent.peerConfig.serverId) { console.log('ERROR: Same server ID, trying to peer with self. (' + obj.remoteaddr + ', ' + command.serverid + ').'); return; }
+                            if (command.serverid == obj.parent.serverid) { console.log('ERROR: Same server ID, trying to peer with self. (' + obj.remoteaddr + ', ' + command.serverid + ').'); return; }
                             if (command.dbid != obj.parent.parent.db.identifier) { console.log('ERROR: Database ID mismatch. Trying to peer to a server with the wrong database. (' + obj.remoteaddr + ', ' + command.serverid + ').'); return; }
                             if (obj.parent.peerConfig.servers[command.serverid] == null) { console.log('ERROR: Unknown peer serverid: ' + command.serverid + ' (' + obj.remoteaddr + ').'); return; }
                             obj.peerServerId = command.serverid;
@@ -380,21 +381,32 @@ module.exports.CreateMultiServer = function (parent, args) {
 
     // If we have no peering configuration, don't setup this object
     if (obj.peerConfig == null) { return null; }
+    obj.serverid = obj.parent.config.peers.serverId;
+    if (obj.serverid == null) { obj.serverid = require("os").hostname(); }
+    if (obj.parent.config.peers.servers[obj.serverid] == null) { console.log("Error: Unable to peer with other servers, \"" + obj.serverid + "\" not present in peer servers list."); return null; }
 
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {
         return new Buffer(obj.crypto.randomBytes(32), 'binary').toString('hex');
     }
 
+    // Return the private key of a peer server
+    obj.getServerCookieKey = function (serverid) {
+        var server = obj.peerServers[serverid];
+        if (server && server.peerServerKey) return server.peerServerKey;
+        return null;
+    }
+
     // Encode an object as a cookie using a key
     obj.encodeCookie = function (o, key) {
         try {
-            if (key == undefined) { key = obj.serverKey; }
+            if (key == null) { key = obj.serverKey; }
+            key = require('./common.js').hex2rstr(key);
             o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
             var msg = JSON.stringify(o);
             msg = obj.crypto.createHmac('sha256', key.substring(16)).update(msg, 'binary', 'binary').digest('binary') + msg;
             var iv = new Buffer(obj.crypto.randomBytes(16), 'binary');
-            var cipher = obj.crypto.createCipheriv('aes-128-cbc', key.substring(0, 16), iv);
+            var cipher = obj.crypto.createCipheriv('aes-128-cbc', new Buffer(key.substring(0, 16), 'binary'), iv);
             crypted = cipher.update(msg, 'binary', 'binary');
             crypted += cipher.final('binary');
             var total = new Buffer(iv, 'binary').toString('hex') + new Buffer(crypted, 'binary').toString('hex'); // HEX: This is not an efficient concat, but it's very compatible.
@@ -406,11 +418,12 @@ module.exports.CreateMultiServer = function (parent, args) {
     // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.
     obj.decodeCookie = function (cookie, key) {
         try {
-            if (key == undefined) { key = obj.serverKey; }
+            if (key == null) { key = obj.serverKey; }
+            key = require('./common.js').hex2rstr(key);
             cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex'); // HEX: This is not an efficient split, but it's very compatible.
             var iv = new Buffer(cookie.substring(0, 32), 'hex');
             var msg = new Buffer(cookie.substring(32), 'hex');
-            var decipher = obj.crypto.createDecipheriv('aes-128-cbc', key.substring(0, 16), iv)
+            var decipher = obj.crypto.createDecipheriv('aes-128-cbc', new Buffer(key.substring(0, 16), 'binary'), iv)
             var dec = decipher.update(msg, 'binary', 'binary')
             dec += decipher.final('binary');
             var msg = dec.substring(32);
@@ -418,14 +431,14 @@ module.exports.CreateMultiServer = function (parent, args) {
             var hash2 = obj.crypto.createHmac('sha256', key.substring(16)).update(msg, 'binary', 'binary').digest('binary');
             if (hash1 !== hash2) { return null; }
             var o = JSON.parse(msg);
-            if ((o.time == null) || (o.time == undefined) || (typeof o.time != 'number')) { return null; }
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created
             return o;
         } catch (e) { return null; }
     }
 
-    // Dispatch an event to other MeshCentral2 peer servers
+    // Dispatch an event to all other MeshCentral2 peer servers
     obj.DispatchEvent = function (ids, source, event) {
         var busmsg = JSON.stringify({ action: 'bus', ids: ids, event: event });
         for (var serverid in obj.peerServers) { obj.peerServers[serverid].send(busmsg); }
@@ -436,11 +449,17 @@ module.exports.CreateMultiServer = function (parent, args) {
         for (var serverid in obj.peerServers) { obj.peerServers[serverid].send(msg); }
     }
 
+    // Dispatch a message to other MeshCentral2 peer servers
+    obj.DispatchMessageSingleServer = function (msg, serverid) {
+        var server = obj.peerServers[serverid];
+        if (server != null) { server.send(msg); }
+    }
+
     // Attempt to connect to all peers
     obj.ConnectToPeers = function () {
         for (serverId in obj.peerConfig.servers) {
             // We will only connect to names that are larger then ours. This way, eveyone has one connection to everyone else (no cross-connections).
-            if ((serverId > obj.peerConfig.serverId) && (obj.peerConfig.servers[serverId].url != null) && (obj.outPeerServers[serverId] == null)) {
+            if ((serverId > obj.serverid) && (obj.peerConfig.servers[serverId].url != null) && (obj.outPeerServers[serverId] == null)) {
                 obj.outPeerServers[serverId] = obj.CreatePeerOutServer(obj, serverId, obj.peerConfig.servers[serverId].url);
             }
         }
@@ -484,7 +503,114 @@ module.exports.CreateMultiServer = function (parent, args) {
                 obj.parent.ClearConnectivityState(msg.meshid, msg.nodeid, msg.connectType, peerServerId);
                 break;
             }
+            case 'msg': {
+                if (msg.sessionid != null) {
+                    // Route this message to a connected user session
+                    if (command.fromNodeid != null) { command.nodeid = command.fromNodeid; delete command.fromNodeid; }
+                    var ws = obj.parent.webserver.wssessions2[command.sessionid];
+                    if (ws != null) { ws.send(JSON.stringify(command)); }
+                } else if (msg.nodeid != null) {
+                    // Route this message to a connected agent
+                    if (command.fromSessionid != null) { command.sessionid = command.fromSessionid; delete command.fromSessionid; }
+                    var agent = obj.parent.webserver.wsagents[msg.nodeid];
+                    if (agent != null) { delete msg.nodeid; agent.send(JSON.stringify(msg)); } // Remove the nodeid since it's implyed and send the message to the agent
+                } else if (msg.meshid != null) {
+                    // Route this message to all users of this mesh
+                    if (command.fromNodeid != null) { command.nodeid = command.fromNodeid; delete command.fromNodeid; }
+                    var cmdstr = JSON.stringify(command);
+                    for (var userid in obj.parent.webserver.wssessions) { // Find all connected users for this mesh and send the message
+                        var user = obj.parent.webserver.users[userid];
+                        if (user) {
+                            var rights = user.links[msg.meshid];
+                            if (rights != null) { // TODO: Look at what rights are needed for message routing
+                                var sessions = obj.parent.webserver.wssessions[userid];
+                                // Send the message to all users on this server
+                                for (var i in sessions) { sessions[i].send(cmdstr); }
+                            }
+                        }
+                    }
+                }
+                break;
+            }
         }
+    }
+
+    // Create a tunnel connection to a peer server
+    obj.createPeerRelay = function (ws, req, serverid, user) {
+        var server = obj.peerServers[serverid];
+        if ((server == null) || (server.peerServerKey == null)) { return null; }
+        var cookieKey = server.peerServerKey;
+
+        // Build the connection URL
+        var path = req.path;
+        if (path[0] == '/') path = path.substring(1);
+        if (path.substring(path.length - 11) == '/.websocket') { path = path.substring(0, path.length - 11); }
+        var queryStr = ''
+        for (var i in req.query) { queryStr += ((queryStr == '') ? '?' : '&') + i + '=' + req.query[i]; }
+        queryStr += ((queryStr == '') ? '?' : '&') + 'auth=' + obj.encodeCookie({ userid: user._id, domainid: user.domain }, cookieKey);
+        var url = obj.peerConfig.servers[serverid].url + path + queryStr;
+
+        // Setup an connect the web socket
+        var tunnel = obj.createPeerRelayEx(ws, url, serverid);
+        tunnel.connect();
+    }
+
+    // Create a tunnel connection to a peer server
+    // We assume that "ws" is paused already.
+    obj.createPeerRelayEx = function (ws, url, serverid) {
+        var peerTunnel = { parent: obj, ws1: ws, ws2: null, url: url, serverid: serverid };
+
+        peerTunnel.connect = function () {
+            // Get the web socket setup
+            var WebSocketClient = require('websocket').client;
+            peerTunnel.wsclient = new WebSocketClient();
+
+            // Register the connection failed event
+            peerTunnel.wsclient.on('connectFailed', function (error) { peerTunnel.parent.parent.debug(1, 'FTunnel ' + obj.serverid + ': Failed connection'); disconnect(); });
+
+            // Register the connection event
+            peerTunnel.wsclient.on('connect', function (connection) {
+                peerTunnel.ws2 = connection;
+
+                // If error, do nothing
+                peerTunnel.ws2.on('error', function (err) { peerTunnel.parent.parent.debug(1, 'FTunnel: Connection Error: ' + err); peerTunnel.close(); });
+
+                // If the mesh agent web socket is closed, clean up.
+                peerTunnel.ws2.on('close', function (req) { peerTunnel.parent.parent.debug(1, 'FTunnel disconnect ' + peerTunnel.nodeid); peerTunnel.close(); });
+
+                // If a message is received from the peer, Peer ---> Browser
+                peerTunnel.ws2.on('message', function (msg) { if (msg.type == 'binary') { peerTunnel.ws2.pause(); peerTunnel.ws1.send(msg.binaryData, function () { peerTunnel.ws2.resume(); }); } });
+
+                // Resume the web socket to start the data flow
+                peerTunnel.ws1.resume();
+            });
+
+            // If a message is received from the browser, Browser ---> Peer
+            peerTunnel.ws1.on('message', function (msg) { peerTunnel.ws1.pause(); peerTunnel.ws2.send(msg, function () { peerTunnel.ws1.resume(); }); });
+
+            // If error, do nothing
+            peerTunnel.ws1.on('error', function (err) { console.log(err); peerTunnel.close(); });
+
+            // If the web socket is closed, close the associated TCP connection.
+            peerTunnel.ws1.on('close', function (req) { peerTunnel.parent.parent.debug(1, 'FTunnel disconnect ' + peerTunnel.nodeid); peerTunnel.close(); });
+
+            peerTunnel.wsclient.connect(peerTunnel.url, null, null, null, { rejectUnauthorized: false });
+        }
+
+        // Disconnect both sides of the tunnel
+        peerTunnel.close = function (arg) {
+            if (arg == 2) {
+                // Hard close, close the TCP socket
+                try { peerTunnel.ws1._socket._parent.end(); peerTunnel.parent.parent.debug(1, 'FTunnel1: Hard disconnect'); } catch (e) { console.log(e); }
+                try { peerTunnel.ws2._socket._parent.end(); peerTunnel.parent.parent.debug(1, 'FTunnel2: Hard disconnect'); } catch (e) { console.log(e); }
+            } else {
+                // Soft close, close the websocket
+                try { peerTunnel.ws1.close(); peerTunnel.parent.parent.debug(1, 'FTunnel1: Soft disconnect '); } catch (e) { console.log(e); }
+                try { peerTunnel.ws2.close(); peerTunnel.parent.parent.debug(1, 'FTunnel2: Soft disconnect '); } catch (e) { console.log(e); }
+            }
+        }
+
+        return peerTunnel;
     }
 
     obj.serverKey = obj.generateCookieKey();

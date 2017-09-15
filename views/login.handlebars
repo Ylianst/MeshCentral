@@ -87,6 +87,10 @@
                                             <td align=right>Password Hint:</td>
                                             <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=250 /></td>
                                         </tr>
+                                        <tr id=newAccountPass title="Enter the account creation token">
+                                            <td align=right>Creation Token:</td>
+                                            <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=250 onchange=validateCreate() onkeyup=validateCreate() /></td>
+                                        </tr>
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
@@ -136,6 +140,7 @@
     </div>
     <script>
         var passhint = "{{{passhint}}}";
+        var newAccountPass = {{{newAccountPass}}};
 
         function startup() {
             window.onresize = center;
@@ -145,6 +150,7 @@
             if ('{{loginmode}}' != '') { go({{loginmode}}); } else { go(1); }
             QV('newAccountDiv', '{{{newAccount}}}' != '0' );
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
+            QV("anewaccountpass", (newAccountPass == 1));
         }
 
         function showPassHint() {
@@ -172,7 +178,8 @@
 
         function validateCreate() {
             setDialogMode(0);
-            var ok = (Q('ausername').value.length > 0 && Q('aemail').value.length > 0 && Q('apassword1').value.length > 0 && Q('apassword2').value == Q('apassword1').value);
+            var ok = (Q('ausername').value.length > 0 && Q('aemail').value.length > 0 && Q('apassword1').value.length > 0 && (Q('apassword2').value == Q('apassword1').value));
+            if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
             QE('createButton', ok);
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');

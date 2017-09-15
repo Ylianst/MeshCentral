@@ -37,7 +37,7 @@ function CreateMeshCentralServer() {
     obj.currentVer = null;
     obj.maintenanceTimer = null;
     obj.serverId = null;
-    
+
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
     try { obj.fs.mkdirSync(obj.filespath); } catch (e) { }
@@ -84,7 +84,7 @@ function CreateMeshCentralServer() {
         // Check if we need to install, start, stop, remove ourself as a background service
         if ((obj.service != null) && ((obj.args.install == true) || (obj.args.uninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
             var env = [], xenv = ['user', 'port', 'mpsport', 'redirport', 'exactport', 'debug'];
-            for (var i in xenv) { if (obj.args[xenv[i]] != undefined) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
+            for (var i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
             var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: process.argv[1] + '.js', env: env, wait: 2, grow: .5 });
             svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
@@ -150,7 +150,7 @@ function CreateMeshCentralServer() {
 
     // Get current and latest MeshCentral server versions using NPM
     obj.getLatestServerVersion = function (callback) {
-        if (callback == undefined) return;
+        if (callback == null) return;
         var child_process = require('child_process');
         var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', function (error, stdout, stderr) { });
         xprocess.data = '';
@@ -177,20 +177,20 @@ function CreateMeshCentralServer() {
         if (require('fs').existsSync(obj.path.join(obj.datapath, 'config.json'))) {
             // Load and validate the configuration file
             try { obj.config = require(obj.path.join(obj.datapath, 'config.json')); } catch (e) { console.log('ERROR: Unable to parse ./data/config.json.'); return; }
-            if (obj.config.domains == undefined) { obj.config.domains = {}; }
+            if (obj.config.domains == null) { obj.config.domains = {}; }
             for (var i in obj.config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return; } }
             
             // Set the command line arguments to the config file if they are not present
-            if (obj.config.settings) { for (var i in obj.config.settings) { if (obj.args[i] == undefined) obj.args[i] = obj.config.settings[i]; } }
+            if (obj.config.settings) { for (var i in obj.config.settings) { if (obj.args[i] == null) obj.args[i] = obj.config.settings[i]; } }
         }
         
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
         var xenv = ['user', 'port', 'mpsport', 'redirport', 'exactport', 'debug'];
-        for (var i in xenv) { if ((obj.args[xenv[i]] == undefined) && (process.env['mesh' + xenv[i]])) { obj.args[xenv[i]] = obj.common.toNumber(process.env['mesh' + xenv[i]]); } }
+        for (var i in xenv) { if ((obj.args[xenv[i]] == null) && (process.env['mesh' + xenv[i]])) { obj.args[xenv[i]] = obj.common.toNumber(process.env['mesh' + xenv[i]]); } }
         
         // Validate the domains, this is used for multi-hosting
-        if (obj.config.domains == undefined) { obj.config.domains = {}; }
-        if (obj.config.domains[''] == undefined) { obj.config.domains[''] = { }; }
+        if (obj.config.domains == null) { obj.config.domains = {}; }
+        if (obj.config.domains[''] == null) { obj.config.domains[''] = { }; }
         var xdomains = {}; for (var i in obj.config.domains) { if (!obj.config.domains[i].title) { obj.config.domains[i].title = 'MeshCentral'; } if (!obj.config.domains[i].title2) { obj.config.domains[i].title2 = '2.0 Beta 1'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (var i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
@@ -200,11 +200,11 @@ function CreateMeshCentralServer() {
         //if (obj.servicelog != null) { var s = ''; for (var i in obj.args) { if (i != '_') { if (s.length > 0) { s += ', '; } s += i + "=" + obj.args[i]; } } logInfoEvent('MeshServer started with arguments: ' + s); }
 
         // Look at passed in arguments
-        if ((obj.args.ciralocalfqdn != undefined) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { console.log("WARNING: CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
-        if ((obj.args.ciralocalfqdn != undefined) && (obj.args.ciralocalfqdn.split(',').length > 4)) { console.log("WARNING: Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = undefined; }
-        if (obj.args.port == undefined || typeof obj.args.port != 'number') { if (obj.args.notls == undefined) { obj.args.port = 443; } else { obj.args.port = 80; } }
-        if (obj.args.mpsport == undefined || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
-        if (obj.args.notls == undefined && obj.args.redirport == undefined) obj.args.redirport = 80;
+        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { console.log("WARNING: CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
+        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { console.log("WARNING: Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = null; }
+        if (obj.args.port == null || typeof obj.args.port != 'number') { if (obj.args.notls == null) { obj.args.port = 443; } else { obj.args.port = 80; } }
+        if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
+        if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (typeof obj.args.debug == 'number') obj.debugLevel = obj.args.debug;
         if (obj.args.debug == true) obj.debugLevel = 1;
         obj.db = require('./db.js').CreateDB(obj.args, obj.datapath);
@@ -249,13 +249,13 @@ function CreateMeshCentralServer() {
             // Read or setup database configuration values
             obj.db.Get('dbconfig', function (err, dbconfig) {
                 if (dbconfig.length == 1) { obj.dbconfig = dbconfig[0]; } else { obj.dbconfig = { _id: 'dbconfig', version: 1 }; }
-                if (obj.dbconfig.amtWsEventSecret == undefined) { require('crypto').randomBytes(32, function (err, buf) { obj.dbconfig.amtWsEventSecret = buf.toString('hex'); obj.db.Set(obj.dbconfig); }); }
+                if (obj.dbconfig.amtWsEventSecret == null) { require('crypto').randomBytes(32, function (err, buf) { obj.dbconfig.amtWsEventSecret = buf.toString('hex'); obj.db.Set(obj.dbconfig); }); }
                 
                 // This is used by the user to create a username/password for a Intel AMT WSMAN event subscription
                 if (obj.args.getwspass) {
                     if (obj.args.getwspass.length == 64) {
                         require('crypto').randomBytes(6, function (err, buf) {
-                            while (obj.dbconfig.amtWsEventSecret == undefined) { process.nextTick(); }
+                            while (obj.dbconfig.amtWsEventSecret == null) { process.nextTick(); }
                             var username = buf.toString('hex');
                             var nodeid = obj.args.getwspass;
                             var pass = require('crypto').createHash('sha256').update(username.toLowerCase() + ":" + nodeid.toUpperCase() + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
@@ -292,7 +292,7 @@ function CreateMeshCentralServer() {
                         // Setup Mesh Multi-Server if needed
                         obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
                         if (obj.multiServer != null) {
-                            obj.serverId = obj.config.peers.serverId;
+                            obj.serverId = obj.multiServer.serverid;
                             for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
                         }
 
@@ -305,7 +305,7 @@ function CreateMeshCentralServer() {
                         }
 
                         // Setup and start the redirection server if needed
-                        if ((obj.args.redirport != undefined) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
+                        if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
                             obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.certificates);
                         }
 
@@ -393,7 +393,7 @@ function CreateMeshCentralServer() {
     }
     obj.RemoveEventDispatchId = function (id) {
         obj.debug(3, 'RemoveEventDispatchId', id);
-        if (obj.eventsDispatch[id] != undefined) { delete obj.eventsDispatch[id]; }
+        if (obj.eventsDispatch[id] != null) { delete obj.eventsDispatch[id]; }
     }
     obj.RemoveAllEventDispatch = function (target) {
         obj.debug(3, 'RemoveAllEventDispatch');
@@ -420,12 +420,23 @@ function CreateMeshCentralServer() {
                 }
             }
         }
-        if ((fromPeerServer == undefined) && (obj.multiServer != null) && (event.nopeers != 1)) { obj.multiServer.DispatchEvent(ids, source, event); }
+        if ((fromPeerServer == null) && (obj.multiServer != null) && (event.nopeers != 1)) { obj.multiServer.DispatchEvent(ids, source, event); }
         delete targets;
     }
 
     // Get the connection state of a node
     obj.GetConnectivityState = function (nodeid) { return obj.connectivityByNode[nodeid]; }
+
+    // Get the routing server id for a given node and connection type, can never be self.
+    obj.GetRoutingServerId = function (nodeid, connectType) {
+        if (obj.multiServer == null) return null;
+        for (serverid in obj.peerConnectivityByNode) {
+            if (serverid == obj.serverId) continue;
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            if ((state != null) && ((state.connectivity & connectType) != 0)) { return { serverid: serverid, meshid: state.meshid }; }
+        }
+        return null;
+    }
 
     // Update the connection state of a node when in multi-server mode
     // Update obj.connectivityByNode using obj.peerConnectivityByNode for the list of nodes in argument
@@ -501,7 +512,7 @@ function CreateMeshCentralServer() {
             if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
             var powerState = 0, oldPowerState = state.powerState;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == undefined) || (state.powerState != powerState)) {
+            if ((state.powerState == null) || (state.powerState != powerState)) {
                 state.powerState = powerState;
                 eventConnectChange = 1;
 
@@ -531,7 +542,7 @@ function CreateMeshCentralServer() {
             if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
             var powerState = 0;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == undefined) || (state.powerState != powerState)) { state.powerState = powerState; }
+            if ((state.powerState == null) || (state.powerState != powerState)) { state.powerState = powerState; }
 
             // Update the combined node state
             var x = {}; x[nodeid] = 1;
@@ -552,7 +563,7 @@ function CreateMeshCentralServer() {
 
             // Remove the agent connection from the nodes connection list
             var state = obj.connectivityByNode[nodeid];
-            if (state == undefined) return;
+            if (state == null) return;
 
             if ((state.connectivity & connectType) != 0) {
                 state.connectivity -= connectType;
@@ -566,7 +577,7 @@ function CreateMeshCentralServer() {
             if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
             var powerState = 0, oldPowerState = state.powerState;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == undefined) || (state.powerState != powerState)) {
+            if ((state.powerState == null) || (state.powerState != powerState)) {
                 state.powerState = powerState;
                 eventConnectChange = 1;
 
@@ -583,7 +594,7 @@ function CreateMeshCentralServer() {
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
             var state = obj.peerConnectivityByNode[serverid][nodeid];
-            if (state == undefined) return;
+            if (state == null) return;
 
             // If existing state exist, remove this connection
             if ((state.connectivity & connectType) != 0) {
@@ -597,7 +608,7 @@ function CreateMeshCentralServer() {
             if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
             var powerState = 0;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == undefined) || (state.powerState != powerState)) { state.powerState = powerState; }
+            if ((state.powerState == null) || (state.powerState != powerState)) { state.powerState = powerState; }
 
             // Update the combined node state
             var x = {}; x[nodeid] = 1;
@@ -619,7 +630,7 @@ function CreateMeshCentralServer() {
                     obj.parent.defaultMeshCore = null;
                     obj.parent.defaultMeshCoreHash = null;
                 }
-                if (func != undefined) { func(); }
+                if (func != null) { func(); }
             });
         } else {
             // Load default mesh agent core from meshcentral path if present
@@ -632,7 +643,7 @@ function CreateMeshCentralServer() {
                     obj.parent.defaultMeshCore = null;
                     obj.parent.defaultMeshCoreHash = null;
                 }
-                if (func != undefined) { func(); }
+                if (func != null) { func(); }
             });
         }
     }
@@ -652,7 +663,7 @@ function CreateMeshCentralServer() {
                 stream.on('data', function (data) { this.hash.update(data, 'binary') });
                 stream.on('error', function (data) {
                     // If there is an error reading this file, make sure this agent is not in the agent table
-                    if (obj.meshAgentInstallScripts[this.info.id] != undefined) { delete obj.meshAgentInstallScripts[this.info.id]; }
+                    if (obj.meshAgentInstallScripts[this.info.id] != null) { delete obj.meshAgentInstallScripts[this.info.id]; }
                 });
                 stream.on('end', function () {
                     // Add the agent to the agent table with all information and the hash
@@ -710,7 +721,7 @@ function CreateMeshCentralServer() {
                 stream.on('data', function (data) { this.hash.update(data, 'binary') });
                 stream.on('error', function (data) {
                     // If there is an error reading this file, make sure this agent is not in the agent table
-                    if (obj.meshAgentBinaries[this.info.id] != undefined) { delete obj.meshAgentBinaries[this.info.id]; }
+                    if (obj.meshAgentBinaries[this.info.id] != null) { delete obj.meshAgentBinaries[this.info.id]; }
                 });
                 stream.on('end', function () {
                     // Add the agent to the agent table with all information and the hash
