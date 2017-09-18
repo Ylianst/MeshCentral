@@ -68,6 +68,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Perform hash on web certificate and agent certificate
     obj.webCertificatHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'binary' });
+    obj.webCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
     obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
     obj.agentCertificatAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
 
@@ -75,7 +76,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.wsagents = {};
     obj.wssessions = {};    // UserId --> Array Of Sessions
     obj.wssessions2 = {};   // UserId + SessionId --> Session
-    obj.wsrelays = {};
+    obj.wsrelays = {};      // Id -> Relay
+    obj.wsPeerRelays = {};  // Id -> { ServerId, Time }
     
     // Setup randoms
     obj.crypto.randomBytes(32, function (err, buf) { obj.httpAuthRandom = buf; });

@@ -16,6 +16,7 @@ module.exports.CreateMeshRelayKey = function (parent, func) {
 module.exports.CreateMeshRelay = function (parent, ws, req) {
     var obj = {};
     obj.ws = ws;
+    obj.req = req;
     obj.peer = null;
     obj.parent = parent;
     obj.id = req.query['id'];
@@ -24,8 +25,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
 
     if (obj.id == undefined) { obj.ws.close(); obj.id = null; return null; } // Attempt to connect without id, drop this.
 
-    // Check if this session is a logged in user, at least one of the two connections will need to be authenticated.
-    try { if ((req.session) && (req.session.userid) || (req.session.domainid == getDomain(req).id)) { obj.authenticated = true; } } catch (e) { }
+    if (req.query.auth == null) {
+        // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.
+        try { if ((req.session) && (req.session.userid) || (req.session.domainid == getDomain(req).id)) { obj.authenticated = true; } } catch (e) { }
+    } else {
+        // Get the session from the cookie
+        if ((obj.parent.parent.multiServer != null) && (obj.parent.parent.multiServer.decodeCookie(req.query.auth) != null)) { obj.authenticated = true; }
+    }
 
     // Validate that the id is valid, we only need to do this on non-authenticated sessions.
     // TODO: Figure out when this needs to be done.
@@ -60,6 +66,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
                 relayinfo.state = 2;
                 obj.ws.send('c'); // Send connect to both peers
                 relayinfo.peer1.ws.send('c');
+                relayinfo.peer1.ws.resume(); // Release the traffic
 
                 relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
                 relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
@@ -73,9 +80,23 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
                 return null;
             }
         } else {
-            // Setup the connection, wait for peer
+            // Wait for other relay connection
+            ws.pause(); // Hold traffic until the other connection
             parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
             obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ')');
+
+            // Check if a peer server has this connection
+            if (parent.parent.multiServer != null) {
+                var rsession = obj.parent.wsPeerRelays[obj.id];
+                if ((rsession != null) && (rsession.serverId > obj.parent.parent.serverId)) {
+                    // We must initiate the connection to the peer
+                    parent.parent.multiServer.createPeerRelay(ws, req, rsession.serverId, req.session.userid);
+                    delete parent.wsrelays[obj.id];
+                } else {
+                    // Send message to other peers that we have this connection
+                    parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id }));
+                }
+            }
         }
     }
     
@@ -95,17 +116,19 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     ws.on('close', function (req) {
         if (obj.id != null) {
             var relayinfo = parent.wsrelays[obj.id];
-            if (relayinfo.state == 2) {
-                // Disconnect the peer
-                var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
-                obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + peer.remoteaddr + ')');
-                peer.id = null;
-                try { peer.ws.close(); } catch (e) { } // Soft disconnect
-                try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
-            } else {
-                obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ')');
+            if (relayinfo != null) {
+                if (relayinfo.state == 2) {
+                    // Disconnect the peer
+                    var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
+                    obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + peer.remoteaddr + ')');
+                    peer.id = null;
+                    try { peer.ws.close(); } catch (e) { } // Soft disconnect
+                    try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
+                } else {
+                    obj.parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                }
+                delete parent.wsrelays[obj.id];
             }
-            delete parent.wsrelays[obj.id];
             obj.peer = null;
             obj.id = null;
         }
