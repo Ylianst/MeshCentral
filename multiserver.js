@@ -472,17 +472,29 @@ module.exports.CreateMultiServer = function (parent, args) {
     obj.SetupPeerServer = function (server, peerServerId) {
         console.log('Connected to peer server ' + peerServerId + '.');
         obj.peerServers[peerServerId] = server;
+
+        // Send the list of connections to the peer
         server.send(JSON.stringify({ action: 'connectivityTable', connectivityTable: obj.parent.peerConnectivityByNode[obj.parent.serverId] }));
+
+        // Send a list of user sessions to the peer
+        server.send(JSON.stringify({ action: 'sessionsTable', sessionsTable: Object.keys(obj.parent.webserver.wssessions2) }));
     }
 
     // We disconnected to a peer server, clean up everything
     obj.ClearPeerServer = function (server, peerServerId) {
         console.log('Disconnected from peer server ' + peerServerId + '.');
+
+        // Clean up the connectivity state
         delete obj.peerServers[peerServerId];
-        //delete obj.parent.peerConnectivityByMesh[peerServerId]; // TODO: We will need to re-adjust all of the node power states.
         var oldList = obj.parent.peerConnectivityByNode[peerServerId];
         obj.parent.peerConnectivityByNode[peerServerId] = {};
         obj.parent.UpdateConnectivityState(oldList);
+
+        // Clean up the sessions list
+        for (var i in obj.parent.webserver.wsPeerSessions[peerServerId]) { delete obj.parent.webserver.wsPeerSessions2[obj.parent.webserver.wsPeerSessions[peerServerId][i]]; }
+        delete obj.parent.webserver.wsPeerSessions[peerServerId];
+        delete obj.parent.webserver.wsPeerSessions3[peerServerId];
+        obj.parent.webserver.recountSessions(); // Recount all sessions
     }
 
     // Process a message coming from a peer server
@@ -496,6 +508,43 @@ module.exports.CreateMultiServer = function (parent, args) {
             case 'connectivityTable': {
                 obj.parent.peerConnectivityByNode[peerServerId] = msg.connectivityTable;
                 obj.parent.UpdateConnectivityState(msg.connectivityTable);
+                break;
+            }
+            case 'sessionsTable': {
+                obj.parent.webserver.wsPeerSessions[peerServerId] = msg.sessionsTable;
+                var userToSession = {};
+                for (var i in msg.sessionsTable) {
+                    var sessionid = msg.sessionsTable[i];
+                    obj.parent.webserver.wsPeerSessions2[sessionid] = peerServerId;
+                    var userid = sessionid.split('/').slice(0, 3).join('/'); // Take the sessionid and keep only the userid partion
+                    if (userToSession[userid] == null) { userToSession[userid] = [sessionid]; } else { userToSession[userid].push(sessionid); } // UserId -> [ SessionId ]
+                }
+                obj.parent.webserver.wsPeerSessions3[peerServerId] = userToSession; // ServerId --> UserId --> SessionId
+                obj.parent.webserver.recountSessions(); // Recount all sessions
+                break;
+            }
+            case 'sessionStart': {
+                obj.parent.webserver.wsPeerSessions[peerServerId].push(msg.sessionid);
+                obj.parent.webserver.wsPeerSessions2[msg.sessionid] = peerServerId;
+                var userid = msg.sessionid.split('/').slice(0, 3).join('/');
+                if (obj.parent.webserver.wsPeerSessions3[peerServerId] == null) { obj.parent.webserver.wsPeerSessions3[peerServerId] = {}; }
+                if (obj.parent.webserver.wsPeerSessions3[peerServerId][userid] == null) { obj.parent.webserver.wsPeerSessions3[peerServerId][userid] = [ msg.sessionid ]; } else { obj.parent.webserver.wsPeerSessions3[peerServerId][userid].push(msg.sessionid); }
+                obj.parent.webserver.recountSessions(msg.sessionid); // Recount a specific user
+                break;
+            }
+            case 'sessionEnd': {
+                var i = obj.parent.webserver.wsPeerSessions[peerServerId].indexOf(msg.sessionid);
+                if (i >= 0) { obj.parent.webserver.wsPeerSessions[peerServerId].splice(i, 1); }
+                delete obj.parent.webserver.wsPeerSessions2[msg.sessionid];
+                var userid = msg.sessionid.split('/').slice(0, 3).join('/');
+                if (obj.parent.webserver.wsPeerSessions3[peerServerId][userid] != null) {
+                    i = obj.parent.webserver.wsPeerSessions3[peerServerId][userid].indexOf(msg.sessionid);
+                    if (i >= 0) {
+                        obj.parent.webserver.wsPeerSessions3[peerServerId][userid].splice(i, 1);
+                        if (obj.parent.webserver.wsPeerSessions3[peerServerId][userid].length == 0) { delete obj.parent.webserver.wsPeerSessions3[peerServerId][userid]; }
+                    }
+                }
+                obj.parent.webserver.recountSessions(msg.sessionid); // Recount a specific user
                 break;
             }
             case 'SetConnectivityState': {

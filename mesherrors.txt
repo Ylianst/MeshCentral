@@ -2017,3 +2017,60 @@ Error: not opened
     at Receiver.opcodes.2.finish (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:633:12)
 
 
+-------- 9/20/2017, 11:40:47 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:522
+                obj.wsPeerSessions3[peerServerId] = userToSession; // ServerId --> UserId --> SessionId
+                                                  ^
+
+TypeError: Cannot set property 'AmtMachine7' of undefined
+    at Object.obj.ProcessPeerServerMessage (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:522:51)
+    at processServerData (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:377:32)
+    at WebSocket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:262:49)
+    at emitTwo (events.js:106:13)
+    at WebSocket.emit (events.js:191:7)
+    at Receiver.ontext (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\WebSocket.js:841:10)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:536:18
+    at Receiver.applyExtensions (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:371:5)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:508:14
+    at Receiver.flush (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:347:3)
+
+
+-------- 9/20/2017, 11:40:51 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:522
+                obj.wsPeerSessions3[peerServerId] = userToSession; // ServerId --> UserId --> SessionId
+                                                  ^
+
+TypeError: Cannot set property 'AmtMachine7' of undefined
+    at Object.obj.ProcessPeerServerMessage (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:522:51)
+    at processServerData (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:377:32)
+    at WebSocket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\multiserver.js:262:49)
+    at emitTwo (events.js:106:13)
+    at WebSocket.emit (events.js:191:7)
+    at Receiver.ontext (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\WebSocket.js:841:10)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:536:18
+    at Receiver.applyExtensions (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:371:5)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:508:14
+    at Receiver.flush (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:347:3)
+
+
+-------- 9/20/2017, 1:55:44 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1155
+                                for (var i in obj.wssessions) { if (obj.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.wssessions[i].length; } }
+                                                                                        ^
+
+TypeError: Cannot read property 'domainid' of undefined
+    at WebSocket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1155:89)
+    at emitTwo (events.js:106:13)
+    at WebSocket.emit (events.js:191:7)
+    at Receiver.ontext (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\WebSocket.js:841:10)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:536:18
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:368:7
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\PerMessageDeflate.js:249:5
+    at afterWrite (_stream_writable.js:360:3)
+    at onwrite (_stream_writable.js:351:7)
+    at WritableState.onwrite (_stream_writable.js:89:5)
+
+

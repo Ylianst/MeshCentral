@@ -26,7 +26,7 @@ function createMeshCore(agent) {
     var lastNetworkInfo = null;
     var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
-    obj.useNativePipes = (process.platform == 'win32');
+    obj.useNativePipes = true; //(process.platform == 'win32');
 
     var http = require('http');
     var fs = require('fs');
@@ -158,7 +158,7 @@ function createMeshCore(agent) {
     };
 
     // Replace a string with a number if the string is an exact number
-    function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) == x)) { x = parseInt(x); } return x; }
+    function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
 
     // Convert decimal to hex
     function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }
@@ -218,16 +218,48 @@ function createMeshCore(agent) {
         return results;
     }
 
-    // Parge a URL string into an options object
-    function parseUrl(url) {
-        var x = url.split('/');
-        if (x.length < 4) return null;
-        var y = x[2].split(':');
-        var options = {};
-        var options = { protocol: x[0], hostname: y[0], path: '/' + x.splice(3).join('/') };
-        if (y.length == 1) { options.port = ((x[0] == 'https:') || (x[0] == 'wss:')) ? 443 : 80; } else { options.port = parseInt(y[1]); }
-        if (isNaN(options.port) == true) return null;
-        return options;
+    // Get server target url with a custom path
+    function getServerTargetUrl(path) {
+        var x = mesh.ServerUrl;
+        //sendConsoleText("mesh.ServerUrl: " + mesh.ServerUrl);
+        if (x == null) { return null; }
+        if (path == null) { path = ''; }
+        x = http.parseUri(x);
+        if (x == null) return null;
+        return x.protocol + '//' + x.host + ':' + x.port + '/' + path;
+    }
+
+    // Get server url. If the url starts with "*/..." change it, it not use the url as is.
+    function getServerTargetUrlEx(url) {
+        if (url.substring(0, 2) == '*/') { return getServerTargetUrl(url.substring(2)); }
+        return url;
+    }
+
+    // Send a wake-on-lan packet
+    function sendWakeOnLan(hexMac) {
+        var count = 0;
+        try {
+            var interfaces = require('os').networkInterfaces();
+            var magic = 'FFFFFFFFFFFF';
+            for (var x = 1; x <= 16; ++x) { magic += hexMac; }
+            var magicbin = Buffer.from(magic, 'hex');
+
+            for (var adapter in interfaces) {
+                if (interfaces.hasOwnProperty(adapter)) {
+                    for (var i = 0; i < interfaces[adapter].length; ++i) {
+                        var addr = interfaces[adapter][i];
+                        if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00')) {
+                            var socket = require('dgram').createSocket({ type: "udp4" });
+                            socket.bind({ address: addr.address });
+                            socket.setBroadcast(true);
+                            socket.send(magicbin, 7, "255.255.255.255");
+                            count++;
+                        }
+                    }
+                }
+            }
+        } catch (e) { }
+        return count;
     }
 
     // Handle a mesh agent command
@@ -245,21 +277,26 @@ function createMeshCore(agent) {
                     else if (data.type == 'tunnel') { // Process a new tunnel connection request
                         if (data.value && data.sessionid) {
                             // Create a new tunnel object
-                            var tunnel = http.request(parseUrl(data.value));
-                            tunnel.upgrade = onTunnelUpgrade;
-                            tunnel.sessionid = data.sessionid;
-                            tunnel.rights = data.rights;
-                            tunnel.state = 0;
-                            tunnel.url = data.value;
-                            tunnel.protocol = 0;
+                            //sendConsoleText(data.value);
+                            var xurl = getServerTargetUrlEx(data.value);
+                            //sendConsoleText(xurl);
+                            if (xurl != null) {
+                                var tunnel = http.request(http.parseUri(xurl));
+                                tunnel.upgrade = onTunnelUpgrade;
+                                tunnel.sessionid = data.sessionid;
+                                tunnel.rights = data.rights;
+                                tunnel.state = 0;
+                                tunnel.url = xurl;
+                                tunnel.protocol = 0;
 
-                            // Put the tunnel in the tunnels list
-                            var index = 1;
-                            while (tunnels[index]) { index++; }
-                            tunnel.index = index;
-                            tunnels[index] = tunnel;
+                                // Put the tunnel in the tunnels list
+                                var index = 1;
+                                while (tunnels[index]) { index++; }
+                                tunnel.index = index;
+                                tunnels[index] = tunnel;
 
-                            sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                                sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                            }
                         }
                     }
                     break;
@@ -267,7 +304,7 @@ function createMeshCore(agent) {
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
                     sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));
-                    // TODO!!!!
+                    for (var i in data.macs) { sendWakeOnLan(data.macs[i]); }
                     break;
                 }
                 case 'poweraction': {
@@ -554,7 +591,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseurl, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -569,7 +606,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.';
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -628,10 +665,6 @@ function createMeshCore(agent) {
                     response = 'Database compacted: ' + r;
                     break;
                 }
-                case 'parseurl': {
-                    response = objToString(parseUrl(args['_'][0]));
-                    break;
-                }
                 case 'httpget': {
                     if (consoleHttpRequest != null) {
                         response = 'HTTP operation already in progress.';
@@ -639,7 +672,7 @@ function createMeshCore(agent) {
                         if (args['_'].length != 1) {
                             response = 'Proper usage: httpget (url)';
                         } else {
-                            var options = parseUrl(args['_'][0]);
+                            var options = http.parseUri(args['_'][0]);
                             options.method = 'GET';
                             if (options == null) {
                                 response = 'Invalid url.';
@@ -648,7 +681,7 @@ function createMeshCore(agent) {
                                 consoleHttpRequest.sessionid = sessionid;
                                 if (consoleHttpRequest != null) {
                                     consoleHttpRequest.end();
-                                    response = 'HTTPGET ' + options.protocol + '//' + options.hostname + ':' + options.port + options.path;
+                                    response = 'HTTPGET ' + options.protocol + '//' + options.host + ':' + options.port + options.path;
                                 }
                             }
                         }
@@ -670,7 +703,7 @@ function createMeshCore(agent) {
                     } else {
                         var httprequest = null;
                         try {
-                            httprequest = http.request(parseUrl(args['_'][0]));
+                            httprequest = http.request(http.parseUri(args['_'][0]));
                         } catch (e) { response = 'Invalid HTTP websocket request'; }
                         if (httprequest != null) {
                             httprequest.upgrade = onWebSocketUpgrade;
@@ -756,7 +789,18 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'netinfo': { // Show network interface information
-                    response = objToString(mesh.NetInfo, 0, '.');
+                    //response = objToString(mesh.NetInfo, 0, '.');
+                    var interfaces = require('os').networkInterfaces();
+                    response = objToString(interfaces, 0, '.');
+                    break;
+                }
+                case 'wakeonlan': { // Send wake-on-lan
+                    if ((args['_'].length != 1) || (args['_'][0].length != 12)) {
+                        response = 'Proper usage: wakeonlan [mac], for example "wakeonlan 010203040506".';
+                    } else {
+                        var count = sendWakeOnLan(args['_'][0]);
+                        response = 'Sent wake-on-lan on ' + count + ' interface(s).';
+                    }
                     break;
                 }
                 case 'sendall': { // Send a message to all consoles on this mesh
@@ -780,6 +824,10 @@ function createMeshCore(agent) {
                     getIpLocationData(function (location) {
                         sendConsoleText(objToString({ "action": "iplocation", "type": "publicip", "value": location }, 0, '.'));
                     });
+                    break;
+                }
+                case 'parseuri': {
+                    response = JSON.stringify(http.parseUri(args['_'][0]));
                     break;
                 }
                 default: { // This is an unknown command, return an error message

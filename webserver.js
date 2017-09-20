@@ -74,10 +74,14 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Main lists    
     obj.wsagents = {};
-    obj.wssessions = {};    // UserId --> Array Of Sessions
-    obj.wssessions2 = {};   // UserId + SessionId --> Session
-    obj.wsrelays = {};      // Id -> Relay
-    obj.wsPeerRelays = {};  // Id -> { ServerId, Time }
+    obj.wssessions = {};         // UserId --> Array Of Sessions
+    obj.wssessions2 = {};        // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
+    obj.wsPeerSessions = {};     // ServerId --> Array Of "UserId + SessionRnd"
+    obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
+    obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
+    obj.sessionsCount = {};      // Merged session counters, used when doing server peering. UserId --> SessionCount
+    obj.wsrelays = {};           // Id -> Relay
+    obj.wsPeerRelays = {};       // Id -> { ServerId, Time }
     
     // Setup randoms
     obj.crypto.randomBytes(32, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -383,7 +387,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass });
         } else {
             // Send back the login application
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newAccounts, newAccountPass: ((domain.newAccountsPass == null)?0:1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port });
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newAccounts, newAccountPass: (((domain.newAccountsPass == null) || (domain.newAccountsPass == ''))?0:1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port });
         }
     }
     
@@ -941,8 +945,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             ws.sessionId = user._id + '/' + ('' + Math.random()).substring(2);
             obj.wssessions2[ws.sessionId] = ws;
             if (!obj.wssessions[user._id]) { obj.wssessions[user._id] = [ws]; } else { obj.wssessions[user._id].push(ws); }
-            obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[user._id].length, nolog: 1, domain: domain.id })
-            
+            if (obj.parent.multiServer == null) {
+                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[user._id].length, nolog: 1, domain: domain.id })
+            } else {
+                obj.recountSessions(ws.sessionId); // Recount sessions
+            }
+
+            // If we have peer servers, inform them of the new session
+            if (obj.parent.multiServer != null) { obj.parent.multiServer.DispatchMessage({ action: 'sessionStart', sessionid: ws.sessionId }); }
+
             // Handle events
             ws.HandleEvent = function (source, event) {
                 if (!event.domain || event.domain == domain.id) {
@@ -1136,11 +1147,17 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         }
                     case 'wssessioncount':
                         {
-                            // Request a list of all web socket session count
-                            if ((user.siteadmin & 2) == 0) break;
+                            // Request a list of all web socket user session count
                             var wssessions = {};
-                            for (var i in obj.wssessions) { if (obj.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.wssessions[i].length; } }
-                            ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions }));
+                            if ((user.siteadmin & 2) == 0) break;
+                            if (obj.parent.multiServer == null) {
+                                // No peering, use simple session counting
+                                for (var i in obj.wssessions) { if (obj.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.wssessions[i].length; } }
+                            } else {
+                                // We have peer servers, use more complex session counting
+                                for (var userid in obj.sessionsCount) { if (userid.split('/')[1] == domain.id) { wssessions[userid] = obj.sessionsCount[userid]; } }
+                            }
+                            ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions })); // wssessions is: userid --> count
                             break;
                         }
                     case 'deleteuser':
@@ -1664,10 +1681,19 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     if (i >= 0) {
                         obj.wssessions[ws.userid].splice(i, 1);
                         var user = obj.users[ws.userid];
-                        if (user) { obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[ws.userid].length, nolog: 1, domain: domain.id }) }
+                        if (user) {
+                            if (obj.parent.multiServer == null) {
+                                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[ws.userid].length, nolog: 1, domain: domain.id })
+                            } else {
+                                obj.recountSessions(ws.sessionId); // Recount sessions
+                            }
+                        }
                         if (obj.wssessions[ws.userid].length == 0) { delete obj.wssessions[ws.userid]; }
                     }
                 }
+
+                // If we have peer servers, inform them of the disconnected session
+                if (obj.parent.multiServer != null) { obj.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
             });
             
             // Send user information to web socket, this is the first thing we send
@@ -2125,6 +2151,71 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Start server on a free port
     CheckListenPort(obj.args.port, StartWebServer);
+
+/*
+    obj.wssessions = {};         // UserId --> Array Of Sessions
+    obj.wssessions2 = {};        // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
+    obj.wsPeerSessions = {};     // ServerId --> Array Of "UserId + SessionRnd"
+    obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
+    obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
+*/
+
+    // Count sessions and event any changes
+    obj.recountSessions = function (changedSessionId) {
+        if (changedSessionId == null) {
+            // Recount all sessions
+
+            // Calculate the session count for all userid's
+            var newSessionsCount = {};
+            for (var userid in obj.wssessions) { newSessionsCount[userid] = obj.wssessions[userid].length; }
+            for (var serverid in obj.wsPeerSessions3) {
+                for (var userid in obj.wsPeerSessions3[serverid]) {
+                    var c = obj.wsPeerSessions3[serverid][userid].length;
+                    if (newSessionsCount[userid] == null) { newSessionsCount[userid] = c; } else { newSessionsCount[userid] += c; }
+                }
+            }
+
+            // See what session counts have changed, event any changes
+            for (var userid in newSessionsCount) {
+                var newcount = newSessionsCount[userid];
+                var oldcount = obj.sessionsCount[userid];
+                if (oldcount == null) { oldcount = 0; } else { delete obj.sessionsCount[userid]; }
+                if (newcount != oldcount) {
+                    var x = userid.split('/');
+                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 })
+                }
+            }
+
+            // If there are any counts left in the old counts, event to zero
+            for (var userid in obj.sessionsCount) {
+                var oldcount = obj.sessionsCount[userid];
+                if ((oldcount != null) && (oldcount != 0)) {
+                    var x = userid.split('/');
+                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
+                }
+            }
+
+            // Set the new session counts
+            obj.sessionsCount = newSessionsCount;
+        } else {
+            // Figure out the userid
+            var userid = changedSessionId.split('/').slice(0, 3).join('/');
+
+            // Recount only changedSessionId
+            var newcount = 0;
+            if (obj.wssessions[userid] != null) { newcount = obj.wssessions[userid].length; }
+            for (var serverid in obj.wsPeerSessions3) { if (obj.wsPeerSessions3[serverid][userid] != null) { newcount += obj.wsPeerSessions3[serverid][userid].length; } }
+            var oldcount = obj.sessionsCount[userid];
+            if (oldcount == null) { oldcount = 0; }
+
+            // If the count changed, update and event
+            if (newcount != oldcount) {
+                var x = userid.split('/');
+                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 })
+                obj.sessionsCount[userid] = newcount;
+            }
+        }
+    }
 
     return obj;
 }

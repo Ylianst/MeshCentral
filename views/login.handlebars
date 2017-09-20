@@ -150,7 +150,7 @@
             if ('{{loginmode}}' != '') { go({{loginmode}}); } else { go(1); }
             QV('newAccountDiv', '{{{newAccount}}}' != '0' );
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
-            QV("anewaccountpass", (newAccountPass == 1));
+            QV("newAccountPass", (newAccountPass == 1));
         }
 
         function showPassHint() {

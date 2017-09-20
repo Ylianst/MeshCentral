@@ -378,9 +378,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
                                     ws.send(JSON.stringify(command));
                                 } else if (obj.parent.parent.multiServer != null) {
-                                    // We need to send this message to other servers
-                                    command.fromNodeid = obj.dbNodeKey;
-                                    obj.parent.parent.multiServer.DispatchMessage(command);
+                                    // See if we can send this to a peer server
+                                    var serverid = obj.parent.wsPeerSessions2[command.sessionid];
+                                    if (serverid != null) {
+                                        command.fromNodeid = obj.dbNodeKey;
+                                        obj.parent.parent.multiServer.DispatchMessageSingleServer(command, serverid);
+                                    }
                                 }
                             }
                         } else if (command.userid != null) { // If this command has a userid, that is the target.
