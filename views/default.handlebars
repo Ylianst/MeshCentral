@@ -8,6 +8,7 @@
     <meta name="format-detection" content="telephone=no" />
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
@@ -21,6 +22,7 @@
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <script type="text/javascript" src="scripts/ol.js"></script>
+    <script type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>MeshCentral</title>
 </head>
 
@@ -1003,6 +1005,9 @@
                                 node.desc = message.event.node.desc;
                                 node.publicip = message.event.node.publicip;
                                 node.iploc = message.event.node.iploc;
+                                node.wifiloc = message.event.node.wifiloc;
+                                node.gpsloc = message.event.node.gpsloc;
+                                node.userloc = message.event.node.userloc;
                                 if (message.event.node.agent != undefined) {
                                     if (node.agent == undefined) node.agent = {};
                                     if (message.event.node.agent.ver != undefined) { node.agent.ver = message.event.node.agent.ver; }
@@ -1027,6 +1032,8 @@
                                 drawNotifications();
                                 refreshDevice(node._id);
                                 updateMapMarkers();
+
+                                if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
                             }
                             break;
                         }
@@ -1673,16 +1680,15 @@
             var boundingBox = null;
             for (var i in nodes) {
                 var loc = map_parseNodeLoc(nodes[i]);
-                if (loc) { // Draw markers for devices with locations
+                var feature = xxmap.markersSource.getFeatureById(nodes[i]._id); // Remove if present
+                if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == undefined))) { // Draw markers for devices with locations
                     lat = loc[0];
                     lon = loc[1];
+                    var type = loc[2];
                     if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
-                    var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
-                    if (nodes[i].meshid == selectedMesh || selectedMesh == undefined) {
-                        if (feature == null || feature == undefined) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); } // Update Feature
-                    } else {
-                        if (feature) { xxmap.markersSource.removeFeature(feature); } // Remove if it does not belong to that mesh
-                    }
+                    if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
+                } else {
+                    if (feature) { xxmap.markersSource.removeFeature(feature); }
                 }
             }
             return boundingBox;
@@ -1692,10 +1698,15 @@
         var map_cm_popup = new ol.Overlay({ element: Q('xmap-info-window'), positioning: 'bottom-center', stopEvent: false });
 
         // Edit Marker item
-        var map_cm_editMarker = { text: "Modify Node location", callback: function (obj) { modifyMarkerloc(obj.data); } };
+        var map_cm_editMarker = { text: "Modify node location", callback: function (obj) { modifyMarkerloc(obj.data); } };
+
+        // Clear Marker item
+        var map_cm_clearMarker = { text: "Remove node location", callback: function (obj) {
+            meshserver.Send({ action: 'changedevice', nodeid: obj.data.a, userloc: [] }); // Clear the user position marker
+        }};
 
         // Save Marker item
-        var map_cm_saveMarker = { text: "Save Node location", callback: function (obj) { saveMarkerloc(obj.data); } };
+        var map_cm_saveMarker = { text: "Save node location", callback: function (obj) { saveMarkerloc(obj.data); } };
 
         // Build a context menu for a feature
         var map_cm_nodemenu_items = [
@@ -1724,9 +1735,14 @@
 
         // Get the lat/lon from a node
         function map_parseNodeLoc(node) {
-            if (!node.iploc) return;
-            var loc = node.iploc.split(',');
-            return [parseFloat(loc[0]) + (stringToIntHash(node._id.substring(0, 20)) / 100000000000), parseFloat(loc[1]) + (stringToIntHash(node._id.substring(20)) / 100000000000)]
+            var loc = null, t = 0;
+            if (node.iploc) { loc = node.iploc; t = 1; }
+            if (node.wifiloc) { loc = node.wifiloc; t = 2; }
+            if (node.gpsloc) { loc = node.gpsloc; t = 3; }
+            if (node.userloc) { loc = node.userloc; t = 4; }
+            if ((loc == null) || (typeof loc != 'string')) return;
+            loc = loc.split(',');
+            return [ parseFloat(loc[0]) + (stringToIntHash(node._id.substring(0, 20)) / 100000000000), parseFloat(loc[1]) + (stringToIntHash(node._id.substring(20)) / 100000000000), t ]
         }
 
         // Load the entire map
@@ -1792,7 +1808,6 @@
                     }
                 });
 
-                /*
                 // Initialize context menu for openlayers
                 contextmenu = new ContextMenu({
                     width: 160,
@@ -1805,20 +1820,18 @@
                     var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(ft, l){ return ft;  });
                     xxmap.contextmenu.clear(); //Clear the context menu
                     if (feature) {
-                        var featId=feature.getId();
-                        if (featId) { // Node feature will have an id
-                            addContextMenuItems(feature);
-                        }
+                        var featId = feature.getId();
+                        if (featId) { addContextMenuItems(feature); } // Node feature will have an id
                         else { // If the feature is a pointer, Get its corresponding Node feature
-                            var nodeFeature= getCorrespondingFeature(feature); //return the node feature associated to pointer.
+                            var nodeFeature = getCorrespondingFeature(feature); //return the node feature associated to pointer.
                             if (nodeFeature) { addContextMenuItems(nodeFeature); }
                             else{ xxmap.contextmenu.extend(contextmenu_items);    }
                         }
                     }
                     else { xxmap.contextmenu.extend(contextmenu_items); }
                 });
+                if (xxmap.contextmenu == null) { xxmap.contextmenu = contextmenu; }
                 xxmap.map.addControl(xxmap.contextmenu);
-                */
                 //addMeshOptions(); // Adds Mesh names to mesh dropdown
             } catch (e) {
                 QV('viewselectmapoption', false);
@@ -1827,24 +1840,24 @@
         }
 
         // Add feature on to Map for a Node
-        function addFeature(node, lat, lon){
+        function addFeature(node, lat, lon) {
             var existingfeature = getModifiedFeature(node._id); // Check if Corresponding feature was Modified ( Modifed feature are in active interactions list)
             if (existingfeature) { xxmap.markersSource.addFeature(existingfeature); } // Add that existing feature
             else { // Add new feature for this node
                 if (!lat && !lon) { var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1]; }
-                var feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326','EPSG:3857')), name: node.name, status: node.conn, lat: lat, lon: lon });
-                feature.setId(node._id); // Set id for the device as nodeid
-                feature.setStyle(markerStyle(node));
-                xxmap.markersSource.addFeature(feature); // Add the feature to Marker Source
+                if ((lat < 90) && (lat > -90) && (lon < 180) && (lon > -180)) { // Check valid lat/lon
+                    var feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326','EPSG:3857')), name: node.name, status: node.conn, lat: lat, lon: lon });
+                    feature.setId(node._id); // Set id for the device as nodeid
+                    feature.setStyle(markerStyle(node));
+                    xxmap.markersSource.addFeature(feature); // Add the feature to Marker Source
+                }
             }
         }
 
         // Removing any feature from map
         function removeFeature(node) {
-            if (node.iploc) {
-                var feature = xxmap.markersSource.getFeatureById(node._id);
-                if (feature) { xxmap.markersSource.removeFeature(feature); }
-            }
+            var feature = xxmap.markersSource.getFeatureById(node._id);
+            if (feature) { xxmap.markersSource.removeFeature(feature); }
         }
 
         // Update feature
@@ -1870,6 +1883,7 @@
         function modifyMarkerloc(ft){
             var featid = ft.getId();
             if (featid) {
+                ft.setStyle(markerStyle(getNodeFromId(ft.a), 4)); // Switch to a user marker
                 if ( !getActiveInteractions(ft)) {
                     var dragInteration = new ol.interaction.Modify({
                         features: new ol.Collection([ft]),
@@ -1891,16 +1905,25 @@
                     removeInteraction(featid);
                     var coord = ft.getGeometry().getCoordinates();
                     var v = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
-                    meshserver.Send({ action: 'changelocation', nodeid: featid, value: v }); // Send them to server to save changes
+                    var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
+                    meshserver.Send({ action: 'changedevice', nodeid: featid, userloc: vx }); // Send them to server to save changes
                 }
             }
         }
 
         // Style the Markers
-        function markerStyle(node) {
+        function markerStyle(node, type) {
+            if (type == null) {
+                type = 0;
+                if (node.iploc) { type = 1; }
+                if (node.wifiloc) { type = 2; }
+                if (node.gpsloc) { type = 3; }
+                if (node.userloc) { type = 4; }
+            }
+            var types = ['', '-ip','-wifi','-gps','-user'];
             var color = connStateColor(node);
             var style = new ol.style.Style({
-                image: new ol.style.Icon({ color: color, anchor: [0.5, 1], src: 'images/mapmarker.png' })
+                image: new ol.style.Icon({ color: color, anchor: [0.5, 1], src: 'images/mapmarker' + types[type] + '.png' })
                 //stroke: new ol.style.Stroke({ color: '#000', width: 20 })
                 //text: new ol.style.Text({ text: 'bob!', textAlign: 'right', offsetX: -10, fill: new ol.style.Fill({ color: '#000' }), stroke: new ol.style.Stroke({ color: '#fff', width: 2 }) })
             });
@@ -1935,6 +1958,11 @@
             } else {
                 map_cm_editMarker.data = feature;
                 xxmap.contextmenu.push(map_cm_editMarker);
+                var node = getNodeFromId(feature.a);
+                if (node.userloc) {
+                    map_cm_clearMarker.data = feature;
+                    xxmap.contextmenu.push(map_cm_clearMarker);
+                }
             }
             map_cm_nodemenu_items.forEach(function (item){
                 if (item.text == 'Zoom-in to extent' || item.text == 'Zoom-out to extent') { item.data = feature; }
@@ -2047,6 +2075,7 @@
                 if (node) {
                     var feature = markersSource.getFeatureById(i);
                     var v = ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');
+                    var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
                     if (button == 2) {
                         if (feature) {
                             feature.getGeometry().setCoordinates(coords);
@@ -2054,10 +2083,10 @@
                             if (activeInteraction) {
                                 saveMarkerloc(feature);
                             } else { // If this feature is not modified, then send updated coords to server.
-                                meshserver.Send({ action: 'changelocation', nodeid: node._id, value: v }); // Send them to server to save changes
+                                meshserver.Send({ action: 'changedevice', nodeid: node._id, value: vx }); // Send them to server to save changes
                             }
                         } else {
-                            meshserver.Send({ action: 'changelocation', nodeid: node._id, value: v }); // This Node is not yet added to maps.
+                            meshserver.Send({ action: 'changedevice', nodeid: node._id, value: vx }); // This Node is not yet added to maps.
                         }
                     }
                     else if (button == 1) {
@@ -2065,11 +2094,11 @@
                             feature.getGeometry().setCoordinates(coords);
                             modifyMarkerloc(feature);
                         } else {
-                            if (!node.iploc) {
+                            //if (map_parseNodeLoc(node.iploc) != null) {
                                 addFeature(node, v[0], v[1]);
                                 var newFeature = markersSource.getFeatureById(node._id);
                                 modifyMarkerloc(newFeature);
-                            }
+                            //}
                         }
                     }
                 }
@@ -2438,7 +2467,7 @@
                 if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
-                if ((node.iploc) && (xxmap != null)) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
+                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -2650,26 +2679,47 @@
         // Show current location
         var d2map = null;
         function p10showNodeLocationDialog() {
-            if (xxdialogMode) return;
-            var loc = currentNode.iploc.split(',');
-            var lat = parseFloat(loc[0]);
-            var lng = parseFloat(loc[1]);
-            //var x = '<div><a href="https://www.google.com/maps/preview/@' + lat + ',' + lng + ',12z" target=_blank>Open in Google maps</a></div>';
-            var x = '<div id=d2map style=width:100%;height:300px></div>';
-            setDialogMode(2, "Device Location", 1, null, x);
+            if ((xxdialogMode != null) && (xxdialogTag == '@xxmap')) { setDialogMode(0); } else { if (xxdialogMode) return; }
+            var markers = [], types = ['iploc', 'wifiloc', 'gpsloc', 'userloc'], boundingBox = null;
+
+            for (var loctype in types) {
+                if (currentNode[types[loctype]] != null) {
+                    var loc = currentNode[types[loctype]].split(','), lat = parseFloat(loc[0]), lon = parseFloat(loc[1]);
+                    if ((lat < 90) && (lat > -90) && (lon < 180) && (lon > -180)) { // Check valid lat/lon
+                        var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])) });
+                        deviceMark.setStyle(markerStyle(currentNode, parseInt(loctype) + 1));
+                        markers.push(deviceMark);
+
+                        if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
+                    }
+                }
+            }
 
             // Setup the device mark layer
-            var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])) });
-            deviceMark.setStyle(markerStyle(currentNode));
-            var vectorSource = new ol.source.Vector({ features: [deviceMark] });
+            var vectorSource = new ol.source.Vector({ features: markers });
             var vectorLayer = new ol.layer.Vector({ source: vectorSource });
+
+            //var x = '<div><a href="https://www.google.com/maps/preview/@' + lat + ',' + lng + ',12z" target=_blank>Open in Google maps</a></div>';
+            var x = '<div id=d2map style=width:100%;height:300px></div>';
+            setDialogMode(2, "Device Location", 1, null, x, '@xxmap');
+
+            var clng = 0, clat = 0, zoom = 8;
+            if (boundingBox != null) {
+                var clat = (boundingBox[0] + boundingBox[2]) / 2;
+                var clng = (boundingBox[1] + boundingBox[3]) / 2;
+                var cscale = Math.max(Math.abs(boundingBox[0] - boundingBox[2]), Math.abs(boundingBox[1] - boundingBox[3]));
+                var i = 360, zoom = -2;
+                while (i > cscale) { zoom++; i = i / 2; }
+            }
+
+            if (markers.length == 1) { zoom = 8; }
 
             // Setup the map
             d2map = new ol.Map({
                 target: 'd2map',
                 interactions: ol.interaction.defaults({dragPan:false, mouseWheelZoom:false}),
                 layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer ],
-                view: new ol.View({ center: ol.proj.fromLonLat([lng, lat]), zoom: 8 })
+                view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
             });
         }
 

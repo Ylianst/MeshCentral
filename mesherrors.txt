@@ -50,3 +50,60 @@ TypeError: socket.getPeerCertificate is not a function
     at TCP.onconnection (net.js:1452:8)
 
 
+-------- 9/25/2017, 1:57:36 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1589
+                            if ((node.userloc) && (node.userloc.length != 2)) return;
+                                 ^
+
+ReferenceError: node is not defined
+    at WebSocket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1589:34)
+    at emitTwo (events.js:106:13)
+    at WebSocket.emit (events.js:191:7)
+    at Receiver.ontext (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\WebSocket.js:841:10)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:536:18
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\Receiver.js:368:7
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\ws\lib\PerMessageDeflate.js:249:5
+    at afterWrite (_stream_writable.js:360:3)
+    at onwrite (_stream_writable.js:351:7)
+    at WritableState.onwrite (_stream_writable.js:89:5)
+
+
+-------- 9/25/2017, 2:01:16 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1616
+                                            command.userloc.push((Math.floor((new Date(iploc.date)) / 1000)));
+                                                                                       ^
+
+ReferenceError: iploc is not defined
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1616:88
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
+-------- 9/25/2017, 2:02:08 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1617
+                                            node.userloc = command.join(',');
+                                                                   ^
+
+TypeError: command.join is not a function
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1617:68
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+

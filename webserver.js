@@ -1586,7 +1586,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         {
                             // Argument validation
                             if ((command.nodeid == null) || (typeof command.nodeid != 'string') || (command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                            
+                            if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) return;
+
                             // Change the device
                             obj.db.Get(command.nodeid, function (err, nodes) {
                                 if (nodes.length != 1) return;
@@ -1606,6 +1607,17 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                     if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
                                     if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
                                     if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
+                                    if (command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
+                                        change = 1;
+                                        if ((command.userloc.length == 0) && (node.userloc)) {
+                                            delete node.userloc;
+                                            changes.push('location removed');
+                                        } else {
+                                            command.userloc.push((Math.floor((new Date()) / 1000)));
+                                            node.userloc = command.userloc.join(',');
+                                            changes.push('location');
+                                        }
+                                    }
                                     if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
                                     if (command.intelamt != null) {
                                         if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
