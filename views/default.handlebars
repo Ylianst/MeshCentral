@@ -1380,8 +1380,12 @@
             var mesh = meshes[meshid];
             var meshidx = meshid.substring(5);
             if (meshidx[0] == '/') meshidx = meshidx.substring(1);
+
+            var y = '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>MeshCommander Script</option><option value=1>Manual Username/Password</option>';
+            if ((features & 16) == 0) { y += '<option value=2>Manual Certificate</option></select>'; } // Only display this option if Intel AMT CIRA with Mutual-Auth is allowed.
+
             var x = '';
-            x += addHtmlValue('Setup Method', '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>MeshCommander Script</option><option value=1>Manual Username/Password</option><option value=2>Manual Certificate</option></select>');
+            x += addHtmlValue('Setup Method', y);
             x += '<hr>';
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
@@ -1399,12 +1403,14 @@
             if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.name) + ':' + serverinfo.mpsport + '" />'); }
             x += "</div>";
 
-            // Setup CIRA with certificate authentication (Really difficult)
-            x += "<div id=dlgAddCira2 style=display:none>To add a new Intel&reg; AMT device to mesh " + EscapeHtml(mesh.name) + " with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.<br /><br />";
-            x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" target="_blank">Root Certificate File</a>');
-            x += addHtmlValue('Organization', '<input style=width:230px readonly value="' + meshidx + '" />');
-            if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.name) + ':' + serverinfo.mpsport + '" />'); }
-            x += "</div>";
+            // Setup CIRA with certificate authentication (Really difficult, only is allowed)
+            if ((features & 16) == 0) {
+                x += "<div id=dlgAddCira2 style=display:none>To add a new Intel&reg; AMT device to mesh " + EscapeHtml(mesh.name) + " with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.<br /><br />";
+                x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" target="_blank">Root Certificate File</a>');
+                x += addHtmlValue('Organization', '<input style=width:230px readonly value="' + meshidx + '" />');
+                if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.name) + ':' + serverinfo.mpsport + '" />'); }
+                x += "</div>";
+            }
 
             setDialogMode(2, "Add Intel&reg; AMT CIRA device", 1, null, x);
         }

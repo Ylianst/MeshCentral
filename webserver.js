@@ -91,7 +91,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
-    if (obj.args.notls) {
+    if (obj.args.notls || obj.args.tlsoffload) {
         // Setup the HTTP server without TLS
         obj.expressWs = require('express-ws')(obj.app);
     } else {
@@ -383,6 +383,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
             if (obj.args.nousers == true) { features += 4; } // Single user mode
             if (domain.userQuota == -1) { features += 8; } // No server files mode
+            if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
             if ((!obj.args.user) && (!obj.args.nousers)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass });
         } else {

@@ -132,7 +132,7 @@ For the configuration above, the root domain and two other domains will be acces
 
 When you setup many domains, the server considers each domain seperatly. Each domain has seperate user accounts, administrators, etc. Within each domain, you can put a "title" and "title2" as strings that will show up at the top of the web site. "userQuota" indicates the default maximum amount of data a user can have in it's "My Files" folder. "meshQuota" is the maximum total size of files in each mesh folder. "newAccounts" indicates if new accounts can be created from the login page, 0 if not allowed, 1 if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
 
-MeshCentral also supports server peering, add the "peers" section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the "serverId" value is optional. If it's not specified, the computers hostname is used instead.
+MeshCentral also supports server peering, add the "peers" section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the "serverId" value is optional. If it's not specified, the computer hostname is used instead.
 
 Other Notes
 -----------

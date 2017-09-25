@@ -9,14 +9,19 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var obj = {};
     obj.parent = parent;
     obj.db = db;
+    obj.args = args;
     obj.certificates = certificates;
     obj.ciraConnections = {};
     var common = require('./common.js');
     var net = require('net');
     var tls = require('tls');
-    
-    obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true }, onConnection);
-    
+
+    if (obj.args.tlsoffload) {
+        obj.server = net.createServer(onConnection);
+    } else {
+        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true }, onConnection);
+    }
+
     obj.server.listen(args.mpsport, function () { console.log('MeshCentral Intel(R) AMT server running on ' + certificates.CommonName + ':' + args.mpsport + '.'); }).on('error', function (err) { console.error('ERROR: MeshCentral Intel(R) AMT server port ' + args.mpsport + ' is not available.'); if (args.exactports) { process.exit(); } });
     
     var APFProtocol = {
@@ -79,7 +84,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
     
     function onConnection(socket) {
-        socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        if (obj.args.tlsoffload) {
+            socket.tag = { first: true, clientCert: null, accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        } else {
+            socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        }
         socket.setEncoding('binary');
         Debug(1, 'MPS:New CIRA connection');
         
@@ -91,7 +100,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
                 //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); socket.end(); return; }
-                if (socket.tag.accumulator.substring(0, 3) == 'GET') { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nIntel(R) AMT computers should connect here.'); socket.end(); return; }
+                if (socket.tag.accumulator.substring(0, 3) == 'GET') { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>'); socket.end(); return; }
                 socket.tag.first = false;
                 
                 // Setup this node with certificate authentication

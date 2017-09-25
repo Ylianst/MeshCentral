@@ -640,6 +640,10 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                case 'dbkeys': { // Return all data store keys
+                    response = JSON.stringify(db.Keys);
+                    break;
+                }
                 case 'dbget': { // Return the data store value for a given key
                     if (db == null) { response = 'Database not accessible.'; break; }
                     if (args['_'].length != 1) {

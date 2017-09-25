@@ -57,7 +57,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload'];
         for (var arg in obj.args) { if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
