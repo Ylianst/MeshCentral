@@ -65,6 +65,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.args = args;
     obj.users = {};
     obj.meshes = {};
+    obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
     
     // Perform hash on web certificate and agent certificate
     obj.webCertificatHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'binary' });
@@ -176,6 +177,22 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
     */
 
+    // Check if the source IP address is allowed, return false if not
+    function checkUserIpAddress(req, res) {
+        if (obj.userAllowedIp == null) { return true; }
+        try {
+            if (typeof obj.userAllowedIp == 'string') { if (obj.userAllowedIp == "") { obj.userAllowedIp = null; return true; } else { obj.userAllowedIp = obj.userAllowedIp.split(','); } }
+            var ip = null, type = 0;
+            if (req.connection) { ip = req.connection.remoteAddress; type = 1; } // HTTP(S) request
+            else if (req._socket) { ip = req._socket.remoteAddress; type = 2; } // WebSocket request
+            if (ip.startsWith('::ffff:')) { ip = ip.substring(7); } // Fix IPv4 IP's encoded in IPv6 form
+            if ((ip != null) && (obj.userAllowedIp.indexOf(ip) >= 0)) { return true; }
+            if (type == 1) { res.sendStatus(401); }
+            else if (type == 2) { try { req.close(); } catch (e) { } }
+        } catch (e) { console.log(e); }
+        return false;
+    }
+
     // Return the current domain of the request
     function getDomain(req) {
         var x = req.url.split('/');
@@ -185,6 +202,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
     
     function handleLogoutRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         // Destroy the user's session to log them out will be re-created next request
@@ -198,6 +216,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
     
     function handleLoginRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         obj.authenticate(req.body.username, req.body.password, domain, function (err, userid, passhint) {
             if (userid) {
@@ -249,6 +268,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
     
     function handleCreateAccountRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if (domain.newAccounts == 0) { res.sendStatus(401); return; }
         if (!req.body.username || !req.body.email || !req.body.password1 || !req.body.password2 || (req.body.password1 != req.body.password2) || req.body.username == '~') {
@@ -291,6 +311,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
     
     function handleDeleteAccountRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -313,6 +334,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -336,6 +358,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         if (!obj.args) { res.sendStatus(500); return; }
         var domain = getDomain(req);
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -401,6 +424,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Renter the terms of service.
     function handleTermsRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         if (req.session && req.session.userid) {
@@ -424,12 +448,14 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
         res.send(new Buffer(getRootCertBase64(), 'base64'));
     }
 
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         if (req.query.type == 1) {
             var filename = 'cira_setup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
@@ -500,6 +526,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req), domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         if (domain.id != '') { domainname = 'domain-' + domain.id; }
@@ -522,6 +549,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Download a file from the server
     function handleDownloadFile(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         var user = obj.users[req.session.userid];
@@ -534,6 +562,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
@@ -558,6 +587,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Upload a file to the server
     function handleUploadFile(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
@@ -619,6 +649,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Handle a web socket relay request
     function handleRelayWebSocket(ws, req) {
+        if (checkUserIpAddress(ws, req) == false) { return; }
         var node, domain = getDomain(req);
         // Check if this is a logged in user
         var user, peering = true;
@@ -881,6 +912,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Handle the web socket echo request, just echo back the data sent
     function handleEchoWebSocket(ws, req) {
+        if (checkUserIpAddress(ws, req) == false) { return; }
+
         // When data is received from the web socket, echo it back
         ws.on('message', function (data) {
             var cmd = data.toString('utf8');
@@ -932,6 +965,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Indicates we want to handle websocket requests on "/control.ashx".
     function handleControlRequest(ws, req) {
+        if (checkUserIpAddress(ws, req) == false) { return; }
         var domain = getDomain(req);
         try {
             // Check if the user is logged in
@@ -1803,6 +1837,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a server backup request
     function handleBackupRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
@@ -1835,6 +1870,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a server restore request
     function handleRestoreRequest(req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
@@ -1850,6 +1886,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
@@ -1879,6 +1916,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
+        if (checkUserIpAddress(req, res) == false) { return; }
         var domain = getDomain(req);
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
         

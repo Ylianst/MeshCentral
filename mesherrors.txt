@@ -107,3 +107,47 @@ TypeError: command.join is not a function
     at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
 
 
+-------- 9/27/2017, 11:45:48 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1
+(function (exports, require, module, __filename, __dirname) { * @description Meshcentral web server
+                                                              ^
+SyntaxError: Unexpected token *
+    at exports.runInThisContext (vm.js:53:16)
+    at Module._compile (module.js:511:25)
+    at Object.Module._extensions..js (module.js:550:10)
+    at Module.load (module.js:456:32)
+    at tryModuleLoad (module.js:415:12)
+    at Function.Module._load (module.js:407:3)
+    at Module.require (module.js:466:17)
+    at require (internal/module.js:20:19)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:311:45)
+
+
+-------- 9/27/2017, 11:45:50 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:1
+(function (exports, require, module, __filename, __dirname) { * @description Meshcentral web server
+                                                              ^
+SyntaxError: Unexpected token *
+    at exports.runInThisContext (vm.js:53:16)
+    at Module._compile (module.js:511:25)
+    at Object.Module._extensions..js (module.js:550:10)
+    at Module.load (module.js:456:32)
+    at tryModuleLoad (module.js:415:12)
+    at Function.Module._load (module.js:407:3)
+    at Module.require (module.js:466:17)
+    at require (internal/module.js:20:19)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:311:45)
+
+
+-------- 9/27/2017, 12:40:21 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:307
+                        if ((obj.args.nousers == 1) && (args.userallowedip == null)) { args.userallowedip = "::1,127.0.0.1"; }
+                                                        ^
+
+ReferenceError: args is not defined
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:307:57)
+
+

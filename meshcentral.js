@@ -26,8 +26,6 @@ function CreateMeshCentralServer() {
     obj.debugLevel = 0;
     obj.config = {};                  // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
-    obj.datapath = obj.path.join(__dirname, '../.meshcentral-data');
-    obj.filespath = obj.path.join(__dirname, '../.meshcentral-files');
     obj.certificateOperations = require('./certoperations.js').CertificateOperations();
     obj.defaultMeshCore = null;
     obj.defaultMeshCoreHash = null;
@@ -37,6 +35,15 @@ function CreateMeshCentralServer() {
     obj.currentVer = null;
     obj.maintenanceTimer = null;
     obj.serverId = null;
+
+    // Setup the default configuration and files paths
+    if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
+        obj.datapath = obj.path.join(__dirname, '../../.meshcentral-data');
+        obj.filespath = obj.path.join(__dirname, '../../.meshcentral-files');
+    } else {
+        obj.datapath = obj.path.join(__dirname, '../.meshcentral-data');
+        obj.filespath = obj.path.join(__dirname, '../.meshcentral-files');
+    }
 
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
@@ -57,8 +64,8 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload'];
-        for (var arg in obj.args) { if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip'];
+        for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
@@ -85,19 +92,19 @@ function CreateMeshCentralServer() {
         if ((obj.service != null) && ((obj.args.install == true) || (obj.args.uninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
             var env = [], xenv = ['user', 'port', 'mpsport', 'redirport', 'exactport', 'debug'];
             for (var i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
-            var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: process.argv[1] + '.js', env: env, wait: 2, grow: .5 });
+            var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'meshcentral.js'), env: env, wait: 2, grow: .5 });
             svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
             svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
             svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (obj.args.stop) { process.exit(); } if (obj.args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
             svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
             svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
-            try {
-                if (obj.args.install == true) { svc.install(); return; }
-                else if (obj.args.uninstall == true) { svc.uninstall(); return; }
-                else if (obj.args.start == true) { svc.start(); return; }
-                else if (obj.args.stop == true || obj.args.restart == true) { svc.stop(); return; }
-            } catch (e) { logException(e); }
+            
+            if (obj.args.install == true) { try { svc.install(); } catch (e) { logException(e); } }
+            if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
+            if (obj.args.start == true || obj.args.restart == true) { try { svc.start(); } catch (e) { logException(e); } }
+            if (obj.args.uninstall == true) { try { svc.uninstall(); } catch (e) { logException(e); } }
+            return;
         }
 
         // If "--launch" is in the arguments, launch now
@@ -295,6 +302,9 @@ function CreateMeshCentralServer() {
                             obj.serverId = obj.multiServer.serverid;
                             for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
                         }
+
+                        // If the server is set to "nousers", allow only loopback unless IP filter is set
+                        if ((obj.args.nousers == 1) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
 
                         if (obj.args.secret) {
                             // This secret is used to encrypt HTTP session information, if specified, user it.
@@ -627,8 +637,8 @@ function CreateMeshCentralServer() {
                     obj.defaultMeshCore = data;
                     obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(data).digest("binary");
                 } else {
-                    obj.parent.defaultMeshCore = null;
-                    obj.parent.defaultMeshCoreHash = null;
+                    obj.defaultMeshCore = null;
+                    obj.defaultMeshCoreHash = null;
                 }
                 if (func != null) { func(); }
             });
@@ -640,8 +650,8 @@ function CreateMeshCentralServer() {
                     obj.defaultMeshCore = data;
                     obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(data).digest("binary");
                 } else {
-                    obj.parent.defaultMeshCore = null;
-                    obj.parent.defaultMeshCoreHash = null;
+                    obj.defaultMeshCore = null;
+                    obj.defaultMeshCoreHash = null;
                 }
                 if (func != null) { func(); }
             });
@@ -760,6 +770,7 @@ function CreateMeshCentralServer() {
         var called = false;
         try {
             obj.fs.open(filepath, 'r', function (err, fd) {
+                if (fd == null) { func(null); return; }
                 obj.fs.fstat(fd, function (err, stats) {
                     var bufferSize = stats.size, chunkSize = 512, buffer = new Buffer(bufferSize), bytesRead = 0;
                     while (bytesRead < bufferSize) {

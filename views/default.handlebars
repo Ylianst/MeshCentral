@@ -1742,7 +1742,13 @@
             if (node.userloc) { loc = node.userloc; t = 4; }
             if ((loc == null) || (typeof loc != 'string')) return;
             loc = loc.split(',');
-            return [ parseFloat(loc[0]) + (stringToIntHash(node._id.substring(0, 20)) / 100000000000), parseFloat(loc[1]) + (stringToIntHash(node._id.substring(20)) / 100000000000), t ]
+            if (t == 1) {
+                // If this is IP location, randomize the position a little.
+                return [ parseFloat(loc[0]) + (stringToIntHash(node._id.substring(0, 20)) / 100000000000), parseFloat(loc[1]) + (stringToIntHash(node._id.substring(20)) / 100000000000), t ];
+            } else {
+                // Return the real position
+                return [ parseFloat(loc[0]), parseFloat(loc[1]), t ];
+            }
         }
 
         // Load the entire map
