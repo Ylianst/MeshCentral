@@ -19,6 +19,14 @@ module.exports.CertificateOperations = function () {
         return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'hex', md: obj.forge.md.sha256.create() });
     }
 
+    // Return a random nonce (TODO: weak crypto)
+    obj.xxRandomNonceX = "abcdef0123456789";
+    obj.xxRandomNonce = function (length) {
+        var r = "";
+        for (var i = 0; i < length; i++) { r += obj.xxRandomNonceX.charAt(Math.floor(Math.random() * obj.xxRandomNonceX.length)); }
+        return r;
+    }
+
     // Create a self-signed certificate
     obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization) {
         var keys = obj.pki.rsa.generateKeyPair(2048);
@@ -54,7 +62,7 @@ module.exports.CertificateOperations = function () {
     }
     
     // Issue a certificate from a root
-    obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization) {
+    obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization, extKeyUsage) {
         var keys = obj.pki.rsa.generateKeyPair(2048);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
@@ -69,25 +77,45 @@ module.exports.CertificateOperations = function () {
         if (organization != undefined) attrs.push({ name: 'organizationName', value: organization });
         cert.setSubject(attrs);
         cert.setIssuer(rootcert.cert.subject.attributes);
-        
-        cert.setExtensions([{
-                name: 'basicConstraints',
-                cA: false
-            }, {
+
+        if (extKeyUsage == null) { extKeyUsage = { name: 'extKeyUsage', serverAuth: true, } } else { extKeyUsage.name = 'extKeyUsage'; }
+        var subjectAltName = null;
+        if (extKeyUsage.serverAuth == true) {
+            subjectAltName = {
+                name: 'subjectAltName',
+                altNames: [{
+                    type: 6, // URI
+                    value: 'http://' + commonName + '/'
+                }, {
+                    type: 6, // URL
+                    value: 'http://localhost/'
+                }]
+            }
+        }
+
+        /*
+        {
+            name: 'extKeyUsage',
+            serverAuth: true,
+            clientAuth: true,
+            codeSigning: true,
+            emailProtection: true,
+            timeStamping: true,
+            '2.16.840.1.113741.1.2.1': true
+        }
+        */
+
+        var extensions = [{
+            name: 'basicConstraints',
+            cA: false
+        }, {
                 name: 'keyUsage',
                 keyCertSign: true,
                 digitalSignature: true,
                 nonRepudiation: true,
                 keyEncipherment: true,
                 dataEncipherment: true
-            }, {
-                name: 'extKeyUsage',
-                serverAuth: true,
-                clientAuth: false,
-                codeSigning: false,
-                emailProtection: false,
-                timeStamping: false
-            }, {
+            }, extKeyUsage, {
                 name: 'nsCertType',
                 client: false,
                 server: true,
@@ -97,17 +125,10 @@ module.exports.CertificateOperations = function () {
                 emailCA: false,
                 objCA: false
             }, {
-                name: 'subjectAltName',
-                altNames: [{
-                        type: 6, // URI
-                        value: 'http://' + commonName + '/'
-                    }, {
-                        type: 6, // URL
-                        value: 'http://localhost/'
-                    }]
-            }, {
                 name: 'subjectKeyIdentifier'
-            }]);
+            }]
+        if (subjectAltName != null) extensions.push(subjectAltName);
+        cert.setExtensions(extensions);
         
         cert.sign(rootcert.key, obj.forge.md.sha256.create());
         
@@ -155,6 +176,14 @@ module.exports.CertificateOperations = function () {
             rcount++;
         }
 
+        // If the bin certificate already exist, load it
+        if (obj.fileExists(directory + '/amtconsole-cert-public.crt') && obj.fileExists(directory + '/agentserver-cert-private.key')) {
+            var amtConsoleCertificate = obj.fs.readFileSync(directory + '/amtconsole-cert-public.crt', 'utf8');
+            var amtConsolePrivateKey = obj.fs.readFileSync(directory + '/amtconsole-cert-private.key', 'utf8');
+            r.console = { cert: amtConsoleCertificate, key: amtConsolePrivateKey };
+            rcount++;
+        }
+
         // If CA certificates are present, load them
         var caok, caindex = 1, calist = [];
         do {
@@ -177,7 +206,10 @@ module.exports.CertificateOperations = function () {
             if (args.length > 2) organization = args[2];
         }
         
-        if (rcount == 4) {
+        if (rcount == 5) {
+            // Fetch the Intel AMT console name
+            var consoleCertificate = obj.pki.certificateFromPem(r.console.cert);
+            r.AmtConsoleName = consoleCertificate.subject.getField('CN').value;
             // Fetch the name of the server
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.CommonName = webCertificate.subject.getField('CN').value;
@@ -210,20 +242,49 @@ module.exports.CertificateOperations = function () {
 
         // If the web certificate does not exist, create one
         var webCertAndKey, webCertificate, webPrivateKey;
-        webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
-        webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
-        webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
-        obj.fs.writeFileSync(directory + '/webserver-cert-public.crt', webCertificate);
-        obj.fs.writeFileSync(directory + '/webserver-cert-private.key', webPrivateKey);
-        
+        if (r.web == undefined) {
+            webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
+            webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
+            webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
+            obj.fs.writeFileSync(directory + '/webserver-cert-public.crt', webCertificate);
+            obj.fs.writeFileSync(directory + '/webserver-cert-private.key', webPrivateKey);
+        } else {
+            // Keep the console certificate we have
+            webCertAndKey = { cert: obj.pki.certificateFromPem(r.web.cert), key: obj.pki.privateKeyFromPem(r.web.key) };
+            webCertificate = r.web.cert
+            webPrivateKey = r.web.key
+        }
+
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
-        mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
-        mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
-        mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
-        obj.fs.writeFileSync(directory + '/mpsserver-cert-public.crt', mpsCertificate);
-        obj.fs.writeFileSync(directory + '/mpsserver-cert-private.key', mpsPrivateKey);
-        
+        if (r.console == undefined) {
+            mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
+            mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
+            mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
+            obj.fs.writeFileSync(directory + '/mpsserver-cert-public.crt', mpsCertificate);
+            obj.fs.writeFileSync(directory + '/mpsserver-cert-private.key', mpsPrivateKey);
+        } else {
+            // Keep the console certificate we have
+            mpsCertAndKey = { cert: obj.pki.certificateFromPem(r.mps.cert), key: obj.pki.privateKeyFromPem(r.mps.key) };
+            mpsCertificate = r.mps.cert
+            mpsPrivateKey = r.mps.key
+        }
+
+        // If the Intel AMT console certificate does not exist, create one
+        var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = obj.xxRandomNonce(12);
+        if (r.console == undefined) {
+            consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }); // Intel AMT Remote, Agent and Activation usages
+            consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
+            consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
+            obj.fs.writeFileSync(directory + '/amtconsole-cert-public.crt', consoleCertificate);
+            obj.fs.writeFileSync(directory + '/amtconsole-cert-private.key', consolePrivateKey);
+        } else {
+            // Keep the console certificate we have
+            consoleCertAndKey = { cert: obj.pki.certificateFromPem(r.console.cert), key: obj.pki.privateKeyFromPem(r.console.key) };
+            consoleCertificate = r.console.cert
+            consolePrivateKey = r.console.key
+        }
+
         // If the mesh agent server certificate does not exist, create one
         var agentCertAndKey, agentCertificate, agentPrivateKey;
         if (r.agent == undefined) {
@@ -239,7 +300,7 @@ module.exports.CertificateOperations = function () {
             agentPrivateKey = r.agent.key
         }
 
-        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, calist: calist, CommonName: commonName, RootName: rootName };
+        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, calist: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName };
         if (func != undefined) { func(r); }
         return r;
     }

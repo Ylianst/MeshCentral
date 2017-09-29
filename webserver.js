@@ -43,6 +43,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.tls = require('tls');
     obj.path = require('path');
     obj.hash = require('./pass').hash;
+    obj.constants = require('constants');
     obj.bodyParser = require('body-parser');
     obj.session = require('express-session');
     obj.exphbs = require('express-handlebars');
@@ -751,7 +752,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                     var TLSSocket = require('tls').TLSSocket;
-                    var tlsock = new TLSSocket(ser, { secureProtocol: 'SSLv23_method', rejectUnauthorized: false }); // TLSv1_2_method
+                    var tlsoptions = { secureProtocol: 'TLSv1_method', ciphers: 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
+                    var tlsock = new TLSSocket(ser, tlsoptions); // 'TLSv1_2_method' or 'SSLv23_method'
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws.resume(); });
                         
@@ -862,7 +864,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     ws.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    ws.forwardclient = obj.tls.connect(port, node.host, { secureProtocol: 'TLSv1_method', rejectUnauthorized: false }, function () {
+                    var tlsoptions = { secureProtocol: 'TLSv1_method', ciphers: 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
+                    ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS connected to ' + node.host + ':' + port + '.');
                         ws.forwardclient.xstate = 1;
@@ -1886,7 +1889,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
-        if (checkUserIpAddress(req, res) == false) { return; }
         if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];

@@ -151,3 +151,41 @@ ReferenceError: args is not defined
     at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:307:57)
 
 
+-------- 9/29/2017, 11:50:51 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:2083
+      throw error;
+      ^
+
+Error: Extension ID not specified.
+    at _fillMissingExtensionFields (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:2081:19)
+    at Object.cert.setExtensions (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:983:7)
+    at Object.obj.IssueWebServerCertificate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\certoperations.js:108:14)
+    at Object.obj.GetMeshServerCertificate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\certoperations.js:256:33)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:286:43
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+
+
+-------- 9/29/2017, 2:14:26 PM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:866
+                    var tlsoptions = { secureProtocol: 'TLSv1_method', ciphers: 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
+                                                                                                                                                                                                       ^
+
+TypeError: Cannot read property 'SSL_OP_NO_SSLv2' of undefined
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\webserver.js:866:200
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+    at Object.async.eachSeries (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:130:20)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:323:11
+    at fn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:582:34)
+    at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
+
+
