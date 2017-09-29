@@ -513,3 +513,36 @@ a {
 .notification:hover {
     background-color: #EFE8B6;
 }
+
+.map-PlaceDeviceMarker tr:nth-child(odd) {
+    background-color: #C9C9C9;
+}
+
+.map-PlaceDeviceMarker tr:nth-child(even) {
+    background-color: #D8D8D8;
+}
+
+.map-PlaceDeviceMarker tr:hover{
+    background-color: #A9A9A9;
+}
+
+.map-PlaceDeviceMarker td {
+    border-top: thin solid #808080; 
+    border-bottom: thin solid #808080;
+    color: #282828;
+}
+
+.map-PlaceDeviceMarker td:first-child {
+     border-left: thin solid #808080;
+}
+
+.map-PlaceDeviceMarker td:last-child {
+     border-right: thin solid #808080;
+}
+
+.flexboxdiv {
+    display: flex;
+    align-items: center;
+    display: -webkit-flex; 
+    -webkit-align-items: center;
+}
