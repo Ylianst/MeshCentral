@@ -9,7 +9,6 @@
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
-    <link type="text/css" href="styles/font-awesome/css/font-awesome.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
@@ -586,8 +585,6 @@
         <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:4px">
             <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
             <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
-            <input id="idx_dlgPlaceandSave" type="button" value="Place & Save" style="float:right;margin-left:5px;" onclick="dialogclose(2)" disabled="disabled">
-            <input id="idx_dlgPlaceButton" type="button" value="Place" style="float:right;width:50px" onclick="dialogclose(1)" disabled="disabled" />
             <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="width:80px;display:none" onclick="dialogclose(2)"></div>
         </div>
     </div>
@@ -1728,7 +1725,7 @@
           { text: 'Refresh', callback: function () { refreshMap(true, true); } },
           { text: 'Zoom to fit extent', callback: function () { zoomToFitExtent(); } },
           { text: 'Center map here', callback: function(obj) { xxmap.mapView.animate({ center: obj.coordinate } ); } },
-          { text: 'Place a node', callback: function (obj) { placeNode(obj.coordinate); } }
+          { text: 'Place node here', callback: function(obj) { placeNode(obj.coordinate); } }
         ];
 
         function stringToIntHash(str) {
@@ -2048,33 +2045,24 @@
         // Called When Place a node option is clicked from context menu
         function placeNode(coords) {
             if (xxdialogMode) return;
-            clearSelectedNode();
-            var x = '<div style="margin-bottom: 6px"><label for="selectnode-search">Search</label>&nbsp&nbsp<input type="text" placeholder="Device Name" id="selectnode-search" onchange="onPNSearchInputChange()" onkeyup="onPNSearchInputChange()" autocomplete="off" style="width: 120px"></div>';
-            x += '<div id="placenode" style="max-height:258px;overflow-y:auto;width:100%;margin: 12px 1px 4px 1px;">';
-            var count = 0;
-            var table = updatePlaceNodeTable('', false);
-            if (table != 0) { x += table; count = 1; x += '</div>'; } else { count = 0;}
-            if (count == 0) {
-                var noNodesFound = '';
-                if (!meshExists()) {
-                    noNodesFound = '<div class="flexboxdiv"><div style="margin-right:10px"><i class="fa fa-info-circle fa-3x" style="color:green" aria-hidden="true"></i></div><div style="max-width: 300px"> No nodes found. To create a mesh network and add devices, go to <a onclick="closePNDialog(2)" style="cursor:pointer">My Account</a> page.</div></div>';
-                } else {
-                    noNodesFound = '<div class="flexboxdiv"><div style="margin-right:10px"><i class="fa fa-info-circle fa-3x" style="color:green" aria-hidden="true"></i></div><div style="max-width: 300px"> No nodes found. To add devices, go to <a onclick="closePNDialog(1)" style="cursor:pointer">My Devices</a> page.</div></div>';
-                }
-                setDialogMode(2, "Select a Node to place marker", 1, null, noNodesFound, null);
-            } else {
-                setDialogMode(2, "Select a Node to place marker", 18, placeNodeEx, x, coords);
+            var x = '<div style=margin-bottom:6px><label for=selectnode-search>Search</label>&nbsp&nbsp<input type=text placeholder="Device name" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>No devices found.</div>';
+            for (var i in nodes) {
+                x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline />';
+                x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
             }
+            setDialogMode(2, "Select a node to place", 3, placeNodeEx, x + '</div>', coords);
+            onPlaceNodeInputChange();
         }
 
-        function placeNodeEx(button, coords){
-            for (var i in xxmap.selectedNodes) {
-                var node = getNodeFromId(i);
-                if (node) {
-                    var feature = xxmap.markersSource.getFeatureById(i);
-                    var v = ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');
-                    var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
-                    if (button == 2) {
+        function placeNodeEx(button, coords) {
+            var elements = document.getElementsByName("PlaceMapDeviceCheckbox");
+            for (var i in elements) {
+                if (elements[i].checked) {
+                    var node = getNodeFromId(elements[i].id.substring(0, elements[i].id.length - 8));
+                    if (node) {
+                        var feature = xxmap.markersSource.getFeatureById(i);
+                        var v = ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');
+                        var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
                         if (feature) {
                             feature.getGeometry().setCoordinates(coords);
                             var activeInteraction = getActiveInteractions(feature);
@@ -2087,117 +2075,47 @@
                             meshserver.Send({ action: 'changedevice', nodeid: node._id, userloc: vx }); // This Node is not yet added to maps.
                         }
                     }
-                    else if (button == 1) {	//Dont send changes to server since its just 'place'
-                        if (feature) {
-                            feature.getGeometry().setCoordinates(coords);
-                            modifyMarkerloc(feature);
-                        } else {
-                            //if (map_parseNodeLoc(node.iploc) != null) {
-                            addFeature(node, v[0], v[1]);
-                            var newFeature = xxmap.markersSource.getFeatureById(node._id);
-                            modifyMarkerloc(newFeature);
-                            //}
-                        }
-                    }
                 }
             }
         }
 
-        // Close place node dialog
-        function closePNDialog(id){
-            dialogclose(1);
-            switch (id) {
-                case 1:
-                    Q('viewselect').options.selectedIndex = 0;
-                    onDeviceViewChange();
-                    break;
-                case 2:
-                    go(2); //Go to My Accounts tab
-                    break;
-            }
+        // Called when the user changes the search box
+        function onPlaceNodeInputChange() {
+            updatePlaceNodeTable(Q('selectnode-search').value.trim().toLowerCase());
         }
 
-        // On input search change in Place Node dialogue box
-        function onPNSearchInputChange() {
-            var inputSearchData = Q('selectnode-search').value;
-            QH('placenode', '');
-            updatePlaceNodeTable(inputSearchData.trim().toLowerCase(), true);
-        }
-
-        //Update the place Node Table
-        function updatePlaceNodeTable(inputSearch,searchFlag) {
-            var x = '<table class="map-PlaceDeviceMarker" style="width: 100%"><tbody>';
-            var count = 0;
+        // Update the list of devices in the "place on map" table
+        function updatePlaceNodeTable(inputSearch) {
+            var elements = document.getElementsByName("PlaceMapDeviceCheckbox"), count = 0;
             for (var i in nodes) {
-                if (nodes[i].mtype == 2) {
-                    if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0)) {
-                        count++;
-                        x+='<tr style="height:35px; text-align: center;cursor: pointer;" id="'+ nodes[i]._id +'-rowid" onclick=selectNodetoplace(\''+ nodes[i]._id +'\') onmouseover="changeRadioImg(\''+ nodes[i]._id +'!#!mouseover'+ '\')" onmouseout="changeRadioImg(\''+ nodes[i]._id +'!#!mouseout'+ '\')">';
-                        x+='<td style="width:55px"><i class="fa fa-square-o fa-lg" style="color:#003800" id="'+ nodes[i]._id +'-img' +'" style="border-color: #7CFC00;" aria-hidden="true"></i></td>';
-                        x+='<td style="font-weight: bold; font-size: 11pt;">'+ nodes[i].name + '</td>';
-                        x+='</tr>';
-                    }
+                var visible = ((nodes[i].namel.indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.indexOf(inputSearch) >= 0));
+                if (visible) { count++; }
+                QV(nodes[i]._id + '-rowid', visible);
+            }
+            QV('noNodesMapPlace', count == 0);
+            /*
+            console.log(selected);
+            for (var i in nodes) {
+                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0)) {
+                    console.log(selected.indexOf(nodes[i]._id));
+                    x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline ' + ((selected.indexOf(nodes[i]._id) >= 0)?'checked':'') + ' />';
+                    x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
                 }
             }
-            x+='</tbody></table>';
-            if (searchFlag) { //Flag is true when user searches for a Device using placeNode search input.
-                if (count == 0) { //If No Device name is found that matches the search
-                    QH('placenode', '<div class="flexboxdiv"><div style="margin: 0px 10px 0px 4px"><i class="fa fa-exclamation-circle fa-2x" style="color:red" aria-hidden="true"></i></div><div style="max-width: 300px"><b>No Nodes found with this Search Criteria.</b></div></div>'); }
-                else {
-                    QH('placenode', x);}
-            }else {
-                if (count == 0) { return 0; }
-                else { return x; }
-            }
+            if (x == '') { x = '<div style=text-align:center;width:100%>No devices found.</div>'; }
+            QH('placenode', '');
+            */
         }
 
-        //On click-change the checkbox class and save selected Device
-        function selectNodetoplace(id){
-            var imgeElement = Q(id + '-img');
-            if (xxmap.selectedNodes[id]) { //If user clicks on already selected Device.
-                imgeElement.classList.remove('fa-check-square-o');
-                imgeElement.classList.add('fa-square');
-                delete xxmap.selectedNodes[id];
-                checkSelectedNodes();
-            } else {
-                imgeElement.classList.remove('fa-square');
-                imgeElement.classList.add('fa-check-square-o');
-                xxmap.selectedNodes[id] = { color: Q(id+'-rowid').style.backgroundColor};
-                QE('idx_dlgPlaceandSave', true);
-                QE('idx_dlgPlaceButton', true);
-            }
-        }
+        // Called when a user clicks on a device to toggle selection for placement on map.
+        function selectNodeToPlace(e, id) {
+            // Toggle checkbox if needed
+            if (e.target.name != 'PlaceMapDeviceCheckbox') { var inputElement = Q(id + '-checkid'); inputElement.checked = !inputElement.checked; }
 
-        function checkSelectedNodes() {
-            var c = 0;
-            for (var i in xxmap.selectedNodes) { if (xxmap.selectedNodes[i]) { c++; } }
-            if (c == 0) { //If no nodes are checked then disable place and Save buttons
-                QE('idx_dlgPlaceandSave', false);
-                QE('idx_dlgPlaceButton', false);
-            }
-        }
-
-        // Set selected node to null
-        function clearSelectedNode() {
-            xxmap.selectedNodes = {};
-            QE('idx_dlgPlaceandSave', false);
-            QE('idx_dlgPlaceButton', false);
-        }
-
-        // Change radio button on mouseover and out for 'select a node to place dialog'
-        function changeRadioImg(name) {
-            var index = name.indexOf("mouseout");
-            var element = name.split('!#!');
-            if (!xxmap.selectedNodes[element[0]]) {
-                var imgeElement= Q(element[0]+'-img');
-                if (index > -1) {
-                    imgeElement.classList.remove('fa-square');
-                    imgeElement.classList.add('fa-square-o');
-                } else {
-                    imgeElement.classList.remove('fa-square-o');
-                    imgeElement.classList.add('fa-square');
-                }
-            }
+            // Check button state
+            var elements = document.getElementsByName("PlaceMapDeviceCheckbox"), checkcount = 0;
+            for (var i in elements) { if (elements[i].checked) checkcount++; }
+            QE('idx_dlgOkButton', checkcount > 0);
         }
 
         // Add option for available meshes in mesh Dropdown
@@ -4537,16 +4455,12 @@
             xxdialogFunc = f;
             xxdialogButtons = b;
             xxdialogTag = tag;
-            QE('idx_dlgPlaceandSave', false);
-            QE('idx_dlgPlaceButton', false);
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
             QV('id_dialogclose', (b & 2) || (b & 8));
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
-            QV('idx_dlgPlaceButton', (b & 18) && (b%2 == 0));
-            QV('idx_dlgPlaceandSave', (b & 18) && (b%2 == 0));
             if (y) QH('id_dialogtitle', y);
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
