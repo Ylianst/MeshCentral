@@ -119,7 +119,7 @@
                         <div class="auto-style1" style="height: 100%; float: right">
                             <div style="height:100%;width:4px;float:right;background-color:#ffffff"></div>
                             <div class=h2 style="height:100%;float:right">&nbsp;</div>
-                            <div style=float:right>
+                            <div style=float:right id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
                                     <option value=1>3 wide</option>
@@ -138,18 +138,17 @@
                             </div>
                         </div>
                     </div>
-                    <div id=NoNodesPanel style=display:none>
-                        <table style="width: 100%">
+                    <div id=NoMeshesPanel style=display:none>
+                        <table style="width:100%;padding:20px">
                             <tr>
                                 <td valign="top" style="width: 50px">
                                     <img src="images/info.png" height="48" width="47" />
                                 </td>
                                 <td>
-                                    No nodes found with this search criteria. To create a mesh network and add devices, start at the <a onclick=go(2) style="cursor:pointer">My Account</a> page.
+                                    To get started managing devices, <a onclick=account_createMesh() style=cursor:pointer><strong>click here to create a new group of devices called a Mesh</strong></a>.
                                 </td>
                             </tr>
                         </table>
-                        <p></p>
                     </div>
                     <div id="xdevices" style="max-height:calc(100vh - 228px);overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
                     <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden;position:relative">
@@ -184,7 +183,7 @@
                     ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style=margin-left:40px;display:none>No meshes found. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a><br /><br /></div>
+                    <div id=p2noMeshFound style=margin-left:40px;display:none>No meshes. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a><br /><br /></div>
                 </div>
                 <div id=p3 style=display:none>
                     <h1>My Events</h1>
@@ -406,13 +405,13 @@
                     <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
                         <div id="p13rightOfButtons" style="float:right;margin-top:3px"></div>
                         <div>
-                            <input type=button id="p13FolderUp" disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
-                            <input type=button id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="Select All" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id="p13RenameFileButton" disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id="p13DeleteFileButton" disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id="p13NewFolderButton" disabled="disabled" value="New Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id="p13UploadButton" disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id="p13RefreshButton" disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
+                            <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                            <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />&nbsp;
                         </div>
                     </td>
                 </tr>
@@ -602,6 +601,7 @@
         var showHostnames = false;
         var meshserver = null;
         var meshes = {};
+        var meshcount = 0;
         var nodes = [];
         var filetree = {};
         var userinfo = null;
@@ -1195,8 +1195,11 @@
             QV('devListToolbar', view < 3);
             QV('devMapToolbar', view == 3);
             QV('devListToolbarSort', view < 3);
+            QV('NoMeshesPanel', meshcount == 0);
+            QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
+            QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0));
+            if ((meshcount == 0) || (nodes.length == 0)) { view = 1; }
             if (view == 3) {
-                QV('NoNodesPanel',false); //Hide NoNodesPanel user views Map
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
                 // TODO
             } else {
@@ -1300,9 +1303,12 @@
                 }
                 r += '</tr></table><div style=height:1px></div>'; // This height of 1 div fixes a problem in Linux firefox browsers
 
+                // Add a "Add Mesh" option
+                if (view == 1) { r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px title="Create a new group of computers."><a onclick=account_createMesh() style=cursor:pointer>Add Mesh</a></div>'; }
+
                 QH('xdevices', r);
                 deviceHeaderSet();
-                QV('NoNodesPanel', count == 0);
+                //QV('NoMeshesPanel', count == 0);
 
                 // Re-check nodeid's
                 var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
@@ -1671,7 +1677,6 @@
             markersLayer: null,
             mapLayer: null, // Create a tile and use OSM source
             mapView: null, // Sets the initial view
-            selectedNodes: {} // Save details of Node that was selected from 'Put a node' option from contextmenu
         }
 
         // Add a feature for every Node and change style if connection status changes
@@ -3642,6 +3647,7 @@
             }
             r += '</tr></table>';
 
+            meshcount = count;
             QH('p2meshes', r);
             QV('p2noMeshFound', count == 0);
         }

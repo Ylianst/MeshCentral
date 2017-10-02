@@ -189,3 +189,97 @@ TypeError: Cannot read property 'SSL_OP_NO_SSLv2' of undefined
     at Immediate._onImmediate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\async\lib\async.js:498:34)
 
 
+-------- 10/1/2017, 10:21:38 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:91
+        console.log(obj.servers4.keys());
+                                 ^
+
+TypeError: obj.servers4.keys is not a function
+    at setupServers (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:91:34)
+    at Object.obj.start (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:136:9)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:328:98)
+
+
+-------- 10/1/2017, 10:21:40 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:91
+        console.log(obj.servers4.keys());
+                                 ^
+
+TypeError: obj.servers4.keys is not a function
+    at setupServers (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:91:34)
+    at Object.obj.start (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:136:9)
+    at InternalFieldObject.ondone (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:328:98)
+
+
+-------- 10/1/2017, 10:54:43 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96
+                    performScan(server6);
+                    ^
+
+ReferenceError: performScan is not defined
+    at Socket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96:21)
+    at Socket.g (events.js:286:16)
+    at emitNone (events.js:86:13)
+    at Socket.emit (events.js:185:7)
+    at startListening (dgram.js:121:10)
+    at dgram.js:228:7
+    at _combinedTickCallback (internal/process/next_tick.js:77:11)
+    at process._tickCallback (internal/process/next_tick.js:98:9)
+
+
+-------- 10/1/2017, 10:54:45 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96
+                    performScan(server6);
+                    ^
+
+ReferenceError: performScan is not defined
+    at Socket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96:21)
+    at Socket.g (events.js:286:16)
+    at emitNone (events.js:86:13)
+    at Socket.emit (events.js:185:7)
+    at startListening (dgram.js:121:10)
+    at dgram.js:228:7
+    at _combinedTickCallback (internal/process/next_tick.js:77:11)
+    at process._tickCallback (internal/process/next_tick.js:98:9)
+
+
+-------- 10/1/2017, 10:54:47 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96
+                    performScan(server6);
+                    ^
+
+ReferenceError: performScan is not defined
+    at Socket.<anonymous> (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshscanner.js:96:21)
+    at Socket.g (events.js:286:16)
+    at emitNone (events.js:86:13)
+    at Socket.emit (events.js:185:7)
+    at startListening (dgram.js:121:10)
+    at dgram.js:228:7
+    at _combinedTickCallback (internal/process/next_tick.js:77:11)
+    at process._tickCallback (internal/process/next_tick.js:98:9)
+
+
+-------- 10/1/2017, 11:49:12 AM --------
+
+C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:2052
+      throw error;
+      ^
+
+Error: Attribute value not specified.
+    at _fillMissingFields (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:2050:19)
+    at Object.cert.setSubject (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\node-forge\js\x509.js:948:5)
+    at Object.obj.GenerateRootCertificate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\certoperations.js:44:14)
+    at Object.obj.GetMeshServerCertificate (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\certoperations.js:230:34)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\meshcentral.js:286:43
+    at newArguments.(anonymous function) (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\executor.js:29:17)
+    at Cursor.execFn (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:484:12)
+    at callback (C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:126:19)
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\cursor.js:193:12
+    at C:\Users\Default.DESKTOP-M9I88C9\Desktop\AmtWebApp\meshcentral\node_modules\nedb\lib\datastore.js:329:14
+
+

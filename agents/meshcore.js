@@ -277,9 +277,9 @@ function createMeshCore(agent) {
                     else if (data.type == 'tunnel') { // Process a new tunnel connection request
                         if (data.value && data.sessionid) {
                             // Create a new tunnel object
-                            //sendConsoleText(data.value);
+                            sendConsoleText(data.value);
                             var xurl = getServerTargetUrlEx(data.value);
-                            //sendConsoleText(xurl);
+                            sendConsoleText(xurl);
                             if (xurl != null) {
                                 var tunnel = http.request(http.parseUri(xurl));
                                 tunnel.upgrade = onTunnelUpgrade;

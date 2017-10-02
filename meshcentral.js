@@ -201,8 +201,12 @@ function CreateMeshCentralServer() {
         var xdomains = {}; for (var i in obj.config.domains) { if (!obj.config.domains[i].title) { obj.config.domains[i].title = 'MeshCentral'; } if (!obj.config.domains[i].title2) { obj.config.domains[i].title2 = '2.0 Beta 1'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (var i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
-        for (var i in obj.config.domains) { obj.config.domains[i].url = (i == '')?'/':('/' + i + '/'); obj.config.domains[i].id = i; }
-        
+        for (var i in obj.config.domains) {
+            for (var j in obj.config.domains[i]) { obj.config.domains[i][j.toLocaleLowerCase()] = obj.config.domains[i][j]; } // LowerCase all domain keys
+            obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); obj.config.domains[i].id = i;
+            if (typeof obj.config.domains[i].userallowedip == 'string') { obj.config.domains[i].userallowedip = null; if (obj.config.domains[i].userallowedip != "") { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); } }
+        }
+
         // Log passed arguments into Windows Service Log
         //if (obj.servicelog != null) { var s = ''; for (var i in obj.args) { if (i != '_') { if (s.length > 0) { s += ', '; } s += i + "=" + obj.args[i]; } } logInfoEvent('MeshServer started with arguments: ' + s); }
 
@@ -283,7 +287,7 @@ function CreateMeshCentralServer() {
                 obj.updateMeshCore();
 
                 // Load server certificates
-                obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args.cert, function (certs) {
+                obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, function (certs) {
                     obj.certificates = certs;
 
                     // If the certificate is un-configured, force LAN-only mode

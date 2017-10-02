@@ -71,7 +71,6 @@
     <Content Include="public\images-isdu\info.gif" />
     <Content Include="public\images-isdu\warning.gif" />
     <Content Include="public\images-isdu\isdu.ico" />
-    <Content Include="public\styles\font-awesome\css\font-awesome.css" />
     <Content Include="public\styles\font-awesome\css\font-awesome.min.css" />
     <Content Include="public\styles\font-awesome\fonts\fontawesome-webfont.eot" />
     <Content Include="public\styles\font-awesome\fonts\fontawesome-webfont.svg" />
@@ -120,8 +119,6 @@
     <Folder Include="public\images-isdu" />
     <Folder Include="public\scripts\" />
     <Folder Include="public\styles\" />
-    <Folder Include="public\styles\font-awesome\" />
-    <Folder Include="public\styles\font-awesome\css\" />
     <Folder Include="public\styles\font-awesome\fonts\" />
     <Folder Include="public\styles\font-awesome\less\" />
     <Folder Include="public\styles\font-awesome\scss\" />
