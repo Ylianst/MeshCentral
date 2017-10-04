@@ -22,7 +22,8 @@ module.exports.CreateMeshScanner = function (parent) {
 
     // Get a list of IPv4 and IPv6 interface addresses
     function getInterfaceList() {
-        var ipv4 = ['*'], ipv6 = ['*'];
+        var ipv4 = [], ipv6 = [];
+        if (parent.platform == 'win32') { ipv4.push('*'); ipv6.push('*'); } // Bind to IN_ADDR_ANY only on Windows
         var interfaces = require('os').networkInterfaces();
         for (var i in interfaces) {
             var interface = interfaces[i];
@@ -134,13 +135,13 @@ module.exports.CreateMeshScanner = function (parent) {
     // Look for all Mesh Agents that may be locally reachable, indicating the presense of this server.
     obj.performScan = function (server) {
         if (server != null) {
-            if (server.xxtype == 4) { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); }
-            if (server.xxtype == 6) { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); }
-            if ((server.xxtype == 4) && (server.xxlocal == '*')) { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, '127.0.0.1'); server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, '255.255.255.255'); }
-            if ((server.xxtype == 6) && (server.xxlocal == '*')) { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, '::1'); }
+            if (server.xxtype == 4) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); } catch (e) { } }
+            if (server.xxtype == 6) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); } catch (e) { } }
+            if ((server.xxtype == 4) && (server.xxlocal == '*')) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, '127.0.0.1'); } catch (e) { } try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, '255.255.255.255'); } catch (e) { } }
+            if ((server.xxtype == 6) && (server.xxlocal == '*')) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, '::1'); } catch (e) { } }
         } else {
-            for (var i in obj.servers4) { obj.servers4[i].send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); }
-            for (var i in obj.servers6) { obj.servers6[i].send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); }
+            for (var i in obj.servers4) { try { obj.servers4[i].send(obj.multicastPacket4, 0, obj.multicastPacket4.length, 16990, membershipIPv4); } catch (e) { } }
+            for (var i in obj.servers6) { try { obj.servers6[i].send(obj.multicastPacket6, 0, obj.multicastPacket6.length, 16990, membershipIPv6); } catch (e) { } }
             setupServers(); // Check if any network interfaces where added or removed
         }
     }
@@ -149,8 +150,8 @@ module.exports.CreateMeshScanner = function (parent) {
     function onUdpPacket(msg, info, server) {
         //console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + ', on interface: ' + server.xxlocal + '.');
         if ((msg.length == 64) && (msg.toString('ascii') == obj.agentCertificatHashHex.toUpperCase())) {
-            if (server.xxtype == 4) { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); }
-            if (server.xxtype == 6) { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); }
+            if (server.xxtype == 4) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); } catch (e) { } }
+            if (server.xxtype == 6) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); } catch (e) { } }
         }
     }
 
