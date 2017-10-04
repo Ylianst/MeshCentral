@@ -305,6 +305,7 @@
                         </div>
                         <div>
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;X</div>
+                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
                             <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false"></span>
@@ -350,6 +351,7 @@
                             <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
                         </div>
                         <div>
+                            <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
                             <span id="connectbutton2span">&nbsp;<input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false"></span>
@@ -396,6 +398,7 @@
                             <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
                         </div>
                         <div>
+                            <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
                             <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
                             <span id=p13Status>Disconnected</span>
                         </div>
@@ -618,12 +621,20 @@
         var features = {{{features}}};
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
+        var debugmode = false;
 
         function startup() {
             // Guard against other site's top frames (web bugs).
             var loc = null;
             try { loc = top.location.toString().toLowerCase(); } catch (e) { }
             if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
+
+            // Check if we are in debug mode
+            var args = parseUriArgs();
+            debugmode = (args.debug == 1);
+            QV('p13AutoConnect', debugmode); // Files
+            QV('autoconnectbutton2', debugmode); // Terminal
+            QV('autoconnectbutton1', debugmode); // Desktop
 
             // Setup page visuals
             p1updateInfo();
@@ -1304,11 +1315,10 @@
                 r += '</tr></table><div style=height:1px></div>'; // This height of 1 div fixes a problem in Linux firefox browsers
 
                 // Add a "Add Mesh" option
-                if (view == 1) { r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px title="Create a new group of computers."><a onclick=account_createMesh() style=cursor:pointer>Add Mesh</a></div>'; }
+                if ((view < 3) && (sort == 0) && (meshcount > 0)) { r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px title="Create a new group of computers."><a onclick=account_createMesh() style=cursor:pointer>Add Mesh</a></div>'; }
 
                 QH('xdevices', r);
                 deviceHeaderSet();
-                //QV('NoMeshesPanel', count == 0);
 
                 // Re-check nodeid's
                 var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
@@ -2730,18 +2740,12 @@
             QE('connectbutton1h', hwonline);
         }
 
+        // Debug
+        var autoConnectDesktopTimer = null;
+        function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(connectDesktop, 100); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
+
         function connectDesktop(e, contype) {
             if (desktop == undefined) {
-                // Take a look at the mesh for this node
-                if (contype == 1) {
-                    // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
-                    desktop.onStateChanged = onDesktopStateChange;
-                    desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
-                    desktop.m.ScalingLevel = desktopsettings.scaling;
-                    desktop.Start(desktopNode._id);
-                    desktop.contype = 1;
-                }
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
                     if ((desktopNode.intelamt.user == undefined) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
@@ -2753,6 +2757,14 @@
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
+                } else {
+                    // Setup the Mesh Agent remote desktop
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
+                    desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
+                    desktop.m.ScalingLevel = desktopsettings.scaling;
+                    desktop.Start(desktopNode._id);
+                    desktop.contype = 1;
                 }
             } else {
                 // Disconnect and clean up the remote desktop
@@ -2956,15 +2968,12 @@
             updateTerminalButtons();
         }
 
+        // DEBUG
+        var autoConnectTerminalTimer = null;
+        function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
+
         function connectTerminal(e, contype) {
             if (!terminal) {
-                if (contype == 1) {
-                    // Setup a mesh agent terminal
-                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
-                    terminal.onStateChanged = onTerminalStateChange;
-                    terminal.Start(terminalNode._id);
-                    terminal.contype = 1;
-                }
                 if (contype == 2) {
                     // Setup the Intel AMT terminal
                     if ((terminalNode.intelamt.user == undefined) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
@@ -2972,6 +2981,12 @@
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id, 16994, '*', '*', 0);
                     terminal.contype = 2;
+                } else {
+                    // Setup a mesh agent terminal
+                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
+                    terminal.onStateChanged = onTerminalStateChange;
+                    terminal.Start(terminalNode._id);
+                    terminal.contype = 1;
                 }
             } else {
                 //QH('Term', '');
@@ -3064,6 +3079,10 @@
             obj.ProcessData = function(data) { obj.onFileUpdate(data); }
             return obj;
         }
+
+        // Debug Only
+        var autoConnectFilesTimer = null;
+        function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         function connectFiles(e) {
             if (!files) {
@@ -4538,6 +4557,7 @@
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
+        function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
 
     </script>
 </body>

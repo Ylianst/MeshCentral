@@ -127,7 +127,7 @@ function CreateMeshCentralServer() {
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startLine) {
         var child_process = require('child_process');
-        var xprocess = child_process.exec(startLine + ' --launch', function (error, stdout, stderr) {
+        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: 512000 }, function (error, stdout, stderr) {
             if (xprocess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
             } else if (xprocess.xrestart == 2) {
@@ -136,7 +136,7 @@ function CreateMeshCentralServer() {
             } else if (xprocess.xrestart == 3) {
                 // Server self-update exit
                 var child_process = require('child_process');
-                var xxprocess = child_process.exec('npm install meshcentral', { cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                var xxprocess = child_process.exec('npm install meshcentral', { maxBuffer: 512000, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
@@ -145,13 +145,13 @@ function CreateMeshCentralServer() {
                 if (error != null) {
                     // This is an un-expected restart
                     console.log(error);
-                    console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting...');
-                    setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
+                    console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting in 5 seconds...');
+                    setTimeout(function () { obj.launchChildServer(startLine); }, 5000);
                 } 
             }
         });
         xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } console.log(data); });
-        xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync('mesherrors.txt', '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
+        xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync(obj.path.join(obj.datapath, 'mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
 
@@ -159,7 +159,7 @@ function CreateMeshCentralServer() {
     obj.getLatestServerVersion = function (callback) {
         if (callback == null) return;
         var child_process = require('child_process');
-        var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', function (error, stdout, stderr) { });
+        var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', { maxBuffer: 512000 }, function (error, stdout, stderr) { });
         xprocess.data = '';
         xprocess.stdout.on('data', function (data) { xprocess.data += data; });
         xprocess.stderr.on('data', function (data) { });
@@ -308,7 +308,7 @@ function CreateMeshCentralServer() {
                         }
 
                         // If the server is set to "nousers", allow only loopback unless IP filter is set
-                        if ((obj.args.nousers == 1) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
+                        if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
 
                         if (obj.args.secret) {
                             // This secret is used to encrypt HTTP session information, if specified, user it.
@@ -632,6 +632,38 @@ function CreateMeshCentralServer() {
 
     // Update the default mesh core
     obj.updateMeshCore = function (func) {
+        // Figure out where meshcore.js is
+        var meshcorePath = obj.datapath;
+        if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
+            meshcorePath = obj.path.join(__dirname, 'agents');
+            if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
+                obj.defaultMeshCore = obj.defaultMeshCoreHash = null; if (func != null) { func(false); } // meshcore.js not found
+            }
+        }
+
+        // Read meshcore.js and all .js files in the modules folder.
+        var meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString();
+        var modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules'));
+        var moduleAdditions = 'var addedModules = [];';
+        for (var i in modulesDir) {
+            if (modulesDir[i].toLowerCase().endsWith('.js')) {
+                // Merge this module
+                var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
+                var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules', modulesDir[i])).toString('base64');
+                moduleAdditions += 'try { var ar = addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64").toString()); addedModules.push({ name: "' + moduleName + '", ret: ar, data: Buffer.from("' + moduleDataB64 + '", "base64").toString()} ); } catch (e) { }\r\n';
+            }
+        }
+
+        // Set the new default meshcore.js
+        meshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+        obj.defaultMeshCore = meshCore;
+        obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(meshCore).digest("binary");
+        if (func != null) { func(true); }
+    }
+
+    /*
+    // Update the default mesh core
+    obj.updateMeshCore2 = function (func) {
         var altCorePath = obj.path.join(obj.datapath, 'meshcore.js');
         if (require('fs').existsSync(altCorePath)) {
             // Load default mesh agent core from data path if present
@@ -661,6 +693,7 @@ function CreateMeshCentralServer() {
             });
         }
     }
+    */
 
     // List of possible mesh agent install scripts
     var meshAgentsInstallScriptList = {
@@ -804,7 +837,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     } catch (e) {
         console.log('Installing ' + modulename + '...');
         var child_process = require('child_process');
-        child_process.exec('npm install ' + modulename + ' --save', function (error, stdout, stderr) {
+        child_process.exec('npm install ' + modulename + ' --save', { maxBuffer: 512000 }, function (error, stdout, stderr) {
             if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed.'); process.exit(); return; }
             func(tag1, tag2);
             return;

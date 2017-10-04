@@ -119,6 +119,8 @@
     <Folder Include="public\images-isdu" />
     <Folder Include="public\scripts\" />
     <Folder Include="public\styles\" />
+    <Folder Include="public\styles\font-awesome\" />
+    <Folder Include="public\styles\font-awesome\css\" />
     <Folder Include="public\styles\font-awesome\fonts\" />
     <Folder Include="public\styles\font-awesome\less\" />
     <Folder Include="public\styles\font-awesome\scss\" />

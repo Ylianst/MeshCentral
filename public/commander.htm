@@ -2102,7 +2102,6 @@ function AmtStackCreateService(wsmanStack) {
         for (i in ra) {
             e = null;
             try {
-                // NodeJS detection
                                 
                 e = window.atob(ra[i]);
                             } catch (ex) { }
@@ -32160,16 +32159,23 @@ function amtcert_loadP12File(file, password, func) {
     return false;
 }
 
-function amtcert_signWithCaKey(DERKey, caPrivateKey, certAttributes, issuerAttributes) {
+function amtcert_signWithCaKey(DERKey, caPrivateKey, certAttributes, issuerAttributes, extKeyUsage) {
     if (!caPrivateKey || caPrivateKey == null) {
         var certAndKey = amtcert_createCertificate(issuerAttributes);
         caPrivateKey = certAndKey.key;
     }
-    return amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes);
+    return amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage);
 }
 
+// --- Extended Key Usage OID's ---
+// 1.3.6.1.5.5.7.3.1            = TLS Server certificate
+// 1.3.6.1.5.5.7.3.2            = TLS Client certificate
+// 2.16.840.1.113741.1.2.1      = Intel AMT Remote Console
+// 2.16.840.1.113741.1.2.2      = Intel AMT Local Console
+// 2.16.840.1.113741.1.2.3      = Intel AMT Client Setup Certificate (Zero-Touch)
+
 // Generate a certificate with a set of attributes signed by a rootCert. If the rootCert is obmitted, the generated certificate is self-signed.
-function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes) {
+function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage) {
     // Generate a keypair and create an X.509v3 certificate
     var keys, cert = forge.pki.createCertificate();
     if (!DERKey) {
@@ -32217,6 +32223,20 @@ function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerA
             name: 'subjectKeyIdentifier'
         }]);
     } else {
+        if (extKeyUsage == null) { extKeyUsage = { name: 'extKeyUsage', serverAuth: true, } } else { extKeyUsage.name = 'extKeyUsage'; }
+
+        /*
+        {
+            name: 'extKeyUsage',
+            serverAuth: true,
+            clientAuth: true,
+            codeSigning: true,
+            emailProtection: true,
+            timeStamping: true,
+            '2.16.840.1.113741.1.2.1': true
+        }
+        */
+
         // Create a leaf certificate
         cert.setExtensions([{
             name: 'basicConstraints'
@@ -32227,14 +32247,7 @@ function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerA
             nonRepudiation: true,
             keyEncipherment: true,
             dataEncipherment: true
-        }, {
-            name: 'extKeyUsage',
-            serverAuth: true,
-            clientAuth: true,
-            codeSigning: true,
-            emailProtection: true,
-            timeStamping: true
-        }, {
+        }, extKeyUsage, {
             name: 'nsCertType',
             client: true,
             server: true,
@@ -32947,7 +32960,7 @@ if (typeof module !== "undefined" && module.exports) {
     });
 }
 
-        var version = '0.5.0';
+        var version = '0.5.3';
         var urlvars = null;
         var amtstack;
         var wsstack = null;
@@ -33161,7 +33174,6 @@ if (typeof module !== "undefined" && module.exports) {
             //amtstack.Enum("CIM_LogicalElement", processSystemVersion); // Get Intel AMT version information and plenty more
 
 
-
             QV('id_versionWarning', false);
 
 
@@ -33169,6 +33181,7 @@ if (typeof module !== "undefined" && module.exports) {
         }
 
         function disconnect() {
+
 
 
 
@@ -33987,7 +34000,12 @@ if (typeof module !== "undefined" && module.exports) {
 
         function getTlsSecurityState(x) {
             if (xxTlsSettings[x]['Enabled'] == false) return "Disabled";
-            return ((xxTlsSettings[x]['MutualAuthentication'] == true) ? 'Mutual-auth' : 'Server-auth') + ((xxTlsSettings[x]['AcceptNonSecureConnections'] == true) ? " and non-TLS" : "");
+            var r = ((xxTlsSettings[x]['MutualAuthentication'] == true) ? 'Mutual-auth' : 'Server-auth') + ((xxTlsSettings[x]['AcceptNonSecureConnections'] == true) ? " and non-TLS" : "");
+            if ((xxTlsSettings[x]['MutualAuthentication'] == true) && (xxTlsSettings[x].TrustedCN)) {
+                var trustedCn = MakeToArray(xxTlsSettings[x].TrustedCN);
+                if (trustedCn.length > 0) { r += ", Trusted name" + ((trustedCn.length > 1)?'s':'') + ": " + trustedCn.join(', ') + "."; }
+            }
+            return r;
         }
 
         function updateCertificates() {
@@ -33996,8 +34014,8 @@ if (typeof module !== "undefined" && module.exports) {
 
             // General settings
             x += TableStart();
-            x += TableEntry("Remote TLS security", addLinkConditional(getTlsSecurityState(0), 'showSetTlsSecurityDlg()', xxAccountAdminName));
-            x += TableEntry("Local TLS security", addLinkConditional(getTlsSecurityState(1), 'showSetTlsSecurityDlg()', xxAccountAdminName));
+            x += TableEntry("Remote TLS security", addLinkConditional(getTlsSecurityState(1), 'showSetTlsSecurityDlg()', xxAccountAdminName));
+            x += TableEntry("Local TLS security", addLinkConditional(getTlsSecurityState(0), 'showSetTlsSecurityDlg()', xxAccountAdminName));
             x += TableEnd();
 
             x += "<br>";
@@ -34038,6 +34056,23 @@ if (typeof module !== "undefined" && module.exports) {
             x += addHtmlValue("Certificate", c.X509Certificate.length + " bytes, <a style=cursor:pointer;color:blue onclick=downloadCert(" + h + ")>Download</a>");
             x += addHtmlValue("Trusted root", c.TrustedRootCertficate ? "Yes" : "No");
             if (c.TrustedRootCertficate == false && c.XPrivateKey) { x += addHtmlValue('Private key', 'Present'); }
+
+            // Show certificate usages
+            /*
+            y = [];
+            if (extKeyUsage != null) {
+                if (extKeyUsage.clientAuth == true) { y.push("TLS&nbsp;Client"); }
+                if (extKeyUsage.codeSigning == true) { y.push("Code&nbsp;Signing"); }
+                if (extKeyUsage.emailProtection == true) { y.push("EMail"); }
+                if (extKeyUsage.serverAuth == true) { y.push("TLS&nbsp;Server"); }
+                if (extKeyUsage["2.16.840.1.113741.1.2.1"] == true) { y.push("Intel&reg;&nbsp;AMT Console"); }
+                if (extKeyUsage["2.16.840.1.113741.1.2.2"] == true) { y.push("Intel&reg;&nbsp;AMT Agent"); }
+                if (extKeyUsage["2.16.840.1.113741.1.2.3"] == true) { y.push("Intel&reg;&nbsp;AMT Activation"); }
+                if (extKeyUsage.timeStamping == true) { y.push("Time&nbsp;Stamping"); }
+                if (y.length > 0) { x += addHtmlValueNoTitle("Certificate Usage", y.join(', ') + '.') + '<br clear=all />'; }
+            }
+            */
+
             x += '<br><div style="border-bottom:1px solid gray"><i>Certificate Subject</i></div><br>';
             for (var i in c.XSubject) { if (c.XSubject[i]) { x += addHtmlValue(xxCertSubjectNames[i] ? xxCertSubjectNames[i] : i, EscapeHtml(c.XSubject[i])); } }
             // x += addHtmlValueNoTitle('Fingerprint', c.fingerprint.substring(0,29) + '<br />' + c.fingerprint.substring(30)); // TODO: Parse the certificate using Forge and get the fingerprint
@@ -34137,6 +34172,16 @@ if (typeof module !== "undefined" && module.exports) {
             x += "<div style=height:26px;margin-top:4px><input onkeyup=issueCertButtonUpdate() id=certo style=float:right;width:230px><div style=padding-top:4px>Organization</div></div>";
             x += "<div style=height:26px;margin-top:4px><input onkeyup=issueCertButtonUpdate() id=certst style=float:right;width:230px><div style=padding-top:4px>State/Province</div></div>";
             x += "<div style=height:26px;margin-top:4px><input onkeyup=issueCertButtonUpdate() id=certc style=float:right;width:230px><div style=padding-top:4px>Country</div></div>";
+            x += '<div>Certificate Usages</div><ul style="list-style-type:none;height:100px;overflow:auto;width:100%;border: 1px solid #000;background-color:white;overflow-x:hidden;margin:0;padding:0">';
+            //x += '<li><label><input type=checkbox id=d11_cu1>Intel&reg; AMT Console</label></li>';
+            //x += '<li><label><input type=checkbox id=d11_cu2>Intel&reg; AMT Agent</label></li>';
+            //x += '<li><label><input type=checkbox id=d11_cu3>Intel&reg; AMT Activation</label></li>';
+            x += '<li><label><input type=checkbox id=d11_cu4 checked>TLS Server (HTTPS)</label></li>';
+            x += '<li><label><input type=checkbox id=d11_cu5>TLS Client (HTTPS)</label></li>';
+            x += '<li><label><input type=checkbox id=d11_cu6>Email Protection</label></li>';
+            x += '<li><label><input type=checkbox id=d11_cu7>Code Signing</label></li>';
+            x += '<li><label><input type=checkbox id=d11_cu8>Time Stamp</label></li>';
+            x += '</ul>';
             setDialogMode(11, "Issue Certificate", 3, issueCertButtonOk, x);
             issueCertButtonUpdate();
         }
@@ -34202,8 +34247,19 @@ if (typeof module !== "undefined" && module.exports) {
                 }
             } 
 
+            // Figure out the extended key usages
+            var extKeyUsage = { name: 'extKeyUsage' }
+            //if (Q('d11_cu1').checked) { extKeyUsage['2.16.840.1.113741.1.2.1'] = true; extKeyUsage.clientAuth = true; }
+            //if (Q('d11_cu2').checked) { extKeyUsage['2.16.840.1.113741.1.2.2'] = true; extKeyUsage.clientAuth = true; }
+            //if (Q('d11_cu3').checked) { extKeyUsage['2.16.840.1.113741.1.2.3'] = true; extKeyUsage.clientAuth = true; }
+            if (Q('d11_cu4').checked) { extKeyUsage.serverAuth = true; }
+            if (Q('d11_cu5').checked) { extKeyUsage.clientAuth = true; }
+            if (Q('d11_cu6').checked) { extKeyUsage.emailProtection = true; }
+            if (Q('d11_cu7').checked) { extKeyUsage.codeSigning = true; }
+            if (Q('d11_cu8').checked) { extKeyUsage.timeStamping = true; }
+
             // Sign the key pair using the CA certifiate
-            var cert = amtcert_signWithCaKey(DERKey, xxCaPrivateKey, certattributes, issuerattributes);
+            var cert = amtcert_signWithCaKey(DERKey, xxCaPrivateKey, certattributes, issuerattributes, extKeyUsage);
             if (cert == null) { messagebox('Issue Certificate', 'Unable to sign certificate.'); return; }
 
             // Place the resulting signed certificate back into AMT
@@ -34232,19 +34288,23 @@ if (typeof module !== "undefined" && module.exports) {
             }
             x += "</select><div style=padding-top:4px>Certificate</div></div>";
 
-            x += "<div style=height:26px;margin-top:4px><select id=tlsremote style=float:right;width:260px>";
+            x += "<div style=height:26px;margin-top:4px><select id=tlsremote style=float:right;width:260px onchange=showSetTlsSecurityDlgUpdate()>";
             x += "<option value=0>Server-auth TLS only</option>";
             x += "<option value=1>Server-auth, non-TLS allowed</option>";
             x += "<option value=2>Mutual-auth TLS only</option>";
             x += "<option value=3>Mutual-auth, non-TLS allowed</option>";
             x += "</select><div style=padding-top:4px>Remote</div></div>";
 
-            x += "<div style=height:26px;margin-top:4px><select id=tlslocal style=float:right;width:260px>";
+            x += "<div style=height:26px id=d11rcn title='Comma seperated list of certificate common names that will be allowed to connect remotely.'><input id=d11_rcn style=float:right;width:260px onkeyup=showSetTlsSecurityDlgUpdate() placeholder='name1, name2'><div style=padding-top:4px>Remote CN's</div></div>";
+
+            x += "<div style=height:26px;margin-top:4px><select id=tlslocal style=float:right;width:260px onchange=showSetTlsSecurityDlgUpdate()>";
             x += "<option value=0>Server-auth TLS only</option>";
             x += "<option value=1>Server-auth, non-TLS allowed</option>";
             x += "<option value=2>Mutual-auth TLS only</option>";
             x += "<option value=3>Mutual-auth, non-TLS allowed</option>";
             x += "</select><div style=padding-top:4px>Local</div></div>";
+
+            x += "<div style=height:26px id=d11lcn title='Comma seperated list of certificate common names that will be allowed to connect locally.'><input id=d11_lcn style=float:right;width:260px onkeyup=showSetTlsSecurityDlgUpdate() placeholder='name1, name2'><div style=padding-top:4px>Local CN's</div></div>";
 
             setDialogMode(11, "TLS Settings", 3, showSetTlsSecurityDlgOk, x);
 
@@ -34257,8 +34317,10 @@ if (typeof module !== "undefined" && module.exports) {
             }
 
             // Select correct TLS options in the drop down boxes
-            getSelectElement('tlsremote').value = ((xxTlsSettings[0]['MutualAuthentication'] == true) ? 2 : 0) + ((xxTlsSettings[0]['AcceptNonSecureConnections'] == true) ? 1 : 0);
-            getSelectElement('tlslocal').value = ((xxTlsSettings[1]['MutualAuthentication'] == true) ? 2 : 0) + ((xxTlsSettings[1]['AcceptNonSecureConnections'] == true) ? 1 : 0);
+            getSelectElement('tlslocal').value = ((xxTlsSettings[0]['MutualAuthentication'] == true) ? 2 : 0) + ((xxTlsSettings[0]['AcceptNonSecureConnections'] == true) ? 1 : 0);
+            getSelectElement('tlsremote').value = ((xxTlsSettings[1]['MutualAuthentication'] == true) ? 2 : 0) + ((xxTlsSettings[1]['AcceptNonSecureConnections'] == true) ? 1 : 0);
+            if (xxTlsSettings[0].TrustedCN) { Q('d11_lcn').value = MakeToArray(xxTlsSettings[0].TrustedCN).join(', '); }
+            if (xxTlsSettings[1].TrustedCN) { Q('d11_rcn').value = MakeToArray(xxTlsSettings[1].TrustedCN).join(', '); }
 
             showSetTlsSecurityDlgUpdate();
         }
@@ -34267,6 +34329,12 @@ if (typeof module !== "undefined" && module.exports) {
             var h = getSelectElement('tlscert').value;
             QE('tlsremote', h != -1);
             QE('tlslocal', h != -1);
+            QV('d11rcn', (h != -1) && (getSelectElement('tlsremote').value > 1));
+            QV('d11lcn', (h != -1) && (getSelectElement('tlslocal').value > 1));
+            var ok = true;
+            if ((getSelectElement('tlsremote').value > 1) && (!splitDomains(Q('d11_rcn').value))) { ok = false; }
+            if ((getSelectElement('tlslocal').value > 1) && (!splitDomains(Q('d11_lcn').value))) { ok = false; }
+            QE('idx_dlgOkButton', ok);
         }
 
         var setTlsSecurityPendingCalls;
@@ -34300,14 +34368,16 @@ if (typeof module !== "undefined" && module.exports) {
             }
 
             // Remote TLS settings
-            xxTlsSettings2[0]['Enabled'] = (h != -1);
-            xxTlsSettings2[0]['MutualAuthentication'] = (r >= 2);
-            xxTlsSettings2[0]['AcceptNonSecureConnections'] = ((r % 2) == 1);
-
-            // Local TLS settings
             xxTlsSettings2[1]['Enabled'] = (h != -1);
-            xxTlsSettings2[1]['MutualAuthentication'] = (l >= 2);
-            xxTlsSettings2[1]['AcceptNonSecureConnections'] = ((l % 2) == 1);
+            xxTlsSettings2[1]['MutualAuthentication'] = (r >= 2);
+            xxTlsSettings2[1]['AcceptNonSecureConnections'] = ((r % 2) == 1);
+            xxTlsSettings2[1]['TrustedCN'] = splitDomains(Q('d11_rcn').value);
+            
+            // Local TLS settings
+            xxTlsSettings2[0]['Enabled'] = (h != -1);
+            xxTlsSettings2[0]['MutualAuthentication'] = (l >= 2);
+            xxTlsSettings2[0]['AcceptNonSecureConnections'] = ((l % 2) == 1);
+            xxTlsSettings2[0]['TrustedCN'] = splitDomains(Q('d11_lcn').value);
 
             // Update TLS settings
             amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], setTlsSecurityResponse, 0, 1, xxTlsSettings2[0]);
@@ -34315,6 +34385,15 @@ if (typeof module !== "undefined" && module.exports) {
             setTlsSecurityPendingCalls += 2;
 
             statusbox("TLS Settings", "Applying new security settings...");
+        }
+
+        // Split a string into a array of domains. Return null if not a valid list.
+        function splitDomains(str) {
+            str = str.split(',');
+            if (str.length == 0) return;
+            for (var i in str) { str[i] = str[i].trim(); if ((str[i].indexOf(' ') >= 0) || (str[i].length == 0)) return; }
+            if (str.length > 4) return;
+            return str;
         }
 
         function setTlsSecurityResponse(stack, name, response, status, tag) {
@@ -37533,7 +37612,7 @@ if (typeof module !== "undefined" && module.exports) {
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }
         function addDisabledOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; option.disabled = 1; Q(q).add(option); }
-        function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()+-]).{8,}/; return re.test(p); }
+        function passwordcheck(p) { if (p.length < 8) return false; var upper = 0, lower = 0, number = 0, nonalpha = 0; for (var i in p) { var c = p.charCodeAt(i); if ((c > 64) && (c < 91)) { upper = 1; } else if ((c > 96) && (c < 123)) { lower = 1; } else if ((c > 47) && (c < 58)) { number = 1; } else { nonalpha = 1; } } return ((upper + lower + number + nonalpha) == 4); }
         function methodcheck(r) { if (r && r != null && r.Body && r.Body['ReturnValue'] != 0) { messagebox("Call Error", r.Header['Method'] + ": " + (r.Body.ReturnValueStr + '').replace("_", " ")); return true; } return false; }
         function TableStart() { return "<table class='log1 us' cellpadding=0 cellspacing=0 style=width:100%;border-radius:8px><tr><td width=200px><p><td>"; }
         function TableStart2() { return "<table class='log1 us' cellpadding=0 cellspacing=0 style=width:100%;border-radius:8px><tr><td><p><td>"; }

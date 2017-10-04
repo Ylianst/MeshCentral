@@ -280,7 +280,7 @@ module.exports.CertificateOperations = function () {
         }
 
         // If the Intel AMT console certificate does not exist, create one
-        var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = obj.xxRandomNonce(12);
+        var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = 'MeshCentral';
         if (r.console == undefined) {
             consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }); // Intel AMT Remote, Agent and Activation usages
             consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
@@ -292,6 +292,7 @@ module.exports.CertificateOperations = function () {
             consoleCertAndKey = { cert: obj.pki.certificateFromPem(r.console.cert), key: obj.pki.privateKeyFromPem(r.console.key) };
             consoleCertificate = r.console.cert
             consolePrivateKey = r.console.key
+            amtConsoleName = consoleCertAndKey.cert.subject.getField('CN').value;
         }
 
         // If the mesh agent server certificate does not exist, create one

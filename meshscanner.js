@@ -54,7 +54,7 @@ module.exports.CreateMeshScanner = function (parent) {
                     server4.xxclear = false;
                     server4.xxtype = 4;
                     server4.xxlocal = localAddress;
-                    server4.on('error', function (err) { console.log("ERROR: Server port " + server4.xxlocal + ":16989 not available, check if server is running twice."); server4.close(); server4 = null; });
+                    server4.on('error', function (err) { if (this.xxlocal == '*') { console.log("ERROR: Server port 16989 not available, check if server is running twice."); } this.close(); delete obj.servers6[this.xxlocal]; });
                     var bindOptions = { port: 16989, exclusive: false };
                     if (server4.xxlocal != '*') { bindOptions.address = server4.xxlocal; }
                     server4.bind(bindOptions, function () {
@@ -86,7 +86,7 @@ module.exports.CreateMeshScanner = function (parent) {
                 server6.xxclear = false;
                 server6.xxtype = 6;
                 server6.xxlocal = localAddress;
-                server6.on('error', function (err) { console.log("ERROR: Server port [" + server6.xxlocal + "]:16989 not available, check if server is running twice."); server6.close(); obj.server6 = null; });
+                server6.on('error', function (err) { this.close(); delete obj.servers6[this.xxlocal]; });
                 var bindOptions = { port: 16989, exclusive: false };
                 if (server6.xxlocal != '*') { bindOptions.address = server6.xxlocal; }
                 server6.bind(bindOptions, function () {

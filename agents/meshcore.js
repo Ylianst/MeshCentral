@@ -834,6 +834,15 @@ function createMeshCore(agent) {
                     response = JSON.stringify(http.parseUri(args['_'][0]));
                     break;
                 }
+                case 'modules': {
+                    response = "Modules: " + JSON.stringify(addedModules);
+                    break;
+                }
+                case 'callmodule': {
+                    var w = require('MyTestModule');
+                    response = "x=" + w.getValue();
+                    break;
+                }
                 default: { // This is an unknown command, return an error message
                     response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                     break;
