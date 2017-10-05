@@ -650,7 +650,7 @@ function CreateMeshCentralServer() {
                 // Merge this module
                 var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                 var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules', modulesDir[i])).toString('base64');
-                moduleAdditions += 'try { var ar = addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64").toString()); addedModules.push({ name: "' + moduleName + '", ret: ar, data: Buffer.from("' + moduleDataB64 + '", "base64").toString()} ); } catch (e) { }\r\n';
+                moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
             }
         }
 
@@ -660,40 +660,6 @@ function CreateMeshCentralServer() {
         obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(meshCore).digest("binary");
         if (func != null) { func(true); }
     }
-
-    /*
-    // Update the default mesh core
-    obj.updateMeshCore2 = function (func) {
-        var altCorePath = obj.path.join(obj.datapath, 'meshcore.js');
-        if (require('fs').existsSync(altCorePath)) {
-            // Load default mesh agent core from data path if present
-            readEntireTextFile(altCorePath, function (data) {
-                if (data != null) {
-                    data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                    obj.defaultMeshCore = data;
-                    obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(data).digest("binary");
-                } else {
-                    obj.defaultMeshCore = null;
-                    obj.defaultMeshCoreHash = null;
-                }
-                if (func != null) { func(); }
-            });
-        } else {
-            // Load default mesh agent core from meshcentral path if present
-            readEntireTextFile(obj.path.join(__dirname, 'agents', 'meshcore.js'), function (data) {
-                if (data != null) {
-                    data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                    obj.defaultMeshCore = data;
-                    obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(data).digest("binary");
-                } else {
-                    obj.defaultMeshCore = null;
-                    obj.defaultMeshCoreHash = null;
-                }
-                if (func != null) { func(); }
-            });
-        }
-    }
-    */
 
     // List of possible mesh agent install scripts
     var meshAgentsInstallScriptList = {

@@ -24,6 +24,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
     if (obj.id == undefined) { obj.ws.close(); obj.id = null; return null; } // Attempt to connect without id, drop this.
+    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
 
     if (req.query.auth == null) {
         // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.

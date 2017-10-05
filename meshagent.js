@@ -28,6 +28,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     var agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
+    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
 
     // Send a message to the mesh agent
     obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }

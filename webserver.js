@@ -686,8 +686,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (!user) { console.log('ERR: Not a user'); return; }
         Debug(1, 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
 
-        // Hold this socket until we are ready.
-        ws.pause();
+        ws.pause();                                         // Hold this socket until we are ready.
+        ws._socket.setKeepAlive(true, 0);                   // Set TCP keep alive
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
@@ -932,6 +932,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     function handleEchoWebSocket(ws, req) {
         var domain = checkUserIpAddress(ws, req);
         if (domain == null) return;
+        ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
 
         // When data is received from the web socket, echo it back
         ws.on('message', function (data) {
@@ -1020,8 +1021,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 }
             }
             
-            // Subscribe to events
-            user.subscriptions = obj.subscribe(user._id, ws);
+            user.subscriptions = obj.subscribe(user._id, ws);   // Subscribe to events
+            ws._socket.setKeepAlive(true, 0);                   // Set TCP keep alive
             
             // When data is received from the web socket
             ws.on('message', function (msg) {

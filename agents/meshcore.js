@@ -20,16 +20,24 @@ function createMeshCore(agent) {
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     obj.meshCoreInfo = "MeshCore v3k";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
+    obj.useNativePipes = true; //(process.platform == 'win32');
     var meshServerConnectionState = 0;
     var tunnels = {};
     var lastSelfInfo = null;
     var lastNetworkInfo = null;
     var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
-    obj.useNativePipes = true; //(process.platform == 'win32');
-
     var http = require('http');
     var fs = require('fs');
+    var wifiScannerLib = null;
+    var wifiScanner = null;
+
+    // Try to load up the WIFI scanner
+    try {
+        wifiScannerLib = require('WifiScanner');
+        wifiScanner = new wifiScannerLib();
+        wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
+    } catch (e) { }
 
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -591,7 +599,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, modules, scanwifi.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -838,9 +846,11 @@ function createMeshCore(agent) {
                     response = "Modules: " + JSON.stringify(addedModules);
                     break;
                 }
-                case 'callmodule': {
-                    var w = require('MyTestModule');
-                    response = "x=" + w.getValue();
+                case 'scanwifi': {
+                    if (wifiScanner != null) {
+                        var wifiPresent = wifiScanner.hasWireless;
+                        if (wifiPresent) { response = "Perfoming Wifi scan..."; wifiScanner.Scan(); } else { response = "Wifi absent."; }
+                    } else { response = "Wifi module not present."; }
                     break;
                 }
                 default: { // This is an unknown command, return an error message
