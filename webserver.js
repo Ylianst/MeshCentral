@@ -1951,7 +1951,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         
             var xdomain = domain.id;
             if (xdomain != '') xdomain += "/";
-            var meshsettings = "MeshName=" + mesh.name + "\r\nMeshID=0x" + req.query.id.toUpperCase() + "\r\nServerID=" + obj.agentCertificatHashHex.toUpperCase() + "\r\n";
+            var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + req.query.id.toUpperCase() + "\r\nServerID=" + obj.agentCertificatHashHex.toUpperCase() + "\r\n";
             if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + certificates.CommonName + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
 
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });

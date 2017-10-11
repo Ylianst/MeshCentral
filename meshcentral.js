@@ -127,7 +127,7 @@ function CreateMeshCentralServer() {
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startLine) {
         var child_process = require('child_process');
-        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: 512000 }, function (error, stdout, stderr) {
+        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: Infinity }, function (error, stdout, stderr) {
             if (xprocess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
             } else if (xprocess.xrestart == 2) {
@@ -136,7 +136,7 @@ function CreateMeshCentralServer() {
             } else if (xprocess.xrestart == 3) {
                 // Server self-update exit
                 var child_process = require('child_process');
-                var xxprocess = child_process.exec('npm install meshcentral', { maxBuffer: 512000, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                var xxprocess = child_process.exec('npm install meshcentral', { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });

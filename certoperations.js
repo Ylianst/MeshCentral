@@ -219,6 +219,9 @@ module.exports.CertificateOperations = function () {
             // Fetch the Intel AMT console name
             var consoleCertificate = obj.pki.certificateFromPem(r.console.cert);
             r.AmtConsoleName = consoleCertificate.subject.getField('CN').value;
+            // Fetch the Intel AMT MPS common name
+            var mpsCertificate = obj.pki.certificateFromPem(r.mps.cert);
+            r.AmtMpsName = mpsCertificate.subject.getField('CN').value;
             // Fetch the name of the server
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.CommonName = webCertificate.subject.getField('CN').value;
@@ -229,7 +232,7 @@ module.exports.CertificateOperations = function () {
             if (xcountryField != null) { xcountry = xcountryField.value; }
             var xorganization, xorganizationField = webCertificate.subject.getField('O');
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
-            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
+            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == commonName)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
         }
         console.log('Generating certificates...');
         
@@ -251,7 +254,7 @@ module.exports.CertificateOperations = function () {
 
         // If the web certificate does not exist, create one
         var webCertAndKey, webCertificate, webPrivateKey;
-        if ((r.web == undefined) || (forceWebCertGen == 1)) {
+        if ((r.web == null) || (forceWebCertGen == 1)) {
             webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
             webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
@@ -266,7 +269,7 @@ module.exports.CertificateOperations = function () {
 
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
-        if (r.console == undefined) {
+        if ((r.mps == null) || (forceWebCertGen == 1)) {
             mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
@@ -281,7 +284,7 @@ module.exports.CertificateOperations = function () {
 
         // If the Intel AMT console certificate does not exist, create one
         var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = 'MeshCentral';
-        if (r.console == undefined) {
+        if (r.console == null) {
             consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }); // Intel AMT Remote, Agent and Activation usages
             consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
             consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
@@ -297,7 +300,7 @@ module.exports.CertificateOperations = function () {
 
         // If the mesh agent server certificate does not exist, create one
         var agentCertAndKey, agentCertificate, agentPrivateKey;
-        if (r.agent == undefined) {
+        if (r.agent == null) {
             agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer');
             agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
             agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
