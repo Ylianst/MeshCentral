@@ -6,9 +6,9 @@
 
 // Construct a MeshRelay object, called upon connection
 module.exports.CreateMeshRelayKey = function (parent, func) {
-    parent.crypto.randomBytes(16, function (err, buf) {
+    parent.crypto.randomBytes(48, function (err, buf) {
         var key = buf.toString('hex').toUpperCase() + ':' + Date.now();
-        key += ':' + parent.crypto.createHmac('SHA256', parent.relayRandom).update(key).digest('hex');
+        key += ':' + parent.crypto.createHmac('SHA384', parent.relayRandom).update(key).digest('hex');
         func(key);
     });
 }
@@ -41,7 +41,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
         // Check the identifier, if running without TLS, skip this.
         var ids = obj.id.split(':');
         if (ids.length != 3) { obj.ws.close(); obj.id = null; return null; } // Invalid ID, drop this.
-        if (parent.crypto.createHmac('SHA256', parent.relayRandom).update(ids[0] + ':' + ids[1]).digest('hex') != ids[2]) { obj.ws.close(); obj.id = null; return null; } // Invalid HMAC, drop this.
+        if (parent.crypto.createHmac('SHA384', parent.relayRandom).update(ids[0] + ':' + ids[1]).digest('hex') != ids[2]) { obj.ws.close(); obj.id = null; return null; } // Invalid HMAC, drop this.
         if ((Date.now() - parseInt(ids[1])) > 120000) { obj.ws.close(); obj.id = null; return null; } // Expired time, drop this.
         obj.id = ids[0];
     }
@@ -107,6 +107,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
+        //console.log(typeof data);
+        //if (typeof data == 'string') console.log(data);
         if (this.peer != null) { try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { } }
     });
 

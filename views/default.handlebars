@@ -150,7 +150,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="xdevices" style="max-height:calc(100vh - 228px);overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+                    <div id="xdevices" style="max-height:calc(100vh - 228px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch"></div>
                     <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden;position:relative">
                         <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
                             <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
@@ -2760,6 +2760,7 @@
                 } else {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
+                    desktop.attemptWebRTC = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -2984,6 +2985,7 @@
                 } else {
                     // Setup a mesh agent terminal
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
+                    terminal.attemptWebRTC = debugmode;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
@@ -3088,6 +3090,7 @@
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort);
+                files.attemptWebRTC = debugmode;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
             } else {
@@ -3288,6 +3291,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our file transport
+            downloadFile.attemptWebRTC = debugmode;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
             downloadFile.xfile = decodeURIComponent(y);
@@ -3365,6 +3369,7 @@
         // Connect again
         function p13uploadReconnect() {
             uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort);
+            uploadFile.ws.attemptWebRTC = debugmode;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
             uploadFile.ws.Start(filesNode._id);
         }

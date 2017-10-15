@@ -29,8 +29,8 @@ function CreateMeshCentralServer() {
     obj.certificateOperations = require('./certoperations.js').CertificateOperations();
     obj.defaultMeshCore = null;
     obj.defaultMeshCoreHash = null;
-    obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha256 hash), size:(binary size), path:(binary path) }
-    obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha256 hash), size:(binary size), path:(binary path) }
+    obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha384 hash), size:(binary size), path:(binary path) }
+    obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.multiServer = null;
     obj.currentVer = null;
     obj.maintenanceTimer = null;
@@ -38,11 +38,11 @@ function CreateMeshCentralServer() {
 
     // Setup the default configuration and files paths
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
-        obj.datapath = obj.path.join(__dirname, '../../.meshcentral-data');
-        obj.filespath = obj.path.join(__dirname, '../../.meshcentral-files');
+        obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
+        obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
     } else {
-        obj.datapath = obj.path.join(__dirname, '../.meshcentral-data');
-        obj.filespath = obj.path.join(__dirname, '../.meshcentral-files');
+        obj.datapath = obj.path.join(__dirname, '../meshcentral-data');
+        obj.filespath = obj.path.join(__dirname, '../meshcentral-files');
     }
 
     // Create data and files folders if needed
@@ -64,12 +64,12 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
-            console.log('MeshCentral2 Beta 1, a web-based remote computer management web portal.\r\n');
+            console.log('MeshCentral2 Beta 2, a web-based remote computer management web portal.\r\n');
             if (obj.platform == 'win32') {
                 console.log('Run as a Windows Service');
                 console.log('   --install/uninstall               Install Meshcentral as a background service.');
@@ -198,7 +198,7 @@ function CreateMeshCentralServer() {
         // Validate the domains, this is used for multi-hosting
         if (obj.config.domains == null) { obj.config.domains = {}; }
         if (obj.config.domains[''] == null) { obj.config.domains[''] = { }; }
-        var xdomains = {}; for (var i in obj.config.domains) { if (!obj.config.domains[i].title) { obj.config.domains[i].title = 'MeshCentral'; } if (!obj.config.domains[i].title2) { obj.config.domains[i].title2 = '2.0 Beta 1'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
+        var xdomains = {}; for (var i in obj.config.domains) { if (!obj.config.domains[i].title) { obj.config.domains[i].title = 'MeshCentral'; } if (!obj.config.domains[i].title2) { obj.config.domains[i].title2 = '2.0 Beta 2'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (var i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
         for (var i in obj.config.domains) {
@@ -223,6 +223,7 @@ function CreateMeshCentralServer() {
             // See if any database operations needs to be completed
             if (obj.args.deletedomain) { obj.db.DeleteDomain(obj.args.deletedomain, function () { console.log('Deleted domain ' + obj.args.deletedomain + '.'); process.exit(); }); return; }
             if (obj.args.deletedefaultdomain) { obj.db.DeleteDomain('', function () { console.log('Deleted default domain.'); process.exit(); }); return; }
+            if (obj.args.showall) { obj.db.GetAll(function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
@@ -269,7 +270,7 @@ function CreateMeshCentralServer() {
                             while (obj.dbconfig.amtWsEventSecret == null) { process.nextTick(); }
                             var username = buf.toString('hex');
                             var nodeid = obj.args.getwspass;
-                            var pass = require('crypto').createHash('sha256').update(username.toLowerCase() + ":" + nodeid.toUpperCase() + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
+                            var pass = require('crypto').createHash('sha384').update(username.toLowerCase() + ":" + nodeid.toUpperCase() + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
                             console.log('--- Intel(r) AMT WSMAN eventing credentials ---');
                             console.log('Username: ' + username);
                             console.log('Password: ' + pass);
@@ -299,7 +300,7 @@ function CreateMeshCentralServer() {
                     obj.updateMeshAgentInstallScripts();
 
                     // Setup and start the web server
-                    require('crypto').randomBytes(32, function (err, buf) {
+                    require('crypto').randomBytes(48, function (err, buf) {
                         // Setup Mesh Multi-Server if needed
                         obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
                         if (obj.multiServer != null) {
@@ -657,7 +658,7 @@ function CreateMeshCentralServer() {
         // Set the new default meshcore.js
         meshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
         obj.defaultMeshCore = meshCore;
-        obj.defaultMeshCoreHash = obj.crypto.createHash('sha256').update(meshCore).digest("binary");
+        obj.defaultMeshCoreHash = obj.crypto.createHash('sha384').update(meshCore).digest("binary");
         if (func != null) { func(true); }
     }
 
@@ -690,7 +691,7 @@ function CreateMeshCentralServer() {
                 });
                 stream.info = meshAgentsInstallScriptList[scriptid];
                 stream.agentpath = scriptpath;
-                stream.hash = obj.crypto.createHash('sha256', stream);
+                stream.hash = obj.crypto.createHash('sha384', stream);
             } catch (e) { }
         }
     }
@@ -748,7 +749,7 @@ function CreateMeshCentralServer() {
                 });
                 stream.info = meshAgentsArchitectureNumbers[archid];
                 stream.agentpath = agentpath;
-                stream.hash = obj.crypto.createHash('sha256', stream);
+                stream.hash = obj.crypto.createHash('sha384', stream);
             } catch (e) { }
         }
     }
@@ -817,7 +818,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Build the list of required modules
-var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'websocket', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
 if (require('os').platform() == 'win32') { modules.push("node-windows"); }
 
 // Run as a command line, if we are not using service arguments, don't need to install the service package.

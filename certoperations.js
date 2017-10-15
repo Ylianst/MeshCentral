@@ -12,24 +12,16 @@ module.exports.CertificateOperations = function () {
     obj.dirExists = function (filePath) { try { return obj.fs.statSync(filePath).isDirectory(); } catch (err) { return false; } }
     obj.getFilesizeInBytes = function(filename) { try { return obj.fs.statSync(filename)["size"]; } catch (err) { return -1; } }
     obj.fileExists = function(filePath) { try { return obj.fs.statSync(filePath).isFile(); } catch (err) { return false; } }
-    
-    // Return the SHA256 hash of the certificate public key
-    obj.getPublicKeyHash = function(cert) {
-        var publickey = obj.pki.certificateFromPem(cert).publicKey;
-        return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'hex', md: obj.forge.md.sha256.create() });
-    }
 
-    // Return a random nonce (TODO: weak crypto)
-    obj.xxRandomNonceX = "abcdef0123456789";
-    obj.xxRandomNonce = function (length) {
-        var r = "";
-        for (var i = 0; i < length; i++) { r += obj.xxRandomNonceX.charAt(Math.floor(Math.random() * obj.xxRandomNonceX.length)); }
-        return r;
+    // Return the SHA386 hash of the certificate public key
+    obj.getPublicKeyHash = function (cert) {
+        var publickey = obj.pki.certificateFromPem(cert).publicKey;
+        return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'hex', md: obj.forge.md.sha384.create() });
     }
 
     // Create a self-signed certificate
     obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization) {
-        var keys = obj.pki.rsa.generateKeyPair(2048);
+        var keys = obj.pki.rsa.generateKeyPair(3072);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = '' + Math.floor((Math.random() * 100000) + 1); ;
@@ -55,14 +47,14 @@ module.exports.CertificateOperations = function () {
             }, {
                 name: 'subjectKeyIdentifier'
             }]);
-        cert.sign(keys.privateKey, obj.forge.md.sha256.create());
+        cert.sign(keys.privateKey, obj.forge.md.sha384.create());
 
         return { cert: cert, key: keys.privateKey };
     }
     
     // Issue a certificate from a root
-    obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization, extKeyUsage) {
-        var keys = obj.pki.rsa.generateKeyPair(2048);
+    obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization, extKeyUsage, strong) {
+        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = '' + Math.floor((Math.random() * 100000) + 1); ;
@@ -128,8 +120,7 @@ module.exports.CertificateOperations = function () {
             }]
         if (subjectAltName != null) extensions.push(subjectAltName);
         cert.setExtensions(extensions);
-        
-        cert.sign(rootcert.key, obj.forge.md.sha256.create());
+        cert.sign(rootcert.key, obj.forge.md.sha384.create());
         
         return { cert: cert, key: keys.privateKey };
     }
@@ -234,7 +225,7 @@ module.exports.CertificateOperations = function () {
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
             if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == commonName)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
         }
-        console.log('Generating certificates...');
+        console.log('Generating certificates, may take a few minutes...');
         
         var rootCertAndKey, rootCertificate, rootPrivateKey, rootName;
         if (r.root == undefined) {
@@ -255,7 +246,7 @@ module.exports.CertificateOperations = function () {
         // If the web certificate does not exist, create one
         var webCertAndKey, webCertificate, webPrivateKey;
         if ((r.web == null) || (forceWebCertGen == 1)) {
-            webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
+            webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, true);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
             webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
             obj.fs.writeFileSync(directory + '/webserver-cert-public.crt', webCertificate);
@@ -270,7 +261,7 @@ module.exports.CertificateOperations = function () {
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
         if ((r.mps == null) || (forceWebCertGen == 1)) {
-            mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization);
+            mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
             obj.fs.writeFileSync(directory + '/mpsserver-cert-public.crt', mpsCertificate);
@@ -285,7 +276,7 @@ module.exports.CertificateOperations = function () {
         // If the Intel AMT console certificate does not exist, create one
         var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = 'MeshCentral';
         if (r.console == null) {
-            consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }); // Intel AMT Remote, Agent and Activation usages
+            consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }, false); // Intel AMT Remote, Agent and Activation usages
             consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
             consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
             obj.fs.writeFileSync(directory + '/amtconsole-cert-public.crt', consoleCertificate);
@@ -301,7 +292,7 @@ module.exports.CertificateOperations = function () {
         // If the mesh agent server certificate does not exist, create one
         var agentCertAndKey, agentCertificate, agentPrivateKey;
         if (r.agent == null) {
-            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer');
+            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer', null, true);
             agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
             agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
             obj.fs.writeFileSync(directory + '/agentserver-cert-public.crt', agentCertificate);

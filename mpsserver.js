@@ -112,7 +112,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                     socket.tag.domainid = domainid;
                     socket.tag.meshid = 'mesh/' + domainid + '/' + meshid;
-                    socket.tag.nodeid = 'node/' + domainid + '/' + require('crypto').createHash('sha256').update(common.hex2rstr(socket.tag.clientCert.modulus, 'binary')).digest('hex').toUpperCase();
+                    socket.tag.nodeid = 'node/' + domainid + '/' + require('crypto').createHash('sha384').update(common.hex2rstr(socket.tag.clientCert.modulus, 'binary')).digest('hex').toUpperCase();
                     socket.tag.name = socket.tag.clientCert.subject.CN;
                     socket.tag.connectTime = Date.now();
                     socket.tag.host = '';
@@ -170,7 +170,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 console.log(e);
             }
         });
-        
+
         // Process one AFP command
         function ProcessCommand(socket) {
             var cmd = socket.tag.accumulator.charCodeAt(0);
@@ -228,7 +228,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         // Intel AMT GUID (socket.tag.SystemId) will be used at NodeID
                         var systemid = socket.tag.SystemId.split('-').join('').toUpperCase();
                         socket.tag.name = '';
-                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + systemid + systemid;
+                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + systemid + systemid + systemid; // Turn 16bit systemid guid into 48bit nodeid
                         socket.tag.meshid = mesh._id;
 
                         obj.db.Get(socket.tag.nodeid, function (err, nodes) {
@@ -318,7 +318,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 26 + requestLen + addrLen + oaddrLen + datalen) return 0;
                         Debug(2, 'MPS:GLOBAL_REQUEST', request, addr + ':' + port, oaddr + ':' + oport, datalen);
                         // TODO
-                        return ptr + 26 + requestLen + addrLen + oaddrLen + datalen;
+                        return 26 + requestLen + addrLen + oaddrLen + datalen;
                     }
 
                     return 6 + requestLen;

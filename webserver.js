@@ -69,9 +69,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
     
     // Perform hash on web certificate and agent certificate
-    obj.webCertificatHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'binary' });
-    obj.webCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
-    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
+    obj.webCertificatHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
+    obj.webCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
     obj.agentCertificatAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
 
     // Main lists    
@@ -86,9 +86,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.wsPeerRelays = {};       // Id -> { ServerId, Time }
     
     // Setup randoms
-    obj.crypto.randomBytes(32, function (err, buf) { obj.httpAuthRandom = buf; });
+    obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
     obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
-    obj.crypto.randomBytes(32, function (err, buf) { obj.relayRandom = buf; });
+    obj.crypto.randomBytes(48, function (err, buf) { obj.relayRandom = buf; });
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
@@ -745,11 +745,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
                     ser.forwardwrite = function (msg) {
-                        // Convert a buffer into a string, "msg = msg.toString('ascii');" does not work
                         // TLS ---> CIRA
-                        var msg2 = "";
-                        for (var i = 0; i < msg.length; i++) { msg2 += String.fromCharCode(msg[i]); }
-                        chnl.write(msg2);
+                        chnl.write(msg.toString('binary'));
                     };
 
                     // When APF tunnel return something, update SerialTunnel buffer
@@ -776,10 +773,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     tlsock.on('data', function (data) {
                         // AMT/TLS ---> WS
                         try {
-                            var data2 = "";
-                            for (var i = 0; i < data.length; i++) { data2 += String.fromCharCode(data[i]); }
-                            if (ws.interceptor) { data2 = ws.interceptor.processAmtData(data2); } // Run data thru interceptor
-                            ws.send(data2);
+                            data = data.toString('binary');
+                            if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
+                            ws.send(data);
                         } catch (e) { }
                     });
 
@@ -797,11 +793,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 // If the CIRA connection is pending, the CIRA channel has built-in buffering, so we are ok sending anyway.
                 ws.on('message', function (msg) {
                     // WS ---> AMT/TLS
-                    // Convert a buffer into a string, "msg = msg.toString('ascii');" does not work
-                    var msg2 = "";
-                    for (var i = 0; i < msg.length; i++) { msg2 += String.fromCharCode(msg[i]); }
-                    if (ws.interceptor) { msg2 = ws.interceptor.processBrowserData(msg2); } // Run data thru interceptor
-                    if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg2, 'binary')); } else { ws.forwardclient.write(msg2); }
+                    msg = msg.toString('binary');
+                    if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
+                    if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
                 });
 
                 // If error, do nothing
@@ -849,11 +843,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
                     Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes'); // DEBUG
-                    // Convert a buffer into a string, "msg = msg.toString('ascii');" does not work
-                    var msg2 = "";
-                    for (var i = 0; i < msg.length; i++) { msg2 += String.fromCharCode(msg[i]); }
-                    if (ws.interceptor) { msg2 = ws.interceptor.processBrowserData(msg2); } // Run data thru interceptor
-                    ws.forwardclient.write(new Buffer(msg2, "ascii")); // Forward data to the associated TCP connection.
+                    msg = msg.toString('binary');
+                    if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
+                    ws.forwardclient.write(new Buffer(msg, 'binary')); // Forward data to the associated TCP connection.
                 });
 
                 // If error, do nothing
@@ -1301,7 +1293,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             // TODO: Right now, we only create type 1 Agent-less Intel AMT mesh, or type 2 Agent mesh
                             if ((command.meshtype == 1) || (command.meshtype == 2)) {
                                 // Create a type 1 agent-less Intel AMT mesh.
-                                obj.crypto.randomBytes(32, function (err, buf) {
+                                obj.crypto.randomBytes(48, function (err, buf) {
                                     var meshid = 'mesh/' + domain.id + '/' + buf.toString('hex').toUpperCase();
                                     var links = {}
                                     links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
@@ -1455,7 +1447,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                 if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
                                 
                                 // Create a new nodeid
-                                obj.crypto.randomBytes(32, function (err, buf) {
+                                obj.crypto.randomBytes(48, function (err, buf) {
                                     // create the new node
                                     var nodeid = 'node/' + domain.id + '/' + buf.toString('hex').toUpperCase();
                                     var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: parseInt(command.amttls) } };
@@ -1787,7 +1779,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 var authstr = req.headers['authorization'];
                 if (authstr.substring(0, 7) == "Digest ") {
                     var auth = obj.common.parseNameValueList(obj.common.quoteSplit(authstr.substring(7)));
-                    if ((req.url === auth.uri) && (obj.httpAuthRealm === auth.realm) && (auth.opaque === obj.crypto.createHmac('SHA256', obj.httpAuthRandom).update(auth.nonce).digest('hex'))) {
+                    if ((req.url === auth.uri) && (obj.httpAuthRealm === auth.realm) && (auth.opaque === obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(auth.nonce).digest('hex'))) {
                         
                         // Read the data, we need to get the arg field
                         var eventData = '';
@@ -1806,7 +1798,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                         if (nodes.length == 1) {
                                             // Yes, the node exists, compute Intel AMT digest password
                                             var node = nodes[0];
-                                            var amtpass = obj.crypto.createHash('sha256').update(auth.username.toLowerCase() + ":" + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
+                                            var amtpass = obj.crypto.createHash('sha384').update(auth.username.toLowerCase() + ":" + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
                                             
                                             // Check the MD5 hash
                                             if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, "POST", auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
@@ -1848,8 +1840,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } catch (e) { console.log(e); }
         
         // Send authentication response
-        obj.crypto.randomBytes(32, function (err, buf) {
-            var nonce = buf.toString('hex'), opaque = obj.crypto.createHmac('SHA256', obj.httpAuthRandom).update(nonce).digest('hex');
+        obj.crypto.randomBytes(48, function (err, buf) {
+            var nonce = buf.toString('hex'), opaque = obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(nonce).digest('hex');
             res.set({ 'WWW-Authenticate': 'Digest realm="' + obj.httpAuthRealm + '", qop="auth,auth-int", nonce="' + nonce + '", opaque="' + opaque + '"' });
             res.sendStatus(401);
         });
@@ -1921,7 +1913,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else {
             // Send a list of available mesh agents
             var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';
-            response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA256</th></tr>';
+            response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th></tr>';
             for (var agentid in obj.parent.meshAgentBinaries) {
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
@@ -2135,13 +2127,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are not using a custom core.
-                // Perform a SHA256 hash on the core module
-                var buf = new Buffer(core, 'ascii');
-                var hash = obj.crypto.createHash('sha256').update(buf).digest(), hash2 = "";
-                for (var i = 0; i < hash.length; i++) { hash2 += String.fromCharCode(hash[i]); }
+                // Perform a SHA384 hash on the core module
+                var hash = obj.crypto.createHash('sha384').update(new Buffer(core, 'binary')).digest().toString('binary');
 
                 // Send the code module to the agent
-                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash2 + core); // TODO: Add core encoding short
+                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + core);
             }
         }
     }

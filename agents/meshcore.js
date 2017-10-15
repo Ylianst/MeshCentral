@@ -29,6 +29,7 @@ function createMeshCore(agent) {
     var selfInfoUpdateTimer = null;
     var http = require('http');
     var fs = require('fs');
+    var rtc = require('ILibWebRTC');
     var wifiScannerLib = null;
     var wifiScanner = null;
 
@@ -417,8 +418,26 @@ function createMeshCore(agent) {
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
             return;
         }
+
         // Setup remote desktop & terminal without using native pipes
-        if ((this.httprequest.desktop) && (obj.useNativePipes == false)) { this.httprequest.desktop.kvm.write(data); return; }
+        if ((this.httprequest.desktop) && (obj.useNativePipes == false)) {
+            if (data.length > 21 && data.toString().startsWith('**********%%%%%%###**')) {
+                var controlMsg = JSON.parse(data.toString().substring(21));
+                if (controlMsg.type == 'offer') {
+                    this.webrtc = rtc.createConnection();
+                    this.webrtc.on('connected', function () { sendConsoleText('OnWebRTC_Connected'); });
+                    this.webrtc.on('dataChannel', function () { sendConsoleText('OnWebRTC_DataChannel'); });
+                    var counterOffer = this.webrtc.setOffer(controlMsg.sdp);
+                    this.write('**********%%%%%%###**' + JSON.stringify({ type: 'answer', sdp: counterOffer }));
+                    sendConsoleText('counterOfferSent');
+                } else {
+                    sendConsoleText(JSON.stringify(controlMsg));
+                }
+            } else {
+                this.httprequest.desktop.kvm.write(data);
+            }
+            return;
+        }
         if ((this.httprequest.terminal) && (obj.useNativePipes == false)) { this.httprequest.terminal.write(data); return; }
 
         if (this.httprequest.state == 0) {

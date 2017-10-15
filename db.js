@@ -43,7 +43,7 @@ module.exports.CreateDB = function (args, datapath) {
             if ((docs.length == 1) && (docs[0].value != null)) {
                 obj.identifier = docs[0].value;
             } else {
-                obj.identifier = new Buffer(require('crypto').randomBytes(32), 'binary').toString('hex');
+                obj.identifier = new Buffer(require('crypto').randomBytes(48), 'binary').toString('hex');
                 obj.Set({ _id: 'DatabaseIdentifier', value: obj.identifier });
             }
         });
@@ -53,94 +53,9 @@ module.exports.CreateDB = function (args, datapath) {
             var ver = 0;
             if (docs && docs.length == 1) { ver = docs[0].value; }
 
-            // Upgrade schema 0 to schema 1
-            if (ver == 0) {
-                // Add the default domain to all users
-                obj.GetAllType('user', function (err, docs) {
-                    for (var id in docs) {
-                        var oldid, changed = false;
-                        if (docs[id].subscriptions) { delete docs[id].subscriptions; changed = true; }
-                        if (docs[id].domain == undefined) {
-                            docs[id].domain = '';
-                            oldid = docs[id]._id;
-                            docs[id]._id = 'user//' + docs[id]._id.substring(5);
-                            changed = true;
-                        }
-                        if (docs[id].links) {
-                            for (var linkid in docs[id].links) {
-                                var linkid2 = 'mesh//' + linkid.substring(5);
-                                docs[id].links[linkid2] = docs[id].links[linkid];
-                                delete docs[id].links[linkid];
-                            }
-                        }
-                        if (changed == true) {
-                            if (oldid) obj.Remove(oldid);
-                            obj.Set(docs[id]);
-                        }
-                    }
-                    
-                    // Add the default domain to all nodes
-                    obj.GetAllType('node', function (err, docs) {
-                        for (var id in docs) {
-                            var oldid, changed = false;
-                            if (docs[id].domain == undefined) {
-                                docs[id].domain = '';
-                                oldid = docs[id]._id;
-                                docs[id]._id = 'node//' + docs[id]._id.substring(5);
-                                docs[id].meshid = 'mesh//' + docs[id].meshid.substring(5);
-                                changed = true;
-                            }
-                            if (changed == true) {
-                                if (oldid) obj.Remove(oldid);
-                                obj.Set(docs[id]);
-                            }
-                        }
-                    });
-                    
-                    // Add the default domain to all meshes
-                    obj.GetAllType('mesh', function (err, docs) {
-                        for (var id in docs) {
-                            var oldid, changed = false;
-                            if (docs[id].domain == undefined) {
-                                docs[id].domain = '';
-                                oldid = docs[id]._id;
-                                docs[id]._id = 'mesh//' + docs[id]._id.substring(5);
-                                if (docs[id].links) {
-                                    for (var linkid in docs[id].links) {
-                                        var linkid2 = 'user//' + linkid.substring(5);
-                                        docs[id].links[linkid2] = docs[id].links[linkid];
-                                        delete docs[id].links[linkid];
-                                    }
-                                }
-                                changed = true;
-                            }
-                            if (changed == true) {
-                                if (oldid) obj.Remove(oldid);
-                                obj.Set(docs[id]);
-                            }
-                        }
-                    });
-                    
-                    // Add the default domain to all events
-                    obj.GetAllType('event', function (err, docs) {
-                        var changed = false;
-                        for (var id in docs) {
-                            var oldid;
-                            changed = true;
-                            if (docs[id].domain == undefined) {
-                                docs[id].domain = '';
-                                obj.Set(docs[id]);
-                            }
-                        }
-                        
-                        obj.Set({ _id: 'SchemaVersion', value: 1 });
-                        ver = 1;
-                        if (changed == true) { console.log('Upgraded database to version 1.'); }
-                        func(ver);
-                    });
-                });
+            // TODO: Any schema upgrades here...
 
-            } else { func(ver); }
+            func(ver);
         });
     }
 

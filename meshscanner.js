@@ -17,21 +17,22 @@ module.exports.CreateMeshScanner = function (parent) {
     var periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
     var membershipIPv4 = '239.255.255.235';
     var membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
-    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'hex' });
+    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
     obj.error = 0;
 
     // Get a list of IPv4 and IPv6 interface addresses
     function getInterfaceList() {
-        var ipv4 = [], ipv6 = [];
-        if (parent.platform == 'win32') { ipv4.push('*'); ipv6.push('*'); } // Bind to IN_ADDR_ANY only on Windows
-        var interfaces = require('os').networkInterfaces();
-        for (var i in interfaces) {
-            var interface = interfaces[i];
-            for (var j in interface) {
-                var interface2 = interface[j];
-                if ((interface2.mac != '00:00:00:00:00:00') && (interface2.internal == false)) {
-                    if (interface2.family == 'IPv4') { ipv4.push(interface2.address); }
-                    if (interface2.family == 'IPv6') { ipv6.push(interface2.address + '%' + i); }
+        var ipv4 = ['*'], ipv6 = ['*']; // Bind to IN_ADDR_ANY always
+        if (parent.platform == 'win32') { // On Windows, also bind to each interface seperatly
+            var interfaces = require('os').networkInterfaces();
+            for (var i in interfaces) {
+                var interface = interfaces[i];
+                for (var j in interface) {
+                    var interface2 = interface[j];
+                    if ((interface2.mac != '00:00:00:00:00:00') && (interface2.internal == false)) {
+                        if (interface2.family == 'IPv4') { ipv4.push(interface2.address); }
+                        if (interface2.family == 'IPv6') { ipv6.push(interface2.address + '%' + i); }
+                    }
                 }
             }
         }

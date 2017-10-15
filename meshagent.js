@@ -27,6 +27,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentUpdate = null;
     var agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
+    obj.useSHA386 = false;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
     ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
 
@@ -49,12 +50,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // When data is received from the mesh agent web socket
     ws.on('message', function (msg) {
         if (msg.length < 2) return;
-        if (typeof msg == 'object') {
-            // Convert the buffer into a string
-            var msg2 = "";
-            for (var i = 0; i < msg.length; i++) { msg2 += String.fromCharCode(msg[i]); }
-            msg = msg2;
-        }
+        if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
 
         if (obj.authenticated == 2) { // We are authenticated
             if (msg.charCodeAt(0) == 123) { processAgentData(msg); }
@@ -67,7 +63,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // We need to check if the core is current.
                 // TODO: Check if we have a mesh specific core. If so, use that.
                 var agentMeshCoreHash = null;
-                if (msg.length == 36) { agentMeshCoreHash = msg.substring(4, 36); }
+                if (msg.length == 52) { agentMeshCoreHash = msg.substring(4, 52); }
                 if (agentMeshCoreHash != obj.parent.parent.defaultMeshCoreHash) {
                     if (obj.agentCoreCheck < 5) { // This check is in place to avoid a looping core update.
                         if (obj.parent.parent.defaultMeshCoreHash == null) {
@@ -84,16 +80,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
             else if (cmdid == 12) { // MeshCommand_AgentHash
-                if ((msg.length == 36) && (obj.agentInfo != null) && (obj.agentInfo.update == true)) {
+                if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
-                    if (agenthash != obj.agentInfo.hash) {
+                    if (agenthash != obj.agentExeInfo.hash) {
                         // Mesh agent update required
-                        console.log('Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentInfo.desc);
-                        obj.fs.open(obj.agentInfo.path, 'r', function (err, fd) {
+                        console.log('Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc);
+                        obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                             if (err) { return console.error(err); }
                             obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: new Buffer(agentUpdateBlockSize + 4), fd: fd };
 
-                            // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA256 hash of the result
+                            // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
                             //console.log("Agent update file open.");
                             obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0)); // Command 13, start mesh agent download
 
@@ -136,7 +132,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                             if (len < agentUpdateBlockSize) {
                                 //console.log("Agent update sent");
-                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentInfo.hash)); // Command 13, end mesh agent download, send agent SHA256 hash
+                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
                                 obj.fs.close(obj.agentUpdate.fd);
                                 obj.agentUpdate = null;
                             }
@@ -152,18 +148,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             var cmd = obj.common.ReadShort(msg, 0);
             if (cmd == 1) {
                 // Agent authentication request
-                if ((msg.length != 66) || ((obj.receivedCommands & 1) != 0)) return;
+                if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                // Check that the server hash matches out own web certificate hash
-                if (obj.parent.webCertificatHash != msg.substring(2, 34)) { obj.close(); return; }
+                // Check that the server hash matches out own web certificate hash (SHA386)
+                if (obj.parent.webCertificatHash != msg.substring(2, 50)) { obj.close(); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 var privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.agent.key);
-                var md = obj.forge.md.sha256.create();
+                var md = obj.forge.md.sha384.create();
                 md.update(msg.substring(2), 'binary');
                 md.update(obj.nonce, 'binary');
-                obj.agentnonce = msg.substring(34);
+                obj.agentnonce = msg.substring(50);
 
                 // Send back our certificate + signature
                 obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(parent.agentCertificatAsn1.length) + parent.agentCertificatAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
@@ -183,15 +179,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth = {};
                 obj.unauth.nodeCert = null;
                 try { obj.unauth.nodeCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { return; }
-                obj.unauth.nodeid = obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { encoding: 'hex', md: obj.forge.md.sha256.create() });
+                obj.unauth.nodeid = obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { encoding: 'hex', md: obj.forge.md.sha384.create() });
 
                 // Check the agent signature if we can
-                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { disonnect(); return; } }
+                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Bad Agent Signature'); obj.close(); return; } }
                 completeAgentConnection();
             }
             else if (cmd == 3) {
                 // Agent meshid
-                if ((msg.length < 56) || ((obj.receivedCommands & 4) != 0)) return;
+                if ((msg.length < 72) || ((obj.receivedCommands & 4) != 0)) return;
                 obj.receivedCommands += 4; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 // Set the meshid
@@ -200,10 +196,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.agentId = obj.common.ReadInt(msg, 6);
                 obj.agentInfo.agentVersion = obj.common.ReadInt(msg, 10);
                 obj.agentInfo.platformType = obj.common.ReadInt(msg, 14);
-                obj.meshid = obj.common.rstr2hex(msg.substring(18, 50)).toUpperCase();
-                obj.agentInfo.capabilities = obj.common.ReadInt(msg, 50);
-                var computerNameLen = obj.common.ReadShort(msg, 54);
-                obj.agentInfo.computerName = msg.substring(56, 56 + computerNameLen);
+                obj.meshid = obj.common.rstr2hex(msg.substring(18, 66)).toUpperCase();
+                obj.agentInfo.capabilities = obj.common.ReadInt(msg, 66);
+                var computerNameLen = obj.common.ReadShort(msg, 70);
+                obj.agentInfo.computerName = msg.substring(72, 72 + computerNameLen);
                 obj.dbMeshKey = 'mesh/' + obj.domain.id + '/' + obj.meshid;
                 completeAgentConnection();
             }
@@ -218,8 +214,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
-    // Send 256 bits SHA256 hash of TLS cert public key + 256 bits nonce
-    obj.nonce = obj.forge.random.getBytesSync(32);
+    // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
+    obj.nonce = obj.forge.random.getBytesSync(48);
     obj.send(obj.common.ShortToStr(1) + parent.webCertificatHash + obj.nonce); // Command 1, hash + nonce
 
     // Once we get all the information about an agent, run this to hook everything up to the server
@@ -237,7 +233,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Mark when we connected to this agent
                 obj.connectTime = Date.now();
-
                 if (nodes.length == 0) {
                     // This node does not exist, create it.
                     device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
@@ -292,8 +287,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((obj.agentInfo.capabilities & 16) != 0) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
 
                 // Check if we need to make an native update check
-                obj.agentInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-                if ((obj.agentInfo != null) && (obj.agentInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
+                obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+                if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
 
                 // Check if we already have IP location information for this node
                 obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
@@ -337,11 +332,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     
     // Verify the agent signature
     function processAgentSignature(msg) {
-        var md = obj.forge.md.sha256.create(); // TODO: Switch this to SHA256 on node instead of forge.
+        var md = obj.forge.md.sha384.create(); // TODO: Switch this to SHA384 on node instead of forge.
         md.update(obj.parent.webCertificatHash, 'binary');
         md.update(obj.nonce, 'binary');
         md.update(obj.agentnonce, 'binary');
-        if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) return false;
+        if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }
 
         // Connection is a success, clean up
         obj.nodeid = obj.unauth.nodeid.toUpperCase();
