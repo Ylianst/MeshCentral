@@ -17,7 +17,7 @@ module.exports.CreateMeshScanner = function (parent) {
     var periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
     var membershipIPv4 = '239.255.255.235';
     var membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
-    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' }).toUpperCase();
     obj.error = 0;
 
     // Get a list of IPv4 and IPv6 interface addresses
@@ -119,9 +119,9 @@ module.exports.CreateMeshScanner = function (parent) {
     obj.start = function () {
         if (obj.server4 != null) return;
         var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + parent.args.port + '/agent.ashx';
-        obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex.toUpperCase() + '|' + url, 'ascii');
+        obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex + '|' + url, 'ascii');
         url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
-        obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex.toUpperCase() + '|' + url, 'ascii');
+        obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificatHashHex + '|' + url, 'ascii');
         setupServers();
         obj.mainTimer = setInterval(obj.performScan, periodicScanTime);
         return obj;
@@ -150,7 +150,7 @@ module.exports.CreateMeshScanner = function (parent) {
     // Called when a UDP packet is received from an agent.
     function onUdpPacket(msg, info, server) {
         //console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + ', on interface: ' + server.xxlocal + '.');
-        if ((msg.length == 64) && (msg.toString('ascii') == obj.agentCertificatHashHex.toUpperCase())) {
+        if ((msg.length == 64) && (msg.toString('ascii') == obj.agentCertificatHashHex)) {
             if (server.xxtype == 4) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); } catch (e) { } }
             if (server.xxtype == 6) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); } catch (e) { } }
         }

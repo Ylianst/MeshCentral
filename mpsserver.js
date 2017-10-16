@@ -108,11 +108,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     // This is a node where the MeshID is indicated within the CIRA certificate
                     var domainid = '', meshid;
                     var xx = socket.tag.clientCert.subject.O.split('/');
-                    if (xx.length == 1) { meshid = xx[0].toUpperCase(); } else { domainid = xx[0].toLowerCase(); meshid = xx[1].toUpperCase(); }
+                    if (xx.length == 1) { meshid = xx[0]; } else { domainid = xx[0].toLowerCase(); meshid = xx[1]; }
 
                     socket.tag.domainid = domainid;
                     socket.tag.meshid = 'mesh/' + domainid + '/' + meshid;
-                    socket.tag.nodeid = 'node/' + domainid + '/' + require('crypto').createHash('sha384').update(common.hex2rstr(socket.tag.clientCert.modulus, 'binary')).digest('hex').toUpperCase();
+                    socket.tag.nodeid = 'node/' + domainid + '/' + require('crypto').createHash('sha384').update(common.hex2rstr(socket.tag.clientCert.modulus, 'binary')).digest('base64').replace(/\+/g, '@').replace(/\//g, '$');
                     socket.tag.name = socket.tag.clientCert.subject.CN;
                     socket.tag.connectTime = Date.now();
                     socket.tag.host = '';
@@ -216,19 +216,19 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     // Check the CIRA password
                     if ((args.mpspass != undefined) && (password != args.mpspass)) { Debug(1, 'MPS:Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
 
-                    // Check the CIRA username, which should be the HEX start of the MeshID.
-                    if (usernameLen != 16) { SendUserAuthFail(socket); return -1; }
+                    // Check the CIRA username, which should be the start of the MeshID.
+                    if (usernameLen != 16) { Debug(1, 'MPS:Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
                     var meshIdStart = '/' + username;
-                    meshIdStart = meshIdStart.toUpperCase();
                     obj.db.GetAllType('mesh', function (err, docs) {
                         var mesh = null;
                         for (var i in docs) { if (docs[i]._id.indexOf(meshIdStart) > 0) { mesh = docs[i]; break; } }
-                        if (mesh == null) { SendUserAuthFail(socket); return -1; }
+                        if (mesh == null) { Debug(1, 'MPS:Mesh not found', username, password);SendUserAuthFail(socket); return -1; }
 
                         // Intel AMT GUID (socket.tag.SystemId) will be used at NodeID
-                        var systemid = socket.tag.SystemId.split('-').join('').toUpperCase();
+                        var systemid = socket.tag.SystemId.split('-').join('');
+                        var nodeid = new Buffer(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                         socket.tag.name = '';
-                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + systemid + systemid + systemid; // Turn 16bit systemid guid into 48bit nodeid
+                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
                         socket.tag.meshid = mesh._id;
 
                         obj.db.Get(socket.tag.nodeid, function (err, nodes) {

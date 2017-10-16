@@ -179,7 +179,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth = {};
                 obj.unauth.nodeCert = null;
                 try { obj.unauth.nodeCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { return; }
-                obj.unauth.nodeid = obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { encoding: 'hex', md: obj.forge.md.sha384.create() });
+                obj.unauth.nodeid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
                 // Check the agent signature if we can
                 if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Bad Agent Signature'); obj.close(); return; } }
@@ -196,7 +196,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.agentId = obj.common.ReadInt(msg, 6);
                 obj.agentInfo.agentVersion = obj.common.ReadInt(msg, 10);
                 obj.agentInfo.platformType = obj.common.ReadInt(msg, 14);
-                obj.meshid = obj.common.rstr2hex(msg.substring(18, 66)).toUpperCase();
+                obj.meshid = new Buffer(msg.substring(18, 66), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                 obj.agentInfo.capabilities = obj.common.ReadInt(msg, 66);
                 var computerNameLen = obj.common.ReadShort(msg, 70);
                 obj.agentInfo.computerName = msg.substring(72, 72 + computerNameLen);
@@ -339,7 +339,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }
 
         // Connection is a success, clean up
-        obj.nodeid = obj.unauth.nodeid.toUpperCase();
+        obj.nodeid = obj.unauth.nodeid;
         obj.dbNodeKey = 'node/' + domain.id + '/' + obj.nodeid;
         delete obj.nonce;
         delete obj.agentnonce;

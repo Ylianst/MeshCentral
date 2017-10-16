@@ -70,8 +70,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Perform hash on web certificate and agent certificate
     obj.webCertificatHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
-    obj.webCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
-    obj.agentCertificatHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+    obj.webCertificatHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.agentCertificatHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificatAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
 
     // Main lists    
@@ -1294,7 +1294,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             if ((command.meshtype == 1) || (command.meshtype == 2)) {
                                 // Create a type 1 agent-less Intel AMT mesh.
                                 obj.crypto.randomBytes(48, function (err, buf) {
-                                    var meshid = 'mesh/' + domain.id + '/' + buf.toString('hex').toUpperCase();
+                                    var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                                     var links = {}
                                     links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                                     var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
@@ -1449,7 +1449,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                 // Create a new nodeid
                                 obj.crypto.randomBytes(48, function (err, buf) {
                                     // create the new node
-                                    var nodeid = 'node/' + domain.id + '/' + buf.toString('hex').toUpperCase();
+                                    var nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                                     var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: parseInt(command.amttls) } };
                                     obj.db.Set(device);
                                     
@@ -1789,7 +1789,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             // Completed event read, let get the argument that must contain the nodeid
                             var i = eventData.indexOf('<m:arg xmlns:m="http://x.com">');
                             if (i > 0) {
-                                var nodeid = eventData.substring(i + 30, i + 30 + 64).toUpperCase();
+                                var nodeid = eventData.substring(i + 30, i + 30 + 64);
                                 if (nodeid.length == 64) {
                                     var nodekey = 'node/' + domain.id + '/' + nodeid;
                                     
@@ -1940,14 +1940,18 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             //var user = obj.users[req.session.userid];
             //if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
             //if (domain.id != mesh.domain) { res.sendStatus(401); return; }
-                        
+
+            var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+            var serveridhex = new Buffer(obj.agentCertificatHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+
             var xdomain = domain.id;
             if (xdomain != '') xdomain += "/";
-            var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + req.query.id.toUpperCase() + "\r\nServerID=" + obj.agentCertificatHashHex.toUpperCase() + "\r\n";
+            var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
             if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + certificates.CommonName + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
 
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
             res.send(meshsettings);
+            console.log(meshsettings);
         });
     }
 
@@ -2046,24 +2050,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
         // Receive mesh agent connections
         obj.app.ws(url + 'agent.ashx', function (ws, req) { try { var domain = getDomain(req); obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); } });
-                
+
         obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
-
-        /*
-        // DEBUG ONLY: Returns a mesh relay key
-        obj.app.get(url + 'getkey', function (req, res) {
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain' });
-            require('./meshrelay.js').CreateMeshRelayKey(obj, function (x) { res.send(x); });
-        });
-        */
-
-        /*
-        // Test
-        obj.app.get(url + 'test.json', function (req, res) {
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain' });
-            res.send('{ "glossary": { "title": "example glossary", "bob" : 5 } }');
-        });
-        */
 
         // Indicates to ExpressJS that the public folder should be used to serve static files.
         obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));

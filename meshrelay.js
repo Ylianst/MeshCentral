@@ -4,15 +4,6 @@
 * @version v0.0.1
 */
 
-// Construct a MeshRelay object, called upon connection
-module.exports.CreateMeshRelayKey = function (parent, func) {
-    parent.crypto.randomBytes(48, function (err, buf) {
-        var key = buf.toString('hex').toUpperCase() + ':' + Date.now();
-        key += ':' + parent.crypto.createHmac('SHA384', parent.relayRandom).update(key).digest('hex');
-        func(key);
-    });
-}
-
 module.exports.CreateMeshRelay = function (parent, ws, req) {
     var obj = {};
     obj.ws = ws;

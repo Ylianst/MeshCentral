@@ -270,11 +270,11 @@ function CreateMeshCentralServer() {
                             while (obj.dbconfig.amtWsEventSecret == null) { process.nextTick(); }
                             var username = buf.toString('hex');
                             var nodeid = obj.args.getwspass;
-                            var pass = require('crypto').createHash('sha384').update(username.toLowerCase() + ":" + nodeid.toUpperCase() + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
+                            var pass = require('crypto').createHash('sha384').update(username.toLowerCase() + ":" + nodeid + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
                             console.log('--- Intel(r) AMT WSMAN eventing credentials ---');
                             console.log('Username: ' + username);
                             console.log('Password: ' + pass);
-                            console.log('Argument: ' + nodeid.toLowerCase());
+                            console.log('Argument: ' + nodeid);
                             process.exit();
                         });
                     } else {
