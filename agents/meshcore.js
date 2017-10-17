@@ -520,6 +520,8 @@ function createMeshCore(agent) {
                 var cmd = null;
                 try { cmd = JSON.parse(data); } catch (e) { };
                 if ((cmd == null) || (cmd.action == undefined)) { return; }
+                if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
+                sendConsoleText(JSON.stringify(cmd));
                 //console.log(objToString(cmd, 0, '.'));
                 switch (cmd.action) {
                     case 'ls': {
@@ -532,7 +534,9 @@ function createMeshCore(agent) {
                         }
 
                         // Send the folder content to the browser
+                        sendConsoleText(JSON.stringify(cmd.path));
                         var response = getDirectoryInfo(cmd.path);
+                        sendConsoleText(JSON.stringify(response));
                         if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
                         this.write(JSON.stringify(response));
 

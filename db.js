@@ -52,8 +52,10 @@ module.exports.CreateDB = function (args, datapath) {
         obj.Get('SchemaVersion', function (err, docs) {
             var ver = 0;
             if (docs && docs.length == 1) { ver = docs[0].value; }
+            if (ver == 1) { console.log('This is an unsupported beta 1 database, delete it to create a new one.'); process.exit(0); }
 
             // TODO: Any schema upgrades here...
+            obj.Set({ _id: 'SchemaVersion', value: 2 });
 
             func(ver);
         });

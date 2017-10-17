@@ -150,7 +150,7 @@ module.exports.CreateMeshScanner = function (parent) {
     // Called when a UDP packet is received from an agent.
     function onUdpPacket(msg, info, server) {
         //console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + ', on interface: ' + server.xxlocal + '.');
-        if ((msg.length == 64) && (msg.toString('ascii') == obj.agentCertificatHashHex)) {
+        if ((msg.length == 96) && (msg.toString('ascii') == obj.agentCertificatHashHex)) {
             if (server.xxtype == 4) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); } catch (e) { } }
             if (server.xxtype == 6) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); } catch (e) { } }
         }

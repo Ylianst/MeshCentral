@@ -196,6 +196,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.agentId = obj.common.ReadInt(msg, 6);
                 obj.agentInfo.agentVersion = obj.common.ReadInt(msg, 10);
                 obj.agentInfo.platformType = obj.common.ReadInt(msg, 14);
+                if (obj.agentInfo.platformType > 6 || obj.agentInfo.platformType < 1) { obj.agentInfo.platformType = 1; }
                 obj.meshid = new Buffer(msg.substring(18, 66), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                 obj.agentInfo.capabilities = obj.common.ReadInt(msg, 66);
                 var computerNameLen = obj.common.ReadShort(msg, 70);

@@ -643,15 +643,17 @@ function CreateMeshCentralServer() {
         }
 
         // Read meshcore.js and all .js files in the modules folder.
+        var moduleAdditions = 'var addedModules = [];', modulesDir = null;
         var meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString();
-        var modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules'));
-        var moduleAdditions = 'var addedModules = [];';
-        for (var i in modulesDir) {
-            if (modulesDir[i].toLowerCase().endsWith('.js')) {
-                // Merge this module
-                var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
-                var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules', modulesDir[i])).toString('base64');
-                moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules')); } catch (e) { }
+        if (modulesDir != null) {
+            for (var i in modulesDir) {
+                if (modulesDir[i].toLowerCase().endsWith('.js')) {
+                    // Merge this module
+                    var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
+                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules', modulesDir[i])).toString('base64');
+                    moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                }
             }
         }
 

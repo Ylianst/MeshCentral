@@ -1951,7 +1951,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
             res.send(meshsettings);
-            console.log(meshsettings);
         });
     }
 
