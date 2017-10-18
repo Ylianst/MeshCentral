@@ -463,7 +463,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var RecipientChannel = common.ReadInt(data, 1);
                     var LengthOfData = common.ReadInt(data, 5);
                     if (len < (9 + LengthOfData)) return 0;
-                    Debug(3, 'MPS:CHANNEL_DATA', RecipientChannel, LengthOfData);
+                    Debug(4, 'MPS:CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];
                     if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return; }
                     cirachannel.amtpendingcredits += LengthOfData;
@@ -553,6 +553,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
     
     function SendChannelWindowAdjust(socket, channelid, bytestoadd) {
+        Debug(3, 'MPS:SendChannelWindowAdjust', channelid, bytestoadd);
         Write(socket, String.fromCharCode(APFProtocol.CHANNEL_WINDOW_ADJUST) + common.IntToStr(channelid) + common.IntToStr(bytestoadd));
     }
     

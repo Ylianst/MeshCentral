@@ -20,8 +20,8 @@ module.exports.CertificateOperations = function () {
     }
 
     // Create a self-signed certificate
-    obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization) {
-        var keys = obj.pki.rsa.generateKeyPair(3072);
+    obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization, strong) {
+        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = '' + Math.floor((Math.random() * 100000) + 1); ;
@@ -128,6 +128,7 @@ module.exports.CertificateOperations = function () {
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (directory, args, func) {
         var certargs = args.cert;
+        var strongCertificate = (args.fastcert ? false : true);
         // commonName, country, organization
         
         // If the certificates directory does not exist, create it.
@@ -225,12 +226,23 @@ module.exports.CertificateOperations = function () {
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
             if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == commonName)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
         }
-        console.log('Generating certificates, may take a few minutes...');
-        
+        //console.log('Generating certificates, may take a few minutes...');
+
+        // If a certificate is missing, but web certificate is present and --cert is not used, set the names to be the same as the web certificate
+        if ((certargs == null) && (r.web != null)) {
+            var webCertificate = obj.pki.certificateFromPem(r.web.cert);
+            commonName = webCertificate.subject.getField('CN').value;
+            var xcountryField = webCertificate.subject.getField('C');
+            if (xcountryField != null) { country = xcountryField.value; }
+            var xorganizationField = webCertificate.subject.getField('O');
+            if (xorganizationField != null) { organization = xorganizationField.value; }
+        }
+
         var rootCertAndKey, rootCertificate, rootPrivateKey, rootName;
         if (r.root == undefined) {
             // If the root certificate does not exist, create one
-            rootCertAndKey = obj.GenerateRootCertificate(true, 'MeshCentralRoot');
+            console.log('Generating root certificate...');
+            rootCertAndKey = obj.GenerateRootCertificate(true, 'MeshCentralRoot', null, null, strongCertificate);
             rootCertificate = obj.pki.certificateToPem(rootCertAndKey.cert);
             rootPrivateKey = obj.pki.privateKeyToPem(rootCertAndKey.key);
             obj.fs.writeFileSync(directory + '/root-cert-public.crt', rootCertificate);
@@ -246,7 +258,8 @@ module.exports.CertificateOperations = function () {
         // If the web certificate does not exist, create one
         var webCertAndKey, webCertificate, webPrivateKey;
         if ((r.web == null) || (forceWebCertGen == 1)) {
-            webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, true);
+            console.log('Generating HTTPS certificate...');
+            webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, strongCertificate);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
             webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
             obj.fs.writeFileSync(directory + '/webserver-cert-public.crt', webCertificate);
@@ -258,9 +271,26 @@ module.exports.CertificateOperations = function () {
             webPrivateKey = r.web.key
         }
 
+        // If the mesh agent server certificate does not exist, create one
+        var agentCertAndKey, agentCertificate, agentPrivateKey;
+        if (r.agent == null) {
+            console.log('Generating MeshAgent certificate...');
+            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer', null, strongCertificate);
+            agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
+            agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
+            obj.fs.writeFileSync(directory + '/agentserver-cert-public.crt', agentCertificate);
+            obj.fs.writeFileSync(directory + '/agentserver-cert-private.key', agentPrivateKey);
+        } else {
+            // Keep the mesh agent server certificate we have
+            agentCertAndKey = { cert: obj.pki.certificateFromPem(r.agent.cert), key: obj.pki.privateKeyFromPem(r.agent.key) };
+            agentCertificate = r.agent.cert
+            agentPrivateKey = r.agent.key
+        }
+
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
         if ((r.mps == null) || (forceWebCertGen == 1)) {
+            console.log('Generating Intel AMT MPS certificate...');
             mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
@@ -276,6 +306,7 @@ module.exports.CertificateOperations = function () {
         // If the Intel AMT console certificate does not exist, create one
         var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = 'MeshCentral';
         if (r.console == null) {
+            console.log('Generating Intel AMT console certificate...');
             consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }, false); // Intel AMT Remote, Agent and Activation usages
             consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
             consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
@@ -287,21 +318,6 @@ module.exports.CertificateOperations = function () {
             consoleCertificate = r.console.cert
             consolePrivateKey = r.console.key
             amtConsoleName = consoleCertAndKey.cert.subject.getField('CN').value;
-        }
-
-        // If the mesh agent server certificate does not exist, create one
-        var agentCertAndKey, agentCertificate, agentPrivateKey;
-        if (r.agent == null) {
-            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer', null, true);
-            agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
-            agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/agentserver-cert-public.crt', agentCertificate);
-            obj.fs.writeFileSync(directory + '/agentserver-cert-private.key', agentPrivateKey);
-        } else {
-            // Keep the mesh agent server certificate we have
-            agentCertAndKey = { cert: obj.pki.certificateFromPem(r.agent.cert), key: obj.pki.privateKeyFromPem(r.agent.key) };
-            agentCertificate = r.agent.cert
-            agentPrivateKey = r.agent.key
         }
 
         var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, calist: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName };

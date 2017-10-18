@@ -151,8 +151,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                // Check that the server hash matches out own web certificate hash (SHA386)
-                if (obj.parent.webCertificatHash != msg.substring(2, 50)) { obj.close(); return; }
+                // Check that the server hash matches our own web certificate hash (SHA386)
+                if (obj.parent.webCertificateHash != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash, holding connection (' + obj.remoteaddr + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 var privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.agent.key);
@@ -162,11 +162,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentnonce = msg.substring(50);
 
                 // Send back our certificate + signature
-                obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(parent.agentCertificatAsn1.length) + parent.agentCertificatAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
+                obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
 
                 // Check the agent signature if we can
                 if (obj.unauthsign != null) {
-                    if (processAgentSignature(obj.unauthsign) == false) { disonnect(); return; } else { completeAgentConnection(); }
+                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').');  return; } else { completeAgentConnection(); }
                 }
             }
             else if (cmd == 2) {
@@ -182,7 +182,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth.nodeid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
                 // Check the agent signature if we can
-                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Bad Agent Signature'); obj.close(); return; } }
+                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').'); return; } }
                 completeAgentConnection();
             }
             else if (cmd == 3) {
@@ -217,7 +217,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
     obj.nonce = obj.forge.random.getBytesSync(48);
-    obj.send(obj.common.ShortToStr(1) + parent.webCertificatHash + obj.nonce); // Command 1, hash + nonce
+    obj.send(obj.common.ShortToStr(1) + parent.webCertificateHash + obj.nonce); // Command 1, hash + nonce
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
@@ -334,7 +334,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Verify the agent signature
     function processAgentSignature(msg) {
         var md = obj.forge.md.sha384.create(); // TODO: Switch this to SHA384 on node instead of forge.
-        md.update(obj.parent.webCertificatHash, 'binary');
+        md.update(obj.parent.webCertificateHash, 'binary');
         md.update(obj.nonce, 'binary');
         md.update(obj.agentnonce, 'binary');
         if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }

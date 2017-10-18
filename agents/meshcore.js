@@ -385,7 +385,7 @@ function createMeshCore(agent) {
     }
 
     // Tunnel callback operations
-    function onTunnelUpgrade(response, s, head) { this.s = s; s.httprequest = this; s.end = onTunnelClosed; s.data = onTunnelData; }
+    function onTunnelUpgrade(response, s, head) { sendConsoleText('onTunnelUpgrade'); this.s = s; s.httprequest = this; s.end = onTunnelClosed; s.data = onTunnelData; }
     function onTunnelClosed() {
         sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
         if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }

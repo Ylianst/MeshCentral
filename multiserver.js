@@ -32,9 +32,9 @@ module.exports.CreateMultiServer = function (parent, args) {
         obj.retryTimer = null;
         obj.retryBackoff = 0;
         obj.connectHandler = null;
-        obj.webCertificatHash = obj.parent.parent.webserver.webCertificatHash;
-        obj.agentCertificatHashBase64 = obj.parent.parent.webserver.agentCertificatHashBase64;
-        obj.agentCertificatAsn1 = obj.parent.parent.webserver.agentCertificatAsn1;
+        obj.webCertificateHash = obj.parent.parent.webserver.webCertificateHash;
+        obj.agentCertificateHashBase64 = obj.parent.parent.webserver.agentCertificateHashBase64;
+        obj.agentCertificateAsn1 = obj.parent.parent.webserver.agentCertificateAsn1;
         obj.peerServerId = null;
         obj.authenticated = 0;
         obj.serverCertHash = null;
@@ -99,8 +99,8 @@ module.exports.CreateMultiServer = function (parent, args) {
                             md.update(obj.nonce, 'binary');
 
                             // Send back our certificate + signature
-                            agentRootCertificatAsn1 = obj.forge.asn1.toDer(obj.forge.pki.certificateToAsn1(obj.forge.pki.certificateFromPem(obj.certificates.agent.cert))).getBytes();
-                            obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(agentRootCertificatAsn1.length) + agentRootCertificatAsn1 + privateKey.sign(md)); // Command 3, signature
+                            agentRootCertificateAsn1 = obj.forge.asn1.toDer(obj.forge.pki.certificateToAsn1(obj.forge.pki.certificateFromPem(obj.certificates.agent.cert))).getBytes();
+                            obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(agentRootCertificateAsn1.length) + agentRootCertificatAsn1 + privateKey.sign(md)); // Command 3, signature
                             break;
                         }
                         case 2: {
@@ -109,7 +109,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             try { serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { }
                             if (serverCert == null) { obj.parent.parent.debug(1, 'OutPeer: Invalid server certificate.'); disconnect(); return; }
                             var serverid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            if (serverid !== obj.agentCertificatHashBase64) { obj.parent.parent.debug(1, 'OutPeer: Server hash mismatch.'); disconnect(); return; }
+                            if (serverid !== obj.agentCertificateHashBase64) { obj.parent.parent.debug(1, 'OutPeer: Server hash mismatch.'); disconnect(); return; }
 
                             // Server signature, verify it
                             var md = obj.forge.md.sha384.create();
@@ -127,14 +127,14 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
 
                             // Send information about our server to the peer
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificatHashBase64 })); }
+                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
                         case 4: {
                             // Server confirmed authentication, we are allowed to send commands to the server
                             obj.connectionState |= 8;
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificatHashBase64 })); }
+                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
@@ -212,9 +212,9 @@ module.exports.CreateMultiServer = function (parent, args) {
         obj.authenticated = 0;
         obj.remoteaddr = obj.ws._socket.remoteAddress;
         obj.receivedCommands = 0;
-        obj.webCertificatHash = obj.parent.parent.webserver.webCertificatHash;
-        obj.agentCertificatHashBase64 = obj.parent.parent.webserver.agentCertificatHashBase64;
-        obj.agentCertificatAsn1 = obj.parent.parent.webserver.agentCertificatAsn1;
+        obj.webCertificateHash = obj.parent.parent.webserver.webCertificateHash;
+        obj.agentCertificateHashBase64 = obj.parent.parent.webserver.agentCertificateHashBase64;
+        obj.agentCertificateAsn1 = obj.parent.parent.webserver.agentCertificateAsn1;
         obj.infoSent = 0;
         obj.peerServerId = null;
         obj.serverCertHash = null;
@@ -256,7 +256,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.receivedCommands += 1; // Peer server can't send the same command twice on the same connection ever. Block DOS attack path.
 
                     // Check that the server hash matches out own web certificate hash
-                    if (obj.webCertificatHash != msg.substring(2, 50)) { obj.close(); return; }
+                    if (obj.webCertificateHash != msg.substring(2, 50)) { obj.close(); return; }
 
                     // Use our server private key to sign the ServerHash + PeerNonce + ServerNonce
                     var privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.parent.certificates.agent.key);
@@ -266,7 +266,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.peernonce = msg.substring(50);
 
                     // Send back our certificate + signature
-                    obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificatAsn1.length) + obj.agentCertificatAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
+                    obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
 
                     // Check the peer server signature if we can
                     if (obj.unauthsign != null) {
@@ -307,24 +307,24 @@ module.exports.CreateMultiServer = function (parent, args) {
         // Start authenticate the peer server by sending a auth nonce & server TLS cert hash.
         // Send 384 bits SHA382 hash of TLS cert public key + 384 bits nonce
         obj.nonce = obj.forge.random.getBytesSync(48);
-        obj.send(obj.common.ShortToStr(1) + obj.webCertificatHash + obj.nonce); // Command 1, hash + nonce
+        obj.send(obj.common.ShortToStr(1) + obj.webCertificateHash + obj.nonce); // Command 1, hash + nonce
 
         // Once we get all the information about an peer server, run this to hook everything up to the server
         function completePeerServerConnection() {
             if (obj.authenticated != 1) return;
             obj.send(obj.common.ShortToStr(4));
-            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificatHashBase64 }));
+            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
             obj.authenticated = 2;
         }
 
         // Verify the peer server signature
         function processPeerSignature(msg) {
             var md = obj.forge.md.sha384.create(); // TODO: Switch this to SHA384 on node instead of forge.
-            md.update(obj.parent.parent.webserver.webCertificatHash, 'binary');
+            md.update(obj.parent.parent.webserver.webCertificateHash, 'binary');
             md.update(obj.nonce, 'binary');
             md.update(obj.peernonce, 'binary');
             if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }
-            if (obj.unauth.nodeid !== obj.agentCertificatHashBase64) { return false; }
+            if (obj.unauth.nodeid !== obj.agentCertificateHashBase64) { return false; }
 
             // Connection is a success, clean up
             obj.nodeid = obj.unauth.nodeid;
