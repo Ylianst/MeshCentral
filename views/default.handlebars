@@ -280,320 +280,320 @@
                 <div id=p11 style=display:none>
                     <h1 id=p11deviceNameHeader><span id=p11deviceName></span> - Desktop</h1>
                     <div id="p14warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showFeaturesDlg()">
-                        <div class="icon2" style="float:left;margin:7px" />
+                        <div class=icon2 style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
                     </div>
+                    <div id="p14warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showPowerActionDlg()">
+                        <div class=icon2 style="float:left;margin:7px"></div>
+                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
+                    </div>
+                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                        <tr id=deskarea1>
+                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div style="float:right;text-align:right">
+                                    <span id="p14power"></span>&nbsp;
+                                    <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
+                                    <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
+                                    <input id="deskFullBtn" type="button" title="Toggle full screen mode" onkeypress="return false" onkeydown="return false" value="Full" onclick="deskToggleFull()" style="margin-right:3px">
+                                    <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
+                                    <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() style=margin-right:3px>
+                                    <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                                    <input type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="margin-right:3px">
+                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
+                                </div>
+                                <div>
+                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;X</div>
+                                    <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
+                                    <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false"></span>
+                                    &nbsp;<span id="deskstatus">Disconnected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id=deskarea2>
+                            <td>
+                                <div style="background-color:gray"><div id="progressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                            </td>
+                        </tr>
+                        <tr id=deskarea3>
+                            <td id=deskarea3x style="background:black;text-align:center;height:400px;position:relative">
+                                <div id="DeskFocus" style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></div>
+                                <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>
+                            </td>
+                        </tr>
+                        <tr id=deskarea4>
+                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div>
+                                    &nbsp;
+                                    <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                <div id="p14warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showPowerActionDlg()">
-                    <div class="icon2" style="float:left;margin:7px" />
-                    <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
+                <div id=p12 style=display:none>
+                    <h1><span id=p12deviceName></span> - Terminal</h1>
+                    <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
+                        <div class="icon2" style="float:left;margin:7px"></div>
+                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+                    </div>
+                    <div id="p12warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showPowerActionDlg()>
+                        <div class="icon2" style="float:left;margin:7px"></div>
+                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
+                    </div>
+                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                        <tr>
+                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div style="float:right;text-align:right">
+                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                                </div>
+                                <div>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
+                                    <span id="connectbutton2span">&nbsp;<input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false"></span>
+                                    &nbsp;<span id="termstatus">Disconnected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="background-color:gray"><div id="termprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:black;text-align:center;height:500px;position:relative">
+                                <pre id="Term" style="background:black;margin:0;padding:0"></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div style="float:right;text-align:right">
+                                    <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">&nbsp;
+                                    <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">&nbsp;&nbsp;
+                                    <select id="specialkeylist" onkeypress="return false"></select>
+                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />&nbsp;
+                                </div>
+                                <div>
+                                    &nbsp;
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+                <div id=p13 style=display:none>
+                    <h1><span id=p13deviceName></span> - Files</h1>
+                    <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
+                                <div style="float:right;text-align:right">
+                                    <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                                </div>
+                                <div>
+                                    <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
+                                    <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
+                                    <span id=p13Status>Disconnected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
+                                <div id="p13rightOfButtons" style="float:right;margin-top:3px"></div>
+                                <div>
+                                    <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
+                                    <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#E4E9E7;height:28px">
+                                <div style=float:right>
+                                    <select id=p13sortdropdown onchange=p13updateFiles()>
+                                        <option value=1 selected="selected">Sort by name</option>
+                                        <option value=2>Sort by size</option>
+                                        <option value=3>Sort by date</option>
+                                        <option value=4>Descend by name</option>
+                                        <option value=5>Descend by size</option>
+                                        <option value=6>Descend by date</option>
+                                    </select>
+                                </div>
+                                <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="p13filetable" style="width:100%;height:500px;overflow:auto;-webkit-user-select:none">
+                        <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
+                        <div id="p13bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
+                        <span id="p13files"></span>
+                    </div>
+                    <table id="p13toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
+                        <tr><td class=style6 style="text-align:left">&nbsp;<span id="bottomstatus"></span></td></tr>
+                    </table>
+                </div>
+                <div id=p14 style=display:none>
+                    <h1><span id=p14deviceName></span> - Intel&reg; AMT</h1>
+                    <iframe id=p14iframe style="width:100%;height:650px;border:0;overflow:hidden" src="/commander.htm"></iframe>
+                </div>
+                <div id=p15 style=display:none>
+                    <h1><span id=p15deviceName></span> - Console</h1>
+                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                        <tr>
+                            <td style=background:#C0C0C0>
+                                <div style=float:right;padding-right:4px>
+                                    <span id=p15coreName title="Information about current core running on this agent"></span>
+                                    <input type=button id=p15uploadCore value="Change Core" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                                </div>
+                                <div id="p15statetext" style=padding:4px></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="background-color:gray"><div id="consoleprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:black;text-align:center;height:500px;position:relative">
+                                <div id="p15agentConsole" style="background:black;margin:0;padding:0;color:lightgray;width:100%;max-width:930px;height:100%;text-align:left;overflow-y:scroll"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <table style="width:100%">
+                                    <tr>
+                                        <td style="width:99%">
+                                            <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
+                                        </td>
+                                        <td>&nbsp;</td>
+                                        <td style="width:1%"><input id="id_p15consoleClear" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id=p20 style=display:none>
+                    <h1><span id=p20meshName></span> - General</h1>
+                    <p id=p20info></p>
+                </div>
+                <br id="column_l_bottomgap" />
             </div>
-            <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
-                <tr id=deskarea1>
-                    <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                        <div style="float:right;text-align:right">
-                            <span id="p14power"></span>&nbsp;
-                            <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
-                            <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
-                            <input id="deskFullBtn" type="button" title="Toggle full screen mode" onkeypress="return false" onkeydown="return false" value="Full" onclick="deskToggleFull()" style="margin-right:3px">
-                            <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
-                            <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() style=margin-right:3px>
-                            <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
-                            <input type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="margin-right:3px">
-                            <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
-                        </div>
-                        <div>
-                            <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;X</div>
-                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
-                            <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                            <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                            <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false"></span>
-                            &nbsp;<span id="deskstatus">Disconnected</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr id=deskarea2>
-                    <td>
-                        <div style="background-color:gray"><div id="progressbar" style="height:2px;width:0%;background-color:red"></div></div>
-                    </td>
-                </tr>
-                <tr id=deskarea3>
-                    <td id=deskarea3x style="background:black;text-align:center;height:400px;position:relative">
-                        <div id="DeskFocus" style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></div>
-                        <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>
-                    </td>
-                </tr>
-                <tr id=deskarea4>
-                    <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                        <div>
-                            &nbsp;
-                            <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id=p12 style=display:none>
-            <h1><span id=p12deviceName></span> - Terminal</h1>
-            <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
-                <div class="icon2" style="float:left;margin:7px"></div>
-                <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+            <div id=footer class=noselect>
+                <table cellpadding=0 cellspacing=10 style="width:100%">
+                    <tr>
+                        <td style="text-align:left"></td>
+                        <td style="text-align:right"><a href="terms">Terms &amp; Privacy</a></td>
+                    </tr>
+                </table>
             </div>
-            <div id="p12warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showPowerActionDlg()>
-                <div class="icon2" style="float:left;margin:7px"></div>
-                <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
-            </div>
-            <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
-                <tr>
-                    <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                        <div style="float:right;text-align:right">
-                            <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
-                        </div>
-                        <div>
-                            <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
-                            <span id="connectbutton2span">&nbsp;<input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                            <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                            <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false"></span>
-                            &nbsp;<span id="termstatus">Disconnected</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="background-color:gray"><div id="termprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="background:black;text-align:center;height:500px;position:relative">
-                        <pre id="Term" style="background:black;margin:0;padding:0"></pre>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                        <div style="float:right;text-align:right">
-                            <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">&nbsp;
-                            <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">&nbsp;&nbsp;
-                            <select id="specialkeylist" onkeypress="return false"></select>
-                            <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />&nbsp;
-                        </div>
-                        <div>
-                            &nbsp;
-                            <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
-                            <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
-                            <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
-                            <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
-                            <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id=p13 style=display:none>
-            <h1><span id=p13deviceName></span> - Files</h1>
-            <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
-                        <div style="float:right;text-align:right">
-                            <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
-                        </div>
-                        <div>
-                            <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
-                            <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
-                            <span id=p13Status>Disconnected</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
-                        <div id="p13rightOfButtons" style="float:right;margin-top:3px"></div>
-                        <div>
-                            <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
-                            <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
-                            <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />&nbsp;
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="background-color:#E4E9E7;height:28px">
-                        <div style=float:right>
-                            <select id=p13sortdropdown onchange=p13updateFiles()>
-                                <option value=1 selected="selected">Sort by name</option>
-                                <option value=2>Sort by size</option>
-                                <option value=3>Sort by date</option>
-                                <option value=4>Descend by name</option>
-                                <option value=5>Descend by size</option>
-                                <option value=6>Descend by date</option>
+            <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;display:none">
+                <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+                    <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
+                    <div id=id_dialogtitle style=padding:5px></div>
+                    <div style=width:100%;margin:6px></div>
+                </div>
+                <div style="margin-right:16px;margin-left:8px">
+                    <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
+                        <div id=id_dialogMessage style="padding:10px"></div>
+                    </div>
+                    <div id=dialog2 style="margin:auto;margin:3px">
+                        <div id=id_dialogOptions></div>
+                    </div>
+                    <div id=dialog3 style="margin:auto;margin:3px">
+                        <div style=height:26px>
+                            <select id=d3uploadMode style=float:right;width:260px onchange=d3modechange()>
+                                <option value=1>Local file upload</option>
+                                <option value=2>Server file selection</option>
                             </select>
+                            <div>File Selection</div>
                         </div>
-                        <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
-                    </td>
-                </tr>
-            </table>
-            <div id="p13filetable" style="width:100%;height:500px;overflow:auto;-webkit-user-select:none">
-                <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
-                <div id="p13bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
-                <span id="p13files"></span>
-            </div>
-            <table id="p13toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                <tr><td class=style6 style="text-align:left">&nbsp;<span id="bottomstatus"></span></td></tr>
-            </table>
-        </div>
-        <div id=p14 style=display:none>
-            <h1><span id=p14deviceName></span> - Intel&reg; AMT</h1>
-            <iframe id=p14iframe style="width:100%;height:650px;border:0;overflow:hidden" src="/commander.htm"></iframe>
-        </div>
-        <div id=p15 style=display:none>
-            <h1><span id=p15deviceName></span> - Console</h1>
-            <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
-                <tr>
-                    <td style=background:#C0C0C0>
-                        <div style=float:right;padding-right:4px>
-                            <span id=p15coreName title="Information about current core running on this agent"></span>
-                            <input type=button id=p15uploadCore value="Change Core" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                        <div id=d3localmode style=height:26px;display:none>
+                            <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
+                                <input type=text id=d3attrib name=attrib style=display:none />
+                                <input type=file id=d3localFile name=files style=float:right;width:260px onchange=d3setActions() />
+                                <input type=submit id=d3submit style=display:none />
+                            </form>
+                            <div>Upload File</div>
                         </div>
-                        <div id="p15statetext" style=padding:4px></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="background-color:gray"><div id="consoleprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="background:black;text-align:center;height:500px;position:relative">
-                        <div id="p15agentConsole" style="background:black;margin:0;padding:0;color:lightgray;width:100%;max-width:930px;height:100%;text-align:left;overflow-y:scroll"></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                        <table style="width:100%">
-                            <tr>
-                                <td style="width:99%">
-                                    <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
-                                </td>
-                                <td>&nbsp;</td>
-                                <td style="width:1%"><input id="id_p15consoleClear" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div id=p20 style=display:none>
-            <h1><span id=p20meshName></span> - General</h1>
-            <p id=p20info></p>
-        </div>
-        <br id="column_l_bottomgap" />
-    </div>
-    <div id=footer class=noselect>
-        <table cellpadding=0 cellspacing=10 style="width:100%">
-            <tr>
-                <td style="text-align:left"></td>
-                <td style="text-align:right"><a href="terms">Terms &amp; Privacy</a></td>
-            </tr>
-        </table>
-    </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;display:none">
-        <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
-            <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
-            <div id=id_dialogtitle style=padding:5px></div>
-            <div style=width:100%;margin:6px></div>
-        </div>
-        <div style="margin-right:16px;margin-left:8px">
-            <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
-                <div id=id_dialogMessage style="padding:10px"></div>
-            </div>
-            <div id=dialog2 style="margin:auto;margin:3px">
-                <div id=id_dialogOptions></div>
-            </div>
-            <div id=dialog3 style="margin:auto;margin:3px">
-                <div style=height:26px>
-                    <select id=d3uploadMode style=float:right;width:260px onchange=d3modechange()>
-                        <option value=1>Local file upload</option>
-                        <option value=2>Server file selection</option>
-                    </select>
-                    <div>File Selection</div>
-                </div>
-                <div id=d3localmode style=height:26px;display:none>
-                    <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
-                        <input type=text id=d3attrib name=attrib style=display:none />
-                        <input type=file id=d3localFile name=files style=float:right;width:260px onchange=d3setActions() />
-                        <input type=submit id=d3submit style=display:none />
-                    </form>
-                    <div>Upload File</div>
-                </div>
-                <div id=d3servermode>
-                    <div style="width:100%;background-color:#d3d9d6;text-align:left;padding:3px" valign=bottom>
-                        <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;
-                    </div>
-                    <div id=d3serverfiles style="width:100%;height:150px;background-color:white;padding:2px;border:1px solid gray;overflow-y:scroll"></div>
-                </div>
-            </div>
-            <div id=dialog7 style="margin:auto;margin:3px">
-                <div id="d7meshkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">Mesh Agent Remote Desktop</h4>
-                    <div style="margin:3px 0 3px 0">
-                        <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option value=50>50%</option>
-                            <option value=40>40%</option>
-                            <option selected=selected value=30>30%</option>
-                            <option value=20>20%</option>
-                            <option value=10>10%</option>
-                            <option value=5>5%</option>
-                            <option value=1>1%</option>
-                        </select>
-                        <div style="height:20px">Quality</div>
-                    </div>
-                    <div style="margin:3px 0 3px 0">
-                        <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected=selected value=1024>100%</option>
-                            <option value=896>87.5%</option>
-                            <option value=768>75%</option>
-                            <option value=640>62.5%</option>
-                            <option value=512>50%</option>
-                            <option value=384>37.5%</option>
-                            <option value=256>25%</option>
-                            <option value=128>12.5%</option>
-                        </select>
-                        <div style="height:20px">Scaling</div>
-                    </div>
-                </div>
-                <div id="d7amtkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
-                    <div style='height:26px'>
-                        <select id="d7desktopmode" style="float:right;width:200px">
-                            <option value="1">RLE8, Fastest</option>
-                            <option value="2">RLE16, Recommended</option>
-                            <option value="3">RAW8, Slow</option>
-                            <option value="4">RAW16, Very Slow</option>
-                        </select>
-                        <div>Image Encoding</div>
-                    </div>
-                    <div style="height:60px">
-                        <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
-                            <input type="checkbox" id='d7showfocus'>Show Focus Tool<br>
-                            <input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br>
+                        <div id=d3servermode>
+                            <div style="width:100%;background-color:#d3d9d6;text-align:left;padding:3px" valign=bottom>
+                                <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;
+                            </div>
+                            <div id=d3serverfiles style="width:100%;height:150px;background-color:white;padding:2px;border:1px solid gray;overflow-y:scroll"></div>
                         </div>
-                        <div>Other Settings</div>
+                    </div>
+                    <div id=dialog7 style="margin:auto;margin:3px">
+                        <div id="d7meshkvm">
+                            <h4 style="width:100%;border-bottom:1px solid gray">Mesh Agent Remote Desktop</h4>
+                            <div style="margin:3px 0 3px 0">
+                                <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl">
+                                    <option value=50>50%</option>
+                                    <option value=40>40%</option>
+                                    <option selected=selected value=30>30%</option>
+                                    <option value=20>20%</option>
+                                    <option value=10>10%</option>
+                                    <option value=5>5%</option>
+                                    <option value=1>1%</option>
+                                </select>
+                                <div style="height:20px">Quality</div>
+                            </div>
+                            <div style="margin:3px 0 3px 0">
+                                <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
+                                    <option selected=selected value=1024>100%</option>
+                                    <option value=896>87.5%</option>
+                                    <option value=768>75%</option>
+                                    <option value=640>62.5%</option>
+                                    <option value=512>50%</option>
+                                    <option value=384>37.5%</option>
+                                    <option value=256>25%</option>
+                                    <option value=128>12.5%</option>
+                                </select>
+                                <div style="height:20px">Scaling</div>
+                            </div>
+                        </div>
+                        <div id="d7amtkvm">
+                            <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
+                            <div style='height:26px'>
+                                <select id="d7desktopmode" style="float:right;width:200px">
+                                    <option value="1">RLE8, Fastest</option>
+                                    <option value="2">RLE16, Recommended</option>
+                                    <option value="3">RAW8, Slow</option>
+                                    <option value="4">RAW16, Very Slow</option>
+                                </select>
+                                <div>Image Encoding</div>
+                            </div>
+                            <div style="height:60px">
+                                <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
+                                    <input type="checkbox" id='d7showfocus'>Show Focus Tool<br>
+                                    <input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br>
+                                </div>
+                                <div>Other Settings</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:4px">
+                    <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
+                    <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
+                    <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="width:80px;display:none" onclick="dialogclose(2)"></div>
+                </div>
             </div>
-        </div>
-        <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:4px">
-            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
-            <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
-            <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="width:80px;display:none" onclick="dialogclose(2)"></div>
+            <iframe name="fileUploadFrame" style=display:none></iframe>
+            <form style=display:none method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style=display:none /></form>
+            <form style=display:none method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style=display:none /></form>
+            <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
         </div>
     </div>
-    <iframe name="fileUploadFrame" style=display:none></iframe>
-    <form style=display:none method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style=display:none /></form>
-    <form style=display:none method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style=display:none /></form>
-    <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
     <script type="text/javascript">
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
@@ -622,6 +622,7 @@
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
         var debugmode = false;
+        var clickOnce = detectClickOnce();
 
         function startup() {
             // Guard against other site's top frames (web bugs).
@@ -720,35 +721,42 @@
             }
         }
 
+        // Return true if this browser supports clickonce
+        function detectClickOnce() {
+            for (var i in window.navigator.mimeTypes) { if (window.navigator.mimeTypes[i].type == "application/x-ms-application") { return true; } }
+            var userAgent = window.navigator.userAgent.toUpperCase();
+            return (userAgent.indexOf('.NET CLR 3.5') >= 0) || (userAgent.indexOf('(WINDOWS NT ') >= 0);
+        }
+
         function updateSiteAdmin() {
             var noServerBackup = {{{noServerBackup}}};
-        var siteRights = userinfo.siteadmin;
-        if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
+            var siteRights = userinfo.siteadmin;
+            if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
-        // Update account actions
-        QV('p2AccountActions', (features & 4) == 0); // Hide Account Actions if in single user mode
-        QV('p2ServerActions', siteRights & 5);
-        QV('p2ServerActionsBackup', siteRights & 1);
-        QV('p2ServerActionsRestore', siteRights & 4);
-        QV('p2ServerActionsVersion', siteRights & 16);
-        QV('MainMenuMyFiles', siteRights & 8);
-        if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { go(1); }
+            // Update account actions
+            QV('p2AccountActions', (features & 4) == 0); // Hide Account Actions if in single user mode
+            QV('p2ServerActions', siteRights & 5);
+            QV('p2ServerActionsBackup', siteRights & 1);
+            QV('p2ServerActionsRestore', siteRights & 4);
+            QV('p2ServerActionsVersion', siteRights & 16);
+            QV('MainMenuMyFiles', siteRights & 8);
+            if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { go(1); }
 
-        // Update user management state
-        if ((userinfo.siteadmin & 2) != 0)
-        {
-            // We are user administrator
-            if (users == null) { meshserver.Send({ action: 'users' }); }
-            if (wssessions == null) { meshserver.Send({ action: 'wssessioncount' }); }
-        } else {
-            // We are not user administrator
-            users = null;
-            wssessions = null;
-            updateUsers();
-            if (xxcurrentView == 4) go(1);
-        }
-        meshserver.Send({ action: 'events' });
-        QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
+            // Update user management state
+            if ((userinfo.siteadmin & 2) != 0)
+            {
+                // We are user administrator
+                if (users == null) { meshserver.Send({ action: 'users' }); }
+                if (wssessions == null) { meshserver.Send({ action: 'wssessioncount' }); }
+            } else {
+                // We are not user administrator
+                users = null;
+                wssessions = null;
+                updateUsers();
+                if (xxcurrentView == 4) go(1);
+            }
+            meshserver.Send({ action: 'events' });
+            QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
         }
 
         function onMessage(server, message) {
@@ -881,6 +889,14 @@
                 case 'events': {
                     events = message.events;
                     events_update();
+                    break;
+                }
+                case 'getcookie': {
+                    if (message.tag == 'clickonce') {
+                        var basicPort = "{{{serverRedirPort}}}"==""?"{{{serverPublicPort}}}":"{{{serverRedirPort}}}";
+                        rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + "&HOL=1";
+                        window.open(rdpurl, '_blank');
+                    }
                     break;
                 }
                 case 'event': {
@@ -1737,10 +1753,10 @@
 
         // Context menu for clicks other than on feature
         var contextmenu_items = [
-          { text: 'Refresh', callback: function () { refreshMap(true, true); } },
-          { text: 'Zoom to fit extent', callback: function () { zoomToFitExtent(); } },
-          { text: 'Center map here', callback: function(obj) { xxmap.mapView.animate({ center: obj.coordinate } ); } },
-          { text: 'Place node here', callback: function(obj) { placeNode(obj.coordinate); } }
+            { text: 'Refresh', callback: function () { refreshMap(true, true); } },
+            { text: 'Zoom to fit extent', callback: function () { zoomToFitExtent(); } },
+            { text: 'Center map here', callback: function(obj) { xxmap.mapView.animate({ center: obj.coordinate } ); } },
+            { text: 'Place node here', callback: function(obj) { placeNode(obj.coordinate); } }
         ];
 
         function stringToIntHash(str) {
@@ -2394,10 +2410,14 @@
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>Delete Device</a>';
+                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
-                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
+                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
+                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
+
+                // RDP link, show this link only of the remote machine is Windows.
+                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0) && (node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP") title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
+
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -2604,6 +2624,10 @@
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
             meshserver.Send({ action: 'removedevices', nodeids: [ nodeid ] });
+        }
+
+        function p10clickOnce(nodeid, protocol) {
+            meshserver.Send({ action: 'getcookie', nodeid: nodeid, tcpport: 3389, tag: 'clickonce', protocol: 'rdp' });
         }
 
         // Show current location
@@ -4565,5 +4589,5 @@
         function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
 
     </script>
-</body>
+    </body>
 </html>

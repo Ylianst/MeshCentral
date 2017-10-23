@@ -362,6 +362,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Route a message.
                         // If this command has a sessionid, that is the target.
                         if (command.sessionid != null) {
+                            if (typeof command.sessionid != 'string') break;
                             var splitsessionid = command.sessionid.split('/');
                             // Check that we are in the same domain and the user has rights over this node.
                             if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domain.id)) {
@@ -384,6 +385,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 }
                             }
                         } else if (command.userid != null) { // If this command has a userid, that is the target.
+                            if (typeof command.userid != 'string') break;
                             var splituserid = command.userid.split('/');
                             // Check that we are in the same domain and the user has rights over this node.
                             if ((splituserid[0] == 'user') && (splituserid[1] == domain.id)) {

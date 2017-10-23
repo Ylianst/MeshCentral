@@ -10,20 +10,77 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     obj.req = req;
     obj.peer = null;
     obj.parent = parent;
-    obj.id = req.query['id'];
+    obj.id = req.query.id;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
-    if (obj.id == undefined) { obj.ws.close(); obj.id = null; return null; } // Attempt to connect without id, drop this.
-    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
+    // Disconnect this agent
+    obj.close = function (arg) {
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Relay: Soft disconnect (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Relay: Hard disconnect (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+    }
+
+    obj.sendAgentMessage = function (command, userid, domainid) {
+        if (command.nodeid == null) return false;
+        var user = obj.parent.users[userid];
+        if (user == null) return false;
+        var splitnodeid = command.nodeid.split('/');
+        // Check that we are in the same domain and the user has rights over this node.
+        if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domainid)) {
+            // Get the user object
+            // See if the node is connected
+            var agent = obj.parent.wsagents[command.nodeid];
+            if (agent != null) {
+                // Check if we have permission to send a message to that node
+                var rights = user.links[agent.dbMeshKey];
+                if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                    command.sessionid = ws.sessionId;   // Set the session id, required for responses.
+                    command.rights = rights.rights;     // Add user rights flags to the message
+                    delete command.nodeid;              // Remove the nodeid since it's implyed.
+                    agent.send(JSON.stringify(command));
+                    return true;
+                }
+            } else {
+                // Check if a peer server is connected to this agent
+                var routing = obj.parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
+                if (routing != null) {
+                    // Check if we have permission to send a message to that node
+                    var rights = user.links[routing.meshid];
+                    if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
+                        command.rights = rights.rights;         // Add user rights flags to the message
+                        obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     if (req.query.auth == null) {
         // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.
         try { if ((req.session) && (req.session.userid) || (req.session.domainid == getDomain(req).id)) { obj.authenticated = true; } } catch (e) { }
     } else {
         // Get the session from the cookie
-        if ((obj.parent.parent.multiServer != null) && (obj.parent.parent.multiServer.decodeCookie(req.query.auth) != null)) { obj.authenticated = true; }
+        var cookie = obj.parent.parent.webserver.decodeCookie(req.query.auth);
+        if (cookie != null) {
+            obj.authenticated = true;
+            if (cookie.tcpport != null) {
+                // This cookie has agent routing instructions, process this here.
+                if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                // Send connection request to agent
+                var command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
+                if (obj.sendAgentMessage(command, cookie.userid, cookie.domainid) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
+            }
+        } else {
+            obj.id = null;
+            obj.parent.parent.debug(1, 'Relay: invalid cookie (' + obj.remoteaddr + ')');
+        }
     }
+
+    if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
+    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
 
     // Validate that the id is valid, we only need to do this on non-authenticated sessions.
     // TODO: Figure out when this needs to be done.

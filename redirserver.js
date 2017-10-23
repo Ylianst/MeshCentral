@@ -60,6 +60,9 @@ module.exports.CreateRedirServer = function (parent, db, args, certificates) {
         obj.app.post(url + 'amtevents.ashx', obj.parent.webserver.handleAmtEventRequest);
         obj.app.get(url + 'meshsettings', obj.parent.webserver.handleMeshSettingsRequest);
         obj.app.get(url + 'meshagents', obj.parent.webserver.handleMeshAgentRequest);
+
+        // Indicates the clickonce folder is public
+        obj.app.use(url + 'clickonce', obj.express.static(obj.parent.path.join(__dirname, 'public/clickonce')));
     }
     
     // Find a free port starting with the specified one and going up.

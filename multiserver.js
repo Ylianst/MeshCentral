@@ -127,14 +127,14 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
 
                             // Send information about our server to the peer
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
+                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.webserver.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
                         case 4: {
                             // Server confirmed authentication, we are allowed to send commands to the server
                             obj.connectionState |= 8;
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
+                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.webserver.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
@@ -313,7 +313,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function completePeerServerConnection() {
             if (obj.authenticated != 1) return;
             obj.send(obj.common.ShortToStr(4));
-            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
+            obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.webserver.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
             obj.authenticated = 2;
         }
 
@@ -371,40 +371,11 @@ module.exports.CreateMultiServer = function (parent, args) {
     if (obj.serverid == null) { obj.serverid = require("os").hostname(); }
     if (obj.parent.config.peers.servers[obj.serverid] == null) { console.log("Error: Unable to peer with other servers, \"" + obj.serverid + "\" not present in peer servers list."); return null; }
 
-    // Generate a cryptographic key used to encode and decode cookies
-    obj.generateCookieKey = function () { return new Buffer(obj.crypto.randomBytes(32), 'binary'); }
-
     // Return the private key of a peer server
     obj.getServerCookieKey = function (serverid) {
         var server = obj.peerServers[serverid];
         if (server && server.peerServerKey) return server.peerServerKey;
         return null;
-    }
-
-    // Encode an object as a cookie using a key. (key must be 32 bytes long)
-    obj.encodeCookie = function (o, key) {
-        try {
-            if (key == null) { key = obj.serverKey; }
-            o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
-            var iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key, iv);
-            var crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
-            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-        } catch (e) { return null; }
-    }
-
-    // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
-    obj.decodeCookie = function (cookie, key) {
-        try {
-            if (key == null) { key = obj.serverKey; }
-            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
-            var decipher = obj.crypto.createDecipheriv('aes-256-gcm', key, cookie.slice(0, 12));
-            decipher.setAuthTag(cookie.slice(12, 16));
-            var o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
-            o.time = o.time * 1000; // Decode the cookie creation time
-            o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created
-            return o;
-        } catch (e) { return null; }
     }
 
     // Dispatch an event to all other MeshCentral2 peer servers
@@ -658,7 +629,6 @@ module.exports.CreateMultiServer = function (parent, args) {
         return peerTunnel;
     }
 
-    obj.serverKey = obj.generateCookieKey();
     setTimeout(function () { obj.ConnectToPeers(); }, 1000); // Delay this a little to make sure we are ready on our side.
     return obj;
 }

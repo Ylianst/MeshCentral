@@ -52,6 +52,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.express = require('express');
     obj.meshAgentHandler = require('./meshagent.js');
     obj.meshRelayHandler = require('./meshrelay.js')
+    obj.meshUserHandler = require('./meshuser.js')
     obj.interceptor = require('./interceptor');
     
     // Variables
@@ -67,7 +68,23 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.users = {};
     obj.meshes = {};
     obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
-    
+
+    // Mesh Rights
+    const MESHRIGHT_EDITMESH = 1;
+    const MESHRIGHT_MANAGEUSERS = 2;
+    const MESHRIGHT_MANAGECOMPUTERS = 4;
+    const MESHRIGHT_REMOTECONTROL = 8;
+    const MESHRIGHT_AGENTCONSOLE = 16;
+    const MESHRIGHT_SERVERFILES = 32;
+    const MESHRIGHT_WAKEDEVICE = 64;
+
+    // Site rights
+    const SITERIGHT_SERVERBACKUP = 1;
+    const SITERIGHT_MANAGEUSERS = 2;
+    const SITERIGHT_SERVERRESTORE = 4;
+    const SITERIGHT_FILEACCESS = 8;
+    const SITERIGHT_SERVERUPDATE = 16;
+
     // Perform hash on web certificate and agent certificate
     obj.webCertificateHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
     obj.webCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -423,7 +440,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (domain.userQuota == -1) { features += 8; } // No server files mode
             if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
             if ((!obj.args.user) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass });
+            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
         } else {
             // Send back the login application
             res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == ''))?0:1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port });
@@ -593,7 +610,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 readEntireTextFile(file.path, function (data) {
                     if (data == null) return;
                     data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                    sendMeshAgentCore(user, domain, fields.attrib[0], data); // Upload the core
+                    obj.sendMeshAgentCore(user, domain, fields.attrib[0], data); // Upload the core
                     try { obj.fs.unlinkSync(file.path); } catch (e) { }
                 });
             }
@@ -677,7 +694,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else {
             // Get the session from the cookie
             if (obj.parent.multiServer == null) { return; }
-            var session = obj.parent.multiServer.decodeCookie(req.query.auth);
+            var session = obj.decodeCookie(req.query.auth);
             if (session == null) { console.log('ERR: Invalid cookie'); return; }
             if (session.domainid != domain.id) { console.log('ERR: Invalid domain'); return; }
             user = obj.users[session.userid];
@@ -697,8 +714,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             
             // Check if this user has permission to manage this computer
             var meshlinks = user.links[node.meshid];
-            if (!meshlinks || !meshlinks.rights) { console.log('ERR: Access denied (1)'); return; }
-            if ((meshlinks.rights & 8) == 0) { console.log('ERR: Access denied (2)'); return; }
+            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); return; }
             
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
@@ -942,18 +958,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // If closed, do nothing
         ws.on('close', function (req) { });
     }
-
-    // Read the folder and all sub-folders and serialize that into json.
-    function readFilesRec(path) {
-        var r = {}, dir = obj.fs.readdirSync(path);
-        for (var i in dir) {
-            var f = { t: 3, d: 111 };
-            var stat = obj.fs.statSync(path + '/' + dir[i])
-            if ((stat.mode & 0x004000) == 0) { f.s = stat.size; f.d = stat.mtime.getTime(); } else { f.t = 2; f.f = readFilesRec(path + '/' + dir[i]); }
-            r[dir[i]] = f;
-        }
-        return r;
-    }
     
     // Get the total size of all files in a folder and all sub-folders
     function readTotalFileSize(path) {
@@ -974,801 +978,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         });
         obj.fs.rmdirSync(path);
     };
-
-    // Indicates we want to handle websocket requests on "/control.ashx".
-    function handleControlRequest(ws, req) {
-        var domain = checkUserIpAddress(ws, req);
-        if (domain == null) return;
-        try {
-            // Check if the user is logged in
-            if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) { try { ws.close(); } catch (e) { } return; }
-            req.session.ws = ws; // Associate this websocket session with the web session
-            req.session.ws.userid = req.session.userid;
-            req.session.ws.domainid = domain.id;
-            var user = obj.users[req.session.userid];
-            if (user == null) { try { ws.close(); } catch (e) { } return; }
-            
-            // Add this web socket session to session list
-            ws.sessionId = user._id + '/' + ('' + Math.random()).substring(2);
-            obj.wssessions2[ws.sessionId] = ws;
-            if (!obj.wssessions[user._id]) { obj.wssessions[user._id] = [ws]; } else { obj.wssessions[user._id].push(ws); }
-            if (obj.parent.multiServer == null) {
-                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[user._id].length, nolog: 1, domain: domain.id })
-            } else {
-                obj.recountSessions(ws.sessionId); // Recount sessions
-            }
-
-            // If we have peer servers, inform them of the new session
-            if (obj.parent.multiServer != null) { obj.parent.multiServer.DispatchMessage({ action: 'sessionStart', sessionid: ws.sessionId }); }
-
-            // Handle events
-            ws.HandleEvent = function (source, event) {
-                if (!event.domain || event.domain == domain.id) {
-                    try {
-                        if (event == 'close') { req.session.destroy(); ws.close(); }
-                        else if (event == 'resubscribe') { user.subscriptions = obj.subscribe(user._id, ws); }
-                        else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
-                        else { ws.send(JSON.stringify({ action: 'event', event: event })); }
-                    } catch (e) { }
-                }
-            }
-            
-            user.subscriptions = obj.subscribe(user._id, ws);   // Subscribe to events
-            ws._socket.setKeepAlive(true, 0);                   // Set TCP keep alive
-            
-            // When data is received from the web socket
-            ws.on('message', function (msg) {
-                var user = obj.users[req.session.userid];
-                var command = JSON.parse(msg.toString('utf8'))
-                switch (command.action) {
-                    case 'meshes':
-                        {
-                            // Request a list of all meshes this user as rights to
-                            var docs = [];
-                            for (var i in user.links) { if (obj.meshes[i]) { docs.push(obj.meshes[i]); } }
-                            ws.send(JSON.stringify({ action: 'meshes', meshes: docs }));
-                            break;
-                        }
-                    case 'nodes':
-                        {
-                            // Request a list of all meshes this user as rights to
-                            var links = [];
-                            for (var i in user.links) { links.push(i); }
-                            
-                            // Request a list of all nodes
-                            obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', function (err, docs) {
-                                var r = {};
-                                for (var i in docs) {
-                                    // Add the connection state
-                                    var state = parent.GetConnectivityState(docs[i]._id);
-                                    if (state) {
-                                        docs[i].conn = state.connectivity;
-                                        docs[i].pwr = state.powerState;
-                                        if ((state.connectivity & 1) != 0) { var agent = obj.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
-                                        if ((state.connectivity & 2) != 0) { var cira = obj.parent.mpsserver.ciraConnections[docs[i]._id]; if (cira != null) { docs[i].cict = cira.tag.connectTime; } }
-                                    }
-                                    // Compress the meshid's
-                                    var meshid = docs[i].meshid;
-                                    if (!r[meshid]) { r[meshid] = []; }
-                                    delete docs[i].meshid;
-                                    r[meshid].push(docs[i]);
-                                }
-                                ws.send(JSON.stringify({ action: 'nodes', nodes: r }));
-                            });
-                            break; 
-                        }
-                    case 'powertimeline':
-                        {
-                            // Query the database for the power timeline for a given node
-                            // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
-                            obj.db.getPowerTimeline(command.nodeid, function (err, docs) {
-                                if (err == null && docs.length > 0) {
-                                    var timeline = [], time = null, previousPower;
-                                    for (var i in docs) {
-                                        var doc = docs[i];
-                                        if (time == null) {
-                                            // First element
-                                            time = doc.time;
-                                            if (doc.oldPower) { timeline.push(doc.oldPower); } else { timeline.push(0); }
-                                            timeline.push(time);
-                                            timeline.push(doc.power);
-                                            previousPower = doc.power;
-                                        } else {
-                                            // Delta element
-                                            if ((previousPower != doc.power) && ((doc.time - time) > 60000)) { // To boost speed, any blocks less than a minute get approximated.
-                                                // Create a new timeline
-                                                timeline.push(doc.time - time);
-                                                timeline.push(doc.power);
-                                                time = doc.time;
-                                                previousPower = doc.power;
-                                            } else {
-                                                // Extend the previous timeline
-                                                if ((timeline.length >= 6) && (timeline[timeline.length - 3] == doc.power)) { // We can merge the block with the previous block
-                                                    timeline[timeline.length - 4] += (timeline[timeline.length - 2] + (doc.time - time));
-                                                    timeline.pop();
-                                                    timeline.pop();
-                                                } else { // Extend the last block in the timeline
-                                                    timeline[timeline.length - 2] += (doc.time - time);
-                                                    timeline[timeline.length - 1] = doc.power;
-                                                }
-                                                time = doc.time;
-                                                previousPower = doc.power;
-                                            }
-                                        }
-                                    }
-                                    ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline }));
-                                } else {
-                                    // No records found, send current state if we have it
-                                    var state = obj.parent.GetConnectivityState(command.nodeid);
-                                    if (state != null) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState] })); }
-                                }
-                            });
-                            break;
-                        }
-                    case 'files':
-                        {
-                            // Send the full list of server files to the browser app
-                            if ((user.siteadmin & 8) != 0) { updateUserFiles(user, ws, domain); }
-                            break;
-                        }
-                    case 'fileoperation':
-                        {
-                            // Check permissions
-                            if ((user.siteadmin & 8) != 0) {
-                                // Perform a file operation (Create Folder, Delete Folder, Delete File...)
-                                if ((command.path != null) && (typeof command.path == 'object') && command.path.length > 0) {
-                                    var rootfolder = command.path[0];
-                                    var rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
-                                    if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-                                    var path = obj.path.join(obj.filespath, domainx + "/" + rootfoldersplit[0] + "-" + rootfoldersplit[2]);
-                                    for (var i = 1; i < command.path.length; i++) { if (obj.common.IsFilenameValid(command.path[i]) == false) { path = null; break; } path += ("/" + command.path[i]); }
-                                    if (path == null) break;
-                                    
-                                    if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) { try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { } } // Create a new folder
-                                    else if (command.fileop == 'delete') { for (var i in command.delfiles) { if (obj.common.IsFilenameValid(command.delfiles[i]) == true) { var fullpath = path + "/" + command.delfiles[i]; try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } } } } } // Delete
-                                    else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
-                                    
-                                    obj.parent.DispatchEvent([user._id], obj, 'updatefiles') // Fire an event causing this user to update this files
-                                }
-                            }
-                            break;
-                        }
-                    case 'msg':
-                        {
-                            // Route a message.
-                            // This this command has a nodeid, that is the target.
-                            if (command.nodeid != null) {
-                                var splitnodeid = command.nodeid.split('/');
-                                // Check that we are in the same domain and the user has rights over this node.
-                                if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domain.id)) {
-                                    // See if the node is connected
-                                    var agent = obj.wsagents[command.nodeid];
-                                    if (agent != null) {
-                                        // Check if we have permission to send a message to that node
-                                        var rights = user.links[agent.dbMeshKey];
-                                        if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
-                                            command.sessionid = ws.sessionId;   // Set the session id, required for responses.
-                                            command.rights = rights.rights;     // Add user rights flags to the message
-                                            delete command.nodeid;              // Remove the nodeid since it's implyed.
-                                            agent.send(JSON.stringify(command));
-                                        }
-                                    } else {
-                                        // Check if a peer server is connected to this agent
-                                        var routing = obj.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
-                                        if (routing != null) {
-                                            // Check if we have permission to send a message to that node
-                                            var rights = user.links[routing.meshid];
-                                            if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
-                                                command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
-                                                command.rights = rights.rights;         // Add user rights flags to the message
-                                                parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    case 'events':
-                        {
-                            // Send the list of events for this session
-                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs })); });
-                            break;
-                        }
-                    case 'clearevents':
-                        {
-                            // Delete all events
-                            if (user.siteadmin != 0xFFFFFFFF) break;
-                            obj.db.RemoveAllEvents(domain.id);
-                            obj.parent.DispatchEvent(['*', 'server-global'], obj, { action: 'clearevents', nolog: 1, domain: domain.id })
-                            break;
-                        }
-                    case 'users':
-                        {
-                            // Request a list of all users
-                            if ((user.siteadmin & 2) == 0) break;
-                            var docs = [];
-                            for (var i in obj.users) { if ((obj.users[i].domain == domain.id) && (obj.users[i].name != '~')) { docs.push(obj.users[i]); } }
-                            ws.send(JSON.stringify({ action: 'users', users: docs }));
-                            break;
-                        }
-                    case 'wssessioncount':
-                        {
-                            // Request a list of all web socket user session count
-                            var wssessions = {};
-                            if ((user.siteadmin & 2) == 0) break;
-                            if (obj.parent.multiServer == null) {
-                                // No peering, use simple session counting
-                                for (var i in obj.wssessions) { if (obj.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.wssessions[i].length; } }
-                            } else {
-                                // We have peer servers, use more complex session counting
-                                for (var userid in obj.sessionsCount) { if (userid.split('/')[1] == domain.id) { wssessions[userid] = obj.sessionsCount[userid]; } }
-                            }
-                            ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions })); // wssessions is: userid --> count
-                            break;
-                        }
-                    case 'deleteuser':
-                        {
-                            // Delete a user account
-                            if ((user.siteadmin & 2) == 0) break;
-                            var delusername = command.username, deluserid = command.userid, deluser = obj.users[deluserid];
-                            if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
-                            if ((deluserid.split('/').length != 3) || (deluserid.split('/')[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
-                            
-                            // Delete all files on the server for this account
-                            try {
-                                var deluserpath = getServerRootFilePath(deluser);
-                                if (deluserpath != null) { deleteFolderRec(deluserpath); }
-                            } catch (e) { }
-                            
-                            obj.db.Remove(deluserid);
-                            delete obj.users[deluserid];
-                            obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: delusername, action: 'accountremove', msg: 'Account removed', domain: domain.id })
-                            obj.parent.DispatchEvent([deluserid], obj, 'close');
-
-                            break;
-                        }
-                    case 'adduser':
-                        {
-                            // Add a new user account
-                            if ((user.siteadmin & 2) == 0) break;
-                            var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
-                            if (newusername == '~') break; // This is a reserved user name
-                            if (!obj.users[newuserid]) {
-                                var newuser = { type: 'user', _id: newuserid, name: newusername, email: command.email, creation: Date.now(), domain: domain.id };
-                                obj.users[newuserid] = newuser;
-                                // Create a user, generate a salt and hash the password
-                                obj.hash(command.pass, function (err, salt, hash) {
-                                    if (err) throw err;
-                                    newuser.salt = salt;
-                                    newuser.hash = hash;
-                                    obj.db.SetUser(newuser);
-                                    var newuser2 = obj.common.Clone(newuser);
-                                    if (newuser2.subscriptions) { delete newuser2.subscriptions; }
-                                    if (newuser2.salt) { delete newuser2.salt; }
-                                    if (newuser2.hash) { delete newuser2.hash; }
-                                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: newuser2, action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id })
-                                });
-                            }
-                            break;
-                        }
-                    case 'edituser':
-                        {
-                            // Edit a user account, may involve changing email or administrator permissions
-                            if (((user.siteadmin & 2) != 0) || (user.name == command.name)) {
-                                var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.users[chguserid], change = 0;
-                                if (chguser) {
-                                    if (command.email && chguser.email != command.email) { chguser.email = command.email; change = 1; }
-                                    if (command.quota != chguser.quota) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
-                                    if ((user.siteadmin == 0xFFFFFFFF) && (command.siteadmin != null) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1 }
-                                    if (change == 1) {
-                                        obj.db.Set(chguser);
-                                        obj.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                        var chguser2 = obj.common.Clone(chguser);
-                                        delete chguser2.salt;
-                                        delete chguser2.hash;
-                                        obj.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: chguser2, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    case 'serverversion':
-                        {
-                            // Check the server version
-                            if ((user.siteadmin & 16) == 0) break;
-                            obj.parent.getLatestServerVersion(function (currentVersion, latestVersion) { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); });
-                            break;
-                        }
-                    case 'serverupdate':
-                        {
-                            // Perform server update
-                            if ((user.siteadmin & 16) == 0) break;
-                            obj.parent.performServerUpdate();
-                            break;
-                        }
-                    case 'createmesh':
-                        {
-                            // Create mesh
-                            // TODO: Right now, we only create type 1 Agent-less Intel AMT mesh, or type 2 Agent mesh
-                            if ((command.meshtype == 1) || (command.meshtype == 2)) {
-                                // Create a type 1 agent-less Intel AMT mesh.
-                                obj.crypto.randomBytes(48, function (err, buf) {
-                                    var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
-                                    var links = {}
-                                    links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
-                                    var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
-                                    obj.db.Set(mesh);
-                                    obj.meshes[meshid] = mesh;
-                                    obj.parent.AddEventDispatch([meshid], ws);
-                                    if (user.links == null) user.links = {};
-                                    user.links[meshid] = { rights: 0xFFFFFFFF };
-                                    user.subscriptions = obj.subscribe(user._id, ws);
-                                    obj.db.SetUser(user);
-                                    obj.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id })
-                                });
-                            }
-                            break;
-                        }
-                    case 'deletemesh':
-                        {
-                            // Delete a mesh and all computers within it
-                            obj.db.Get(command.meshid, function (err, meshes) {
-                                if (meshes.length != 1) return;
-                                var mesh = meshes[0];
-                                
-                                // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
-                                if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                                
-                                // Fire the removal event first, because after this, the event will not route
-                                obj.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id })
-                                                                
-                                // Remove all user links to this mesh
-                                for (var i in meshes) {
-                                    var links = meshes[i].links;
-                                    for (var j in links) {
-                                        var xuser = obj.users[j];
-                                        delete xuser.links[meshes[i]._id];
-                                        obj.db.Set(xuser);
-                                        obj.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
-                                    }
-                                }
-                                
-                                // Delete all files on the server for this mesh
-                                try {
-                                    var meshpath = getServerRootFilePath(mesh);
-                                    if (meshpath != null) { deleteFolderRec(meshpath); }
-                                } catch (e) { }
-                                
-                                obj.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
-                                obj.db.RemoveMesh(command.meshid); // Remove mesh from database
-                                delete obj.meshes[command.meshid]; // Remove mesh from memory
-                            });
-                            break;
-                        }
-                    case 'editmesh':
-                        {
-                            // Change the name or description of a mesh
-                            var mesh = obj.meshes[command.meshid], change = '';
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) return;
-                                if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                                
-                                if (command.meshname && command.meshname != '' && command.meshname != mesh.name) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                                if (command.desc != null && command.desc != mesh.desc) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                                if (change != '') { obj.db.Set(mesh); obj.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
-                            }
-                            break;
-                        }
-                    case 'addmeshuser':
-                        {
-                            // Check if the user exists
-                            var newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase(), newuser = obj.users[newuserid];
-                            if (newuser == null) {
-                                // TODO: Send error back, user not found.
-                                break;
-                            }
-                            
-                            // Get the mesh
-                            var mesh = obj.meshes[command.meshid], change = '';
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
-                                if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                                
-                                // Add mesh to user
-                                if (newuser.links == null) newuser.links = {};
-                                newuser.links[command.meshid] = { rights: command.meshadmin };
-                                obj.db.Set(newuser);
-                                obj.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
-                                
-                                // Add a user to the mesh
-                                mesh.links[newuserid] = { name: command.username, rights: command.meshadmin };
-                                obj.db.Set(mesh);
-                                
-                                // Notify mesh change
-                                var change = 'Added user ' + command.username + ' to mesh ' + mesh.name;
-                                obj.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, { etype: 'mesh', username: user.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
-                            }
-                            break;
-                        }
-                    case 'removemeshuser':
-                        {
-                            if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                            
-                            // Check if the user exists
-                            var deluserid = command.userid, deluser = obj.users[deluserid];
-                            if (deluser == null) {
-                                // TODO: Send error back, user not found.
-                                break;
-                            }
-                            
-                            // Get the mesh
-                            var mesh = obj.meshes[command.meshid];
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
-                                
-                                // Remove mesh from user
-                                if (deluser.links != null && deluser.links[command.meshid] != null) {
-                                    var delmeshrights = deluser.links[command.meshid].rights;
-                                    if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[user._id].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
-                                    delete deluser.links[command.meshid];
-                                    obj.db.Set(deluser);
-                                    obj.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
-                                }
-                                
-                                // Remove user from the mesh
-                                if (mesh.links[command.userid] != null) {
-                                    delete mesh.links[command.userid];
-                                    obj.db.Set(mesh);
-                                }
-                                
-                                // Notify mesh change
-                                var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
-                                obj.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
-                            }
-                            break;
-                        }
-                    case 'addamtdevice':
-                        {
-                            if (obj.args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
-
-                            if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                            
-                            // Get the mesh
-                            var mesh = obj.meshes[command.meshid];
-                            if (mesh) {
-                                if (mesh.mtype != 1) return; // This operation is only allowed for mesh type 1, Intel AMT agentless mesh.
-                                
-                                // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
-                                
-                                // Create a new nodeid
-                                obj.crypto.randomBytes(48, function (err, buf) {
-                                    // create the new node
-                                    var nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
-                                    var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: parseInt(command.amttls) } };
-                                    obj.db.Set(device);
-                                    
-                                    // Event the new node
-                                    var device2 = obj.common.Clone(device);
-                                    delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                    var change = 'Added device ' + command.devicename + ' to mesh ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', username: user.name, action: 'addnode', node: device2, msg: change, domain: domain.id })
-                                });
-                            }
-                            break;
-                        }
-                    case 'scanamtdevice':
-                        {
-                            if (obj.args.wanonly == true) return; // This is a WAN-only server, this type of scanning is not allowed.
-
-                            // Ask the RMCP scanning to scan a range of IP addresses
-                            if (obj.parent.amtScanner) {
-                                if (obj.parent.amtScanner.performRangeScan(ws.userid, command.range) == false) {
-                                    obj.parent.DispatchEvent(['*', ws.userid], obj, { action: 'scanamtdevice', range: command.range, results: null, nolog: 1 });
-                                }
-                            }
-                            break;
-                        }
-                    case 'removedevices':
-                        {
-                            for (var i in command.nodeids) {
-                                var nodeid = command.nodeids[i];
-                                if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                                // Get the device
-                                obj.db.Get(nodeid, function (err, nodes) {
-                                    if (nodes.length != 1) return;
-                                    var node = nodes[0];
-
-                                    // Get the mesh for this device
-                                    var mesh = obj.meshes[node.meshid];
-                                    if (mesh) {
-                                        // Check if this user has rights to do this
-                                        if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
-
-                                        // Delete this node including network interface information and events
-                                        obj.db.Remove(node._id);
-                                        obj.db.Remove('if' + node._id);
-
-                                        // Event node deletion
-                                        var change = 'Removed device ' + node.name + ' from mesh ' + mesh.name;
-                                        obj.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: change, domain: domain.id })
-
-                                        // Disconnect all connections if needed
-                                        var state = obj.parent.GetConnectivityState(command.nodeid);
-                                        if ((state != null) && (state.connectivity != null)) {
-                                            if ((state.connectivity & 1) != 0) { obj.wsagents[command.nodeid].close(); } // Disconnect mesh agent
-                                            if ((state.connectivity & 2) != 0) { obj.parent.mpsserver.close(obj.parent.mpsserver.ciraConnections[command.nodeid]); } // Disconnect CIRA connection
-                                        }
-                                    }
-                                });
-                            }
-
-                            break;
-                        }
-                    case 'wakedevices':
-                        {
-                            // TODO: INPUT VALIDATION!!!
-                            // TODO: We can optimize this a lot.
-                            // - We should get a full list of all MAC's to wake first.
-                            // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
-                            for (var i in command.nodeids) {
-                                var nodeid = command.nodeids[i], wakeActions = 0;
-                                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                                    // Get the device
-                                    obj.db.Get(nodeid, function (err, nodes) {
-                                        if (nodes.length != 1) return;
-                                        var node = nodes[0];
-
-                                        // Get the mesh for this device
-                                        var mesh = obj.meshes[node.meshid];
-                                        if (mesh) {
-
-                                            // Check if this user has rights to do this
-                                            if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 64) != 0)) {
-
-                                                // Get the device interface information
-                                                obj.db.Get('if' + node._id, function (err, nodeifs) {
-                                                    if (nodeifs.length == 1) {
-                                                        var nodeif = nodeifs[0];
-                                                        var macs = [];
-                                                        for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
-
-                                                        // Have the server send a wake-on-lan packet (Will not work in WAN-only)
-                                                        if (obj.parent.meshScanner != null) { obj.parent.meshScanner.wakeOnLan(macs); wakeActions++; }
-
-                                                        // Get the list of mesh this user as access to
-                                                        var targetMeshes = [];
-                                                        for (var i in user.links) { targetMeshes.push(i); }
-
-                                                        // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
-                                                        for (var i in obj.wsagents) {
-                                                            var agent = obj.wsagents[i];
-                                                            if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
-                                                                //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
-                                                                agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs }));
-                                                                wakeActions++;
-                                                            }
-                                                        }
-                                                    }
-                                                });
-
-                                            }
-                                        }
-                                    });
-                                }
-                                // Confirm we may be doing something (TODO)
-                                ws.send(JSON.stringify({ action: 'wakedevices' }));
-                            }
-
-                            break;
-                        }
-                    case 'poweraction':
-                        {
-                            // TODO: INPUT VALIDATION!!!
-                            for (var i in command.nodeids) {
-                                var nodeid = command.nodeids[i], powerActions = 0;
-                                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                                    // Get the device
-                                    obj.db.Get(nodeid, function (err, nodes) {
-                                        if (nodes.length != 1) return;
-                                        var node = nodes[0];
-
-                                        // Get the mesh for this device
-                                        var mesh = obj.meshes[node.meshid];
-                                        if (mesh) {
-
-                                            // Check if this user has rights to do this
-                                            if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
-
-                                                // Get this device
-                                                var agent = obj.wsagents[node._id];
-                                                if (agent != null) {
-                                                    // Send the power command
-                                                    agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype }));
-                                                    powerActions++;
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                                // Confirm we may be doing something (TODO)
-                                ws.send(JSON.stringify({ action: 'poweraction' }));
-                            }
-                            break;
-                        }
-                    case 'getnetworkinfo':
-                        {
-                            // Argument validation
-                            if ((command.nodeid == null) || (typeof command.nodeid != 'string') || (command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                            // Get the device
-                            obj.db.Get(command.nodeid, function (err, nodes) {
-                                if (nodes.length != 1) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
-                                var node = nodes[0];
-
-                                // Get the mesh for this device
-                                var mesh = obj.meshes[node.meshid];
-                                if (mesh) {
-                                    // Check if this user has rights to do this
-                                    if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
-
-                                    // Get network information about this node
-                                    obj.db.Get('if' + command.nodeid, function (err, netinfos) {
-                                        if (netinfos.length != 1) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
-                                        var netinfo = netinfos[0];
-                                        ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif }));
-                                    });
-                                }
-                            });
-                            break;
-                        }
-                    case 'changedevice':
-                        {
-                            // Argument validation
-                            if ((command.nodeid == null) || (typeof command.nodeid != 'string') || (command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                            if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) return;
-
-                            // Change the device
-                            obj.db.Get(command.nodeid, function (err, nodes) {
-                                if (nodes.length != 1) return;
-                                var node = nodes[0];
-                                
-                                // Get the mesh for this device
-                                var mesh = obj.meshes[node.meshid];
-                                if (mesh) {
-                                    // Check if this user has rights to do this
-                                    if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
-                                    
-                                    // Ready the node change event
-                                    var changes = [], change = 0, event = { etype: 'node', username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
-                                    event.msg = ": ";
-                                    
-                                    // Look for a change
-                                    if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
-                                    if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
-                                    if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
-                                    if (command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
-                                        change = 1;
-                                        if ((command.userloc.length == 0) && (node.userloc)) {
-                                            delete node.userloc;
-                                            changes.push('location removed');
-                                        } else {
-                                            command.userloc.push((Math.floor((new Date()) / 1000)));
-                                            node.userloc = command.userloc.join(',');
-                                            changes.push('location');
-                                        }
-                                    }
-                                    if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
-                                    if (command.intelamt != null) {
-                                        if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
-                                        if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
-                                    }
-
-                                    if (change == 1) {
-                                        // Save the node
-                                        obj.db.Set(node);
-                                        
-                                        // Event the node change
-                                        event.msg = 'Changed device ' + node.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ');
-                                        var node2 = obj.common.Clone(node);
-                                        if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                        event.node = node2;
-                                        obj.parent.DispatchEvent(['*', node.meshid], obj, event);
-                                    }
-                                }
-                            });
-                            break;
-                        }
-                    case 'uploadagentcore':
-                        {
-                            if (user.siteadmin != 0xFFFFFFFF) break;
-                            if (command.path) {
-                                if (command.path == '*') {
-                                    // Update the server default core and send a core hash request
-                                    // Load default mesh agent core if present, then perform a core update
-                                    parent.updateMeshCore(function () { sendMeshAgentCore(user, domain, command.nodeid, '*'); });
-                                } else {
-                                    // Send a mesh agent core to the mesh agent
-                                    var file = getServerFilePath(user, domain, command.path);
-                                    if (file != null) {
-                                        readEntireTextFile(file.fullpath, function (data) {
-                                            if (data != null) {
-                                                data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                                sendMeshAgentCore(user, domain, command.nodeid, data);
-                                            }
-                                        })
-                                    }
-                                }
-                            } else {
-                                // Clear the mesh agent core on the mesh agent
-                                sendMeshAgentCore(user, domain, command.nodeid, null);
-                            }
-                            break;
-                        }
-                    case 'agentdisconnect':
-                        {
-                            // Force mesh agent disconnection
-                            forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
-                            break;
-                        }
-                    case 'close':
-                        {
-                            // Close the web socket session
-                            if (req.session && req.session.ws && req.session.ws == ws) delete req.session.ws;
-                            try { ws.close(); } catch (e) { }
-                            break;
-                        }
-                }
-            });
-
-            // If error, do nothing
-            ws.on('error', function (err) { console.log(err); });
-
-            // If the web socket is closed
-            ws.on('close', function (req) {
-                obj.parent.RemoveAllEventDispatch(ws);
-                if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
-                if (obj.wssessions2[ws.sessionId]) { delete obj.wssessions2[ws.sessionId]; }
-                if (obj.wssessions[ws.userid]) {
-                    var i = obj.wssessions[ws.userid].indexOf(ws);
-                    if (i >= 0) {
-                        obj.wssessions[ws.userid].splice(i, 1);
-                        var user = obj.users[ws.userid];
-                        if (user) {
-                            if (obj.parent.multiServer == null) {
-                                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.wssessions[ws.userid].length, nolog: 1, domain: domain.id })
-                            } else {
-                                obj.recountSessions(ws.sessionId); // Recount sessions
-                            }
-                        }
-                        if (obj.wssessions[ws.userid].length == 0) { delete obj.wssessions[ws.userid]; }
-                    }
-                }
-
-                // If we have peer servers, inform them of the disconnected session
-                if (obj.parent.multiServer != null) { obj.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
-            });
-            
-            // Send user information to web socket, this is the first thing we send
-            var userinfo = obj.common.Clone(obj.users[req.session.userid]);
-            delete userinfo.salt;
-            delete userinfo.hash;
-            ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo }));
-            
-            // Next, send server information
-            if (obj.args.notls == true) {
-                ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, port: obj.args.port, https: false } }));
-            } else {
-                ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, redirport: obj.args.redirport, port: obj.args.port, https: true } }));
-            }
-        } catch (e) { console.log(e); }
-    }
     
     // Handle Intel AMT events
     // To subscribe, add "http://server:port/amtevents.ashx" to Intel AMT subscriptions.
@@ -1954,55 +1163,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         });
     }
 
-    function updateUserFiles(user, ws, domain) {
-        // Request the list of server files
-        var files = { action: 'files', filetree: { n : 'Root', f : {} } };
-        
-        // Add user files
-        files.filetree.f[user._id] = { t: 1, n: 'My Files', f: {} };
-        files.filetree.f[user._id].maxbytes = getQuota(user._id, domain);
-        var usersplit = user._id.split('/'), domainx = 'domain';
-        if (usersplit[1].length > 0) domainx = 'domain-' + usersplit[1];
-        
-        // Read all files recursively
-        try {
-            files.filetree.f[user._id].f = readFilesRec(obj.path.join(obj.filespath, domainx + "/user-" + usersplit[2]));
-        } catch (e) {
-            // Got an error, try to create all the folders and try again...
-            try { obj.fs.mkdirSync(obj.filespath); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.filespath, domainx)); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
-            try { files.filetree.f[user._id].f = readFilesRec(obj.path.join(obj.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
-        }
-        
-        // Add files for each mesh
-        for (var i in user.links) {
-            if ((user.links[i].rights & 32) != 0) { // Check that we have file permissions
-                var mesh = obj.meshes[i];
-                if (mesh) {
-                    var meshsplit = mesh._id.split('/');
-                    files.filetree.f[mesh._id] = { t: 1, n: mesh.name, f: {} };
-                    files.filetree.f[mesh._id].maxbytes = getQuota(mesh._id, domain);
-
-                    // Read all files recursively
-                    try {
-                        files.filetree.f[mesh._id].f = readFilesRec(obj.path.join(__dirname, "files/" + domainx + "/mesh-" + meshsplit[2]));
-                    } catch (e) {
-                        // Got an error, try to create all the folders and try again...
-                        try { obj.fs.mkdirSync(obj.filespath); } catch (e) { }
-                        try { obj.fs.mkdirSync(obj.path.join(obj.filespath, domainx)); } catch (e) { }
-                        try { obj.fs.mkdirSync(obj.path.join(obj.filespath, domainx + "/mesh-" + meshsplit[2])); } catch (e) { }
-                        try { files.filetree.f[mesh._id].f = readFilesRec(obj.path.join(obj.filespath, domainx + "/mesh-" + meshsplit[2])); } catch (e) { }
-                    }
-                }
-            }
-        }
-
-        // Respond
-        ws.send(JSON.stringify(files));
-    }
-
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
         // Two more headers to take a look at:
@@ -2037,7 +1197,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
-        obj.app.ws(url + 'control.ashx', handleControlRequest);
+        obj.app.ws(url + 'control.ashx', function (ws, req) { try { var domain = checkUserIpAddress(ws, req); if (domain != null) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); } } catch (e) { console.log(e); } });
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
         obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
@@ -2090,11 +1250,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & 16) != 0) && (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
+        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) && (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
     }
 
     // Send the core module to the mesh agent
-    function sendMeshAgentCore(user, domain, nodeid, core) {
+    obj.sendMeshAgentCore = function(user, domain, nodeid, core) {
         if (nodeid == null) return;
         var splitnode = nodeid.split('/');
         if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
@@ -2103,7 +1263,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & 16) != 0) && (user.siteadmin == 0xFFFFFFFF)) {
+        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) && (user.siteadmin == 0xFFFFFFFF)) {
             if (core == null) {
                 // Clear the mesh agent core
                 agent.agentCoreCheck = 1000; // Tell the agent object we are not using a custom core.
@@ -2122,25 +1282,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             }
         }
     }
-
-    // Return the maximum number of bytes allowed in the user account "My Files".
-    function getQuota(objid, domain) {
-        if (objid == null) return 0;
-        if (objid.startsWith('user/')) {
-            var user = obj.users[objid];
-            if (user == null) return 0;
-            if ((user.quota != null) && (typeof user.quota == 'number')) { return user.quota; }
-            if ((domain != null) && (domain.userQuota != null) && (typeof domain.userQuota == 'number')) { return domain.userQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on user accounts
-        } else if (objid.startsWith('mesh/')) {
-            var mesh = obj.meshes[objid];
-            if (mesh == null) return 0;
-            if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
-            if ((domain != null) && (domain.meshQuota != null) && (typeof domain.meshQuota == 'number')) { return domain.meshQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on mesh accounts
-        }
-        return 0;
-    }
     
     // Get the server path of a user or mesh object
     function getServerRootFilePath(obj) {
@@ -2149,20 +1290,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (splitname.length != 3) return null;
         if (obj.domain !== '') domainname = 'domain-' + obj.domain;
         return obj.path.join(obj.filespath, domainname + "/" + splitname[0] + "-" + splitname[2]);
-    }
-
-    // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
-    function getServerFilePath(user, domain, path) {
-        var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
-        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
-        var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
-        if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
-        if (splitpath[0] == 'mesh') { var link = user.links[objid]; if ((link == null) || (link.rights == null) || ((link.rights & 32) == 0)) { return null; } } // Check mesh server file rights
-        if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
-        serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
-        for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
-        var fullpath = obj.path.resolve(obj.filespath, serverpath), quota = 0;
-        return { fullpath: fullpath, path: serverpath, name: filename, quota: getQuota(objid, domain) };
     }
     
     // Read entire file and return it in callback function
@@ -2264,5 +1391,39 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         }
     }
 
+    // Generate a cryptographic key used to encode and decode cookies
+    obj.generateCookieKey = function () {
+        return new Buffer(obj.crypto.randomBytes(32), 'binary');
+        //return Buffer.alloc(32, 0); // Sets the key to zeros, debug only.
+    }
+
+    // Encode an object as a cookie using a key. (key must be 32 bytes long)
+    obj.encodeCookie = function (o, key) {
+        try {
+            if (key == null) { key = obj.serverKey; }
+            o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
+            var iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key, iv);
+            var crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
+            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+        } catch (e) { return null; }
+    }
+
+    // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
+    obj.decodeCookie = function (cookie, key) {
+        try {
+            if (key == null) { key = obj.serverKey; }
+            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            var decipher = obj.crypto.createDecipheriv('aes-256-gcm', key, cookie.slice(0, 12));
+            decipher.setAuthTag(cookie.slice(12, 16));
+            var o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
+            o.time = o.time * 1000; // Decode the cookie creation time
+            o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
+            if ((o.dtime > 120000) || (o.dtime < 30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            return o;
+        } catch (e) { return null; }
+    }
+
+    obj.serverKey = obj.generateCookieKey();
     return obj;
 }

@@ -18,7 +18,7 @@ function createMeshCore(agent) {
     var obj = {};
 
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    obj.meshCoreInfo = "MeshCore v3k";
+    obj.meshCoreInfo = "MeshCore v4";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
     obj.useNativePipes = true; //(process.platform == 'win32');
     var meshServerConnectionState = 0;
@@ -28,6 +28,7 @@ function createMeshCore(agent) {
     var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
     var http = require('http');
+    var net = require('net');
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
     var wifiScannerLib = null;
@@ -57,7 +58,7 @@ function createMeshCore(agent) {
 
     // Get our location (lat/long) using our public IP address
     var getIpLocationDataExInProgress = false;
-    var getIpLocationDataExCounts = [ 0, 0 ];
+    var getIpLocationDataExCounts = [0, 0];
     function getIpLocationDataEx(func) {
         if (getIpLocationDataExInProgress == true) { return false; }
         try {
@@ -157,7 +158,9 @@ function createMeshCore(agent) {
                 var w = arguments[i];
                 if (w != null) {
                     while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
-                    while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
+                    if (i != 0) {
+                        while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
+                    }
                     x.push(w);
                 }
             }
@@ -283,29 +286,27 @@ function createMeshCore(agent) {
                             processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
                         }
                     }
-                    else if (data.type == 'tunnel') { // Process a new tunnel connection request
-                        if (data.value && data.sessionid) {
-                            // Create a new tunnel object
-                            sendConsoleText(data.value);
-                            var xurl = getServerTargetUrlEx(data.value);
-                            sendConsoleText(xurl);
-                            if (xurl != null) {
-                                var tunnel = http.request(http.parseUri(xurl));
-                                tunnel.upgrade = onTunnelUpgrade;
-                                tunnel.sessionid = data.sessionid;
-                                tunnel.rights = data.rights;
-                                tunnel.state = 0;
-                                tunnel.url = xurl;
-                                tunnel.protocol = 0;
+                    else if ((data.type == 'tunnel') && (data.value != null)) { // Process a new tunnel connection request
+                        // Create a new tunnel object
+                        var xurl = getServerTargetUrlEx(data.value);
+                        if (xurl != null) {
+                            var tunnel = http.request(http.parseUri(xurl));
+                            tunnel.upgrade = onTunnelUpgrade;
+                            tunnel.sessionid = data.sessionid;
+                            tunnel.rights = data.rights;
+                            tunnel.state = 0;
+                            tunnel.url = xurl;
+                            tunnel.protocol = 0;
+                            tunnel.tcpaddr = data.tcpaddr;
+                            tunnel.tcpport = data.tcpport;
 
-                                // Put the tunnel in the tunnels list
-                                var index = 1;
-                                while (tunnels[index]) { index++; }
-                                tunnel.index = index;
-                                tunnels[index] = tunnel;
+                            // Put the tunnel in the tunnels list
+                            var index = 1;
+                            while (tunnels[index]) { index++; }
+                            tunnel.index = index;
+                            tunnels[index] = tunnel;
 
-                                sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
-                            }
+                            sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
                         }
                     }
                     break;
@@ -339,7 +340,7 @@ function createMeshCore(agent) {
 
     // Called when a file changed in the file system
     function onFileWatcher(a, b) {
-        //console.log('onFileWatcher', a, b, this.path);
+        console.log('onFileWatcher', a, b, this.path);
         var response = getDirectoryInfo(this.path);
         if ((response != undefined) && (response != null)) { this.tunnel.s.write(JSON.stringify(response)); }
     }
@@ -364,6 +365,7 @@ function createMeshCore(agent) {
             if (reqpath == '') { reqpath = '/'; }
             var xpath = obj.path.join(reqpath, '*');
             var results = null;
+
             try { results = fs.readdirSync(xpath); } catch (e) { }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
@@ -385,7 +387,38 @@ function createMeshCore(agent) {
     }
 
     // Tunnel callback operations
-    function onTunnelUpgrade(response, s, head) { sendConsoleText('onTunnelUpgrade'); this.s = s; s.httprequest = this; s.end = onTunnelClosed; s.data = onTunnelData; }
+    function onTunnelUpgrade(response, s, head) {
+        this.s = s;
+        s.httprequest = this;
+        s.end = onTunnelClosed;
+
+        if (this.tcpport != null) {
+            // This is a TCP relay connection, pause now and try to connect to the target.
+            s.pause();
+            s.data = onTcpRelayServerTunnelData;
+            var connectionOptions = { port: parseInt(this.tcpport) };
+            if (this.tcpaddr != null) { connectionOptions.host = this.tcpaddr; } else { connectionOptions.host = '127.0.0.1'; }
+            s.tcprelay = net.createConnection(connectionOptions, onTcpRelayTargetTunnelConnect);
+            s.tcprelay.peerindex = this.index;
+        } else {
+            // This is a normal connect for KVM/Terminal/Files
+            s.data = onTunnelData;
+        }
+    }
+
+    // Called when the TCP relay target is connected
+    function onTcpRelayTargetTunnelConnect() {
+        var peerTunnel = tunnels[this.peerindex];
+        this.pipe(peerTunnel.s); // Pipe Target --> Server
+        peerTunnel.s.first = true;
+        peerTunnel.s.resume();
+    }
+
+    // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
+    function onTcpRelayServerTunnelData(data) {
+        if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
+    }
+
     function onTunnelClosed() {
         sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
         if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }
@@ -395,7 +428,7 @@ function createMeshCore(agent) {
         if (this.httprequest.watcher != undefined) {
             //console.log('Closing watcher: ' + this.httprequest.watcher.path);
             //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
-            delete this.httprequest.watcher; 
+            delete this.httprequest.watcher;
         }
 
         // If there is a upload or download active on this connection, close the file
@@ -404,6 +437,7 @@ function createMeshCore(agent) {
     }
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
+        console.log("OnTunnelData");
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {
             try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(JSON.stringify({ action: 'uploaderror' })); return; } // Write to the file, if there is a problem, error out.
@@ -521,8 +555,7 @@ function createMeshCore(agent) {
                 try { cmd = JSON.parse(data); } catch (e) { };
                 if ((cmd == null) || (cmd.action == undefined)) { return; }
                 if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
-                sendConsoleText(JSON.stringify(cmd));
-                //console.log(objToString(cmd, 0, '.'));
+                console.log(objToString(cmd, 0, '.'));
                 switch (cmd.action) {
                     case 'ls': {
                         // Close the watcher if required
@@ -534,9 +567,7 @@ function createMeshCore(agent) {
                         }
 
                         // Send the folder content to the browser
-                        sendConsoleText(JSON.stringify(cmd.path));
                         var response = getDirectoryInfo(cmd.path);
-                        sendConsoleText(JSON.stringify(response));
                         if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
                         this.write(JSON.stringify(response));
 
@@ -605,11 +636,11 @@ function createMeshCore(agent) {
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
         }
     }
-    
+
     // Console state
     var consoleWebSockets = {};
     var consoleHttpRequest = null;
-    
+
     // Console HTTP response
     function consoleHttpResponse(response) {
         response.data = function (data) { sendConsoleText(rstr2hex(buf2rstr(data)), this.sessionid); consoleHttpRequest = null; }
@@ -807,7 +838,7 @@ function createMeshCore(agent) {
                             response += (results[i] + "\r\n");
                         } else {
                             response += (results[i] + " " + ((stat.isDirectory()) ? "(Folder)" : "(File)") + "\r\n");
-                        }   
+                        }
                     }
                     break;
                 }
@@ -1001,7 +1032,7 @@ function createMeshCore(agent) {
     function onWebSocketClosed() { sendConsoleText("WebSocket #" + this.httprequest.index + " closed.", this.httprequest.sessionid); delete consoleWebSockets[this.httprequest.index]; }
     function onWebSocketData(data) { sendConsoleText("Got WebSocket #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid); }
     function onWebSocketSendOk() { sendConsoleText("WebSocket #" + this.index + " SendOK.", this.sessionid); }
-        
+
     function onWebSocketUpgrade(response, s, head) {
         sendConsoleText("WebSocket #" + this.index + " connected.", this.sessionid);
         this.s = s;
