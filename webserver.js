@@ -704,7 +704,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         Debug(1, 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
 
         ws.pause();                                         // Hold this socket until we are ready.
-        ws._socket.setKeepAlive(true, 0);                   // Set TCP keep alive
+        ws._socket.setKeepAlive(true, 240000);              // Set TCP keep alive
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
@@ -940,7 +940,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     function handleEchoWebSocket(ws, req) {
         var domain = checkUserIpAddress(ws, req);
         if (domain == null) return;
-        ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
+        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
         // When data is received from the web socket, echo it back
         ws.on('message', function (data) {
@@ -1419,7 +1419,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
-            if ((o.dtime > 120000) || (o.dtime < 30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            if ((o.dtime > 120000) || (o.dtime < -30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             return o;
         } catch (e) { return null; }
     }

@@ -296,55 +296,56 @@ function CreateMeshCentralServer() {
 
                     // Load the list of mesh agents and install scripts
                     if (obj.args.noagentupdate == 1) { for (var i in meshAgentsArchitectureNumbers) { meshAgentsArchitectureNumbers[i].update = false; } }
-                    obj.updateMeshAgentsTable();
-                    obj.updateMeshAgentInstallScripts();
+                    obj.updateMeshAgentsTable(function () {
+                        obj.updateMeshAgentInstallScripts();
 
-                    // Setup and start the web server
-                    require('crypto').randomBytes(48, function (err, buf) {
-                        // Setup Mesh Multi-Server if needed
-                        obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
-                        if (obj.multiServer != null) {
-                            obj.serverId = obj.multiServer.serverid;
-                            for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
-                        }
+                        // Setup and start the web server
+                        require('crypto').randomBytes(48, function (err, buf) {
+                            // Setup Mesh Multi-Server if needed
+                            obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
+                            if (obj.multiServer != null) {
+                                obj.serverId = obj.multiServer.serverid;
+                                for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
+                            }
 
-                        // If the server is set to "nousers", allow only loopback unless IP filter is set
-                        if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
+                            // If the server is set to "nousers", allow only loopback unless IP filter is set
+                            if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
 
-                        if (obj.args.secret) {
-                            // This secret is used to encrypt HTTP session information, if specified, user it.
-                            obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.args.secret, obj.certificates);
-                        } else {
-                            // If the secret is not specified, generate a random number.
-                            obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, buf.toString('hex').toUpperCase(), obj.certificates);
-                        }
+                            if (obj.args.secret) {
+                                // This secret is used to encrypt HTTP session information, if specified, user it.
+                                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.args.secret, obj.certificates);
+                            } else {
+                                // If the secret is not specified, generate a random number.
+                                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, buf.toString('hex').toUpperCase(), obj.certificates);
+                            }
 
-                        // Setup and start the redirection server if needed
-                        if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
-                            obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.certificates);
-                        }
+                            // Setup and start the redirection server if needed
+                            if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
+                                obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.certificates);
+                            }
 
-                        // Setup the Intel AMT event handler
-                        obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
+                            // Setup the Intel AMT event handler
+                            obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
 
-                        // Setup the Intel AMT local network scanner
-                        if (obj.args.wanonly != true) {
-                            obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
-                            obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
-                        }
+                            // Setup the Intel AMT local network scanner
+                            if (obj.args.wanonly != true) {
+                                obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
+                                obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
+                            }
 
-                        // Setup and start the MPS server
-                        if (obj.args.lanonly != true) {
-                            obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
-                        }
+                            // Setup and start the MPS server
+                            if (obj.args.lanonly != true) {
+                                obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+                            }
 
-                        // Start periodic maintenance
-                        obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                            // Start periodic maintenance
+                            obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
 
-                        // Dispatch an event that the server is now running
-                        obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
+                            // Dispatch an event that the server is now running
+                            obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
 
-                        obj.debug(1, 'Server started');
+                            obj.debug(1, 'Server started');
+                        });
                     });
                 });
             });
@@ -728,7 +729,9 @@ function CreateMeshCentralServer() {
     };
 
     // Update the list of available mesh agents
-    obj.updateMeshAgentsTable = function () {
+    obj.updateMeshAgentsTable = function (func) {
+        var archcount = 0;
+        for (var archid in meshAgentsArchitectureNumbers) { archcount++; }
         for (var archid in meshAgentsArchitectureNumbers) {
             var agentpath = obj.path.join(__dirname, 'agents', meshAgentsArchitectureNumbers[archid].localname);
             var stream = null;
@@ -738,6 +741,7 @@ function CreateMeshCentralServer() {
                 stream.on('error', function (data) {
                     // If there is an error reading this file, make sure this agent is not in the agent table
                     if (obj.meshAgentBinaries[this.info.id] != null) { delete obj.meshAgentBinaries[this.info.id]; }
+                    if ((--archcount == 0) && (func != null)) { func(); }
                 });
                 stream.on('end', function () {
                     // Add the agent to the agent table with all information and the hash
@@ -748,11 +752,12 @@ function CreateMeshCentralServer() {
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath) } catch (e) { }
                     if (stats != null) { obj.meshAgentBinaries[this.info.id].size = stats.size; }
+                    if ((--archcount == 0) && (func != null)) { func(); }
                 });
                 stream.info = meshAgentsArchitectureNumbers[archid];
                 stream.agentpath = agentpath;
                 stream.hash = obj.crypto.createHash('sha384', stream);
-            } catch (e) { }
+            } catch (e) { if ((--archcount == 0) && (func != null)) { func(); } }
         }
     }
 

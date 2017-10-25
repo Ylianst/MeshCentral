@@ -59,7 +59,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         }
 
         user.subscriptions = obj.parent.subscribe(user._id, ws);   // Subscribe to events
-        obj.ws._socket.setKeepAlive(true, 0);                      // Set TCP keep alive
+        obj.ws._socket.setKeepAlive(true, 240000);                 // Set TCP keep alive
 
         // When data is received from the web socket
         ws.on('message', function (msg) {

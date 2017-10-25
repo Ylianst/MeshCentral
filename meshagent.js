@@ -29,7 +29,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     obj.useSHA386 = false;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
-    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
+    ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
     // Send a message to the mesh agent
     obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
@@ -127,12 +127,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         } else {
                             // Send the next block to the agent
                             obj.agentUpdate.ptr += len;
-                            //console.log("Agent update send next block: " + len);
+                            //console.log("Agent update send next block", obj.agentUpdate.ptr, len);
                             if (len == agentUpdateBlockSize) { obj.ws.send(obj.agentUpdate.buf); } else { obj.ws.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
 
                             if (len < agentUpdateBlockSize) {
-                                //console.log("Agent update sent");
-                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
+                                console.log("Agent update sent");
+                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentExeInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
                                 obj.fs.close(obj.agentUpdate.fd);
                                 obj.agentUpdate = null;
                             }

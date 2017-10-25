@@ -2416,8 +2416,13 @@
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0) && (node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP") title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
-
+                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
+                    if (node.agent.id > 4) {
+                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","PSSH",22) title="Requires Microsoft ClickOnce support in your browser.">Putty</a>&nbsp;';
+                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
+                    }
+                }
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -2626,8 +2631,8 @@
             meshserver.Send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
-        function p10clickOnce(nodeid, protocol) {
-            meshserver.Send({ action: 'getcookie', nodeid: nodeid, tcpport: 3389, tag: 'clickonce', protocol: 'rdp' });
+        function p10clickOnce(nodeid, protocol, port) {
+            meshserver.Send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'clickonce', protocol: protocol });
         }
 
         // Show current location

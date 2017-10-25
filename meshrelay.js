@@ -80,7 +80,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     }
 
     if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
-    ws._socket.setKeepAlive(true, 0); // Set TCP keep alive
+    ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
     // Validate that the id is valid, we only need to do this on non-authenticated sessions.
     // TODO: Figure out when this needs to be done.
