@@ -59,7 +59,7 @@ CheckInstallAgent() {
         DownloadAgent $url $meshid $machineid
       fi
     else
-      echo "MeshID is not correct, must be 64 HEX characters long."
+      echo "MeshID is not correct, must be 64 characters long."
     fi
   else
     echo "URI and/or MeshID have not been specified, must be passed in as arguments."
@@ -78,7 +78,7 @@ DownloadAgent() {
   wget $url/meshagents?id=$machineid -q --no-check-certificate -O /usr/local/mesh/meshagent
   if [ $? -eq 0 ]
   then
-    echo "Mesh agent download."
+    echo "Mesh agent downloaded."
 # TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
     wget $url/meshsettings?id=$meshid -q --no-check-certificate -O /usr/local/mesh/meshagent.msh
@@ -97,6 +97,7 @@ DownloadAgent() {
         ln -s /usr/local/mesh/meshagent /etc/rc3.d/S20mesh
         ln -s /usr/local/mesh/meshagent /etc/rc5.d/S20mesh
       fi
+	  echo "Mesh agent started."
     else
       echo "Unable to download mesh settings at: $url/meshsettings?id=$meshid."
     fi

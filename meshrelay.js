@@ -4,7 +4,7 @@
 * @version v0.0.1
 */
 
-module.exports.CreateMeshRelay = function (parent, ws, req) {
+module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     var obj = {};
     obj.ws = ws;
     obj.req = req;
@@ -12,6 +12,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
     obj.parent = parent;
     obj.id = req.query.id;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
+    obj.domain = domain;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
 
     // Disconnect this agent
@@ -60,7 +61,27 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
 
     if (req.query.auth == null) {
         // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.
-        try { if ((req.session) && (req.session.userid) || (req.session.domainid == getDomain(req).id)) { obj.authenticated = true; } } catch (e) { }
+        try { if ((req.session) && (req.session.userid) || (req.session.domainid == obj.domain.id)) { obj.authenticated = true; } } catch (e) { }
+        if ((obj.authenticated != true) && (req.query.user != null) && (req.query.pass != null)) {
+            // Check user authentication
+            obj.parent.authenticate(req.query.user, req.query.pass, obj.domain, function (err, userid, passhint) {
+                if (userid != null) {
+                    obj.authenticated = true;
+                    // Check is we have agent routing instructions, process this here.
+                    if ((req.query.nodeid != null) && (req.query.tcpport != null)) {
+                        if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                        var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
+                        if (obj.sendAgentMessage(command, userid, obj.domain.id) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
+                    }
+                } else {
+                    obj.parent.parent.debug(1, 'Relay: User authentication failed (' + obj.remoteaddr + ')');
+                    obj.ws.send('error:Authentication failed');
+                }
+                performRelay();
+            });
+        } else {
+            performRelay();
+        }
     } else {
         // Get the session from the cookie
         var cookie = obj.parent.parent.webserver.decodeCookie(req.query.auth);
@@ -76,74 +97,78 @@ module.exports.CreateMeshRelay = function (parent, ws, req) {
         } else {
             obj.id = null;
             obj.parent.parent.debug(1, 'Relay: invalid cookie (' + obj.remoteaddr + ')');
+            obj.ws.send('error:Invalid cookie');
         }
+        performRelay();
     }
 
-    if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
-    ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
+    function performRelay() {
+        if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
+        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
-    // Validate that the id is valid, we only need to do this on non-authenticated sessions.
-    // TODO: Figure out when this needs to be done.
-    /*
-    if (!parent.args.notls) {
-        // Check the identifier, if running without TLS, skip this.
-        var ids = obj.id.split(':');
-        if (ids.length != 3) { obj.ws.close(); obj.id = null; return null; } // Invalid ID, drop this.
-        if (parent.crypto.createHmac('SHA384', parent.relayRandom).update(ids[0] + ':' + ids[1]).digest('hex') != ids[2]) { obj.ws.close(); obj.id = null; return null; } // Invalid HMAC, drop this.
-        if ((Date.now() - parseInt(ids[1])) > 120000) { obj.ws.close(); obj.id = null; return null; } // Expired time, drop this.
-        obj.id = ids[0];
-    }
-    */
+        // Validate that the id is valid, we only need to do this on non-authenticated sessions.
+        // TODO: Figure out when this needs to be done.
+        /*
+        if (!parent.args.notls) {
+            // Check the identifier, if running without TLS, skip this.
+            var ids = obj.id.split(':');
+            if (ids.length != 3) { obj.ws.close(); obj.id = null; return null; } // Invalid ID, drop this.
+            if (parent.crypto.createHmac('SHA384', parent.relayRandom).update(ids[0] + ':' + ids[1]).digest('hex') != ids[2]) { obj.ws.close(); obj.id = null; return null; } // Invalid HMAC, drop this.
+            if ((Date.now() - parseInt(ids[1])) > 120000) { obj.ws.close(); obj.id = null; return null; } // Expired time, drop this.
+            obj.id = ids[0];
+        }
+        */
 
-    // Check the peer connection status
-    {
-        var relayinfo = parent.wsrelays[obj.id];
-        if (relayinfo) {
-            if (relayinfo.state == 1) {
-                // Check that at least one connection is authenticated
-                if ((obj.authenticated != true) && (relayinfo.peer1.authenticated != true)) {
+        // Check the peer connection status
+        {
+            var relayinfo = parent.wsrelays[obj.id];
+            if (relayinfo) {
+                if (relayinfo.state == 1) {
+                    // Check that at least one connection is authenticated
+                    if ((obj.authenticated != true) && (relayinfo.peer1.authenticated != true)) {
+                        obj.id = null;
+                        obj.ws.close();
+                        obj.parent.parent.debug(1, 'Relay without-auth: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                        return null;
+                    }
+
+                    // Connect to peer
+                    obj.peer = relayinfo.peer1;
+                    obj.peer.peer = obj;
+                    relayinfo.peer2 = obj;
+                    relayinfo.state = 2;
+                    obj.ws.send('c'); // Send connect to both peers
+                    relayinfo.peer1.ws.send('c');
+                    relayinfo.peer1.ws.resume(); // Release the traffic
+
+                    relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
+                    relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
+
+                    obj.parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + obj.peer.remoteaddr + ')');
+                } else {
+                    // Connected already, drop (TODO: maybe we should re-connect?)
                     obj.id = null;
                     obj.ws.close();
-                    obj.parent.parent.debug(1, 'Relay without-auth: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                    obj.parent.parent.debug(1, 'Relay duplicate: ' + obj.id + ' (' + obj.remoteaddr + ')');
                     return null;
                 }
-
-                // Connect to peer
-                obj.peer = relayinfo.peer1;
-                obj.peer.peer = obj;
-                relayinfo.peer2 = obj;
-                relayinfo.state = 2;
-                obj.ws.send('c'); // Send connect to both peers
-                relayinfo.peer1.ws.send('c');
-                relayinfo.peer1.ws.resume(); // Release the traffic
-
-                relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
-                relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
-
-                obj.parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + obj.remoteaddr + ' --> ' + obj.peer.remoteaddr +  ')');
             } else {
-                // Connected already, drop (TODO: maybe we should re-connect?)
-                obj.id = null;
-                obj.ws.close();
-                obj.parent.parent.debug(1, 'Relay duplicate: ' + obj.id + ' (' + obj.remoteaddr + ')');
-                return null;
-            }
-        } else {
-            // Wait for other relay connection
-            ws.pause(); // Hold traffic until the other connection
-            parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
-            obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                // Wait for other relay connection
+                ws.pause(); // Hold traffic until the other connection
+                parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
+                obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ')');
 
-            // Check if a peer server has this connection
-            if (parent.parent.multiServer != null) {
-                var rsession = obj.parent.wsPeerRelays[obj.id];
-                if ((rsession != null) && (rsession.serverId > obj.parent.parent.serverId)) {
-                    // We must initiate the connection to the peer
-                    parent.parent.multiServer.createPeerRelay(ws, req, rsession.serverId, req.session.userid);
-                    delete parent.wsrelays[obj.id];
-                } else {
-                    // Send message to other peers that we have this connection
-                    parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id }));
+                // Check if a peer server has this connection
+                if (parent.parent.multiServer != null) {
+                    var rsession = obj.parent.wsPeerRelays[obj.id];
+                    if ((rsession != null) && (rsession.serverId > obj.parent.parent.serverId)) {
+                        // We must initiate the connection to the peer
+                        parent.parent.multiServer.createPeerRelay(ws, req, rsession.serverId, req.session.userid);
+                        delete parent.wsrelays[obj.id];
+                    } else {
+                        // Send message to other peers that we have this connection
+                        parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id }));
+                    }
                 }
             }
         }

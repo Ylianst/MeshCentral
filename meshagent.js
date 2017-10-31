@@ -131,7 +131,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (len == agentUpdateBlockSize) { obj.ws.send(obj.agentUpdate.buf); } else { obj.ws.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
 
                             if (len < agentUpdateBlockSize) {
-                                console.log("Agent update sent");
+                                //console.log("Agent update sent");
                                 obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentExeInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
                                 obj.fs.close(obj.agentUpdate.fd);
                                 obj.agentUpdate = null;

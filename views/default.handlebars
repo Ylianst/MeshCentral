@@ -25,7 +25,6 @@
     <script type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>MeshCentral</title>
 </head>
-
 <body onload="javascript:if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)">
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu" style="display: none">
@@ -1494,10 +1493,10 @@
             setDialogMode(2, "Add Mesh Agent", 1, null, x);
 
             if (serverinfo.https == true) {
-                Q('agins_linux_area').value = "wget -q https://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + serverinfo.name + ":" + serverinfo.port + " " + meshid.split('/')[2] + "\r\n";
+                Q('agins_linux_area').value = "wget -q https://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + serverinfo.name + ":" + serverinfo.port + " " + meshid.split('/')[2].replace(/\$/g, '\\$') + "\r\n";
                 Q('agins_linux_area_un').value = "wget -q https://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             } else {
-                Q('agins_linux_area').value = "wget -q http://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + serverinfo.name + ":" + serverinfo.port + " " + meshid.split('/')[2] + "\r\n";
+                Q('agins_linux_area').value = "wget -q http://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + serverinfo.name + ":" + serverinfo.port + " " + meshid.split('/')[2].replace(/\$/g, '\\$') + "\r\n";
                 Q('agins_linux_area_un').value = "wget -q http://" + serverinfo.name + ":" + serverinfo.port + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             }
         }
@@ -2415,6 +2414,8 @@
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
 
+                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showRouterDialog("' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
@@ -2687,6 +2688,39 @@
             if (xxdialogMode) return;
             setDialogMode(2, "Network Interfaces", 1, null, "<div id=d2netinfo>Loading...</div>", 'if' + currentNode._id );
             meshserver.Send({ action: 'getnetworkinfo', nodeid: currentNode._id });
+        }
+
+        // Show router dialog
+        function p10showRouterDialog() {
+            if (xxdialogMode) return;
+            var y = "<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px>";
+            y += "<option value=1>Windows (32bit)</option>";
+            y += "<option value=2>Windows (64bit)</option>";
+            y += "<option value=5>Linux x86 (32bit)</option>";
+            y += "<option value=6>Linux x86 (64bit)</option>";
+            y += "<option value=25>Linux ARM, Raspberry Pi (32bit)</option>";
+            y += "</select>";
+
+            var x = "";
+            x += "<div>Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />";
+            x += addHtmlValue('Operating System', y);
+            x += addHtmlValue('Mesh Command', '<a id="meshcmddownloadid" href="meshagents?meshcmd=1" target="_blank"></a>');
+            x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + currentNode._id + '" target="_blank">MeshAction (.txt)</a>');
+            x += "</div>";
+
+            setDialogMode(2, "Network Router", 1, null, x, currentNode._id);
+            meshCmdOsClick();
+        }
+
+        function meshCmdOsClick() {
+            var os = Q('aginsSelect').value, osn = '';
+            Q('meshcmddownloadid').href = "meshagents?meshcmd=" + os;
+            if (os == 1) { osn = 'MeshCmd (Win32 executable)'; }
+            if (os == 2) { osn = 'MeshCmd (Win64 executable)'; }
+            if (os == 5) { osn = 'MeshCmd (Linux x86, 32bit)'; }
+            if (os == 6) { osn = 'MeshCmd (Linux x86, 64bit)'; }
+            if (os == 25) { osn = 'MeshCmd (Linux ARM, 32bit)'; }
+            QH('meshcmddownloadid', osn);
         }
 
         function p10showiconselector() {

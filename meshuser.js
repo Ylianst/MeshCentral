@@ -338,7 +338,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // TODO: Right now, we only create type 1 Agent-less Intel AMT mesh, or type 2 Agent mesh
                         if ((command.meshtype == 1) || (command.meshtype == 2)) {
                             // Create a type 1 agent-less Intel AMT mesh.
-                            obj.crypto.randomBytes(48, function (err, buf) {
+                            obj.parent.crypto.randomBytes(48, function (err, buf) {
                                 var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                                 var links = {}
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
@@ -492,7 +492,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                             // Create a new nodeid
-                            obj.crypto.randomBytes(48, function (err, buf) {
+                            obj.parent.crypto.randomBytes(48, function (err, buf) {
                                 // create the new node
                                 var nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
                                 var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: parseInt(command.amttls) } };
