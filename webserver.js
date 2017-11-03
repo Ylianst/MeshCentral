@@ -43,6 +43,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.tls = require('tls');
     obj.path = require('path');
     obj.hash = require('./pass').hash;
+    obj.hash2 = require('./pass').hash2;
     obj.constants = require('constants');
     obj.bodyParser = require('body-parser');
     obj.session = require('express-session');
@@ -175,14 +176,24 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (user.salt == null) {
             fn(new Error('invalid password'));
         } else {
-            obj.hash(pass, user.salt, function (err, hash) {
-                if (err) return fn(err);
-                if (hash == user.hash) return fn(null, user._id);
-                fn(new Error('invalid password'), null, user.passhint);
-            });
+            if (user.passtype != null) {
+                // IIS default clear or weak password hashing (SHA-1)
+                obj.iishash(user.passtype, pass, user.salt, function (err, hash) {
+                    if (err) return fn(err);
+                    if (hash == user.hash) return fn(null, user._id);
+                    fn(new Error('invalid password'), null, user.passhint);
+                });
+            } else {
+                // Default strong password hashing
+                obj.hash(pass, user.salt, function (err, hash) {
+                    if (err) return fn(err);
+                    if (hash == user.hash) return fn(null, user._id);
+                    fn(new Error('invalid password'), null, user.passhint);
+                });
+            }
         }
     }
-    
+
     /*
     obj.restrict = function (req, res, next) {
         console.log('restrict', req.url);

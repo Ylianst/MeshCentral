@@ -40,3 +40,15 @@ exports.hash = function (pwd, salt, fn) {
         });
     }
 };
+
+exports.iishash = function (type, pwd, salt, fn) {
+    if (type == 0) {
+        fn(null, pwd);
+    } else if (type == 1) {
+        const hash = crypto.createHash('sha1');
+        hash.update(Buffer.concat([new Buffer(salt, 'base64'), new Buffer(pwd, 'utf16le')]));
+        fn(null, hash.digest().toString('base64'));
+    } else {
+        fn('invalid type');
+    }
+};

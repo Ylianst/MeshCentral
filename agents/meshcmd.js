@@ -37,29 +37,54 @@ function onVerifyServer(clientName, certs) {
 // Print a debug message
 function debug(level, message) { if ((settings.debugLevel != null) && (settings.debugLevel >= level)) { console.log(message); } }
 
+// Parse the input arguments into an object
+function parceArguments(argv) {
+    var r = {};
+    for (var i in argv) {
+        i = parseInt(i);
+        if (argv[i].startsWith('--') == true) {
+            var key = argv[i].substring(2).toLowerCase(), val = true;
+            if (((i + 1) < argv.length) && (argv[i + 1].startsWith('--') == false)) { val = argv[i + 1]; }
+            r[key] = val;
+        }
+    }
+    return r;
+}
+
 // Start the router, start by listening to the local port
 function run(argv) {
-    console.log('MeshCentral Command v1.0');
+    var args = parceArguments(argv);
+    console.log('MeshCentral Command v1.0b');
     var actionpath = 'meshaction.txt';
-    if (argv.length >= 2) { actionpath = argv[1]; }
-
+    if (args.actionfile != null) { actionpath = args.actionfile; }
     // Load the action file
     var actionfile = null;
     try { actionfile = fs.readFileSync(actionpath); } catch (e) { }
-    if (actionfile == null) { console.log('Unable to load \"' + actionpath + '\". Create this file or specify the location as the first argument.'); process.exit(1); }
+    if (actionfile == null) { console.log('Unable to load \"' + actionpath + '\". Create this file or specify the location using --actionfile [filename].'); process.exit(1); }
     try { settings = JSON.parse(actionfile); } catch (e) { console.log(actionpath, e); process.exit(1); }
+
+    // Set the arguments
+    if ((typeof args.localport) == 'string') { settings.localport = parseInt(args.localport); }
+    if ((typeof args.remotenodeid) == 'string') { settings.remoteNodeId = args.remotenodeid; }
+    if ((typeof args.username) == 'string') { settings.username = args.username; }
+    if ((typeof args.password) == 'string') { settings.password = args.password; }
+    if ((typeof args.user) == 'string') { settings.username = args.user; }
+    if ((typeof args.pass) == 'string') { settings.password = args.pass; }
+    if ((typeof args.serverid) == 'string') { settings.serverId = args.serverid; }
+    if ((typeof args.serverhttpshash) == 'string') { settings.serverHttpsHash = args.serverhttpshash; }
+    if ((typeof args.remoteport) == 'string') { settings.remotePort = parseInt(args.remoteport); }
 
     // Validate meshaction.txt
     if (settings.action == null) { console.log('No \"action\" specified.'); process.exit(1); }
     settings.action = settings.action.toLowerCase();
     if (settings.action == 'route') {
-        if ((settings.localPort == null) || (typeof settings.localPort != 'number') || (settings.localPort < 0) || (settings.localPort > 65535)) { console.log('No or invalid \"localPort\" specified.'); process.exit(1); }
+        if ((settings.localPort == null) || (typeof settings.localPort != 'number') || (settings.localPort < 0) || (settings.localPort > 65535)) { console.log('No or invalid \"localPort\" specified, use --localport [localport].'); process.exit(1); }
         if ((settings.remoteNodeId == null) || (typeof settings.remoteNodeId != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); process.exit(1); }
-        if ((settings.username == null) || (typeof settings.username != 'string')) { console.log('No or invalid \"username\" specified.'); process.exit(1); }
-        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified.'); process.exit(1); }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { console.log('No or invalid \"username\" specified, use --username [username].'); process.exit(1); }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); process.exit(1); }
         if ((settings.serverId == null) || (typeof settings.serverId != 'string') || (settings.serverId.length != 96)) { console.log('No or invalid \"serverId\" specified.'); process.exit(1); }
         if ((settings.serverHttpsHash == null) || (typeof settings.serverHttpsHash != 'string') || (settings.serverHttpsHash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); process.exit(1); }
-        if ((settings.remotePort == null) || (typeof settings.remotePort != 'number') || (settings.remotePort < 0) || (settings.remotePort > 65535)) { console.log('No or invalid \"remotePort\" specified.'); process.exit(1); }
+        if ((settings.remotePort == null) || (typeof settings.remotePort != 'number') || (settings.remotePort < 0) || (settings.remotePort > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); process.exit(1); }
     } else {
         console.log('Invalid \"action\" specified.'); process.exit(1);
     }
@@ -167,4 +192,4 @@ function OnMulticastMessage(msg, rinfo) {
     }
 }
 
-try { run(process.argv); } catch (e) { /*console.log(e);*/ }
+try { run(process.argv); } catch (e) { console.log(e); }

@@ -232,7 +232,7 @@ function CreateMeshCentralServer() {
             if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.dbexport) {
                 // Export the entire database to a JSON file
-                if (obj.args.dbexport == true) { console.log('Use --dbexport [filename]'); process.exit(); } else { obj.db.GetAll(function (err, docs) { obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs)); console.log('Exported ' + docs.length + ' document(s).'); process.exit(); }); }
+                if (obj.args.dbexport == true) { console.log('Use --dbexport [filename]'); process.exit(); } else { obj.db.GetAll(function (err, docs) { obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs)); console.log('Exported ' + docs.length + ' objects(s).'); process.exit(); }); }
                 return;
             }
             if (obj.args.dbimport) {
@@ -242,7 +242,7 @@ function CreateMeshCentralServer() {
                     try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file'); process.exit(); }
                     try { json = JSON.parse(json); } catch (e) { console.log('Invalid JSON format'); process.exit(); }
                     if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format'); }
-                    obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' document(s)'); process.exit(); }); });
+                    obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' objects(s)'); process.exit(); }); });
                 }
                 return;
             }
