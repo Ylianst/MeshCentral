@@ -42,8 +42,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.net = require('net');
     obj.tls = require('tls');
     obj.path = require('path');
-    obj.hash = require('./pass').hash;
-    obj.hash2 = require('./pass').hash2;
     obj.constants = require('constants');
     obj.bodyParser = require('body-parser');
     obj.session = require('express-session');
@@ -178,14 +176,18 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else {
             if (user.passtype != null) {
                 // IIS default clear or weak password hashing (SHA-1)
-                obj.iishash(user.passtype, pass, user.salt, function (err, hash) {
+                require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
                     if (err) return fn(err);
-                    if (hash == user.hash) return fn(null, user._id);
+                    if (hash == user.hash) {
+                        // Update the password to the stronger format.
+                        require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                        return fn(null, user._id);
+                    }
                     fn(new Error('invalid password'), null, user.passhint);
                 });
             } else {
-                // Default strong password hashing
-                obj.hash(pass, user.salt, function (err, hash) {
+                // Default strong password hashing (pbkdf2 SHA384)
+                require('./pass').hash(pass, user.salt, function (err, hash) {
                     if (err) return fn(err);
                     if (hash == user.hash) return fn(null, user._id);
                     fn(new Error('invalid password'), null, user.passhint);
@@ -341,7 +343,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 req.session.userid = user._id;
                 req.session.domainid = domain.id;
                 // Create a user, generate a salt and hash the password
-                obj.hash(req.body.password1, function (err, salt, hash) {
+                require('./pass').hash(req.body.password1, function (err, salt, hash) {
                     if (err) throw err;
                     user.salt = salt;
                     user.hash = hash;
@@ -383,7 +385,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
         
         // Update the password
-        obj.hash(req.body.apassword1, function (err, salt, hash) {
+        require('./pass').hash(req.body.apassword1, function (err, salt, hash) {
             if (err) throw err;
             var hint = req.body.apasswordhint;
             if (hint.length > 250) hint = hint.substring(0, 250);
