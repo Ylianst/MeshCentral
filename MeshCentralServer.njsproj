@@ -35,6 +35,7 @@
     <Compile Include="meshrelay.js" />
     <Compile Include="meshuser.js" />
     <Compile Include="mpsserver.js" />
+    <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
     <Compile Include="public\relay.js" />

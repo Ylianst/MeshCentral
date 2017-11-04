@@ -185,6 +185,19 @@ module.exports.CertificateOperations = function () {
             rcount++;
         }
 
+        // If the swarm server certificate exist, load it (This is an optional certificate)
+        if (obj.fileExists(directory + '/swarmserver-cert-public.crt') && obj.fileExists(directory + '/swarmserver-cert-private.key')) {
+            var swarmServerCertificate = obj.fs.readFileSync(directory + '/swarmserver-cert-public.crt', 'utf8');
+            var swarmServerPrivateKey = obj.fs.readFileSync(directory + '/swarmserver-cert-private.key', 'utf8');
+            r.swarmserver = { cert: swarmServerCertificate, key: swarmServerPrivateKey };
+        }
+
+        // If the swarm server root certificate exist, load it (This is an optional certificate)
+        if (obj.fileExists(directory + '/swarmserverroot-cert-public.crt')) {
+            var swarmServerRootCertificate = obj.fs.readFileSync(directory + '/swarmserverroot-cert-public.crt', 'utf8');
+            r.swarmserverroot = { cert: swarmServerRootCertificate };
+        }
+
         // If CA certificates are present, load them
         var caok, caindex = 1, calist = [];
         do {

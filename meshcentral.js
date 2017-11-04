@@ -10,6 +10,7 @@ function CreateMeshCentralServer() {
     obj.webserver;
     obj.redirserver;
     obj.mpsserver;
+    obj.swarmserver;
     obj.amtEventHandler;
     obj.amtScanner;
     obj.meshScanner;
@@ -64,7 +65,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
@@ -232,18 +233,21 @@ function CreateMeshCentralServer() {
             if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.dbexport) {
                 // Export the entire database to a JSON file
-                if (obj.args.dbexport == true) { console.log('Use --dbexport [filename]'); process.exit(); } else { obj.db.GetAll(function (err, docs) { obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs)); console.log('Exported ' + docs.length + ' objects(s).'); process.exit(); }); }
+                if (obj.args.dbexport == true) { obj.args.dbexport = obj.path.join(obj.datapath, 'meshcentral.db.json'); }
+                obj.db.GetAll(function (err, docs) {
+                    obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs));
+                    console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexport + '.'); process.exit();
+                });
                 return;
             }
             if (obj.args.dbimport) {
                 // Import the entire database from a JSON file
-                if (obj.args.dbimport == true) { console.log('Use --dbimport [filename]'); process.exit(); } else {
-                    var json = null;
-                    try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file'); process.exit(); }
-                    try { json = JSON.parse(json); } catch (e) { console.log('Invalid JSON format'); process.exit(); }
-                    if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format'); }
-                    obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' objects(s)'); process.exit(); }); });
-                }
+                if (obj.args.dbimport == true) { obj.args.dbimport = obj.path.join(obj.datapath, 'meshcentral.db.json'); }
+                var json = null;
+                try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + '.'); process.exit(); }
+                try { json = JSON.parse(json); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); process.exit(); }
+                if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
+                obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); process.exit(); }); });
                 return;
             }
 
@@ -336,6 +340,12 @@ function CreateMeshCentralServer() {
                             // Setup and start the MPS server
                             if (obj.args.lanonly != true) {
                                 obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+                            }
+
+                            // Setup and start the legacy swarm server
+                            if (obj.certificates.swarmserver != null) {
+                                if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
+                                obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
                             }
 
                             // Start periodic maintenance
