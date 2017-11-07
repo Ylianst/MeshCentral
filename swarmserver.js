@@ -11,10 +11,12 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     obj.db = db;
     obj.args = args;
     obj.certificates = certificates;
-    //obj.legacyAgentConnections = {};
+    obj.legacyAgentConnections = {};
+    obj.migrationAgents = {};
     var common = require('./common.js');
     var net = require('net');
     var tls = require('tls');
+    var forge = require('node-forge');
 
     var LegacyMeshProtocol = {
         NODEPUSH: 1,	           // Used to send a node block to another peer.
@@ -113,10 +115,32 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
     obj.server = tls.createServer({ key: certificates.swarmserver.key, cert: certificates.swarmserver.cert, requestCert: true }, onConnection);
     obj.server.listen(args.swarmport, function () { console.log('MeshCentral Legacy Swarm Server running on ' + certificates.CommonName + ':' + args.swarmport + '.'); }).on('error', function (err) { console.error('ERROR: MeshCentral Swarm Server server port ' + args.swarmport + ' is not available.'); if (args.exactports) { process.exit(); } });
-    
+    loadMigrationAgents();
+
+    // Load all migration agents along with full executable in memory
+    function loadMigrationAgents() {
+        var migrationAgentsDir = null, migrationAgentsPath = obj.parent.path.join(obj.parent.datapath, 'migrationagents');
+        try { migrationAgentsDir = obj.parent.fs.readdirSync(migrationAgentsPath); } catch (e) { }
+        if (migrationAgentsDir != null) {
+            for (var i in migrationAgentsDir) {
+                if (migrationAgentsDir[i].toLowerCase().startsWith('meshagent-')) {
+                    var migrationAgentName = obj.parent.path.join(migrationAgentsPath, migrationAgentsDir[i]);
+                    var agentInfo = migrationAgentsDir[i].substring(10).split('.');
+                    var agentVersion = parseInt(agentInfo[0]);
+                    var agentArch = parseInt(agentInfo[1]);
+                    var agentBinary = obj.parent.fs.readFileSync(migrationAgentName);
+                    if (obj.migrationAgents[agentArch] == null) { obj.migrationAgents[agentArch] = {}; }
+                    if (obj.migrationAgents[agentArch][agentVersion] == null) { obj.migrationAgents[agentArch][agentVersion] = { arch: agentArch, ver: agentVersion, path: migrationAgentName, binary: agentBinary }; }
+                }
+            }
+        }
+    }
+
+    // Called when a legacy agent connects to this server
     function onConnection(socket) {
         socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", socket: socket };
         socket.setEncoding('binary');
+        socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
         Debug(1, 'SWARM:New legacy agent connection');
         
         socket.addListener("data", function (data) {
@@ -149,12 +173,65 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             var cmd = common.ReadShort(socket.tag.accumulator, 0);
             var len = common.ReadShort(socket.tag.accumulator, 2);
             if (len > socket.tag.accumulator.length) return 0;
-
-            console.log('Swarm: Cmd=' + cmd + ', Len=' + len + '.');
+            var data = socket.tag.accumulator.substring(4, len);
+            //console.log('Swarm: Cmd=' + cmd + ', Len=' + len + '.');
 
             switch (cmd) {
                 case LegacyMeshProtocol.NODEPUSH: {
                     Debug(3, 'Swarm:NODEPUSH');
+                    var nodeblock = obj.decodeNodeBlock(data);
+                    if ((nodeblock != null) && (nodeblock.agenttype != null) && (nodeblock.agentversion != null)) {
+                        Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
+
+                        // Figure out what is the next agent version we need.
+                        var nextAgentVersion = 200; // TODO
+
+                        // See if we need to start the agent update
+                        if ((obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
+                            // Start the update
+                            socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
+                            socket.tag.updatePtr = 0;
+                            console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
+                            obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                        }
+                    }
+                    break;
+                }
+                case LegacyMeshProtocol.AMTPROVISIONING: {
+                    Debug(3, 'Swarm:AMTPROVISIONING');
+                    obj.SendCommand(socket, LegacyMeshProtocol.AMTPROVISIONING, common.ShortToStr(1));
+                    break;
+                }
+                case LegacyMeshProtocol.GETSTATE: {
+                    Debug(3, 'Swarm:GETSTATE');
+                    if (len < 12) break;
+                    var statecmd = common.ReadInt(data, 0);
+                    var statesync = common.ReadInt(data, 4);
+                    switch (statecmd) {
+                        case 6: { // Ask for agent block
+                            if (socket.tag.update != null) {
+                                // Send an agent block
+                                var l = Math.min(socket.tag.update.binary.length - socket.tag.updatePtr, 16384);
+                                obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(6) + common.IntToStr(socket.tag.updatePtr) + socket.tag.update.binary.toString('binary', socket.tag.updatePtr, socket.tag.updatePtr + l)); // agent.SendQuery(6, AgentFileLen + AgentBlock);
+                                Debug(3, 'Swarm:Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
+
+                                socket.tag.updatePtr += l;
+                                if (socket.tag.updatePtr >= socket.tag.update.binary.length) {
+                                    // Send end-of-transfer
+                                    obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(7) + common.IntToStr(socket.tag.update.binary.length)); //agent.SendQuery(7, AgentFileLen);
+                                    Debug(3, 'Swarm:Sending end of agent, ptr = ' + socket.tag.updatePtr);
+                                    delete socket.tag.update;
+                                    delete socket.tag.updatePtr;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case LegacyMeshProtocol.APPSUBSCRIBERS: {
+                    Debug(3, 'Swarm:APPSUBSCRIBERS');
+                    break;
                 }
                 default: {
                     Debug(1, 'Swarm:Unknown command: ' + cmd + ' of len ' + len + '.');
@@ -167,13 +244,67 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             Debug(1, 'Swarm:Connection closed');
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
+            if (socket.pingTimer != null) { clearInterval(socket.pingTimer); delete socket.pingTimer; }
         });
         
         socket.addListener("error", function () {
             //console.log("Swarm Error: " + socket.remoteAddress);
         });
     }
-    
+
+    function getTagClass(data, tagClass, type) {
+        if ((data == null) || (data.value == null)) return;
+        for (var i in data.value) {
+            //console.log(JSON.stringify(data.value[i]));
+            if ((data.value[i].tagClass == tagClass) && (data.value[i].type == type)) {
+                return data.value[i];
+            }
+        }
+    }
+
+    // Decode a node push block
+    obj.decodeNodeBlock = function (data) {
+        try {
+            // Traverse the DER to get the raw data (Not sure if this works all the time)
+            var info = {}, ptr = 68, der = forge.asn1.fromDer(forge.util.createBuffer(data, 'binary'));
+            der = getTagClass(der, 128, 0);
+            der = getTagClass(der, 0, 16);
+            der = getTagClass(der, 0, 16);
+            der = getTagClass(der, 128, 0);
+            der = getTagClass(der, 0, 4);
+            var binarydata = der.value;
+
+            // Get the basic header values
+            info.certhashhex = common.rstr2hex(binarydata.substring(0, 32)); // Hash of the complete mesh agent certificate
+            info.nodeidhex = common.rstr2hex(binarydata.substring(32, 64)); // Old mesh agent nodeid
+            info.serialNumber = common.ReadIntX(binarydata, 64); // Block serial number
+
+            // Got thru the sub-blocks
+            while (ptr < binarydata.length) {
+                var btyp = common.ReadShort(binarydata, ptr), blen = common.ReadShort(binarydata, ptr + 2), bdata = binarydata.substring(ptr + 4, ptr + 4 + blen);
+                switch (btyp) {
+                    case 1: { // PBST_COMPUTERINFO
+                        info.agenttype = common.ReadShortX(bdata, 0);
+                        info.agentbuild = common.ReadShortX(bdata, 2);
+                        info.agentversion = common.ReadIntX(bdata, 4);
+                        info.agentname = bdata.substring(8, 64 + 8);
+                        var xx = info.agentname.indexOf('\u0000');
+                        if (xx >= 0) { info.agentname = info.agentname.substring(0, xx); }
+                        info.agentosdesc = bdata.substring(64 + 8, 64 + 64 + 8);
+                        xx = info.agentosdesc.indexOf('\u0000');
+                        if (xx >= 0) { info.agentosdesc = info.agentosdesc.substring(0, xx); }
+                        return info;
+                    }
+                }
+                ptr += blen;
+            }
+            return info;
+        } catch (e) {
+            console.log(e);
+        }
+        return null;
+    }
+
     // Disconnect legacy agent connection
     obj.close = function (socket) {
         try { socket.close(); } catch (e) { }
@@ -181,11 +312,16 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
     }
 
+    obj.SendCommand = function(socket, cmdid, data) {
+        if (data == null) { data = ''; }
+        Write(socket, common.ShortToStr(cmdid) + common.ShortToStr(data.length + 4) + data);
+    }
+
     function Write(socket, data) {
         if (args.swarmdebug) {
             // Print out sent bytes
             var buf = new Buffer(data, "binary");
-            console.log('Swarm --> (' + buf.length + '):' + buf.toString('hex'));
+            console.log('SWARM --> (' + buf.length + '):' + buf.toString('hex'));
             socket.write(buf);
         } else {
             socket.write(new Buffer(data, "binary"));
