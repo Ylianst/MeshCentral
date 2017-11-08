@@ -155,18 +155,27 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (obj.parent.webCertificateHash != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash, holding connection (' + obj.remoteaddr + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
-                var privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.agent.key);
+                var privateKey, certasn1;
+                if (obj.useSwarmCert == true) {
+                    // Use older SwarmServer certificate of MC1
+                    certasn1 = obj.parent.swarmCertificateAsn1;
+                    privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.swarmserver.key);
+                } else {
+                    // Use new MC2 certificate
+                    certasn1 = obj.parent.agentCertificateAsn1;
+                    privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.agent.key);
+                }
                 var md = obj.forge.md.sha384.create();
                 md.update(msg.substring(2), 'binary');
                 md.update(obj.nonce, 'binary');
                 obj.agentnonce = msg.substring(50);
 
                 // Send back our certificate + signature
-                obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
+                obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(certasn1.length) + certasn1 + privateKey.sign(md)); // Command 2, certificate + signature
 
                 // Check the agent signature if we can
                 if (obj.unauthsign != null) {
-                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').');  return; } else { completeAgentConnection(); }
+                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').'); return; } else { completeAgentConnection(); }
                 }
             }
             else if (cmd == 2) {
@@ -197,12 +206,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.agentVersion = obj.common.ReadInt(msg, 10);
                 obj.agentInfo.platformType = obj.common.ReadInt(msg, 14);
                 if (obj.agentInfo.platformType > 6 || obj.agentInfo.platformType < 1) { obj.agentInfo.platformType = 1; }
-                obj.meshid = new Buffer(msg.substring(18, 66), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
+                if (msg.substring(50, 66) == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0') {
+                    obj.meshid = new Buffer(msg.substring(18, 50), 'binary').toString('hex'); // Older HEX MeshID
+                } else {
+                    obj.meshid = new Buffer(msg.substring(18, 66), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); // New Base64 MeshID
+                }
+                //console.log('MeshID', obj.meshid);
                 obj.agentInfo.capabilities = obj.common.ReadInt(msg, 66);
                 var computerNameLen = obj.common.ReadShort(msg, 70);
                 obj.agentInfo.computerName = msg.substring(72, 72 + computerNameLen);
                 obj.dbMeshKey = 'mesh/' + obj.domain.id + '/' + obj.meshid;
                 completeAgentConnection();
+            } else if (cmd == 5) {
+                // ServerID. Agent is telling us what serverid it expects. Useful if we have many server certificates.
+                if ((msg.substring(2, 34) == obj.parent.swarmCertificateHash256) || (msg.substring(2, 50) == obj.parent.swarmCertificateHash384)) { obj.useSwarmCert = true; }
             }
         }
     });
@@ -463,6 +480,28 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'mc1migration':
+                    {
+                        if (command.oldnodeid.length != 64) break;
+                        var oldNodeKey = 'node//' + command.oldnodeid.toLowerCase();
+                        obj.db.Get(oldNodeKey, function (err, nodes) {
+                            if (nodes.length != 1) return;
+                            var node = nodes[0];
+                            if (node.meshid == obj.dbMeshKey) {
+                                // Update the device name & host
+                                ChangeAgentCoreInfo({ name: node.name });
+
+                                // Delete this node including network interface information and events
+                                obj.db.Remove(node._id);
+                                obj.db.Remove('if' + node._id);
+
+                                // Event node deletion
+                                var change = 'Migrated device ' + node.name;
+                                obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain })
+                            }
+                        });
+                        break;
+                    }
             }
         }
     }
@@ -486,6 +525,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var changes = [], change = 0;
 
                     // Check if anything changes
+                    if (command.name && (command.name != device.name)) { change = 1; device.name = command.name; changes.push('name'); }
                     if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
                     if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
                     if (command.intelamt) {

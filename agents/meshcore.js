@@ -668,7 +668,9 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.\r\n';
+                    var oldNodeId = db.Get('OldNodeId');
+                    if (oldNodeId != null) { response += 'OldNodeID: ' + oldNodeId + '.\r\n'; }
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -934,6 +936,8 @@ function createMeshCore(agent) {
             lastSelfInfo = null;
         } else {
             // Server connected, send mesh core information
+            var oldNodeId = db.Get('OldNodeId');
+            if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
             sendPeriodicServerUpdate(true);
             if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 60000); } // Should be a long time, like 20 minutes. For now, 1 minute.
         }

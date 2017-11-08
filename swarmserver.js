@@ -184,15 +184,19 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                         Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
 
                         // Figure out what is the next agent version we need.
-                        var nextAgentVersion = 200; // TODO
+                        var nextAgentVersion = 0;
+                        if (nodeblock.agentversion < 200) { nextAgentVersion = 200; } // If less then 200, move to transitional MC1 agent.
+                        if (nodeblock.agentversion == 200) { nextAgentVersion = 201; } // If at 200, move to first MC2 agent.
 
                         // See if we need to start the agent update
-                        if ((obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
+                        if ((nextAgentVersion > 0) && (obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
                             // Start the update
                             socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
                             socket.tag.updatePtr = 0;
                             console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
                             obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                        } else {
+                            console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
                         }
                     }
                     break;
