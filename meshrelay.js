@@ -156,7 +156,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
                 // Wait for other relay connection
                 ws.pause(); // Hold traffic until the other connection
                 parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
-                obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ')');
+                obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ') ' + (obj.authenticated?'Authenticated':'') );
 
                 // Check if a peer server has this connection
                 if (parent.parent.multiServer != null) {

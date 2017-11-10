@@ -2694,8 +2694,8 @@
         function p10showRouterDialog() {
             if (xxdialogMode) return;
             var y = "<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px>";
-            y += "<option value=1>Windows (32bit)</option>";
-            y += "<option value=2>Windows (64bit)</option>";
+            y += "<option value=3>Windows (32bit)</option>";
+            y += "<option value=4>Windows (64bit)</option>";
             y += "<option value=5>Linux x86 (32bit)</option>";
             y += "<option value=6>Linux x86 (64bit)</option>";
             y += "<option value=25>Linux ARM, Raspberry Pi (32bit)</option>";
@@ -2704,7 +2704,7 @@
             var x = "";
             x += "<div>Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />";
             x += addHtmlValue('Operating System', y);
-            x += addHtmlValue('Mesh Command', '<a id="meshcmddownloadid" href="meshagents?meshcmd=1" target="_blank"></a>');
+            x += addHtmlValue('Mesh Command', '<a id="meshcmddownloadid" href="meshagents?meshcmd=3" target="_blank"></a>');
             x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + currentNode._id + '" target="_blank">MeshAction (.txt)</a>');
             x += "</div>";
 
@@ -2715,8 +2715,8 @@
         function meshCmdOsClick() {
             var os = Q('aginsSelect').value, osn = '';
             Q('meshcmddownloadid').href = "meshagents?meshcmd=" + os;
-            if (os == 1) { osn = 'MeshCmd (Win32 executable)'; }
-            if (os == 2) { osn = 'MeshCmd (Win64 executable)'; }
+            if (os == 3) { osn = 'MeshCmd (Win32 executable)'; }
+            if (os == 4) { osn = 'MeshCmd (Win64 executable)'; }
             if (os == 5) { osn = 'MeshCmd (Linux x86, 32bit)'; }
             if (os == 6) { osn = 'MeshCmd (Linux x86, 64bit)'; }
             if (os == 25) { osn = 'MeshCmd (Linux ARM, 32bit)'; }
@@ -4228,7 +4228,11 @@
                 }
                 if ((user.quota != undefined) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
                 if (user.name != userinfo.name) { msg += "</a>"; }
-                msg = '<table style="width:100%"><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a><td align=right>' + msg + '</table>';
+                if (user.email != null) {
+                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a><td align=right>' + msg + '</table>';
+                } else {
+                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + '<td align=right>' + msg + '</table>';
+                }
                 x += '<tr><td style=cursor:pointer onclick=showUserInfoDialog(\"' + user._id + '\")><div class=' + icon + ' style=float:left;width:16px;margin-top:4px;margin-left:2px;height:16px></div><div class=g1 style=height:24px></div><div class=bar style=height:24px;width:864px;font-size:medium>' + msg + '</div><div class=g2 style=height:24px;float:left></div><div class=bar2 style=float:none></div></td></tr>';
             }
             x += '</table>';
@@ -4246,7 +4250,7 @@
             var user = users[userid], x = '';
             if (xxdialogMode) return;
             x += addHtmlValue('Name', EscapeHtml(user.name));
-            x += addHtmlValue('Email', EscapeHtml(user.email));
+            if (user.email != null) { x += addHtmlValue('Email', EscapeHtml(user.email)); }
             x += addHtmlValue('Creation', new Date(user.creation).toLocaleString());
             if (user.login) x += addHtmlValue('Last Login', new Date(user.login).toLocaleString());
             if (user.quota) x += addHtmlValue('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');

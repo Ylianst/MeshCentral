@@ -31,7 +31,7 @@ var settings = {
 // Check the server certificate fingerprint
 function onVerifyServer(clientName, certs) {
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverHttpsHash) { return; } } } catch (e) { }
-    if (serverhash != null) { console.log('Error: Failed to verify server certificate.'); return false; }
+    if (serverhash != null) { console.log('Error: Failed to verify server certificate.'); throw 'Invalid server certificate'; }
 }
 
 // Print a debug message

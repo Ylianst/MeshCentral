@@ -489,7 +489,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             var node = nodes[0];
                             if (node.meshid == obj.dbMeshKey) {
                                 // Update the device name & host
-                                ChangeAgentCoreInfo({ name: node.name });
+                                var newNode = { name: node.name };
+                                if (node.intelamt != null) { newNode.intelamt = node.intelamt; }
+                                ChangeAgentCoreInfo(newNode);
 
                                 // Delete this node including network interface information and events
                                 obj.db.Remove(node._id);
