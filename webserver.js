@@ -599,6 +599,39 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         }
     }
 
+    // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
+    obj.getServerFilePath = function(user, domain, path) {
+        var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
+        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
+        var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
+        if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
+        if (splitpath[0] == 'mesh') { var link = user.links[objid]; if ((link == null) || (link.rights == null) || ((link.rights & 32) == 0)) { return null; } } // Check mesh server file rights
+        if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
+        serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
+        for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
+        var fullpath = obj.path.resolve(obj.filespath, serverpath), quota = 0;
+        return { fullpath: fullpath, path: serverpath, name: filename, quota: obj.getQuota(objid, domain) };
+    }
+
+    // Return the maximum number of bytes allowed in the user account "My Files".
+    obj.getQuota = function(objid, domain) {
+        if (objid == null) return 0;
+        if (objid.startsWith('user/')) {
+            var user = obj.users[objid];
+            if (user == null) return 0;
+            if ((user.quota != null) && (typeof user.quota == 'number')) { return user.quota; }
+            if ((domain != null) && (domain.userQuota != null) && (typeof domain.userQuota == 'number')) { return domain.userQuota; }
+            return 1048576; // By default, the server will have a 1 meg limit on user accounts
+        } else if (objid.startsWith('mesh/')) {
+            var mesh = obj.meshes[objid];
+            if (mesh == null) return 0;
+            if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
+            if ((domain != null) && (domain.meshQuota != null) && (typeof domain.meshQuota == 'number')) { return domain.meshQuota; }
+            return 1048576; // By default, the server will have a 1 meg limit on mesh accounts
+        }
+        return 0;
+    }
+
     // Download a file from the server
     function handleDownloadFile(req, res) {
         var domain = checkUserIpAddress(req, res);
@@ -606,7 +639,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         var user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(404); return; }
-        var file = getServerFilePath(user, domain, req.query.link);
+        var file = obj.getServerFilePath(user, domain, req.query.link);
         if (file == null) { res.sendStatus(404); return; }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + file.name + '\"' });
         try { res.sendFile(file.fullpath); } catch (e) { res.sendStatus(404); }
@@ -649,7 +682,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         var form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
             if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { res.sendStatus(404); return; }
-            var xfile = getServerFilePath(user, domain, decodeURIComponent(fields.link[0]));
+            var xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0]));
             if (xfile == null) { res.sendStatus(404); return; }
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
@@ -662,24 +695,33 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
                             var filedata = new Buffer(datas[i].split(',')[1], 'base64');
                             if ((totalsize + filedata.length) < xfile.quota) { // Check if quota would not be broken if we add this file
-                                obj.fs.writeFileSync(xfile.fullpath + '/' + names[i], filedata);
+                                // Create the user folder if needed
+                                (function (fullpath, filename, filedata) {
+                                    obj.fs.mkdir(xfile.fullpath, function () {
+                                        // Write the file
+                                        obj.fs.writeFile(obj.path.join(xfile.fullpath, filename), filedata, function () {
+                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles') // Fire an event causing this user to update this files
+                                        });
+                                    });
+                                })(xfile.fullpath, names[i], filedata);
                             }
                         }
                     }
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
                     for (var i in files.files) {
-                        var file = files.files[i], fpath = xfile.fullpath + '/' + file.originalFilename;
+                        var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
                         if (obj.common.IsFilenameValid(file.originalFilename) && ((totalsize + file.size) < xfile.quota)) { // Check if quota would not be broken if we add this file
-                            obj.fs.rename(file.path, fpath);
+                            obj.fs.rename(file.path, fpath, function () {
+                                obj.parent.DispatchEvent([user._id], obj, 'updatefiles') // Fire an event causing this user to update this files
+                            });
                         } else {
-                            try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                            try { obj.fs.unlink(file.path); } catch (e) { }
                         }
                     }
                 }
             }
             res.send('');
-            obj.parent.DispatchEvent([user._id], obj, 'updatefiles') // Fire an event causing this user to update this files
         });
     }
     
@@ -978,9 +1020,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         ws.on('close', function (req) { });
     }
     
-    // Get the total size of all files in a folder and all sub-folders
+    // Get the total size of all files in a folder and all sub-folders. (TODO: try to make all async version)
     function readTotalFileSize(path) {
-        var r = 0, dir = obj.fs.readdirSync(path);
+        var r = 0, dir;
+        try { dir = obj.fs.readdirSync(path); } catch (e) { return 0; }
         for (var i in dir) {
             var stat = obj.fs.statSync(path + '/' + dir[i])
             if ((stat.mode & 0x004000) == 0) { r += stat.size; } else { r += readTotalFileSize(path + '/' + dir[i]); }
@@ -988,7 +1031,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         return r;
     }
     
-    // Delete a folder and all sub items.
+    // Delete a folder and all sub items.  (TODO: try to make all async version)
     function deleteFolderRec(path) {
         if (obj.fs.existsSync(path) == false) return;
         obj.fs.readdirSync(path).forEach(function (file, index) {

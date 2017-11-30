@@ -165,7 +165,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var rootfolder = command.path[0];
                                 var rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
                                 if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-                                var path = obj.path.join(obj.filespath, domainx + "/" + rootfoldersplit[0] + "-" + rootfoldersplit[2]);
+                                var path = obj.parent.path.join(obj.parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
                                 for (var i = 1; i < command.path.length; i++) { if (obj.common.IsFilenameValid(command.path[i]) == false) { path = null; break; } path += ("/" + command.path[i]); }
                                 if (path == null) break;
 
@@ -833,39 +833,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         }
     } catch (e) { console.log(e); }
 
-    // Return the maximum number of bytes allowed in the user account "My Files".
-    function getQuota(objid, domain) {
-        if (objid == null) return 0;
-        if (objid.startsWith('user/')) {
-            var user = obj.parent.users[objid];
-            if (user == null) return 0;
-            if ((user.quota != null) && (typeof user.quota == 'number')) { return user.quota; }
-            if ((domain != null) && (domain.userQuota != null) && (typeof domain.userQuota == 'number')) { return domain.userQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on user accounts
-        } else if (objid.startsWith('mesh/')) {
-            var mesh = obj.parent.meshes[objid];
-            if (mesh == null) return 0;
-            if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
-            if ((domain != null) && (domain.meshQuota != null) && (typeof domain.meshQuota == 'number')) { return domain.meshQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on mesh accounts
-        }
-        return 0;
-    }
-
-    // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
-    function getServerFilePath(user, domain, path) {
-        var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
-        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
-        var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
-        if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
-        if (splitpath[0] == 'mesh') { var link = user.links[objid]; if ((link == null) || (link.rights == null) || ((link.rights & 32) == 0)) { return null; } } // Check mesh server file rights
-        if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
-        serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
-        for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
-        var fullpath = obj.path.resolve(obj.filespath, serverpath), quota = 0;
-        return { fullpath: fullpath, path: serverpath, name: filename, quota: getQuota(objid, domain) };
-    }
-
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {
         var r = {}, dir = obj.fs.readdirSync(path);
@@ -884,7 +851,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
         // Add user files
         files.filetree.f[user._id] = { t: 1, n: 'My Files', f: {} };
-        files.filetree.f[user._id].maxbytes = getQuota(user._id, domain);
+        files.filetree.f[user._id].maxbytes = obj.parent.getQuota(user._id, domain);
         var usersplit = user._id.split('/'), domainx = 'domain';
         if (usersplit[1].length > 0) domainx = 'domain-' + usersplit[1];
 
@@ -907,7 +874,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 if (mesh) {
                     var meshsplit = mesh._id.split('/');
                     files.filetree.f[mesh._id] = { t: 1, n: mesh.name, f: {} };
-                    files.filetree.f[mesh._id].maxbytes = getQuota(mesh._id, domain);
+                    files.filetree.f[mesh._id].maxbytes = obj.parent.getQuota(mesh._id, domain);
 
                     // Read all files recursively
                     try {
