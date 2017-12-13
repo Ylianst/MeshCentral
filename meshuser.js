@@ -261,22 +261,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var x = command.email.split('@');
                             if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
                                 if (obj.parent.users[req.session.userid].email != command.email) {
-                                    // Update the user's email
-                                    var oldemail = user.email;
-                                    user.email = command.email;
-                                    user.emailVerified = false;
-                                    obj.parent.db.SetUser(user);
+                                    // Check if this email is already validated on a different account
+                                    obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
+                                        if (docs.length > 0) {
+                                            // Notify the duplicate email error
+                                            ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
+                                        } else {
+                                            // Update the user's email
+                                            var oldemail = user.email;
+                                            user.email = command.email;
+                                            user.emailVerified = false;
+                                            obj.parent.db.SetUser(user);
 
-                                    // Event the change
-                                    var userinfo = obj.common.Clone(user);
-                                    delete userinfo.hash;
-                                    delete userinfo.passhint;
-                                    delete userinfo.salt;
-                                    delete userinfo.type;
-                                    delete userinfo.domain;
-                                    delete userinfo.subscriptions;
-                                    delete userinfo.passtype;
-                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email, domain: domain.id })
+                                            // Event the change
+                                            var userinfo = obj.common.Clone(user);
+                                            delete userinfo.hash;
+                                            delete userinfo.passhint;
+                                            delete userinfo.salt;
+                                            delete userinfo.type;
+                                            delete userinfo.domain;
+                                            delete userinfo.subscriptions;
+                                            delete userinfo.passtype;
+                                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email, domain: domain.id })
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -959,6 +967,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         // Respond
         ws.send(JSON.stringify(files));
     }
+
+    function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
     return obj;
 }

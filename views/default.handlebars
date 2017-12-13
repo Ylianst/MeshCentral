@@ -167,8 +167,8 @@
                     <div id="p2AccountActions">
                         <p><strong><img alt="" width=150 height=103 src=images/mainaccount.png style=margin-bottom:10px;margin-right:20px;float:right />Account actions</strong></p>
                         <p style="margin-left:40px">
-                            <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
                             <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
+                            <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
                             <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
                         </p>
@@ -493,7 +493,10 @@
                 <table cellpadding=0 cellspacing=10 style="width:100%">
                     <tr>
                         <td style="text-align:left"></td>
-                        <td style="text-align:right"><a href="terms">Terms &amp; Privacy</a></td>
+                        <td style="text-align:right">
+                            <a id="verifyEmailId2" style="color:yellow;margin-left:3px;cursor:pointer" onclick="account_showVerifyEmail()">Verify Email</a>
+                            <a style="margin-left:3px" href="terms">Terms &amp; Privacy</a>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -786,6 +789,7 @@
                     userinfo = message.userinfo;
                     updateSiteAdmin();
                     QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     break;
                 }
                 case 'users': {
@@ -859,6 +863,12 @@
                                 addNotification(n);
                             }
                         }
+                    } else {
+                        if (message.type == 'notify') { // This is a notification message.
+                            var n = { text:message.value };
+                            if (message.tag != undefined) { n.tag = message.tag; }
+                            addNotification(n);
+                        }
                     }
                     break;
                 }
@@ -930,6 +940,7 @@
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
                                 QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                                QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                             }
                             if (users == null) break;
                             users[message.event.account._id] = message.event.account;

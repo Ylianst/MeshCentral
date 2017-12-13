@@ -355,6 +355,7 @@ function CreateMeshCentralServer() {
                             // Setup email server
                             if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
                                 obj.mailserver = require('./meshmail.js').CreateMeshMain(obj);
+                                obj.mailserver.verify();
                                 //obj.mailserver.sendMail('ylian.saint-hilaire@intel.com', 'Test Subject', 'This is a sample test', 'This is a <b>sample</b> html test');
                             }
 
@@ -365,6 +366,12 @@ function CreateMeshCentralServer() {
                             obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
 
                             obj.debug(1, 'Server started');
+
+                            /*
+                            obj.db.GetUserWithVerifiedEmail('', 'ylian.saint-hilaire@intel.com', function (err, docs) {
+                                console.log(JSON.stringify(docs));
+                            });
+                            */
                         });
                     });
                 });

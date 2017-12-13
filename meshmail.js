@@ -24,8 +24,9 @@ module.exports.CreateMeshMain = function (parent) {
     var accountResetMailText = '[[[SERVERNAME]]] - Account Reset\r\n\r\nHi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process: [[[CALLBACKURL]]]\r\nIf you did not initiate this request, please ignore this mail.\r\n';
 
     // Setup mail server
-    var options = { host: parent.config.smtp.host, secure: false, tls: { rejectUnauthorized: false } };
+    var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { rejectUnauthorized: false } };
     if (parent.config.smtp.port != null) { options.port = parent.config.smtp.port; }
+    if ((parent.config.smtp.user != null) && (parent.config.smtp.pass != null)) { options.auth = { user: parent.config.smtp.user, pass: parent.config.smtp.pass }; }
     obj.smtpServer = nodemailer.createTransport(options);
 
     // Perform all e-mail substitution
@@ -73,8 +74,19 @@ module.exports.CreateMeshMain = function (parent) {
                 sendNextMail(); // Send the next mail
             } else {
                 obj.retry++;
-                //console.log('SMTP server failed, will try again in a minute (' + obj.retry + ').');
-                setTimeout(sendNextMail, 60000); // Wait and try again
+                console.log('SMTP server failed: ' + err.response);
+                if (obj.retry < 6) { setTimeout(sendNextMail, 60000); } // Wait and try again
+            }
+        });
+    }
+
+    // Send out the next mail in the pending list
+    obj.verify = function() {
+        obj.smtpServer.verify(function (err, info) {
+            if (err == null) {
+                console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');
+            } else {
+                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + err.response);
             }
         });
     }
