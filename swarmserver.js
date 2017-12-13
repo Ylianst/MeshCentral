@@ -150,12 +150,12 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
-                if (socket.tag.accumulator.substring(0, 3) == 'GET') { console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>'); socket.end(); return; }
+                if (socket.tag.accumulator.substring(0, 3) == 'GET') { /*console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress);*/ socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>'); socket.end(); return; }
                 socket.tag.first = false;
             }
 
             // A client certificate is required
-            if (!socket.tag.clientCert.subject) { console.log("Swarm Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.'); socket.end(); return; }
+            if (!socket.tag.clientCert.subject) { /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/ socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.'); socket.end(); return; }
 
             try {
                 // Parse all of the APF data we can

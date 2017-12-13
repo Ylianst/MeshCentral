@@ -21,10 +21,14 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="agents\meshcore.js" />
+    <Compile Include="agents\modules_meshcmd\amt_heci.js" />
+    <Compile Include="agents\modules_meshcore\amt_heci.js" />
+    <Compile Include="agents\modules_meshcore\WifiScanner.js" />
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amtevents.js" />
     <Compile Include="amtscanner.js" />
     <Compile Include="amtscript.js" />
+    <Compile Include="meshmail.js" />
     <Compile Include="meshscanner.js" />
     <Compile Include="certoperations.js" />
     <Compile Include="common.js" />
@@ -158,10 +162,13 @@
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
     <Content Include="views\login.handlebars" />
+    <Content Include="views\message.handlebars" />
     <Content Include="views\terms.handlebars" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="agents\" />
+    <Folder Include="agents\modules_meshcmd\" />
+    <Folder Include="agents\modules_meshcore\" />
     <Folder Include="public" />
     <Folder Include="public\clickonce\" />
     <Folder Include="public\clickonce\minirouter\" />

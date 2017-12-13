@@ -167,6 +167,8 @@
                     <div id="p2AccountActions">
                         <p><strong><img alt="" width=150 height=103 src=images/mainaccount.png style=margin-bottom:10px;margin-right:20px;float:right />Account actions</strong></p>
                         <p style="margin-left:40px">
+                            <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
+                            <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
                             <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
                         </p>
@@ -686,6 +688,22 @@
             if (t != null) { desktopsettings = JSON.parse(t); }
             applyDesktopSettings();
 
+            // Mouse Scroll on desktop
+            if (navigator.userAgent.match(/mozilla/i)) {
+                Q('Desk').addEventListener('DOMMouseScroll', function (e) {
+                    return dmousewheel(e);
+                    //if (loginState == 3) { SendMouseMsg(KeyAction.SCROLL, e); return false; }
+                    //return true;
+                });
+            }
+            else {
+                Q('Desk').addEventListener('mousewheel', function (e) {
+                    return dmousewheel(e);
+                    //if (loginState == 3) { SendMouseMsg(KeyAction.SCROLL, e); return false; }
+                    //return true;
+                });
+            }
+
             // Terminal special keys
             var x = '';
             for (var c = 1; c < 27; c++) x += "<option value='" + c + "'>Ctrl-" + String.fromCharCode(64 + c) + " (" + c + ")</option>";
@@ -760,13 +778,14 @@
 
         function onMessage(server, message) {
             switch (message.action) {
+                case 'serverinfo': {
+                    serverinfo = message.serverinfo;
+                    break;
+                }
                 case 'userinfo': {
                     userinfo = message.userinfo;
                     updateSiteAdmin();
-                    break;
-                }
-                case 'serverinfo': {
-                    serverinfo = message.serverinfo;
+                    QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     break;
                 }
                 case 'users': {
@@ -910,6 +929,7 @@
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.Send({ action: 'files' }); }
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
+                                QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                             }
                             if (users == null) break;
                             users[message.event.account._id] = message.event.account;
@@ -2971,6 +2991,7 @@
         function dmousedown(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mousedown(e) }
         function dmouseup(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mouseup(e) }
         function dmousemove(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mousemove(e) }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != undefined) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != undefined) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
 
         //
@@ -3646,6 +3667,34 @@
         // MY ACCOUNT
         //
 
+        function account_showVerifyEmail() {
+            if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
+            var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
+            setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
+        }
+
+        function account_showVerifyEmailEx() {
+            meshserver.Send({ action: 'verifyemail', email: userinfo.email });
+        }
+
+        function account_showChangeEmail() {
+            if (xxdialogMode) return;
+            var x = "Change your account e-mail address here.<br /><br />";
+            x += addHtmlValue('Email', '<input id=dp2email style=width:230px maxlength=32 onchange=account_validateEmail() onkeyup=account_validateEmail() />');
+            setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
+            if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
+            account_validateEmail();
+        }
+
+        function account_validateEmail() {
+            var x = Q('dp2email').value.split('@');
+            QE('idx_dlgOkButton', (x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (Q('dp2email').value.length < 1024) && (Q('dp2email').value != userinfo.email));
+        }
+
+        function account_changeEmail() {
+            meshserver.Send({ action: 'changeemail', email: Q('dp2email').value });
+        }
+
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
             var x = "To delete this account, type in the account password in both boxes below and hit ok.<br /><br />";
@@ -4229,7 +4278,7 @@
                 if ((user.quota != undefined) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
                 if (user.name != userinfo.name) { msg += "</a>"; }
                 if (user.email != null) {
-                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a><td align=right>' + msg + '</table>';
+                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':'') + '<td align=right>' + msg + '</table>';
                 } else {
                     msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + '<td align=right>' + msg + '</table>';
                 }

@@ -64,14 +64,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // TODO: Check if we have a mesh specific core. If so, use that.
                 var agentMeshCoreHash = null;
                 if (msg.length == 52) { agentMeshCoreHash = msg.substring(4, 52); }
-                if (agentMeshCoreHash != obj.parent.parent.defaultMeshCoreHash) {
+                if ((agentMeshCoreHash != obj.parent.parent.defaultMeshCoreHash) && (agentMeshCoreHash != obj.parent.parent.defaultMeshCoreNoMeiHash)) {
                     if (obj.agentCoreCheck < 5) { // This check is in place to avoid a looping core update.
                         if (obj.parent.parent.defaultMeshCoreHash == null) {
                             // Update no core
                             obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
                         } else {
                             // Update new core
-                            obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + obj.parent.parent.defaultMeshCoreHash + obj.parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core
+                            if (obj.agentExeInfo.amt == true) {
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + obj.parent.parent.defaultMeshCoreHash + obj.parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core (with MEI support)
+                            } else {
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + obj.parent.parent.defaultMeshCoreNoMeiHash + obj.parent.parent.defaultMeshCoreNoMei); // Command 10, ask mesh agent to set the core (No MEI)
+                            }
                         }
                         obj.agentCoreCheck++;
                     }
@@ -313,9 +317,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (iplocs.length == 1) {
                         // We have a location in the database for this remote IP
                         var iploc = nodes[0], x = {};
-                        x.publicip = iploc.ip;
-                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
-                        ChangeAgentLocationInfo(x);
+                        if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
+                            x.publicip = iploc.ip;
+                            x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
+                            ChangeAgentLocationInfo(x);
+                        }
                     } else {
                         // Check if we need to ask for the IP location
                         var doIpLocation = 0;

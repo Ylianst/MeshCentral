@@ -630,6 +630,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         
         return obj.haltEvent(e);
     }
+    obj.mousewheel = function (e) { }
     
     obj.getPositionOfControl = function (Control) {
         var Position = Array(2);

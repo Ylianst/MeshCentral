@@ -53,8 +53,12 @@
                                             <td align=right><input id=loginButton type=submit value="Log In" disabled="disabled" /></td>
                                         </tr>
                                     </table>
-                                    <div id="newAccountDiv" style="display:none">
-                                        <hr />Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
+                                    <div id="hrAccountDiv" style="display:none"><hr /></div>
+                                    <div id="resetAccountDiv" style="display:none;padding:2px">
+                                        Forgot username/password? <a onclick=xgo(3) style=cursor:pointer>Reset account</a>.
+                                    </div>
+                                    <div id="newAccountDiv" style="display:none;padding:2px">
+                                        Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
                                     </div>
                                 </form>
                             </div>
@@ -94,6 +98,29 @@
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
+                                                <div id=passWarning style="padding-top:6px"></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                </form>
+                            </div>
+                            <div id=resetpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                                <form action=resetaccount method=post>
+                                    <div id=message3>
+                                        {{{message}}}
+                                    </div>
+                                    <div>
+                                        <b>Account Reset</b>
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td align=right width=100>Email:</td>
+                                            <td><input id=remail type=text name=email onchange=validateReset() onkeyup=validateReset() /></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan=2>
+                                                <div style=float:right><input id=eresetButton type=submit value="Reset Account" disabled="disabled" /></div>
                                                 <div id=passWarning style="padding-top:6px"></div>
                                             </td>
                                         </tr>
@@ -141,6 +168,7 @@
     <script>
         var passhint = "{{{passhint}}}";
         var newAccountPass = {{{newAccountPass}}};
+        var emailCheck = {{{emailcheck}}};
 
         function startup() {
             window.onresize = center;
@@ -151,6 +179,8 @@
             QV('newAccountDiv', '{{{newAccount}}}' != '0' );
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));
+            QV("resetAccountDiv", (emailCheck == true));
+            QV("hrAccountDiv", (emailCheck == true) || (newAccountPass == 1))
         }
 
         function showPassHint() {
@@ -168,6 +198,7 @@
             QV("showPassHintLink", false);
             QV('loginpanel', x == 1);
             QV('createpanel', x == 2);
+            QV('resetpanel', x == 3);
         }
 
         function validateLogin() {
@@ -178,7 +209,7 @@
 
         function validateCreate() {
             setDialogMode(0);
-            var ok = (Q('ausername').value.length > 0 && Q('aemail').value.length > 0 && Q('apassword1').value.length > 0 && (Q('apassword2').value == Q('apassword1').value));
+            var ok = ((Q('ausername').value.length > 0) && (checkEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
             if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
             QE('createButton', ok);
             if (Q('apassword1').value == '') {
@@ -189,6 +220,19 @@
                 else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>Good Password</b><span>'); }
                 else { QH('passWarning', '<span style=color:red><b>Weak Password</b><span>'); }
             }
+        }
+
+        function validateReset() {
+            setDialogMode(0);
+            QE('eresetButton', checkEmail(Q('remail').value));
+        }
+
+        // Return true is the input string looks like an email address
+        function checkEmail(str) {
+            var x = str.split('@');
+            var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
+            if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
+            return ok;
         }
 
         // Return a password strength score

@@ -11,6 +11,7 @@ function CreateMeshCentralServer() {
     obj.redirserver;
     obj.mpsserver;
     obj.swarmserver;
+    obj.mailserver;
     obj.amtEventHandler;
     obj.amtScanner;
     obj.meshScanner;
@@ -28,14 +29,18 @@ function CreateMeshCentralServer() {
     obj.config = {};                  // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
     obj.certificateOperations = require('./certoperations.js').CertificateOperations();
+    obj.defaultMeshCmd = null;
     obj.defaultMeshCore = null;
     obj.defaultMeshCoreHash = null;
+    obj.defaultMeshCoreNoMei = null;
+    obj.defaultMeshCoreNoMeiHash = null;
     obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.multiServer = null;
-    obj.currentVer = null;
     obj.maintenanceTimer = null;
     obj.serverId = null;
+    obj.currentVer = null;
+    try { obj.currentVer = JSON.parse(require('fs').readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
@@ -165,11 +170,9 @@ function CreateMeshCentralServer() {
         xprocess.stdout.on('data', function (data) { xprocess.data += data; });
         xprocess.stderr.on('data', function (data) { });
         xprocess.on('close', function (code) {
-            var currentVer = null;
-            try { currentVer = JSON.parse(require('fs').readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { }
             var latestVer = null;
             if (code == 0) { try { latestVer = xprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
-            callback(currentVer, latestVer);
+            callback(obj.currentVer, latestVer);
         });
     }
 
@@ -288,8 +291,9 @@ function CreateMeshCentralServer() {
                     return;
                 }
 
-                // Load the default mesh core
+                // Load the default meshcore and meshcmd
                 obj.updateMeshCore();
+                obj.updateMeshCmd();
 
                 // Load server certificates
                 obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, function (certs) {
@@ -346,6 +350,12 @@ function CreateMeshCentralServer() {
                             if (obj.certificates.swarmserver != null) {
                                 if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
                                 obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
+                            }
+
+                            // Setup email server
+                            if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
+                                obj.mailserver = require('./meshmail.js').CreateMeshMain(obj);
+                                //obj.mailserver.sendMail('ylian.saint-hilaire@intel.com', 'Test Subject', 'This is a sample test', 'This is a <b>sample</b> html test');
                             }
 
                             // Start periodic maintenance
@@ -649,29 +659,64 @@ function CreateMeshCentralServer() {
         if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
             meshcorePath = obj.path.join(__dirname, 'agents');
             if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
-                obj.defaultMeshCore = obj.defaultMeshCoreHash = null; if (func != null) { func(false); } // meshcore.js not found
+                obj.defaultMeshCoreNoMei = obj.defaultMeshCoreNoMeiHash = obj.defaultMeshCore = obj.defaultMeshCoreHash = null; if (func != null) { func(false); } // meshcore.js not found
             }
         }
 
         // Read meshcore.js and all .js files in the modules folder.
-        var moduleAdditions = 'var addedModules = [];', modulesDir = null;
+        var moduleAdditions = 'var addedModules = [];', moduleAdditionsNoMei = 'var addedModules = [];', modulesDir = null;
         var meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString();
-        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules')); } catch (e) { }
+        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules_meshcore')); } catch (e) { }
         if (modulesDir != null) {
             for (var i in modulesDir) {
                 if (modulesDir[i].toLowerCase().endsWith('.js')) {
                     // Merge this module
                     var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
-                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules', modulesDir[i])).toString('base64');
+                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules_meshcore', modulesDir[i])).toString('base64');
+                    moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                    if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci')) {
+                        moduleAdditionsNoMei += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                    }
+                }
+            }
+        }
+
+        // Set the new default meshcore.js with and without MEI support
+        obj.defaultMeshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore;
+        obj.defaultMeshCoreHash = obj.crypto.createHash('sha384').update(obj.defaultMeshCore).digest("binary");
+        obj.defaultMeshCoreNoMei = obj.common.IntToStr(0) + moduleAdditionsNoMei + meshCore;
+        obj.defaultMeshCoreNoMeiHash = obj.crypto.createHash('sha384').update(obj.defaultMeshCoreNoMei).digest("binary");
+        if (func != null) { func(true); }
+    }
+
+    // Update the default meshcmd
+    obj.updateMeshCmd = function (func) {
+        // Figure out where meshcmd.js is
+        var meshcmdPath = obj.datapath;
+        if (obj.fs.existsSync(obj.path.join(meshcmdPath, 'meshcmd.js')) == false) {
+            meshcmdPath = obj.path.join(__dirname, 'agents');
+            if (obj.fs.existsSync(obj.path.join(meshcmdPath, 'meshcmd.js')) == false) {
+                obj.defaultMeshCmd = null; if (func != null) { func(false); } // meshcmd.js not found
+            }
+        }
+        
+        // Read meshcore.js and all .js files in the modules folder.
+        var moduleAdditions = 'var addedModules = [];', modulesDir = null;
+        var meshCmd = obj.fs.readFileSync(obj.path.join(meshcmdPath, 'meshcmd.js')).toString().replace("'***Mesh*Cmd*Version***'", '\'' + obj.currentVer + '\'');
+        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcmdPath, 'modules_meshcmd')); } catch (e) { }
+        if (modulesDir != null) {
+            for (var i in modulesDir) {
+                if (modulesDir[i].toLowerCase().endsWith('.js')) {
+                    // Merge this module
+                    var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
+                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcmdPath, 'modules_meshcmd', modulesDir[i])).toString('base64');
                     moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
                 }
             }
         }
 
-        // Set the new default meshcore.js
-        meshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-        obj.defaultMeshCore = meshCore;
-        obj.defaultMeshCoreHash = obj.crypto.createHash('sha384').update(meshCore).digest("binary");
+        // Set the new default meshcmd.js
+        obj.defaultMeshCmd = moduleAdditions + meshCmd;
         if (func != null) { func(true); }
     }
 
@@ -711,31 +756,31 @@ function CreateMeshCentralServer() {
 
     // List of possible mesh agents
     var meshAgentsArchitectureNumbers = {
-        1: { id: 1, localname: 'MeshConsole.exe', rname: 'MeshConsole.exe', desc: 'Windows x86-32 console', update: true },
-        2: { id: 2, localname: 'MeshConsole64.exe', rname: 'MeshConsole.exe', desc: 'Windows x86-64 console', update: true },
-        3: { id: 3, localname: 'MeshService.exe', rname: 'MeshAgent.exe', desc: 'Windows x86-32 service', update: true },
-        4: { id: 4, localname: 'MeshService64.exe', rname: 'MeshAgent.exe', desc: 'Windows x86-64 service', update: true },
-        5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true },
-        6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true },
-        7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true },
-        8: { id: 8, localname: 'MeshAgent-Linux-XEN-x86-32', rname: 'meshagent', desc: 'XEN x86-64', update: true },
-        9: { id: 9, localname: 'meshagent_arm', rname: 'meshagent', desc: 'Linux ARM5', update: true },
-        10: { id: 10, localname: 'MeshAgent-Linux-ARM-PlugPC', rname: 'meshagent', desc: 'Linux ARM PlugPC', update: true },
-        11: { id: 11, localname: 'MeshAgent-OSX-x86-32', rname: 'meshosx', desc: 'Apple OSX x86-32', update: true },
-        12: { id: 12, localname: 'MeshAgent-Android-x86', rname: 'meshandroid', desc: 'Android x86-32', update: true },
-        13: { id: 13, localname: 'meshagent_pogo', rname: 'meshagent', desc: 'Linux ARM PogoPlug', update: true },
-        14: { id: 14, localname: 'MeshAgent-Android-APK', rname: 'meshandroid', desc: 'Android Market', update: false }, // Get this one from Google Play
-        15: { id: 15, localname: 'meshagent_poky', rname: 'meshagent', desc: 'Linux Poky x86-32', update: true },
-        16: { id: 16, localname: 'MeshAgent-OSX-x86-64', rname: 'meshosx', desc: 'Apple OSX x86-64', update: true },
-        17: { id: 17, localname: 'MeshAgent-ChromeOS', rname: 'meshchrome', desc: 'Google ChromeOS', update: false }, // Get this one from Chrome store
-        18: { id: 18, localname: 'meshagent_poky64', rname: 'meshagent', desc: 'Linux Poky x86-64', update: true },
-        19: { id: 19, localname: 'meshagent_x86_nokvm', rname: 'meshagent', desc: 'Linux x86-32 NoKVM', update: true },
-        20: { id: 20, localname: 'meshagent_x86-64_nokvm', rname: 'meshagent', desc: 'Linux x86-64 NoKVM', update: true },
-        21: { id: 21, localname: 'MeshAgent-WinMinCore-Console-x86-32.exe', rname: 'MeshAgent.exe', desc: 'Windows MinCore Console x86-32', update: true },
-        22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'MeshAgent.exe', desc: 'Windows MinCore Service x86-32', update: true },
-        23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false }, // Get this one from NPM
-        24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true },
-        25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true } // "armv6l" and "armv7l"
+        1: { id: 1, localname: 'MeshConsole.exe', rname: 'meshconsole.exe', desc: 'Windows x86-32 console', update: true, amt: true },
+        2: { id: 2, localname: 'MeshConsole64.exe', rname: 'meshconsole.exe', desc: 'Windows x86-64 console', update: true, amt: true },
+        3: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true },
+        4: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true },
+        5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true, amt: true },
+        6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true, amt: true },
+        7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true, amt: false },
+        8: { id: 8, localname: 'MeshAgent-Linux-XEN-x86-32', rname: 'meshagent', desc: 'XEN x86-64', update: true, amt: false },
+        9: { id: 9, localname: 'meshagent_arm', rname: 'meshagent', desc: 'Linux ARM5', update: true, amt: false },
+        10: { id: 10, localname: 'MeshAgent-Linux-ARM-PlugPC', rname: 'meshagent', desc: 'Linux ARM PlugPC', update: true, amt: false },
+        11: { id: 11, localname: 'MeshAgent-OSX-x86-32', rname: 'meshosx', desc: 'Apple OSX x86-32', update: true, amt: false },
+        12: { id: 12, localname: 'MeshAgent-Android-x86', rname: 'meshandroid', desc: 'Android x86-32', update: true, amt: false },
+        13: { id: 13, localname: 'meshagent_pogo', rname: 'meshagent', desc: 'Linux ARM PogoPlug', update: true, amt: false },
+        14: { id: 14, localname: 'MeshAgent-Android-APK', rname: 'meshandroid', desc: 'Android Market', update: false, amt: false }, // Get this one from Google Play
+        15: { id: 15, localname: 'meshagent_poky', rname: 'meshagent', desc: 'Linux Poky x86-32', update: true, amt: false },
+        16: { id: 16, localname: 'MeshAgent-OSX-x86-64', rname: 'meshagent', desc: 'Apple OSX x86-64', update: true, amt: false },
+        17: { id: 17, localname: 'MeshAgent-ChromeOS', rname: 'meshagent', desc: 'Google ChromeOS', update: false, amt: false }, // Get this one from Chrome store
+        18: { id: 18, localname: 'meshagent_poky64', rname: 'meshagent', desc: 'Linux Poky x86-64', update: true, amt: false },
+        19: { id: 19, localname: 'meshagent_x86_nokvm', rname: 'meshagent', desc: 'Linux x86-32 NoKVM', update: true, amt: true },
+        20: { id: 20, localname: 'meshagent_x86-64_nokvm', rname: 'meshagent', desc: 'Linux x86-64 NoKVM', update: true, amt: true },
+        21: { id: 21, localname: 'MeshAgent-WinMinCore-Console-x86-32.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Console x86-32', update: true, amt: false },
+        22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Service x86-32', update: true, amt: false },
+        23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false }, // Get this one from NPM
+        24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false },
+        25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true, amt: false } // "armv6l" and "armv7l"
     };
 
     // Update the list of available mesh agents
@@ -835,7 +880,7 @@ function InstallModule(modulename, func, tag1, tag2) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Build the list of required modules
-var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'nodemailer', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
 if (require('os').platform() == 'win32') { modules.push("node-windows"); }
 
 // Run as a command line, if we are not using service arguments, don't need to install the service package.

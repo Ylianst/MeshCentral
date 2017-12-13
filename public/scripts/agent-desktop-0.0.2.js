@@ -376,6 +376,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.mousedown = function (e) { return obj.xxMouseDown(e); }
     obj.mouseup = function (e) { return obj.xxMouseUp(e); }
     obj.mousemove = function (e) { return obj.xxMouseMove(e); }
+    obj.mousewheel = function (e) { return obj.xxMouseWheel(e); }
 
     obj.xxMsTouchEvent = function (evt) {
         if (evt.originalEvent.pointerType == 4) return; // If this is a mouse pointer, ignore this event. Touch & pen are ok.

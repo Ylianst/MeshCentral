@@ -31,15 +31,35 @@ function createMeshCore(agent) {
     var net = require('net');
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
+    var amtMei = null, amtLms = null, amtLmsState = 0;
+    var amtMeiConnected = 0, amtMeiState = null, amtMeiTmpState = null;
     var wifiScannerLib = null;
     var wifiScanner = null;
+    var networkMonitor = null;
+
+    // Try to load up the network monitor
+    try {
+        networkMonitor = require('NetworkMonitor');
+        networkMonitor.on('change', function () { sendNetworkUpdateNagle(); });
+        networkMonitor.on('add', function (addr) { sendNetworkUpdateNagle(); });
+        networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
+    } catch (e) { networkMonitor = null; }
+
+    // Try to load up the MEI module
+    try {
+        var amtMeiLib = require('amt_heci');
+        amtMeiConnected = 1;
+        amtMei = new amtMeiLib();
+        amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
+        amtMei.on('connect', function () { amtMeiConnected = 2; getAmtInfo(); });
+    } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
 
     // Try to load up the WIFI scanner
     try {
-        wifiScannerLib = require('WifiScanner');
+        var wifiScannerLib = require('WifiScanner');
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
-    } catch (e) { }
+    } catch (e) { wifiScannerLib = null; wifiScanner = null; }
 
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -656,7 +676,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, modules, scanwifi.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -671,9 +691,11 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.\r\n';
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    if (amtLmsState >= 0) { response += '\r\nBuilt -in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
+                    response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     var oldNodeId = db.Get('OldNodeId');
-                    if (oldNodeId != null) { response += 'OldNodeID: ' + oldNodeId + '.\r\n'; }
+                    if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -849,12 +871,8 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'amt': { // Show Intel AMT status
-                    //response = 'KVM: ' + mesh.hasKVM + ', HECI: ' + mesh.hasHECI + ', MicroLMS: ' + mesh.activeMicroLMS + '\r\n';
-                    //response += JSON.stringify(mesh.MEInfo);
-                    if (mesh.hasHECI == 1) {
-                        var meinfo = mesh.MEInfo;
-                        delete meinfo.TrustedHashes;
-                        response = objToString(meinfo, 0, '.');
+                    if (amtMeiState != null) {
+                        response = objToString(amtMeiState, 0, '.');
                     } else {
                         response = 'This mesh agent does not support Intel AMT.';
                     }
@@ -902,10 +920,6 @@ function createMeshCore(agent) {
                     response = JSON.stringify(http.parseUri(args['_'][0]));
                     break;
                 }
-                case 'modules': {
-                    response = "Modules: " + JSON.stringify(addedModules);
-                    break;
-                }
                 case 'scanwifi': {
                     if (wifiScanner != null) {
                         var wifiPresent = wifiScanner.hasWireless;
@@ -943,7 +957,7 @@ function createMeshCore(agent) {
             var oldNodeId = db.Get('OldNodeId');
             if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
             sendPeriodicServerUpdate(true);
-            if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 60000); } // Should be a long time, like 20 minutes. For now, 1 minute.
+            //if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 60000); } // Should be a long time, like 20 minutes. For now, 1 minute.
         }
     }
 
@@ -952,29 +966,56 @@ function createMeshCore(agent) {
     function buildSelfInfo() {
         var r = { "action": "coreinfo", "value": obj.meshCoreInfo, "caps": obj.meshCoreCapabilities };
         if (mesh.hasHECI == 1) {
-            var meinfo = mesh.MEInfo;
+            var meinfo = amtMeiState;
             var amtPresent = false, intelamt = {};
-            if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; amtPresent = true; }
-            if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; amtPresent = true; }
-            if (meinfo.flags) { intelamt.flags = meinfo.Flags; amtPresent = true; }
-            if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; amtPresent = true; }
-            if (amtPresent == true) { r.intelamt = intelamt }
+            if (meinfo != null) {
+                if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; amtPresent = true; }
+                if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; amtPresent = true; }
+                if (meinfo.flags) { intelamt.flags = meinfo.Flags; amtPresent = true; }
+                if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; amtPresent = true; }
+                if (amtPresent == true) { r.intelamt = intelamt }
+            }
         }
         return JSON.stringify(r);
     }
 
-    // Called periodically to check if we need to send updates to the server
-    function sendPeriodicServerUpdate(force) {
-        // Update the self information data
-        var selfInfo = buildSelfInfo();
-        var selfInfoStr = JSON.stringify(selfInfo);
-        if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
+    // Update the server with the latest network interface information
+    var sendNetworkUpdateNagleTimer = null;
+    function sendNetworkUpdateNagle() { if (sendNetworkUpdateNagleTimer != null) { clearTimeout(sendNetworkUpdateNagleTimer); sendNetworkUpdateNagleTimer = null; } sendNetworkUpdateNagleTimer = setTimeout(sendNetworkUpdate, 5000); }
+    function sendNetworkUpdate(force) {
+        sendNetworkUpdateNagleTimer = null;
 
         // Update the network interfaces information data
         var netInfo = mesh.NetInfo;
         netInfo.action = 'netinfo';
         var netInfoStr = JSON.stringify(netInfo);
         if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+    }
+
+    // Called periodically to check if we need to send updates to the server
+    function sendPeriodicServerUpdate(force) {
+        if (amtMeiConnected != 1) { // If we are pending MEI connection, hold off on updating the server on self-info
+            // Update the self information data
+            var selfInfo = buildSelfInfo(), selfInfoStr = JSON.stringify(selfInfo);
+            if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
+        }
+        
+        // Update network information
+        sendNetworkUpdateNagle(force);
+    }
+
+    // Get Intel AMT information using MEI
+    function getAmtInfo(func) {
+        if (amtMei == null || amtMeiConnected != 2) { if (func != null) { func(null); } return; }
+        amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+        amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
+        amtMei.getVersion(function (val) { amtMeiTmpState.Versions = {}; for (var version in val.Versions) { amtMeiTmpState.Versions[val.Versions[version].Description] = val.Versions[version].Version; } });
+        amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
+        amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
+        amtMei.getEHBCState(function (result) { if (result.EHBC == true) { amtMeiTmpState.Flags += 1; } });
+        amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
+        //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
+        amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } amtMeiState = amtMeiTmpState; sendPeriodicServerUpdate(); if (func != null) { func(amtMeiState); } });
     }
 
     // Called on MicroLMS Intel AMT user notification
@@ -1021,7 +1062,7 @@ function createMeshCore(agent) {
         // Setup the mesh agent event handlers
         mesh.AddCommandHandler(handleServerCommand);
         mesh.AddConnectHandler(handleServerConnection);
-        mesh.lmsNotification = handleAmtNotification;
+        //mesh.lmsNotification = handleAmtNotification; // TODO
         sendPeriodicServerUpdate(); // TODO: Check if connected before sending
 
         // Parse input arguments
@@ -1030,6 +1071,15 @@ function createMeshCore(agent) {
 
         //console.log('Stopping.');
         //process.exit();
+
+        // Launch LMS
+        try {
+            var lme_heci = require('lme_heci');
+            amtLmsState = 1;
+            amtLms = new lme_heci();
+            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
+            amtLms.on('connect', function () { amtLmsState = 2; });
+        } catch (e) { amtLmsState = -1; amtLms = null; }
     }
 
     obj.stop = function () {

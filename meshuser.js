@@ -92,10 +92,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if ((state.connectivity & 1) != 0) { var agent = obj.parent.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
                                     if ((state.connectivity & 2) != 0) { var cira = obj.parent.parent.mpsserver.ciraConnections[docs[i]._id]; if (cira != null) { docs[i].cict = cira.tag.connectTime; } }
                                 }
+
                                 // Compress the meshid's
                                 var meshid = docs[i].meshid;
                                 if (!r[meshid]) { r[meshid] = []; }
                                 delete docs[i].meshid;
+
+                                // Remove Intel AMT credential if present
+                                if (docs[i].intelamt != null && docs[i].intelamt.pass != null) { delete docs[i].intelamt.pass; }
+
                                 r[meshid].push(docs[i]);
                             }
                             ws.send(JSON.stringify({ action: 'nodes', nodes: r }));
@@ -233,8 +238,64 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // Request a list of all users
                         if ((user.siteadmin & 2) == 0) break;
                         var docs = [];
-                        for (var i in obj.parent.users) { if ((obj.parent.users[i].domain == domain.id) && (obj.parent.users[i].name != '~')) { docs.push(obj.parent.users[i]); } }
+                        for (var i in obj.parent.users) {
+                            if ((obj.parent.users[i].domain == domain.id) && (obj.parent.users[i].name != '~')) {
+                                var userinfo = obj.common.Clone(obj.parent.users[i]);
+                                delete userinfo.hash;
+                                delete userinfo.passhint;
+                                delete userinfo.salt;
+                                delete userinfo.type;
+                                delete userinfo.domain;
+                                delete userinfo.subscriptions;
+                                delete userinfo.passtype;
+                                docs.push(userinfo);
+                            }
+                        }
                         ws.send(JSON.stringify({ action: 'users', users: docs }));
+                        break;
+                    }
+                case 'changeemail':
+                    {
+                        // Change the email address
+                        if ((command.email != null) && (typeof command.email == 'string') && (command.email.length < 1024)) {
+                            var x = command.email.split('@');
+                            if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
+                                if (obj.parent.users[req.session.userid].email != command.email) {
+                                    // Update the user's email
+                                    var oldemail = user.email;
+                                    user.email = command.email;
+                                    user.emailVerified = false;
+                                    obj.parent.db.SetUser(user);
+
+                                    // Event the change
+                                    var userinfo = obj.common.Clone(user);
+                                    delete userinfo.hash;
+                                    delete userinfo.passhint;
+                                    delete userinfo.salt;
+                                    delete userinfo.type;
+                                    delete userinfo.domain;
+                                    delete userinfo.subscriptions;
+                                    delete userinfo.passtype;
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email, domain: domain.id })
+                                }
+                            }
+                        }
+                        break;
+                    }
+                case 'verifyemail':
+                    {
+                        // Send a account email verification email
+                        if ((command.email != null) && (typeof command.email == 'string') && (command.email.length < 1024)) {
+                            var x = command.email.split('@');
+                            if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
+                                if (obj.parent.users[req.session.userid].email == command.email) {
+                                    // Send the verification email
+                                    if (obj.parent.parent.mailserver != null) {
+                                        obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
+                                    }
+                                }
+                            }
+                        }
                         break;
                     }
                 case 'wssessioncount':
@@ -307,12 +368,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 if (command.quota != chguser.quota) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                                 if ((user.siteadmin == 0xFFFFFFFF) && (command.siteadmin != null) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1 }
                                 if (change == 1) {
-                                    obj.db.Set(chguser);
+                                    obj.db.SetUser(chguser);
                                     obj.parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                    var chguser2 = obj.common.Clone(chguser);
-                                    delete chguser2.salt;
-                                    delete chguser2.hash;
-                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: chguser2, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
+                                    var userinfo = obj.common.Clone(chguser);
+                                    delete userinfo.hash;
+                                    delete userinfo.passhint;
+                                    delete userinfo.salt;
+                                    delete userinfo.type;
+                                    delete userinfo.domain;
+                                    delete userinfo.subscriptions;
+                                    delete userinfo.passtype;
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
                                 }
                             }
                         }
@@ -375,7 +441,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 for (var j in links) {
                                     var xuser = obj.parent.users[j];
                                     delete xuser.links[meshes[i]._id];
-                                    obj.db.Set(xuser);
+                                    obj.db.SetUser(xuser);
                                     obj.parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
                                 }
                             }
@@ -426,7 +492,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Add mesh to user
                             if (newuser.links == null) newuser.links = {};
                             newuser.links[command.meshid] = { rights: command.meshadmin };
-                            obj.db.Set(newuser);
+                            obj.db.SetUser(newuser);
                             obj.parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
                             // Add a user to the mesh
@@ -819,18 +885,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             if (obj.parent.parent.multiServer != null) { obj.parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
         });
 
+        // Send server information
+        if (obj.args.notls == true) {
+            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, port: obj.args.port, https: false, emailcheck: obj.parent.parent.mailserver != null } }));
+        } else {
+            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, redirport: obj.args.redirport, port: obj.args.port, https: true, emailcheck: obj.parent.parent.mailserver != null } }));
+        }
+
         // Send user information to web socket, this is the first thing we send
         var userinfo = obj.common.Clone(obj.parent.users[req.session.userid]);
         delete userinfo.salt;
         delete userinfo.hash;
         ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo }));
-
-        // Next, send server information
-        if (obj.args.notls == true) {
-            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, port: obj.args.port, https: false } }));
-        } else {
-            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, redirport: obj.args.redirport, port: obj.args.port, https: true } }));
-        }
     } catch (e) { console.log(e); }
 
     // Read the folder and all sub-folders and serialize that into json.

@@ -326,40 +326,179 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';;
             res.redirect(domain.url);
         } else {
-            // Check if there is domain.newAccountToken, check if supplied token is valid
-            if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
-                req.session.loginmode = 2;
-                req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
-                res.redirect(domain.url);
-                return;
-            }
-            // Check if user exists
-            if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
-                req.session.loginmode = 2;
-                req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
-            } else {
-                var hint = req.body.apasswordhint;
-                if (hint.length > 250) hint = hint.substring(0, 250);
-                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id, passhint: hint };
-                var usercount = 0;
-                for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts == 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
-                obj.users[user._id] = user;
-                req.session.userid = user._id;
-                req.session.domainid = domain.id;
-                // Create a user, generate a salt and hash the password
-                require('./pass').hash(req.body.password1, function (err, salt, hash) {
-                    if (err) throw err;
-                    user.salt = salt;
-                    user.hash = hash;
-                    obj.db.SetUser(user);
-                });
-                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: user, action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id })
-            }
-            res.redirect(domain.url);
+            // Check if this email was already verified
+            obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
+                if (docs.length > 0) {
+                    req.session.loginmode = 2;
+                    req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';;
+                    res.redirect(domain.url);
+                } else {
+                    // Check if there is domain.newAccountToken, check if supplied token is valid
+                    if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+                        req.session.loginmode = 2;
+                        req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
+                        res.redirect(domain.url);
+                        return;
+                    }
+                    // Check if user exists
+                    if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
+                        req.session.loginmode = 2;
+                        req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
+                    } else {
+                        var hint = req.body.apasswordhint;
+                        if (hint.length > 250) hint = hint.substring(0, 250);
+                        var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id, passhint: hint };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts == 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        req.session.userid = user._id;
+                        req.session.domainid = domain.id;
+                        // Create a user, generate a salt and hash the password
+                        require('./pass').hash(req.body.password1, function (err, salt, hash) {
+                            if (err) throw err;
+                            user.salt = salt;
+                            user.hash = hash;
+                            obj.db.SetUser(user);
+                            if (obj.parent.mailserver != null) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                        });
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: user, action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id })
+                    }
+                    res.redirect(domain.url);
+                }
+            });
         }
     }
-    
+
+    // Called to process an account reset request
+    function handleResetAccountRequest(req, res) {
+        var domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if (domain.newaccounts == 0) { res.sendStatus(401); return; }
+        if (!req.body.email || checkEmail(req.body.email) == false) {
+            req.session.loginmode = 3;
+            req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
+            res.redirect(domain.url);
+        } else {
+            obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
+                if (docs.length == 0) {
+                    req.session.loginmode = 3;
+                    req.session.error = '<b style=color:#8C001A>Account not found.</b>';
+                    res.redirect(domain.url);
+                } else {
+                    var userFound = docs[0];
+                    if (obj.parent.mailserver != null) {
+                        obj.parent.mailserver.sendAccountResetMail(domain, userFound.name, userFound.email);
+                        req.session.loginmode = 1;
+                        req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                        res.redirect(domain.url);
+                    } else {
+                        req.session.loginmode = 3;
+                        req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                        res.redirect(domain.url);
+                    }
+                }
+            });
+        }
+    }
+
+    // Called to process a web based email verification request
+    function handleCheckMailRequest(req, res) {
+        var domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if (req.query.c != null) {
+            var cookie = obj.decodeCookie(req.query.c, null, 30);
+            if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
+                var idsplit = cookie.u.split('/');
+                if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
+                    res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
+                } else {
+                    obj.db.Get('user/' + cookie.u, function (err, docs) {
+                        if (docs.length == 0) {
+                            res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid username \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                        } else {
+                            var user = docs[0];
+                            if (user.email != cookie.e) {
+                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                            } else {
+                                if (cookie.a == 1) {
+                                    // Account email verification
+                                    if (user.emailVerified == true) {
+                                        res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                    } else {
+                                        obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
+                                            if (docs.length > 0) {
+                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
+                                            } else {
+                                                // Set the verified flag
+                                                obj.users[user._id].emailVerified = true;
+                                                user.emailVerified = true;
+                                                obj.db.SetUser(user);
+
+                                                // Event the change
+                                                var userinfo = obj.common.Clone(user);
+                                                delete userinfo.hash;
+                                                delete userinfo.passhint;
+                                                delete userinfo.salt;
+                                                delete userinfo.type;
+                                                delete userinfo.domain;
+                                                delete userinfo.subscriptions;
+                                                delete userinfo.passtype;
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + userinfo.email + ')', domain: domain.id })
+
+                                                // Send the confirmation page
+                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                                            }
+                                        });
+                                    }
+                                } else if (cookie.a == 2) {
+                                    // Account reset
+                                    if (user.emailVerified != true) {
+                                        res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                    } else {
+                                        // Set a temporary password
+                                        obj.crypto.randomBytes(16, function (err, buf) {
+                                            var newpass = buf.toString('base64').split('=').join('').split('/').join('');
+                                            require('./pass').hash(newpass, function (err, salt, hash) {
+                                                if (err) throw err;
+
+                                                // Change the password
+                                                var userinfo = obj.users[user._id];
+                                                userinfo.salt = salt;
+                                                userinfo.hash = hash;
+                                                userinfo.passchange = Date.now();
+                                                userinfo.passhint = null;
+                                                obj.db.SetUser(userinfo);
+
+                                                // Event the change
+                                                var userinfo = obj.common.Clone(userinfo);
+                                                delete userinfo.hash;
+                                                delete userinfo.passhint;
+                                                delete userinfo.salt;
+                                                delete userinfo.type;
+                                                delete userinfo.domain;
+                                                delete userinfo.subscriptions;
+                                                delete userinfo.passtype;
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id })
+
+                                                // Send the new password
+                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Password for \"' + EscapeHtml(user.name) + '\" has been reset to \"<b>' + EscapeHtml(newpass) + '</b>\", login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
+                                            });
+                                        });
+                                    }
+                                } else {
+                                    res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check. <a href="' + domain.url + '">Go to login page</a>.' });
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check, verification url is only valid for 30 minutes. <a href="' + domain.url + '">Go to login page</a>.' });
+            }
+        }
+    }
+
     function handleDeleteAccountRequest(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
@@ -462,7 +601,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
         } else {
             // Send back the login application
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == ''))?0:1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port });
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null });
         }
     }
     
@@ -1184,19 +1323,16 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.meshcmd];
-            if (argentInfo == null) { res.sendStatus(404); return; }
+            if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
             // Load the agent
             obj.fs.readFile(argentInfo.path, function (err, agentexe) {
                 if (err != null) { res.sendStatus(404); return; }
-                // Load meshcmd.js
-                obj.fs.readFile(obj.path.join(__dirname, 'agents', 'meshcmd.js'), function (err, meshcmdjs) {
-                    if (err != null) { res.sendStatus(404); return; }
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
-                    var tail = new Buffer(8);
-                    tail.writeInt32BE(meshcmdjs.length, 0);
-                    tail.writeInt32BE(agentexe.length + meshcmdjs.length + 8, 4);
-                    res.send(Buffer.concat([agentexe, meshcmdjs, tail]));
-                });
+                // Send out merged meshcmd
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
+                var meshcmdbuf = new Buffer(obj.parent.defaultMeshCmd, 'utf8'), tail = new Buffer(8);
+                tail.writeInt32BE(meshcmdbuf.length, 0);
+                tail.writeInt32BE(agentexe.length + meshcmdbuf.length + 8, 4);
+                res.send(Buffer.concat([agentexe, meshcmdbuf, tail]));
             });
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
@@ -1226,12 +1362,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else {
             // Send a list of available mesh agents
             var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';
-            response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th></tr>';
+            response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th><th>MeshCmd</th></tr>';
             for (var agentid in obj.parent.meshAgentBinaries) {
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
                 response += '<td><a target=_blank href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
-                response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hash + '</td></tr>';
+                response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hash + '</td>';
+                response += '<td><a target=_blank href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table></body></html>';
             res.send(response);
@@ -1298,6 +1435,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
         obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
         obj.app.post(url + 'createaccount', handleCreateAccountRequest);
+        obj.app.post(url + 'resetaccount', handleResetAccountRequest);
+        obj.app.get(url + 'checkmail', handleCheckMailRequest);
         obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
@@ -1416,6 +1555,14 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } catch (e) { if (called == false) { func(null); } }
     }
 
+    // Return true is the input string looks like an email address
+    function checkEmail(str) {
+        var x = str.split('@');
+        var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
+        if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
+        return ok;
+    }
+
     // Debug
     function Debug(lvl) {
         if (lvl > obj.parent.debugLevel) return;
@@ -1513,7 +1660,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
 
     // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
-    obj.decodeCookie = function (cookie, key) {
+    obj.decodeCookie = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
             cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
@@ -1523,7 +1670,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
-            if ((o.dtime > 120000) || (o.dtime < -30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            if (timeout == null) { timeout = 2; }
+            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             return o;
         } catch (e) { return null; }
     }

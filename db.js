@@ -71,6 +71,13 @@ module.exports.CreateDB = function (args, datapath) {
             if (err == null && docs.length > 0) { for (var i in docs) { meshlist.push(docs[i]._id); } }
             obj.file.remove({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
         });
+
+        // Clear up all users
+        /*
+        obj.GetAllType('user', function (err, docs) {
+            for (var i in docs) { if (docs[i].subscriptions != null) { console.log('Clean user: ' + docs[i].name); obj.SetUser(docs[i]); } } // Remove "subscriptions" that should not be there.
+        });
+        */
     }
 
     obj.Set = function (data) { obj.file.update({ _id: data._id }, data, { upsert: true }); }
@@ -80,6 +87,8 @@ module.exports.CreateDB = function (args, datapath) {
     obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, func) { obj.file.find({ type: type, domain: domain, meshid: { $in: meshes } }, { type : 0 }, func); }
     obj.GetAllType = function (type, func) { obj.file.find({ type: type }, func); }
     obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, func); }
+    obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, func); }
+    obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, { type: 0 }, func); }
     obj.Remove = function (id) { obj.file.remove({ _id: id }); }
     obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); }
     obj.InsertMany = function (data, func) { obj.file.insert(data, func); }
