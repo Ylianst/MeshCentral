@@ -40,6 +40,8 @@ function CreateMeshCentralServer() {
     obj.maintenanceTimer = null;
     obj.serverId = null;
     obj.currentVer = null;
+    obj.serverKey = new Buffer(obj.crypto.randomBytes(32), 'binary');
+    obj.loginCookieEncryptionKey = null;
     try { obj.currentVer = JSON.parse(require('fs').readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -70,7 +72,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
@@ -234,6 +236,8 @@ function CreateMeshCentralServer() {
             if (obj.args.showevents) { obj.db.GetAllType('event', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showpower) { obj.db.GetAllType('power', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
+            if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
+            if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
             if (obj.args.dbexport) {
                 // Export the entire database to a JSON file
                 if (obj.args.dbexport == true) { obj.args.dbexport = obj.path.join(obj.datapath, 'meshcentral.db.json'); }
@@ -365,13 +369,18 @@ function CreateMeshCentralServer() {
                             // Dispatch an event that the server is now running
                             obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
 
-                            obj.debug(1, 'Server started');
+                            // Load the login cookie encryption key from the database if allowed
+                            if ((obj.config) && (obj.config.settings) && (obj.config.settings.loginTokenOk == true)) {
+                                obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
+                                    if ((docs.length > 0) && (docs[0].key != null)) {
+                                        obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                                    } else {
+                                        obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
+                                    }
+                                });
+                            }
 
-                            /*
-                            obj.db.GetUserWithVerifiedEmail('', 'ylian.saint-hilaire@intel.com', function (err, docs) {
-                                console.log(JSON.stringify(docs));
-                            });
-                            */
+                            obj.debug(1, 'Server started');
                         });
                     });
                 });
@@ -821,6 +830,79 @@ function CreateMeshCentralServer() {
                 stream.hash = obj.crypto.createHash('sha384', stream);
             } catch (e) { if ((--archcount == 0) && (func != null)) { func(); } }
         }
+    }
+
+    // Generate a time limited user login token
+    obj.getLoginToken = function (userid, func) {
+        var x = userid.split('/');
+        if (x == null || x.length != 3 || x[0] != 'user') { func('Invalid userid.'); return; }
+        obj.db.Get(userid, function (err, docs) {
+            if (err != null || docs == null || docs.length == 0) {
+                func('User ' + userid + ' not found.'); return;
+            } else {
+                // Load the login cookie encryption key from the database
+                obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
+                    if ((docs.length > 0) && (docs[0].key != null)) {
+                        // Key is present, use it.
+                        obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                        func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey));
+                    } else {
+                        // Key is not present, generate one.
+                        obj.loginCookieEncryptionKey = obj.generateCookieKey();
+                        obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey)); });
+                    }
+                });
+            }
+        });
+    }
+
+    // Show the yser login token generation key
+    obj.showLoginTokenKey = function (func) {
+        // Load the login cookie encryption key from the database
+        obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
+            if ((docs.length > 0) && (docs[0].key != null)) {
+                // Key is present, use it.
+                func(docs[0].key);
+            } else {
+                // Key is not present, generate one.
+                obj.loginCookieEncryptionKey = obj.generateCookieKey();
+                obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.loginCookieEncryptionKey.toString('hex')); });
+            }
+        });
+    }
+
+    // Generate a cryptographic key used to encode and decode cookies
+    obj.generateCookieKey = function () {
+        return new Buffer(obj.crypto.randomBytes(32), 'binary');
+        //return Buffer.alloc(32, 0); // Sets the key to zeros, debug only.
+    }
+
+    // Encode an object as a cookie using a key. (key must be 32 bytes long)
+    obj.encodeCookie = function (o, key) {
+        try {
+            if (key == null) { key = obj.serverKey; }
+            o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
+            var iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key, iv);
+            var crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
+            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+        } catch (e) { return null; }
+    }
+
+    // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
+    obj.decodeCookie = function (cookie, key, timeout) {
+        try {
+            if (key == null) { key = obj.serverKey; }
+            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            var decipher = obj.crypto.createDecipheriv('aes-256-gcm', key, cookie.slice(0, 12));
+            decipher.setAuthTag(cookie.slice(12, 16));
+            var o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
+            o.time = o.time * 1000; // Decode the cookie creation time
+            o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
+            if (timeout == null) { timeout = 2; }
+            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            return o;
+        } catch (e) { return null; }
     }
 
     // Debug

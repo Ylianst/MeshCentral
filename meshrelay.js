@@ -84,7 +84,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
         }
     } else {
         // Get the session from the cookie
-        var cookie = obj.parent.parent.webserver.decodeCookie(req.query.auth);
+        var cookie = obj.parent.parent.decodeCookie(req.query.auth);
         if (cookie != null) {
             obj.authenticated = true;
             if (cookie.tcpport != null) {

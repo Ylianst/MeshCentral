@@ -271,11 +271,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.authenticate(req.body.username, req.body.password, domain, function (err, userid, passhint) {
             if (userid) {
                 var user = obj.users[userid];
-                
+
                 // Save login time
                 user.login = Date.now();
                 obj.db.SetUser(user);
-                
+
                 // Regenerate session when signing in to prevent fixation
                 req.session.regenerate(function () {
                     // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
@@ -302,7 +302,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         res.redirect(domain.url);
                     }
                 });
-                
+
                 obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id })
             } else {
                 delete req.session.loginmode;
@@ -407,7 +407,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if (req.query.c != null) {
-            var cookie = obj.decodeCookie(req.query.c, null, 30);
+            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
             if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
@@ -444,10 +444,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                                 delete userinfo.domain;
                                                 delete userinfo.subscriptions;
                                                 delete userinfo.passtype;
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + userinfo.email + ')', domain: domain.id })
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id })
 
                                                 // Send the confirmation page
                                                 res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+
+                                                // Send a notification
+                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified: <b>' + EscapeHtml(userinfo.email) + '</b>.' , nolog: 1 })
                                             }
                                         });
                                     }
@@ -571,6 +574,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
             req.session.currentNode = '';
+        } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
+            var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+            if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
+                // If a login cookie was provided, setup the session here.
+                if (req.session && req.session.loginmode) { delete req.session.loginmode; }
+                req.session.userid = loginCookie.u;
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+            }
         }
         // If a user is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid) {
@@ -579,11 +591,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (req.session.viewmode) {
                 viewmode = req.session.viewmode;
                 delete req.session.viewmode;
+            } else if (req.query.viewmode) {
+                viewmode = req.query.viewmode;
             }
             var currentNode = '';
             if (req.session.currentNode) {
                 currentNode = req.session.currentNode;
                 delete req.session.currentNode;
+            } else if (req.query.node) {
+                currentNode = 'node/' + domain.id + '/' + req.query.node;
             }
             var user;
             var logoutcontrol;
@@ -894,7 +910,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else {
             // Get the session from the cookie
             if (obj.parent.multiServer == null) { return; }
-            var session = obj.decodeCookie(req.query.auth);
+            var session = obj.parent.decodeCookie(req.query.auth);
             if (session == null) { console.log('ERR: Invalid cookie'); return; }
             if (session.domainid != domain.id) { console.log('ERR: Invalid domain'); return; }
             user = obj.users[session.userid];
@@ -1484,7 +1500,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     }
 
     // Force mesh agent disconnection
-    function forceMeshAgentDisconnect(user, domain, nodeid, disconnectMode) {
+    obj.forceMeshAgentDisconnect = function(user, domain, nodeid, disconnectMode) {
         if (nodeid == null) return;
         var splitnode = nodeid.split('/');
         if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
@@ -1642,40 +1658,5 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         }
     }
 
-    // Generate a cryptographic key used to encode and decode cookies
-    obj.generateCookieKey = function () {
-        return new Buffer(obj.crypto.randomBytes(32), 'binary');
-        //return Buffer.alloc(32, 0); // Sets the key to zeros, debug only.
-    }
-
-    // Encode an object as a cookie using a key. (key must be 32 bytes long)
-    obj.encodeCookie = function (o, key) {
-        try {
-            if (key == null) { key = obj.serverKey; }
-            o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
-            var iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key, iv);
-            var crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
-            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-        } catch (e) { return null; }
-    }
-
-    // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
-    obj.decodeCookie = function (cookie, key, timeout) {
-        try {
-            if (key == null) { key = obj.serverKey; }
-            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
-            var decipher = obj.crypto.createDecipheriv('aes-256-gcm', key, cookie.slice(0, 12));
-            decipher.setAuthTag(cookie.slice(12, 16));
-            var o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { return null; }
-            o.time = o.time * 1000; // Decode the cookie creation time
-            o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
-            if (timeout == null) { timeout = 2; }
-            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) return null; // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
-            return o;
-        } catch (e) { return null; }
-    }
-
-    obj.serverKey = obj.generateCookieKey();
     return obj;
 }

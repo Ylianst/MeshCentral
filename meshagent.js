@@ -38,6 +38,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')');  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if (arg == 3) { obj.authenticated = -1; } // Don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
             obj.parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
@@ -293,7 +294,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (dupAgent) {
                     // Close the duplicate agent
                     obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')');
-                    dupAgent.close();
+                    dupAgent.close(3);
                 } else {
                     // Indicate the agent is connected
                     obj.parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);

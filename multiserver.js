@@ -561,7 +561,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         if (path.substring(path.length - 11) == '/.websocket') { path = path.substring(0, path.length - 11); }
         var queryStr = ''
         for (var i in req.query) { queryStr += ((queryStr == '') ? '?' : '&') + i + '=' + req.query[i]; }
-        if (user != null) { queryStr += ((queryStr == '') ? '?' : '&') + 'auth=' + obj.encodeCookie({ userid: user._id, domainid: user.domain }, cookieKey); }
+        if (user != null) { queryStr += ((queryStr == '') ? '?' : '&') + 'auth=' + obj.parent.encodeCookie({ userid: user._id, domainid: user.domain }, cookieKey); }
         var url = obj.peerConfig.servers[serverid].url + path + queryStr;
 
         // Setup an connect the web socket

@@ -80,7 +80,7 @@ module.exports.CreateDB = function (args, datapath) {
         */
     }
 
-    obj.Set = function (data) { obj.file.update({ _id: data._id }, data, { upsert: true }); }
+    obj.Set = function (data, func) { obj.file.update({ _id: data._id }, data, { upsert: true }, func); }
     obj.Get = function (id, func) { obj.file.find({ _id: id }, func); }
     obj.GetAll = function (func) { obj.file.find({}, func); }
     obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type : 0 }, func); }

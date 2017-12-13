@@ -11,6 +11,7 @@ module.exports.CreateMeshMain = function (parent) {
     obj.parent = parent;
     obj.retry = 0;
     obj.sendingMail = false;
+    obj.mailCookieEncryptionKey = null;
     const nodemailer = require('nodemailer');
 
     // Default account email validation mail
@@ -45,7 +46,7 @@ module.exports.CreateMeshMain = function (parent) {
     // Send account check mail
     obj.sendAccountCheckMail = function (domain, username, email) {
         if ((parent.certificates == null) || (parent.certificates.CommonName == null)) return; // If the server name is not set, no reset possible.
-        var cookie = obj.parent.webserver.encodeCookie({ u: domain.id + '/' + username, e: email, a: 1 });
+        var cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 1 }, obj.mailCookieEncryptionKey);
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountCheckSubject, domain, username, email), text: mailReplacements(accountCheckMailText, domain, username, email, cookie), html: mailReplacements(accountCheckMailHtml, domain, username, email, cookie) });
         sendNextMail();
     }
@@ -53,7 +54,7 @@ module.exports.CreateMeshMain = function (parent) {
     // Send account reset mail
     obj.sendAccountResetMail = function (domain, username, email) {
         if ((parent.certificates == null) || (parent.certificates.CommonName == null)) return; // If the server name is not set, don't validate the email address.
-        var cookie = obj.parent.webserver.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 });
+        var cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountResetSubject, domain, username, email), text: mailReplacements(accountResetMailText, domain, username, email, cookie), html: mailReplacements(accountResetMailHtml, domain, username, email, cookie) });
         sendNextMail();
     }
@@ -74,7 +75,7 @@ module.exports.CreateMeshMain = function (parent) {
                 sendNextMail(); // Send the next mail
             } else {
                 obj.retry++;
-                console.log('SMTP server failed: ' + err.response);
+                console.log('SMTP server failed: ' + JSON.stringify(err));
                 if (obj.retry < 6) { setTimeout(sendNextMail, 60000); } // Wait and try again
             }
         });
@@ -86,10 +87,22 @@ module.exports.CreateMeshMain = function (parent) {
             if (err == null) {
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');
             } else {
-                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + err.response);
+                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err));
             }
         });
     }
+
+    // Load the cookie encryption key from the database
+    obj.parent.db.Get('MailCookieEncryptionKey', function (err, docs) {
+        if ((docs.length > 0) && (docs[0].key != null)) {
+            // Key is present, use it.
+            obj.mailCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+        } else {
+            // Key is not present, generate one.
+            obj.mailCookieEncryptionKey = obj.parent.generateCookieKey();
+            obj.parent.db.Set({ _id: 'MailCookieEncryptionKey', key: obj.mailCookieEncryptionKey.toString('hex'), time: Date.now() });
+        }
+    });
 
 	return obj;
 }

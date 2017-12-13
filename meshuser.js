@@ -833,7 +833,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'agentdisconnect':
                     {
                         // Force mesh agent disconnection
-                        forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
+                        obj.parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
                         break;
                     }
                 case 'close':
@@ -855,7 +855,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
                                     if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                                     if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
-                                    command.cookie = obj.parent.encodeCookie(cookieContent);
+                                    command.cookie = obj.parent.parent.encodeCookie(cookieContent);
                                     ws.send(JSON.stringify(command));
                                 }
                             }

@@ -56,41 +56,43 @@
             <div style="float:right">
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display:none;min-width:28px;font-size:20px;border-radius:5px;background-color:lightblue;text-align:center;margin:8px;cursor:pointer;padding:4px" title="Click to view current notifications">0</div>
             </div>
-            <p>{{{logoutControl}}}</p>
+            <p id="logoutControl">{{{logoutControl}}}</p>
         </div>
-        <div id=topbar class=noselect style=display:none>
-            <div>
+        <div id=topbarmaster>
+            <div id=topbar class=noselect style=display:none>
                 <div>
-                    <table style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
-                        <tr>
-                            <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(1)>My Devices</td>
-                            <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(2)>My Account</td>
-                            <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
-                            <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
-                            <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
-                            <td class=style3 style=height:24px>&nbsp;</td>
-                        </tr>
-                    </table>
-                    <div id="MainSubMenuSpan" style=display:none>
-                        <table id="MainSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
+                    <div>
+                        <table style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
-                                <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
-                                <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
-                                <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
-                                <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
-                                <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
+                                <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(1)>My Devices</td>
+                                <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(2)>My Account</td>
+                                <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
+                                <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
+                                <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
                                 <td class=style3 style=height:24px>&nbsp;</td>
                             </tr>
                         </table>
-                    </div>
-                    <div id="MeshSubMenuSpan" style=display:none>
-                        <table id="MeshSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
-                                <td class=style3 style=height:24px>&nbsp;</td>
-                            </tr>
-                        </table>
+                        <div id="MainSubMenuSpan" style=display:none>
+                            <table id="MainSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
+                                <tr>
+                                    <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
+                                    <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
+                                    <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
+                                    <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
+                                    <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
+                                    <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
+                                    <td class=style3 style=height:24px>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id="MeshSubMenuSpan" style=display:none>
+                            <table id="MeshSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
+                                <tr>
+                                    <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
+                                    <td class=style3 style=height:24px>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -265,7 +267,9 @@
                     <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
-                                <h1><span id=p10deviceName></span> - General</h1>
+                                <div id="p10title">
+                                    <h1><span id=p10deviceName></span> - General</h1>
+                                </div>
                                 <div id=p10html></div>
                             </td>
                             <td style=width:20px></td>
@@ -279,7 +283,9 @@
                     <div id=p10html3></div>
                 </div>
                 <div id=p11 style=display:none>
-                    <h1 id=p11deviceNameHeader><span id=p11deviceName></span> - Desktop</h1>
+                    <div id="p11title">
+                        <h1 id=p11deviceNameHeader><span id=p11deviceName></span> - Desktop</h1>
+                    </div>
                     <div id="p14warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showFeaturesDlg()">
                         <div class=icon2 style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
@@ -334,7 +340,7 @@
                     </table>
                 </div>
                 <div id=p12 style=display:none>
-                    <h1><span id=p12deviceName></span> - Terminal</h1>
+                    <div id="p12title"><h1><span id=p12deviceName></span> - Terminal</h1></div>
                     <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
                         <div class="icon2" style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
@@ -389,7 +395,7 @@
                     </table>
                 </div>
                 <div id=p13 style=display:none>
-                    <h1><span id=p13deviceName></span> - Files</h1>
+                    <div id="p13title"><h1><span id=p13deviceName></span> - Files</h1></div>
                     <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
@@ -443,11 +449,11 @@
                     </table>
                 </div>
                 <div id=p14 style=display:none>
-                    <h1><span id=p14deviceName></span> - Intel&reg; AMT</h1>
+                    <div id="p14title"><h1><span id=p14deviceName></span> - Intel&reg; AMT</h1></div>
                     <iframe id=p14iframe style="width:100%;height:650px;border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style=display:none>
-                    <h1><span id=p15deviceName></span> - Console</h1>
+                    <div id="p15title"><h1><span id=p15deviceName></span> - Console</h1></div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr>
                             <td style=background:#C0C0C0>
@@ -494,7 +500,7 @@
                     <tr>
                         <td style="text-align:left"></td>
                         <td style="text-align:right">
-                            <a id="verifyEmailId2" style="color:yellow;margin-left:3px;cursor:pointer" onclick="account_showVerifyEmail()">Verify Email</a>
+                            <a id="verifyEmailId2" style="color:yellow;margin-left:3px;cursor:pointer;display:none" onclick="account_showVerifyEmail()">Verify Email</a>
                             <a style="margin-left:3px" href="terms">Terms &amp; Privacy</a>
                         </td>
                     </tr>
@@ -599,6 +605,7 @@
         </div>
     </div>
     <script type="text/javascript">
+        var args;
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
         var sort = 0;
@@ -635,13 +642,25 @@
             if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
 
             // Check if we are in debug mode
-            var args = parseUriArgs();
+            args = parseUriArgs();
             debugmode = (args.debug == 1);
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
 
             // Setup page visuals
+            if (args.hide) {
+                var hide = parseInt(args.hide);
+                QV('masthead', !(hide & 1));
+                QV('topbarmaster', !(hide & 2));
+                QV('footer', !(hide & 4));
+                QV('p10title', !(hide & 8));
+                QV('p11title', !(hide & 8));
+                QV('p12title', !(hide & 8));
+                QV('p13title', !(hide & 8));
+                QV('p14title', !(hide & 8));
+                QV('p15title', !(hide & 8));
+            }
             p1updateInfo();
 
             // Setup the context menu
@@ -733,6 +752,8 @@
                 powerTimelineUpdate = null;
                 deleteAllNotifications(); // Close and clear notifications if present
                 hideContextMenu(); // Hide the context menu if present
+                QV('verifyEmailId2', false);
+                QV('logoutControl', false);
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.Send({ action: 'meshes' });
@@ -850,7 +871,7 @@
                 }
                 case 'msg': {
                     // Check if this is a message from a node
-                    if (message.nodeid != undefined) {
+                    if (message.nodeid != null) {
                         var index = -1;
                         for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } }
                         if (index != -1) {
@@ -858,15 +879,15 @@
                             if (message.type == 'console') { p15consoleReceive(nodes[index], message.value); } // This is a console message.
                             if (message.type == 'notify') { // This is a notification message.
                                 var n = { text:message.value };
-                                if (message.nodeid != undefined) { n.nodeid = message.nodeid; }
-                                if (message.tag != undefined) { n.tag = message.tag; }
+                                if (message.nodeid != null) { n.nodeid = message.nodeid; }
+                                if (message.tag != null) { n.tag = message.tag; }
                                 addNotification(n);
                             }
                         }
                     } else {
                         if (message.type == 'notify') { // This is a notification message.
                             var n = { text:message.value };
-                            if (message.tag != undefined) { n.tag = message.tag; }
+                            if (message.tag != null) { n.tag = message.tag; }
                             addNotification(n);
                         }
                     }
@@ -956,7 +977,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] != undefined) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if (message.event.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 updateMeshes();
                                 updateDevices();
@@ -966,7 +987,7 @@
                         }
                         case 'meshchange': {
                             // Update mesh information
-                            if (meshes[message.event.meshid] == undefined) {
+                            if (meshes[message.event.meshid] == null) {
                                 // This is a new mesh for us
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 meshserver.Send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
@@ -977,7 +998,7 @@
                                 meshes[message.event.meshid].links = message.event.links;
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] == undefined) {
+                                if (meshes[message.event.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] == null) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -1065,21 +1086,21 @@
                                 node.wifiloc = message.event.node.wifiloc;
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.userloc = message.event.node.userloc;
-                                if (message.event.node.agent != undefined) {
-                                    if (node.agent == undefined) node.agent = {};
-                                    if (message.event.node.agent.ver != undefined) { node.agent.ver = message.event.node.agent.ver; }
-                                    if (message.event.node.agent.id != undefined) { node.agent.id = message.event.node.agent.id; }
-                                    if (message.event.node.agent.caps != undefined) { node.agent.caps = message.event.node.agent.caps; }
-                                    if (message.event.node.agent.core != undefined) { node.agent.core = message.event.node.agent.core; } else { if (node.agent.core) { delete node.agent.core; } }
+                                if (message.event.node.agent != null) {
+                                    if (node.agent == null) node.agent = {};
+                                    if (message.event.node.agent.ver != null) { node.agent.ver = message.event.node.agent.ver; }
+                                    if (message.event.node.agent.id != null) { node.agent.id = message.event.node.agent.id; }
+                                    if (message.event.node.agent.caps != null) { node.agent.caps = message.event.node.agent.caps; }
+                                    if (message.event.node.agent.core != null) { node.agent.core = message.event.node.agent.core; } else { if (node.agent.core) { delete node.agent.core; } }
                                     node.agent.tag = message.event.node.agent.tag;
                                 }
-                                if (message.event.node.intelamt != undefined) {
-                                    if (node.intelamt == undefined) node.intelamt = {};
-                                    if (message.event.node.intelamt.host != undefined) { node.intelamt.user = message.event.node.intelamt.host; }
-                                    if (message.event.node.intelamt.user != undefined) { node.intelamt.user = message.event.node.intelamt.user; }
-                                    if (message.event.node.intelamt.tls != undefined) { node.intelamt.tls = message.event.node.intelamt.tls; }
-                                    if (message.event.node.intelamt.ver != undefined) { node.intelamt.ver = message.event.node.intelamt.ver; }
-                                    if (message.event.node.intelamt.state != undefined) { node.intelamt.state = message.event.node.intelamt.state; }
+                                if (message.event.node.intelamt != null) {
+                                    if (node.intelamt == null) node.intelamt = {};
+                                    if (message.event.node.intelamt.host != null) { node.intelamt.user = message.event.node.intelamt.host; }
+                                    if (message.event.node.intelamt.user != null) { node.intelamt.user = message.event.node.intelamt.user; }
+                                    if (message.event.node.intelamt.tls != null) { node.intelamt.tls = message.event.node.intelamt.tls; }
+                                    if (message.event.node.intelamt.ver != null) { node.intelamt.ver = message.event.node.intelamt.ver; }
+                                    if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                 }
                                 node.namel = node.name.toLowerCase();
                                 if (node.host) { node.hostl = node.host.toLowerCase(); } else { node.hostl = node.namel; }
@@ -1134,7 +1155,7 @@
                         }
                         case 'scanamtdevice': {
                             // Populate the Intel AMT scan dialog box with the result of the RMCP scan
-                            if ((xxdialogMode == undefined) || (!Q('dp1range')) || (Q('dp1range').value != message.event.range)) return;
+                            if ((xxdialogMode == null) || (!Q('dp1range')) || (Q('dp1range').value != message.event.range)) return;
                             var x = '';
                             if (message.event.results == null) {
                                 // The scan could not occur because of an error. Likely the user range was invalid.
@@ -1156,6 +1177,12 @@
                             QH('dp1results', x);
                             QE('dp1range', true);
                             QE('dp1rangebutton', true);
+                            break;
+                        }
+                        case 'notify': {
+                            var n = { text: message.event.value };
+                            if (message.event.tag != null) { n.tag = message.event.tag; }
+                            addNotification(n);
                             break;
                         }
                     }
@@ -1275,7 +1302,7 @@
                 for (var i in nodes) {
                     if (nodes[i].v == false) continue;
                     var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
-                    if (meshlinks == undefined) continue;
+                    if (meshlinks == null) continue;
                     if (sort == 0) {
                         // Mesh header
                         if (nodes[i].meshid != current) {
@@ -1312,9 +1339,9 @@
 
                     var title = EscapeHtml(nodes[i].name);
                     if (title.length == 0) { title = '<i>None</i>'; }
-                    if ((nodes[i].host != undefined) && (nodes[i].host.length > 0)) { title += " / " + EscapeHtml(nodes[i].host); }
+                    if ((nodes[i].host != null) && (nodes[i].host.length > 0)) { title += " / " + EscapeHtml(nodes[i].host); }
                     var name = EscapeHtml(nodes[i].name);
-                    if (showHostnames == true && nodes[i].host != undefined) name = EscapeHtml(nodes[i].host);
+                    if (showHostnames == true && nodes[i].host != null) name = EscapeHtml(nodes[i].host);
                     if (name.length == 0) { name = '<i>None</i>'; }
 
                     // Node
@@ -1336,9 +1363,9 @@
                 if (sort == 0 && Q('SearchInput').value == '') {
                     for (var i in meshes) {
                         var mesh = meshes[i], meshlink = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
-                        if (meshlink != undefined) {
+                        if (meshlink != null) {
                             var meshrights = meshlink.rights;
-                            if (displayedMeshes[mesh._id] == undefined) {
+                            if (displayedMeshes[mesh._id] == null) {
                                 if (current != '') { r += '</tr></table>'; }
                                 r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span style=float:right>';
                                 r += getMeshActions(mesh, meshrights);
@@ -1575,7 +1602,7 @@
                 if ((node.conn & 4) != 0) states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>');
                 if ((node.conn & 8) != 0) states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>');
             }
-            if ((node.pwr != undefined) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
+            if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
         }
 
@@ -1660,7 +1687,7 @@
         function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showHostnames == true) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; }
-        function onSearchInputChanged() { var x = Q('SearchInput').value.toLowerCase(); putstore("search", x); if (x == '') { for (var d in nodes) { nodes[d].v = true; } } else { for (var d in nodes) { nodes[d].v = (nodes[d].name.toLowerCase().indexOf(x) >= 0) || (nodes[d].hostl != undefined && nodes[d].hostl.toLowerCase().indexOf(x) >= 0); } } updateDevices(); }
+        function onSearchInputChanged() { var x = Q('SearchInput').value.toLowerCase(); putstore("search", x); if (x == '') { for (var d in nodes) { nodes[d].v = true; } } else { for (var d in nodes) { nodes[d].v = (nodes[d].name.toLowerCase().indexOf(x) >= 0) || (nodes[d].hostl != null && nodes[d].hostl.toLowerCase().indexOf(x) >= 0); } } updateDevices(); }
         function onSearchFocus(x) { searchFocus = x; }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
@@ -1668,8 +1695,8 @@
         var contextelement = null;
         function handleContextMenu(event) {
             hideContextMenu();
-            var scrollLeft = (window.pageXOffset !== undefined) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-            var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            var scrollLeft = (window.pageXOffset !== null) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+            var scrollTop = (window.pageYOffset !== null) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
             var elem = document.elementFromPoint(event.pageX - scrollLeft, event.pageY - scrollTop);
             if (elem && elem != null && elem.id == "MxMESH") {
                 contextelement = elem;
@@ -1743,7 +1770,7 @@
             for (var i in nodes) {
                 var loc = map_parseNodeLoc(nodes[i]);
                 var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
-                if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == undefined))) { // Draw markers for devices with locations
+                if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
                     lat = loc[0];
                     lon = loc[1];
                     var type = loc[2];
@@ -1848,7 +1875,7 @@
                     var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(feat, layer) { return feat; });
                     if (feature) {
                         var nodeid = feature.getId();
-                        if (nodeid != undefined) { gotoDevice(nodeid, 10); } // Goto general info tab
+                        if (nodeid != null) { gotoDevice(nodeid, 10); } // Goto general info tab
                         else { // For pointer
                             var nodeFeatgoto = getCorrespondingFeature(feature); gotoDevice(nodeFeatgoto.getId(), 10);
                         }
@@ -2149,7 +2176,7 @@
         function updatePlaceNodeTable(inputSearch) {
             var elements = document.getElementsByName("PlaceMapDeviceCheckbox"), count = 0;
             for (var i in nodes) {
-                var visible = ((nodes[i].namel.indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.indexOf(inputSearch) >= 0));
+                var visible = ((nodes[i].namel.indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != null && nodes[i].hostl.indexOf(inputSearch) >= 0));
                 if (visible) { count++; }
                 QV(nodes[i]._id + '-rowid', visible);
             }
@@ -2157,7 +2184,7 @@
             /*
             console.log(selected);
             for (var i in nodes) {
-                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != undefined && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0)) {
+                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != null && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0)) {
                     console.log(selected.indexOf(nodes[i]._id));
                     x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline ' + ((selected.indexOf(nodes[i]._id) >= 0)?'checked':'') + ' />';
                     x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
@@ -2384,7 +2411,7 @@
 
                 // Attribute: Mesh Agent
                 var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'OSX 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'OSX 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l' ];
-                if ((node.agent != undefined) && (node.agent.id != undefined) && (node.agent.ver != undefined)) {
+                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
@@ -2392,12 +2419,12 @@
                 }
 
                 // Attribute: Intel AMT
-                if (node.intelamt != undefined) {
+                if (node.intelamt != null) {
                     var str = '';
                     var provisioningStates = { 0: 'Not Activated (Pre)', 1: 'Not Activated (In)', 2: 'Activated' };
-                    if (node.intelamt.ver == undefined || node.intelamt.state == undefined) { str += '<i>Unknown Version & State</i>'; } else { str += (provisioningStates[node.intelamt.state] + ', v' + node.intelamt.ver); }
+                    if (node.intelamt.ver == null || node.intelamt.state == null) { str += '<i>Unknown Version & State</i>'; } else { str += (provisioningStates[node.intelamt.state] + ', v' + node.intelamt.ver); }
                     if (node.intelamt.tls == 1) { str += ', TLS'; }
-                    if (node.intelamt.user == undefined || node.intelamt.user == '') {
+                    if (node.intelamt.user == null || node.intelamt.user == '') {
                         if ((meshrights & 4) != 0) {
                             str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No Credentials</i>';
                         } else {
@@ -2412,7 +2439,7 @@
                 }
 
                 // Attribute: Mesh Agent Tag
-                if ((node.agent != undefined) && (node.agent.tag != undefined)) {
+                if ((node.agent != null) && (node.agent.tag != null)) {
                     x += addDeviceAttribute('Agent Tag', node.agent.tag);
                 }
 
@@ -2481,13 +2508,13 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', (mesh.mtype == 1) || (node.agent == undefined) || (node.agent.caps == undefined) || ((node.agent.caps & 1) != 0));
-                QV('MainDevTerminal', (mesh.mtype == 1) || (node.agent == undefined) || (node.agent.caps == undefined) || ((node.agent.caps & 2) != 0));
-                QV('MainDevFiles', (mesh.mtype == 2) && ((node.agent == undefined) || (node.agent.caps == undefined) || ((node.agent.caps & 4) != 0)));
-                QV('MainDevAmt', node.intelamt != undefined);
-                QV('MainDevConsole', consoleRights && (mesh.mtype == 2) && ((node.agent == undefined) || (node.agent.caps == undefined) || ((node.agent.caps & 8) != 0)));
-                QV('p15uploadCore', (node.agent != undefined) && (node.agent.caps != undefined) && ((node.agent.caps & 16) != 0));
-                QH('p15coreName', ((node.agent != undefined) && (node.agent.core != undefined))?node.agent.core:'');
+                QV('MainDevDesktop', (mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0));
+                QV('MainDevTerminal', (mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0));
+                QV('MainDevFiles', (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0)));
+                QV('MainDevAmt', node.intelamt != null);
+                QV('MainDevConsole', consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0)));
+                QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0));
+                QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
 
                 // Setup/Refresh Intel AMT tab
                 var amtFrameNode = Q('p14iframe').contentWindow.getCurrentMeshNode();
@@ -2534,7 +2561,7 @@
         // Called when MeshCommander needs new credentials or updated credentials.
         function updateAmtCredentials(forceDialog) {
             var node = getNodeFromId(desktopNode._id);
-            if ((forceDialog == true) || (node.intelamt.user == undefined) || (node.intelamt.user == '')) {
+            if ((forceDialog == true) || (node.intelamt.user == null) || (node.intelamt.user == '')) {
                 editDeviceAmtSettings(desktopNode._id, updateAmtCredentialsEx);
             } else {
                 Q('p14iframe').contentWindow.connectButtonfunctionEx();
@@ -2619,9 +2646,9 @@
             x += addHtmlValue('Username', '<input id=dp10username style=width:230px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue('Password', '<input id=dp10password type=password style=width:230px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue('Security', '<select id=dp10tls style=width:236px><option value=0>No TLS security</option><option value=1>TLS security required</option></select>');
-            if ((node.intelamt.user != undefined) && (node.intelamt.user != '')) { buttons = 7; }
+            if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
-            if ((node.intelamt.user != undefined) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
+            if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
         }
@@ -2783,7 +2810,7 @@
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=32 onchange=p10editdevicevalueValidate(' + mode + ') onkeyup=p10editdevicevalueValidate(' + mode + ') />');
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
-            if (v == undefined) v = '';
+            if (v == null) v = '';
             Q('dp10devicevalue').value = v;
             p10editdevicevalueValidate();
         }
@@ -2805,7 +2832,7 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != undefined)) { desktop.Stop(); delete desktop; desktop = undefined; }
+            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); delete desktop; desktop = null; }
             desktopNode = currentNode;
             updateDesktopButtons();
 
@@ -2816,15 +2843,15 @@
         // Show and enable the right buttons
         function updateDesktopButtons() {
             var mesh = meshes[desktopNode.meshid];
-            var deskState = ((desktop != undefined) && (desktop.state != 0));
+            var deskState = ((desktop != null) && (desktop.state != 0));
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState == true));
             QV('connectbutton1span', (deskState == false) && (mesh.mtype == 2));
-            QV('connectbutton1hspan', (deskState == false) && (desktopNode.intelamt != undefined && ((desktopNode.intelamt.ver != undefined) || (mesh.mtype == 1))));
+            QV('connectbutton1hspan', (deskState == false) && (desktopNode.intelamt != null && ((desktopNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Show the right settings
-            QV('d7amtkvm', (desktopNode.intelamt != undefined && ((desktopNode.intelamt.ver != undefined) || (mesh.mtype == 1))) && ((deskState == false) || (desktop.contype == 2)));
+            QV('d7amtkvm', (desktopNode.intelamt != null && ((desktopNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == false) || (desktop.contype == 2)));
             QV('d7meshkvm', (mesh.mtype == 2) && ((deskState == false) || (desktop.contype == 1)));
 
             // Enable buttons
@@ -2839,10 +2866,10 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(connectDesktop, 100); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         function connectDesktop(e, contype) {
-            if (desktop == undefined) {
+            if (desktop == null) {
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
-                    if ((desktopNode.intelamt.user == undefined) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
+                    if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
                     desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'));
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
@@ -2865,7 +2892,7 @@
                 // Disconnect and clean up the remote desktop
                 desktop.Stop();
                 delete desktop;
-                desktop = undefined;
+                desktop = null;
             }
         }
 
@@ -2874,14 +2901,14 @@
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             QH('deskstatus', StatusStrs[xstate]);
             QE('deskSaveBtn', state == 3);
-            QV('deskFocusBtn', (desktop != undefined) && (desktop.contype == 2) && (state != 0) && (desktopsettings.showfocus));
+            QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (state != 0) && (desktopsettings.showfocus));
             QE('DeskCAD', state == 3);
             switch (state) {
                 case 0:
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
                     delete desktop;
-                    desktop = undefined;
+                    desktop = null;
                     QV('DeskFocus', false);
                     deskFocusBtn.value = 'All Focus';
                     if (fullscreen == true) { deskToggleFull(); }
@@ -2923,7 +2950,7 @@
             d7showcursor.checked = desktopsettings.showmouse;
             d7bitmapquality.value = desktopsettings.quality;
             d7bitmapscaling.value = desktopsettings.scaling;
-            QV('deskFocusBtn', (desktop != undefined) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
+            QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
 
         var fullscreen = false;
@@ -2988,22 +3015,22 @@
 
         // Send CTRL-ALT-DEL
         function sendCAD() {
-            if (xxdialogMode || desktop == undefined || desktop.State != 3) return;
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
             desktop.m.sendcad();
         }
 
         // Save the desktop image to file
         function deskSaveImage() {
-            if (xxdialogMode || desktop == undefined || desktop.State != 3) return;
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
             Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mousedown(e) }
-        function dmouseup(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mouseup(e) }
-        function dmousemove(e) { if (!xxdialogMode && desktop != undefined) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != undefined) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
-        function drotate(x) { if (!xxdialogMode && desktop != undefined) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
+        function dmousedown(e) { if (!xxdialogMode && desktop != null) desktop.m.mousedown(e) }
+        function dmouseup(e) { if (!xxdialogMode && desktop != null) desktop.m.mouseup(e) }
+        function dmousemove(e) { if (!xxdialogMode && desktop != null) desktop.m.mousemove(e) }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != null) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
 
         //
         // TERMINAL
@@ -3012,7 +3039,7 @@
         var terminalNode;
         function setupTerminal() {
             // Setup the terminal
-            if ((terminalNode != currentNode) && (terminal != undefined)) { terminal.Stop(); delete terminal; terminal = undefined; }
+            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); delete terminal; terminal = null; }
             terminalNode = currentNode;
             updateTerminalButtons();
         }
@@ -3020,12 +3047,12 @@
         // Show and enable the right buttons
         function updateTerminalButtons() {
             var mesh = meshes[terminalNode.meshid];
-            var termState = ((terminal != undefined) && (terminal.state != 0));
+            var termState = ((terminal != null) && (terminal.state != 0));
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (mesh.mtype == 2));
-            QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != undefined && ((terminalNode.intelamt.ver != undefined) || (mesh.mtype == 1))));
+            QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
@@ -3052,10 +3079,10 @@
                     // Disconnected, clear the terminal
                     xterminal.m.TermResetScreen();
                     xterminal.m.TermDraw();
-                    if (terminal != undefined) {
+                    if (terminal != null) {
                         terminal.Stop();
                         delete terminal;
-                        terminal = undefined;
+                        terminal = null;
                     }
                     break;
                 case 3:
@@ -3072,7 +3099,7 @@
             if (!terminal) {
                 if (contype == 2) {
                     // Setup the Intel AMT terminal
-                    if ((terminalNode.intelamt.user == undefined) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
+                    if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
                     terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term'));
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id, 16994, '*', '*', 0);
@@ -3089,7 +3116,7 @@
                 //QH('Term', '');
                 terminal.Stop();
                 delete terminal;
-                terminal = undefined;
+                terminal = null;
             }
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
         }
@@ -3146,7 +3173,7 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); delete files; files = undefined; }
+            if (((samenode == false) || (online == false)) && files) { files.Stop(); delete files; files = null; }
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -3161,7 +3188,7 @@
                     QH('p13currentpath', '');
                     QE('p13FolderUp', false);
                     p13setActions();
-                    if (files != undefined) { files.Stop(); delete files; files = undefined; }
+                    if (files != null) { files.Stop(); delete files; files = null; }
                     break;
                 case 3:
                     files.Send(JSON.stringify({ action: 'ls', reqid: 1, path: '' }));
@@ -3192,7 +3219,7 @@
                 //QH('Term', '');
                 files.Stop();
                 delete files;
-                files = undefined;
+                files = null;
             }
         }
 
@@ -3249,11 +3276,11 @@
 
                 // Figure out the date
                 var fdatestr = '';
-                if (f.d != undefined) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
+                if (f.d != null) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
 
                 // Figure out the size
                 var fsize = '';
-                if (f.s != undefined) { fsize = getFileSizeStr(f.s); }
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
                 if (f.t < 3) {
@@ -3274,7 +3301,7 @@
             QE('p13FolderUp', p13filetreelocation.length != 0);
 
             // Re-check all boxes if needed using names
-            if (checkedNames != undefined) {
+            if (checkedNames != null) {
                 checkedBoxes = [];
                 checkboxes = document.getElementsByName('fd');
                 for (var i in filetreexx) { if (checkedNames.indexOf(filetreexx[i].n) >= 0) { checkedBoxes.push(filetreexx[i].nx); } }
@@ -3295,7 +3322,7 @@
         }
 
         function p13folderup(x) {
-            if (x == undefined) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
+            if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             files.Send(JSON.stringify({ action: 'ls', reqid: 1, path: p13filetreelocation.join('/') }));
         }
 
@@ -3306,7 +3333,7 @@
 
         function p13sort_files(files) {
             var r = [], sortselection = Q('p13sortdropdown').value;
-            for (var i in files) { files[i].nx = i; if (files[i].s == undefined) { files[i].s = 0; } if (files[i].n == undefined) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
             p13sortorder = 1;
             if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
             if (sortselection == 1) { r.sort(p13sort_filename); }
@@ -3402,7 +3429,7 @@
             //console.log('p13downloadFileCancel');
             downloadFile.Stop();
             delete downloadFile;
-            downloadFile = undefined;
+            downloadFile = null;
         }
 
         // Called by the file transport to indicate when the transport connection state has changed
@@ -3410,7 +3437,7 @@
             switch (state) {
                 case 0: // Transport as disconnected. If this is not part of an abort, we need to save the file
                     setDialogMode(0); // Close any dialog boxes if present
-                    if ((downloadFile != undefined) && (downloadFile.xstate == 1)) { saveAs(data2blob(downloadFile.xdata), downloadFile.xfile); } // Save the file
+                    if ((downloadFile != null) && (downloadFile.xstate == 1)) { saveAs(data2blob(downloadFile.xdata), downloadFile.xfile); } // Save the file
                     break;
                 case 3: // Transport as connected, send a command to indicate we want to start a file download
                     downloadFile.Send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
@@ -3492,12 +3519,12 @@
 
         // Used to cancel the entire transfer.
         function p13uploadFileCancel(button, tag) {
-            if (uploadFile != undefined) {
-                if (uploadFile.ws != undefined) {
+            if (uploadFile != null) {
+                if (uploadFile.ws != null) {
                     uploadFile.ws.Stop();
-                    uploadFile.ws = undefined;
+                    uploadFile.ws = null;
                 }
-                uploadFile = undefined;
+                uploadFile = null;
             }
             setDialogMode(0); // Close any dialog boxes if present
         }
@@ -3505,7 +3532,7 @@
         // Receive upload ack from the mesh agent, use this to keep sending more data
         function p13gotUploadData(data) {
             var cmd = JSON.parse(data);
-            if ((uploadFile == undefined) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
+            if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
 
             if (cmd.action == 'uploadstart') {
                 p13uploadNextPart(false);
@@ -3524,7 +3551,7 @@
             var end = uploadFile.xptr + 4096;
             if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
             if (start == data.byteLength) {
-                if (uploadFile.ws != undefined) { uploadFile.ws.Stop(); uploadFile.ws = undefined; }
+                if (uploadFile.ws != null) { uploadFile.ws.Stop(); uploadFile.ws = null; }
                 if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
             } else {
                 var datapart = data.slice(start, end);
@@ -3567,7 +3594,7 @@
             var mesh = meshes[consoleNode.meshid];
             var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
             if ((meshrights & 16) != 0) {
-                if (consoleNode.consoleText == undefined) { consoleNode.consoleText = ''; }
+                if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
                 if (samenode == false) {
                     QH('p15agentConsole', consoleNode.consoleText);
                     Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
@@ -3618,7 +3645,7 @@
         // Handle Mesh Agent console data
         function p15consoleReceive(node, data) {
             data = '<div>' + EscapeHtmlBreaks(data) + '</div>'
-            if (node.consoleText == undefined) { node.consoleText = data; } else { node.consoleText += data; }
+            if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
             if (consoleNode == node) {
                 Q('p15agentConsole').innerHTML += data;
                 Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
@@ -4032,7 +4059,7 @@
 
             filetreelinkpath = '';
             for (var i in filetreelocation) {
-                if ((filetreex.f != undefined) && (filetreex.f[filetreelocation[i]] != undefined)) {
+                if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) {
                     filetreelocation2.push(filetreelocation[i]);
                     fullPath += ' / ' + filetreelocation[i];
                     if ((folderdepth == 1)) {
@@ -4044,7 +4071,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != undefined?filetreex.n:filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != null?filetreex.n:filetreelocation[i]) + '</a>';
                     folderdepth++;
                 } else {
                     break;
@@ -4066,11 +4093,11 @@
 
                 // Figure out the date
                 var fdatestr = '';
-                if (f.d != undefined) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
+                if (f.d != null) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
 
                 // Figure out the size
                 var fsize = '';
-                if (f.s != undefined) { fsize = getFileSizeStr(f.s); }
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
                 if (f.t < 3) {
@@ -4087,7 +4114,7 @@
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
-            //if (f.parent == undefined) {  }
+            //if (f.parent == null) {  }
             QH('p5rightOfButtons', p5getQuotabar(filetreex));
 
             QH('p5files', html1 + html2);
@@ -4108,7 +4135,7 @@
 
         function p5getQuotabar(f) {
             while (f.t > 1) { f = f.parent; }
-            if ((f.t != 1) || (f.maxbytes == undefined)) return '';
+            if ((f.t != 1) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
             return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:200px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
@@ -4122,7 +4149,7 @@
 
         function p5sort_files(files) {
             var r = [], sortselection = Q('p5sortdropdown').value;
-            for (var i in files) { files[i].nx = i; if (files[i].n == undefined) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            for (var i in files) { files[i].nx = i; if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
             sortorder = 1;
             if (sortselection > 3) { sortorder = -1; sortselection -= 3; }
             if (sortselection == 1) { r.sort(p5sort_filename); }
@@ -4144,9 +4171,9 @@
         function getFileSelCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) cc++; } return cc; }
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
-        function setupBackPointers(x) { if (x.f != undefined) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
+        function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
         function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
-        function p5folderup(x) { if (x == undefined) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
+        function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck() style=width:100% />'); Q('p5renameinput').focus(); }
         function p5createfolderEx() { meshserver.Send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
@@ -4277,7 +4304,7 @@
                 }
                 if (msg != '') msg += ', ';
                 if (user.name != userinfo.name) { msg += "<a onclick=showUserAdminDialog(event,\"" + user._id + "\")>"; }
-                if ((user.siteadmin == undefined) || (user.siteadmin == 0)) {
+                if ((user.siteadmin == null) || (user.siteadmin == 0)) {
                     msg += "User";
                 } else if (user.siteadmin == 8) {
                     msg += "User with server files";
@@ -4286,7 +4313,7 @@
                 } else {
                     msg += "Partial Admin";
                 }
-                if ((user.quota != undefined) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
+                if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
                 if (user.name != userinfo.name) { msg += "</a>"; }
                 if (user.email != null) {
                     msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':'') + '<td align=right>' + msg + '</table>';
@@ -4370,7 +4397,7 @@
             QE('ua_serverrestore', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_fileaccess', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverupdate', userinfo.siteadmin == 0xFFFFFFFF);
-            Q('ua_fileaccessquota').value = (user.quota != undefined)?(user.quota / 1024):'';
+            Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
             return false;
         }
@@ -4429,7 +4456,7 @@
 
             d3filetreelinkpath = '';
             for (var i in d3filetreelocation) {
-                if ((filetreex.f != undefined) && (filetreex.f[d3filetreelocation[i]] != undefined)) {
+                if ((filetreex.f != null) && (filetreex.f[d3filetreelocation[i]] != null)) {
                     d3filetreelocation2.push(d3filetreelocation[i]);
                     if ((folderdepth == 1)) {
                         var sp = d3filetreelocation[i].split('/');
@@ -4459,7 +4486,7 @@
 
                 // Figure out the size
                 var fsize = '';
-                if (f.s != undefined) { fsize = getFileSizeStr(f.s); }
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
                 if (f.t < 3) {
@@ -4480,7 +4507,7 @@
         }
 
         function d3folderset(x) { d3filetreelocation.push(decodeURIComponent(x)); d3updatefiles(); }
-        function d3folderup(x) { if (x == undefined) { d3filetreelocation.pop(); } else { while (d3filetreelocation.length > x) { d3filetreelocation.pop(); } } d3updatefiles(); }
+        function d3folderup(x) { if (x == null) { d3filetreelocation.pop(); } else { while (d3filetreelocation.length > x) { d3filetreelocation.pop(); } } d3updatefiles(); }
         function d3getFileSel() { var cc = []; var checkboxes = document.getElementsByName('fcx'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { cc.push(checkboxes[i].value) } } return cc; }
         function d3setActions() {
             var mode = Q('d3uploadMode').value;
@@ -4523,7 +4550,7 @@
                     var t = '';
                     var d = new Date(n.time);
                     var icon = 0;
-                    if (n.nodeid != undefined) {
+                    if (n.nodeid != null) {
                         var node = getNodeFromId(n.nodeid);
                         if (node != null) {
                             //console.log(node);
@@ -4546,7 +4573,7 @@
             for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
             if (j != -1) {
                 var n = notifications[j];
-                if (n.nodeid != undefined) {
+                if (n.nodeid != null) {
                     if (n.tag == 'desktop') gotoDevice(n.nodeid, 12); // Desktop
                     else if (n.tag == 'terminal') gotoDevice(n.nodeid, 11); // Terminal
                     else if (n.tag == 'files') gotoDevice(n.nodeid, 13); // Files
@@ -4578,8 +4605,8 @@
 
         // Add a new notification and play the notification sound
         function addNotification(n) {
-            if (n.time == undefined) { n.time = Date.now(); }
-            if (n.id == undefined) { n.id = Math.random(); }
+            if (n.time == null) { n.time = Date.now(); }
+            if (n.id == null) { n.id = Math.random(); }
             notifications.unshift(n);
             setNotificationCount(notifications.length);
             Q('chimes').play();
@@ -4598,7 +4625,7 @@
         // POPUP DIALOG
         //
 
-        // undefined = Hidden, 1 = Generic Message
+        // null = Hidden, 1 = Generic Message
         var xxdialogMode;
         var xxdialogFunc;
         var xxdialogButtons;
@@ -4662,8 +4689,8 @@
 
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function putstore(name, val) { try { if (typeof (localStorage) === "undefined") return; localStorage.setItem(name, val); } catch (e) { } }
-        function getstore(name, val) { try { if (typeof (localStorage) === "undefined") return val; var v = localStorage.getItem(name); if ((v == undefined) || (v == null)) return val; return v; } catch (e) { return val; } }
+        function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
+        function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
