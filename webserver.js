@@ -447,10 +447,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id })
 
                                                 // Send the confirmation page
-                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
 
                                                 // Send a notification
-                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified: <b>' + EscapeHtml(userinfo.email) + '</b>.' , nolog: 1 })
+                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(userinfo.email) + '</b>.' , nolog: 1 })
                                             }
                                         });
                                     }
@@ -485,7 +485,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id })
 
                                                 // Send the new password
-                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Password for \"' + EscapeHtml(user.name) + '\" has been reset to \"<b>' + EscapeHtml(newpass) + '</b>\", login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
                                             });
                                         });
                                     }
@@ -617,7 +617,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
         } else {
             // Send back the login application
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: req.session.loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null });
+            var loginmode = req.session.loginmode;
+            delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null });
         }
     }
     
@@ -636,7 +638,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (req.session && req.session.userid) {
             if (req.session.domainid != domain.id) { req.session.destroy(function () { res.redirect(domain.url); }); return; } // Check is the session is for the correct domain
             var user = obj.users[req.session.userid];
-            res.render(obj.path.join(__dirname, 'views/terms'), { logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+            res.render(obj.path.join(__dirname, 'views/terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
         } else {
             res.render(obj.path.join(__dirname, 'views/terms'), { title: domain.title, title2: domain.title2 });
         }

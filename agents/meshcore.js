@@ -362,11 +362,13 @@ function createMeshCore(agent) {
     }
 
     // Called when a file changed in the file system
+    /*
     function onFileWatcher(a, b) {
         console.log('onFileWatcher', a, b, this.path);
         var response = getDirectoryInfo(this.path);
         if ((response != undefined) && (response != null)) { this.tunnel.s.write(JSON.stringify(response)); }
     }
+    */
 
     // Get a formated response for a given directory path
     function getDirectoryInfo(reqpath) {
@@ -447,12 +449,14 @@ function createMeshCore(agent) {
         if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }
         delete tunnels[this.httprequest.index];
 
+        /*
         // Close the watcher if required
         if (this.httprequest.watcher != undefined) {
             //console.log('Closing watcher: ' + this.httprequest.watcher.path);
             //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
             delete this.httprequest.watcher;
         }
+        */
 
         // If there is a upload or download active on this connection, close the file
         if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
@@ -581,6 +585,7 @@ function createMeshCore(agent) {
                 console.log(objToString(cmd, 0, '.'));
                 switch (cmd.action) {
                     case 'ls': {
+                        /*
                         // Close the watcher if required
                         var samepath = ((this.httprequest.watcher != undefined) && (cmd.path == this.httprequest.watcher.path));
                         if ((this.httprequest.watcher != undefined) && (samepath == false)) {
@@ -588,12 +593,14 @@ function createMeshCore(agent) {
                             //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
                             delete this.httprequest.watcher;
                         }
+                        */
 
                         // Send the folder content to the browser
                         var response = getDirectoryInfo(cmd.path);
                         if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
                         this.write(JSON.stringify(response));
 
+                        /*
                         // Start the directory watcher
                         if ((cmd.path != '') && (samepath == false)) {
                             var watcher = fs.watch(cmd.path, onFileWatcher);
@@ -602,6 +609,7 @@ function createMeshCore(agent) {
                             this.httprequest.watcher = watcher;
                             //console.log('Starting watcher: ' + this.httprequest.watcher.path);
                         }
+                        */
                         break;
                     }
                     case 'mkdir': {
@@ -676,7 +684,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
+                    response = 'xxxxxxAvailable commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh

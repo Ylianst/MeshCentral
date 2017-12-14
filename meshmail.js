@@ -94,7 +94,7 @@ module.exports.CreateMeshMain = function (parent) {
 
     // Load the cookie encryption key from the database
     obj.parent.db.Get('MailCookieEncryptionKey', function (err, docs) {
-        if ((docs.length > 0) && (docs[0].key != null)) {
+        if ((docs.length > 0) && (docs[0].key != null) && (obj.parent.mailtokengen == null)) {
             // Key is present, use it.
             obj.mailCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
         } else {

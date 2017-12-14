@@ -72,7 +72,7 @@ function CreateMeshCentralServer() {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
 
@@ -372,7 +372,7 @@ function CreateMeshCentralServer() {
                             // Load the login cookie encryption key from the database if allowed
                             if ((obj.config) && (obj.config.settings) && (obj.config.settings.loginTokenOk == true)) {
                                 obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                                    if ((docs.length > 0) && (docs[0].key != null)) {
+                                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
                                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                                     } else {
                                         obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
@@ -456,10 +456,12 @@ function CreateMeshCentralServer() {
         if (!obj.db) return;
 
         obj.debug(3, 'DispatchEvent', ids);
-        event.type = 'event';
-        event.time = Date.now();
-        event.ids = ids;
-        if (!event.nolog) { obj.db.StoreEvent(ids, source, event); }
+        if (typeof event == 'object') {
+            event.type = 'event';
+            event.time = Date.now();
+            event.ids = ids;
+            if (!event.nolog) { obj.db.StoreEvent(ids, source, event); }
+        }
         var targets = []; // List of targets we dispatched the event to, we don't want to dispatch to the same target twice.
         for (var j in ids) {
             var id = ids[j];
@@ -472,7 +474,7 @@ function CreateMeshCentralServer() {
                 }
             }
         }
-        if ((fromPeerServer == null) && (obj.multiServer != null) && (event.nopeers != 1)) { obj.multiServer.DispatchEvent(ids, source, event); }
+        if ((fromPeerServer == null) && (obj.multiServer != null) && ((typeof event != 'object') || (event.nopeers != 1))) { obj.multiServer.DispatchEvent(ids, source, event); }
         delete targets;
     }
 
@@ -842,7 +844,7 @@ function CreateMeshCentralServer() {
             } else {
                 // Load the login cookie encryption key from the database
                 obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                    if ((docs.length > 0) && (docs[0].key != null)) {
+                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
                         // Key is present, use it.
                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                         func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey));
@@ -860,7 +862,7 @@ function CreateMeshCentralServer() {
     obj.showLoginTokenKey = function (func) {
         // Load the login cookie encryption key from the database
         obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-            if ((docs.length > 0) && (docs[0].key != null)) {
+            if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
                 // Key is present, use it.
                 func(docs[0].key);
             } else {
