@@ -754,12 +754,25 @@
                 hideContextMenu(); // Hide the context menu if present
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
+                serverPoll();
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.Send({ action: 'meshes' });
                 meshserver.Send({ action: 'nodes' });
                 meshserver.Send({ action: 'files' });
             }
+        }
+
+        // Poll the server, if it responds, refresh the page.
+        function serverPoll() {
+            xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open("HEAD", window.location.href);
+            xdr.timeout = 15000;
+            xdr.onload = function () { reload(); };
+            xdr.onerror = xdr.ontimeout = function () { console.log('error'); setTimeout(serverPoll, 10000); };
+            xdr.send();
         }
 
         // Return true if this browser supports clickonce
@@ -1390,7 +1403,10 @@
                 r += '</tr></table><div style=height:1px></div>'; // This height of 1 div fixes a problem in Linux firefox browsers
 
                 // Add a "Add Mesh" option
-                if ((view < 3) && (sort == 0) && (meshcount > 0)) { r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px title="Create a new group of computers."><a onclick=account_createMesh() style=cursor:pointer>Add Mesh</a></div>'; }
+                r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
+                if ((view < 3) && (sort == 0) && (meshcount > 0)) { r += '<a onclick=account_createMesh() title="Create a new group of computers." style=cursor:pointer>Add Mesh</a>&nbsp'; }
+                r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a></div>';
+                r += '</div>';
 
                 QH('xdevices', r);
                 deviceHeaderSet();
@@ -2481,7 +2497,7 @@
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
 
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showRouterDialog("' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
@@ -2758,7 +2774,7 @@
         }
 
         // Show router dialog
-        function p10showRouterDialog() {
+        function p10showMeshCmdDialog(mode, nodeid) {
             if (xxdialogMode) return;
             var y = "<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px>";
             y += "<option value=3>Windows (32bit)</option>";
@@ -2769,13 +2785,15 @@
             y += "</select>";
 
             var x = "";
-            x += "<div>Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />";
+            if (mode == 0) { x += '<div>MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials.<br /><br />'; }
+            if (mode == 1) { x += '<div>Download "meshcmd" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />'; }
             x += addHtmlValue('Operating System', y);
-            x += addHtmlValue('Mesh Command', '<a id="meshcmddownloadid" href="meshagents?meshcmd=3" target="_blank"></a>');
-            x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + currentNode._id + '" target="_blank">MeshAction (.txt)</a>');
+            x += addHtmlValue('MeshCmd', '<a id=meshcmddownloadid href="meshagents?meshcmd=3" target="_blank"></a>');
+            if (mode == 0) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=generic" target="_blank">MeshAction (.txt)</a>'); }
+            if (mode == 1) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" target="_blank">MeshAction (.txt)</a>'); }
             x += "</div>";
 
-            setDialogMode(2, "Network Router", 1, null, x, currentNode._id);
+            setDialogMode(2, ["Download MeshCmd","Network Router"][mode], 9, null, x);
             meshCmdOsClick();
         }
 

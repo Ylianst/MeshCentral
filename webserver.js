@@ -1354,18 +1354,33 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             });
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
+            if (domain == null) { res.sendStatus(404); return; }
             var user = obj.users[req.session.userid];
-            if (domain == null || req.query.nodeid == null) { res.sendStatus(404); return; }
-            obj.db.Get(req.query.nodeid, function (err, nodes) {
-                if (nodes.length != 1) { res.sendStatus(401); return; }
-                var node = nodes[0];
-                // Create the meshaction.txt file for meshcmd.exe
+            if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
+                obj.db.Get(req.query.nodeid, function (err, nodes) {
+                    if (nodes.length != 1) { res.sendStatus(401); return; }
+                    var node = nodes[0];
+                    // Create the meshaction.txt file for meshcmd.exe
+                    var meshaction = {
+                        action: req.query.meshaction,
+                        localPort: 1234,
+                        remoteName: node.name,
+                        remoteNodeId: node._id,
+                        remotePort: 3389,
+                        username: '',
+                        password: '',
+                        serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
+                        serverHttpsHash: new Buffer(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                        debugLevel: 0
+                    }
+                    if (user != null) { meshaction.username = user.name; }
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.certificates.CommonName + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
+                    res.send(JSON.stringify(meshaction, null, ' '));
+                });
+            }
+            else if (req.query.meshaction == 'generic') {
                 var meshaction = {
-                    action: req.query.meshaction,
-                    localPort: 1234,
-                    remoteName: node.name,
-                    remoteNodeId: node._id,
-                    remotePort: 3389,
                     username: '',
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
@@ -1376,7 +1391,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.certificates.CommonName + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                 res.send(JSON.stringify(meshaction, null, ' '));
-            });
+            } else {
+                res.sendStatus(401);
+            }
         } else {
             // Send a list of available mesh agents
             var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';

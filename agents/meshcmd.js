@@ -68,14 +68,17 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
+    var actions = ['ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'MEINFO', 'MEVERSIONS', 'MEHASHES'];
 
     // Load the action file
     var actionfile = null;
     try { actionfile = fs.readFileSync(actionpath); } catch (e) { }
     if ((actionpath != 'meshaction.txt') && (actionfile == null)) { console.log('Unable to load \"' + actionpath + '\". Create this file or specify the location using --actionfile [filename].'); exit(1); return; }
     if (actionfile != null) { try { settings = JSON.parse(actionfile); } catch (e) { console.log(actionpath, e); exit(1); return; } } else { if (argv.length >= 2) { settings = { action: argv[1] } } }
+    if (settings == null) { settings = {}; }
 
     // Set the arguments
+    if ((typeof args.action) == 'string') { settings.action = args.action; }
     if ((typeof args.localport) == 'string') { settings.localport = parseInt(args.localport); }
     if ((typeof args.remotenodeid) == 'string') { settings.remoteNodeId = args.remotenodeid; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
@@ -88,9 +91,10 @@ function run(argv) {
     if ((typeof args.serverhttpshash) == 'string') { settings.serverHttpsHash = args.serverhttpshash; }
     if ((typeof args.remoteport) == 'string') { settings.remotePort = parseInt(args.remoteport); }
     if ((typeof args.debug) == 'string') { settings.debugLevel = parseInt(args.debug); }
+    if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
 
     // Validate meshaction.txt
-    if ((settings == null) || (settings.action == null)) { console.log('No action specified, valid actions are ROUTE, LOADWEBAPP, CLEARWEBAPP, STORAGESTATE, MEINFO, MEVERSIONS, MEHASHES, LMS.'); exit(1); return; }
+    if (settings.action == null) { console.log('No action specified, valid actions are ' + actions.join(', ') + '.'); exit(1); return; }
     settings.action = settings.action.toLowerCase();
     debug(1, "Settings: " + JSON.stringify(settings));
     if (settings.action == 'route') { // MeshCentral Router
@@ -103,7 +107,7 @@ function run(argv) {
         if ((settings.remotePort == null) || (typeof settings.remotePort != 'number') || (settings.remotePort < 0) || (settings.remotePort > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
         if (settings.serverUrl != null) { startRouter(); } else { discoverMeshServer(); } // Start MeshCentral Router
     }
-    else if ((settings.action == 'loadwebapp') || (settings.action == 'loadsmallwebapp') || (settings.action == 'loadlargewebapp') || (settings.action == 'clearwebapp') || (settings.action == 'storagestate')) { // Intel AMT Web Application Actions
+    else if ((settings.action == 'amtloadwebapp') || (settings.action == 'amtloadsmallwebapp') || (settings.action == 'amtloadlargewebapp') || (settings.action == 'amtclearwebapp') || (settings.action == 'amtstoragestate')) { // Intel AMT Web Application Actions
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
@@ -112,13 +116,13 @@ function run(argv) {
         debug(1, "Settings: " + JSON.stringify(settings));
         digest = require('http-digest').create(settings.username, settings.password);
         digest.http = require('http');
-        if (settings.action == 'storagestate') {
+        if (settings.action == 'amtstoragestate') {
             getAmtStorage(function (statusCode, data) { if (statusCode == 200) { console.log("Storage State: " + JSON.stringify(data, null, 2)); exit(); return; } else { console.log("Unable to read storage state."); exit(); return; } });
         } else {
-            if (settings.action == 'loadwebapp') { settings.webapp = Medium_IntelAmtWebApp; }
-            else if (settings.action == 'loadsmallwebapp') { settings.webapp = Small_IntelAmtWebApp; }
-            else if (settings.action == 'loadlargewebapp') { settings.webapp = Large_IntelAmtWebApp; }
-            else if (settings.action == 'clearwebapp') { settings.webapp = null; }
+            if (settings.action == 'amtloadwebapp') { settings.webapp = Medium_IntelAmtWebApp; }
+            else if (settings.action == 'amtloadsmallwebapp') { settings.webapp = Small_IntelAmtWebApp; }
+            else if (settings.action == 'amtloadlargewebapp') { settings.webapp = Large_IntelAmtWebApp; }
+            else if (settings.action == 'amtclearwebapp') { settings.webapp = null; }
             nextStepStorageUpload();
         }
     } else if ((settings.action == 'meversion') || (settings.action == 'meversions') || (settings.action == 'mever')) {
@@ -141,7 +145,7 @@ function run(argv) {
                 exitOnCount = handles.length;
                 for (var i = 0; i < handles.length; ++i) {
                     this.getCertHashEntry(handles[i], function (result) {
-                        console.log('----------\r\n' + result.name + ', (' + (result.isDefault ? 'Default' : '') + (result.isActive ? ', Active' : ', Disabled') + ')\r\n' + result.hashAlgorithm + ': ' + result.certificateHash);
+                        console.log('----------\r\n' + result.name + ', (' + (result.isDefault ? 'Default' : '') + (result.isActive ? ', Active' : ', Disabled') + ')\r\n' + result.hashAlgorithmStr + ': ' + result.certificateHash);
                         if (--exitOnCount == 0) { console.log('----------'); exit(1); }
                     });
                 }
@@ -162,15 +166,15 @@ function run(argv) {
             this.getDnsSuffix(function (result) {
                 mestate.dns = result;
                 var str = 'Intel AMT v' + mestate.ver;
-                if (mestate.ProvisioningState == 'PRE') { str += ', pre-provisioning state'; }
-                else if (mestate.ProvisioningState == 'IN') { str += ', in-provisioning state'; }
-                else if (mestate.ProvisioningState == 'POST') { if (mestate.ProvisioningMode == 'ENTERPRISE') { str += ', activated in ' + mestate.controlmode.consoleMode; } else { str += ', activated in ' + mestate.ProvisioningMode; } }
-                if (mestate.ehbc == true) { str += ', EHBC enabled'; }
+                if (mestate.ProvisioningState.stateStr == 'PRE') { str += ', pre-provisioning state'; }
+                else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
+                else if (mestate.ProvisioningState.stateStr == 'POST') { if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; } }
+                if (mestate.ehbc.EHBC == true) { str += ', EHBC enabled'; }
                 console.log(str + '.');
                 exit(1);
             });
         });
-    } else if (settings.action == 'lms') {
+    } else if (settings.action == 'amtlms') {
         startLms();
     } else {
         console.log('Invalid \"action\" specified.'); exit(1); return;

@@ -684,7 +684,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'xxxxxxAvailable commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
