@@ -169,8 +169,16 @@
         var passhint = "{{{passhint}}}";
         var newAccountPass = {{{newAccountPass}}};
         var emailCheck = {{{emailcheck}}};
+        var features = {{{features}}};
 
         function startup() {
+            if ((features & 32) == 0) {
+                // Guard against other site's top frames (web bugs).
+                var loc = null;
+                try { loc = top.location.toString().toLowerCase(); } catch (e) { }
+                if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
+            }
+
             window.onresize = center;
             center();
             validateLogin();

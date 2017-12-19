@@ -180,7 +180,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
-        //console.log(typeof data);
+        //console.log(typeof data, data.length);
         //if (typeof data == 'string') console.log(data);
         if (this.peer != null) { try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { } }
     });

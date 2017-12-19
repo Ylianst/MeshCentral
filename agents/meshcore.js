@@ -64,16 +64,16 @@ function createMeshCore(agent) {
     // If we are running in Duktape, agent will be null
     if (agent == null) {
         // Running in native agent, Import libraries
-        var db = require('SimpleDataStore').Shared();
-        var sha = require('SHA256Stream');
-        var mesh = require('MeshAgent');
-        var processManager = require('ILibProcessPipe');
+        db = require('SimpleDataStore').Shared();
+        sha = require('SHA256Stream');
+        mesh = require('MeshAgent');
+        processManager = require('ILibProcessPipe');
         if (mesh.hasKVM == 1) { obj.meshCoreCapabilities |= 1; }
     } else {
         // Running in nodejs
         obj.meshCoreInfo += '-NodeJS';
         obj.meshCoreCapabilities = 8;
-        var mesh = agent.getMeshApi();
+        mesh = agent.getMeshApi();
     }
 
     // Get our location (lat/long) using our public IP address
@@ -464,7 +464,9 @@ function createMeshCore(agent) {
     }
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
-        console.log("OnTunnelData");
+        //console.log("OnTunnelData");
+        //sendConsoleText('OnTunnelData, ' +  data.length + ', ' + typeof data + ', ' + data);
+
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {
             try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(JSON.stringify({ action: 'uploaderror' })); return; } // Write to the file, if there is a problem, error out.
@@ -530,8 +532,8 @@ function createMeshCore(agent) {
                         }
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
-                        this.httprequest.process.pipe(this);
-                        this.pipe(this.httprequest.process);
+                        this.httprequest.process.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.pipe(this.httprequest.process, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                     }
                 }
                 if (this.httprequest.protocol == 2) {
@@ -555,8 +557,11 @@ function createMeshCore(agent) {
                             if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
                         };
                         if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                        this.pipe(this.httprequest.desktop.kvm);
-                        this.httprequest.desktop.kvm.pipe(this);
+                        //this.write('Hello!');
+                        //sendConsoleText('KVM WriteHello');
+                        this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        //this.on('data', function (data) { sendConsoleText('KVM: ' + data); });
                     }
                 }
                 else if (this.httprequest.protocol == 5) {
@@ -704,6 +709,7 @@ function createMeshCore(agent) {
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
+                    response += '\r\ServerState: ' + meshServerConnectionState + '.';
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -1002,7 +1008,7 @@ function createMeshCore(agent) {
 
     // Called periodically to check if we need to send updates to the server
     function sendPeriodicServerUpdate(force) {
-        if (amtMeiConnected != 1) { // If we are pending MEI connection, hold off on updating the server on self-info
+        if ((amtMeiConnected != 1) || (force == true)) { // If we are pending MEI connection, hold off on updating the server on self-info
             // Update the self information data
             var selfInfo = buildSelfInfo(), selfInfoStr = JSON.stringify(selfInfo);
             if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
@@ -1071,7 +1077,7 @@ function createMeshCore(agent) {
         mesh.AddCommandHandler(handleServerCommand);
         mesh.AddConnectHandler(handleServerConnection);
         //mesh.lmsNotification = handleAmtNotification; // TODO
-        sendPeriodicServerUpdate(); // TODO: Check if connected before sending
+        sendPeriodicServerUpdate(true); // TODO: Check if connected before sending
 
         // Parse input arguments
         //var args = parseArgs(process.argv);

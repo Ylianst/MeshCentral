@@ -613,13 +613,16 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (obj.args.nousers == true) { features += 4; } // Single user mode
             if (domain.userQuota == -1) { features += 8; } // No server files mode
             if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
+            if (parent.config.settings.allowFraming == true) { features += 32; } // Allow site within iframe
             if ((!obj.args.user) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
         } else {
             // Send back the login application
             var loginmode = req.session.loginmode;
             delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null });
+            var features = 0;
+            if (parent.config.settings.allowFraming == true) { features += 32; } // Allow site within iframe
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features });
         }
     }
     

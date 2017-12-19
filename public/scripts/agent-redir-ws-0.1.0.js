@@ -47,6 +47,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
     // Called to pass websocket control messages
     obj.xxOnControlCommand = function (msg) {
+        //console.log(msg);
+        //obj.socket.send('hellobob');
         var controlMsg = JSON.parse(msg);
         if ((controlMsg.type == 'answer') && (obj.webrtc != null)) {
             console.log('gotAnswer', JSON.stringify(controlMsg));
@@ -106,8 +108,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         if (typeof e.data == 'string') {
             // Control messages, most likely WebRTC setup 
             obj.xxOnControlCommand(e.data);
-        }
-        if (typeof e.data == 'object') {
+        } else if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
                 // Chrome & Firefox (Draft)

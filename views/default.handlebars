@@ -636,10 +636,12 @@
         var clickOnce = detectClickOnce();
 
         function startup() {
-            // Guard against other site's top frames (web bugs).
-            var loc = null;
-            try { loc = top.location.toString().toLowerCase(); } catch (e) { }
-            if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
+            if ((features & 32) == 0) {
+                // Guard against other site's top frames (web bugs).
+                var loc = null;
+                try { loc = top.location.toString().toLowerCase(); } catch (e) { }
+                if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
+            }
 
             // Check if we are in debug mode
             args = parseUriArgs();
@@ -754,7 +756,7 @@
                 hideContextMenu(); // Hide the context menu if present
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
-                serverPoll();
+                setTimeout(serverPoll, 5000);
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.Send({ action: 'meshes' });
