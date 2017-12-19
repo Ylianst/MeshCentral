@@ -628,7 +628,7 @@ th {
                         <div id="d24dLockResetButton"><input type="checkbox" id="d24LockResetButton" onchange="showAdvPowerDlgChange()">Lock reset button<br></div>
                         <div id="d24dLockSleepButton"><input type="checkbox" id="d24LockSleepButton" onchange="showAdvPowerDlgChange()">Lock sleep button<br></div>
                         <div id="d24dLockKeyboard"><input type="checkbox" id="d24LockKeyboard" onchange="showAdvPowerDlgChange()">Lock keyboard<br></div>
-                        <div id="d24dUserPasswordBypass"><input type="checkbox" id="d24UserPasswordBypass" onchange="showAdvPowerDlgChange()">User power bypass<br></div>
+                        <div id="d24dUserPasswordBypass"><input type="checkbox" id="d24UserPasswordBypass" onchange="showAdvPowerDlgChange()">BIOS password bypass<br></div>
                         <div id="d24dReflashBios"><input type="checkbox" id="d24ReflashBios" onchange="showAdvPowerDlgChange()">Reflash BIOS<br></div>
                         <div id="d24dSafeMode"><input type="checkbox" id="d24SafeMode" onchange="showAdvPowerDlgChange()">Safe mode<br></div>
                         <div id="d24dUseIDER"><input type="checkbox" id="d24UseIDER" onchange="showAdvPowerDlgChange()">Use IDER<br></div>
@@ -636,6 +636,16 @@ th {
                         <div id="d24dSecureErase"><input type="checkbox" id="d24SecureErase" onchange="showAdvPowerDlgChange()">Intel&reg; Remote Secure Erase<br></div>
                     </div>
                     <div>Boot Settings</div>
+                </div>
+                <div style="height:26px">
+                    <select id="idx_d24ForceBootDevice" style="float:right;width:200px" onchange="showAdvPowerDlgChange()">
+                        <option value="0">None
+                        <option value="1">Force CD/DVD Boot
+                        <option value="2">Force PXE Boot
+                        <option value="3">Force Hard Disk Boot
+                        <option value="4">Force Diagnostic Boot
+                    </select>
+                    <div>Boot Source</div>
                 </div>
                 <div style="height:26px">
                     <select id="idx_d24BootMediaIndex" style="float:right;width:200px" onchange="showAdvPowerDlgChange()">
@@ -647,7 +657,7 @@ th {
                     </select>
                     <div>Boot Media Index</div>
                 </div>
-                <div style="height:26px">
+                <div style="height:26px" id="idd_d24IDERBootDevice">
                     <select id="idx_d24IDERBootDevice" style="float:right;width:200px" onchange="showAdvPowerDlgChange()">
                         <option value="0">Boot to floppy
                         <option value="1">Boot to CDROM
@@ -834,7 +844,9 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     obj.user = user;
     obj.pass = pass;
     obj.tls = tls;
+    obj.tlsv1only = 0;
     obj.cnonce = Math.random().toString(36).substring(7); // Generate a random client nonce
+    obj.inDataCount = 0;
 
     // Private method
     //obj.Debug = function (msg) { console.log(msg); }
@@ -921,8 +933,9 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     // Websocket relay specific private method
     obj.xxConnectHttpSocket = function () {
         //obj.Debug("xxConnectHttpSocket");
+        obj.inDataCount = 0;
         obj.socketState = 1;
-        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=1&host=" + obj.host + "&port=" + obj.port + "&tls=" + obj.tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=1" indicates to the relay that this is a WSMAN session
+        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=1&host=" + obj.host + "&port=" + obj.port + "&tls=" + obj.tls + "&tls1only=" + obj.tlsv1only + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=1" indicates to the relay that this is a WSMAN session
         obj.socket.onopen = _OnSocketConnected;
         obj.socket.onmessage = _OnMessage;
         obj.socket.onclose = _OnSocketClosed;
@@ -940,6 +953,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     }
 
     function _OnMessage(e) {
+        obj.inDataCount++;
         if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
@@ -1056,6 +1070,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     // Websocket relay specific private method
     function _OnSocketClosed(data) {
         //console.log("_OnSocketClosed");
+        if (obj.inDataCount == 0) { obj.tlsv1only = (1 - obj.tlsv1only); }
         obj.socketState = 0;
         if (obj.socket != null) { obj.socket.close(); obj.socket = null; }
         if (obj.pendingAjaxCall.length > 0) {
@@ -1118,6 +1133,8 @@ var CreateAmtRedirect = function (module) {
     obj.user = null;
     obj.pass = null;
     obj.authuri = "/RedirectionService";
+    obj.tlsv1only = 0;
+    obj.inDataCount = 0;
         obj.connectstate = 0;
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
 
@@ -1137,7 +1154,9 @@ var CreateAmtRedirect = function (module) {
         obj.user = user;
         obj.pass = pass;
         obj.connectstate = 0;
-        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
+        obj.inDataCount = 0;
+        console.log('obj.tlsv1onlyx', obj.tlsv1only);
+        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + "&tls1only=" + obj.tlsv1only + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
         obj.socket.onclose = obj.xxOnSocketClosed;
@@ -1154,7 +1173,9 @@ var CreateAmtRedirect = function (module) {
     }
 
     obj.xxOnMessage = function (e) {
-        if (typeof e.data == 'object') {
+        
+        obj.inDataCount++;
+                if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
                 // Chrome & Firefox (Draft)
@@ -1368,8 +1389,18 @@ var CreateAmtRedirect = function (module) {
 
     obj.xxOnSocketClosed = function () {
         //obj.Debug("Redir Socket Closed");
-        obj.Stop();
-    }
+        
+        console.log('obj.tlsv1only', obj.tlsv1only);
+        if ((obj.inDataCount == 0) && (obj.tlsv1only == 0)) {
+            obj.tlsv1only = 1;
+            obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + "&tls1only=" + obj.tlsv1only + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
+            obj.socket.onopen = obj.xxOnSocketConnected;
+            obj.socket.onmessage = obj.xxOnMessage;
+            obj.socket.onclose = obj.xxOnSocketClosed;
+        } else {
+            obj.Stop();
+        }
+                    }
 
     obj.xxStateChange = function(newstate) {
         if (obj.State == newstate) return;
@@ -1408,7 +1439,7 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
     obj.comm = CreateWsmanComm(host, port, user, pass, tls, extra);
 
     obj.PerformAjax = function (postdata, callback, tag, pri, namespaces) {
-        if (namespaces == undefined) namespaces = '';
+        if (namespaces == null) namespaces = '';
         obj.comm.PerformAjax('<?xml version=\"1.0\" encoding=\"utf-8\"?><Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns=\"http://www.w3.org/2003/05/soap-envelope\" ' + namespaces + '><Header><a:Action>' + postdata, function (data, status, tag) {
             if (status != 200) { callback(obj, null, { Header: { HttpError: status } }, status, tag); return; }
             var wsresponse = obj.ParseWsman(data);
@@ -1431,8 +1462,8 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
     // Perform a WSMAN Subscribe operation
     obj.ExecSubscribe = function (resuri, delivery, url, callback, tag, pri, selectors, opaque, user, pass) {
         var digest = "", digest2 = "", opaque = "";
-        if (user != undefined && pass != undefined) { digest = '<t:IssuedTokens xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:se="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><t:RequestSecurityTokenResponse><t:TokenType>http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#UsernameToken</t:TokenType><t:RequestedSecurityToken><se:UsernameToken><se:Username>' + user + '</se:Username><se:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd#PasswordText">' + pass + '</se:Password></se:UsernameToken></t:RequestedSecurityToken></t:RequestSecurityTokenResponse></t:IssuedTokens>'; digest2 = '<w:Auth Profile="http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/http/digest"/>'; }
-        if (opaque != undefined && opaque != null) { opaque = '<a:ReferenceParameters><m:arg>' + opaque + '</m:arg></a:ReferenceParameters>'; }
+        if (user != null && pass != null) { digest = '<t:IssuedTokens xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:se="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><t:RequestSecurityTokenResponse><t:TokenType>http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#UsernameToken</t:TokenType><t:RequestedSecurityToken><se:UsernameToken><se:Username>' + user + '</se:Username><se:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd#PasswordText">' + pass + '</se:Password></se:UsernameToken></t:RequestedSecurityToken></t:RequestSecurityTokenResponse></t:IssuedTokens>'; digest2 = '<w:Auth Profile="http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/http/digest"/>'; }
+        if (opaque != null) { opaque = '<a:ReferenceParameters><m:arg>' + opaque + '</m:arg></a:ReferenceParameters>'; }
         if (delivery == 'PushWithAck') { delivery = 'dmtf.org/wbem/wsman/1/wsman/PushWithAck'; } else if (delivery == 'Push') { delivery = 'xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push'; }
         var data = "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo>" + _PutObjToSelectorsXml(selectors) + digest + '</Header><Body><e:Subscribe><e:Delivery Mode="http://schemas.' + delivery + '"><e:NotifyTo><a:Address>' + url + '</a:Address>' + opaque + '</e:NotifyTo>' + digest2 + '</e:Delivery></e:Subscribe>';
         obj.PerformAjax(data + "</Body></Envelope>", callback, tag, pri, 'xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:m="http://x.com"');
@@ -1523,13 +1554,13 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
         var data, r = {};
         for (var i = 0; i < node.childNodes.length; i++) {
             var child = node.childNodes[i];
-            if ((child.childElementCount === undefined) || (child.childElementCount == 0)) { data = child.textContent; } else { data = _ParseWsmanRec(child); }
+            if ((child.childElementCount == null) || (child.childElementCount == 0)) { data = child.textContent; } else { data = _ParseWsmanRec(child); }
             if (data == 'true') data = true; // Convert 'true' into true
             if (data == 'false') data = false; // Convert 'false' into false
             if ((parseInt(data) + '') === data) data = parseInt(data); // Convert integers
 
             var childObj = data;
-            if ((child.attributes !== null) && (child.attributes.length > 0)) {
+            if ((child.attributes != null) && (child.attributes.length > 0)) {
 				childObj = { 'Value': data };
 				for(var j = 0; j < child.attributes.length; j++) {
 					childObj['@' + child.attributes[j].name] = child.attributes[j].value;
@@ -1537,20 +1568,20 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
 			}
 			
             if (r[child.localName] instanceof Array) { r[child.localName].push(childObj); }
-            else if (r[child.localName] == undefined) { r[child.localName] = childObj; }
+            else if (r[child.localName] == null) { r[child.localName] = childObj; }
             else { r[child.localName] = [r[child.localName], childObj]; }
         }
         return r;
     }
 
     function _PutObjToBodyXml(resuri, putObj) {
-		if(!resuri || putObj === undefined || putObj === null) return '';
+        if (!resuri || putObj == null) return '';
 		var objname = obj.GetNameFromUrl(resuri);
 		var result = '<r:' + objname + ' xmlns:r="' + resuri + '">';
 
 		for (var prop in putObj) {
 			if (!putObj.hasOwnProperty(prop) || prop.indexOf('__') === 0 || prop.indexOf('@') === 0) continue;
-			if (putObj[prop] === undefined || putObj[prop] === null || typeof putObj[prop] === 'function') continue;
+			if (putObj[prop] == null || typeof putObj[prop] === 'function') continue;
 			if (typeof putObj[prop] === 'object' && putObj[prop]['ReferenceParameters']) {
 				result += '<r:' + prop + '><a:Address>' + putObj[prop].Address + '</a:Address><a:ReferenceParameters><w:ResourceURI>' + putObj[prop]['ReferenceParameters']["ResourceURI"] + '</w:ResourceURI><w:SelectorSet>';
 				var selectorArray = putObj[prop]['ReferenceParameters']['SelectorSet']['Selector'];
@@ -1637,6 +1668,88 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
             return xmlDoc;
         }
     }
+
+    /*
+    // This is a drop-in replacement to _turnToXml() that works without xml parser dependency.
+    Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : null); } });
+    function _treeBuilder() {
+        this.tree = [];
+        this.push = function (element) { this.tree.push(element); };
+        this.pop = function () { var element = this.tree.pop(); if (this.tree.length > 0) { var x = this.tree.peek(); x.childNodes.push(element); x.childElementCount = x.childNodes.length; } return (element); };
+        this.peek = function () { return (this.tree.peek()); }
+        this.addNamespace = function (prefix, namespace) { this.tree.peek().nsTable[prefix] = namespace; if (this.tree.peek().attributes.length > 0) { for (var i = 0; i < this.tree.peek().attributes; ++i) { var a = this.tree.peek().attributes[i]; if (prefix == '*' && a.name == a.localName) { a.namespace = namespace; } else if (prefix != '*' && a.name != a.localName) { var pfx = a.name.split(':')[0]; if (pfx == prefix) { a.namespace = namespace; } } } } }
+        this.getNamespace = function (prefix) { for (var i = this.tree.length - 1; i >= 0; --i) { if (this.tree[i].nsTable[prefix] != null) { return (this.tree[i].nsTable[prefix]); } } return null; }
+    }
+    function _turnToXml(text) { if (text == null) return null; return ({ childNodes: [_turnToXmlRec(text)], getElementsByTagName: _getElementsByTagName, getChildElementsByTagName: _getChildElementsByTagName, getElementsByTagNameNS: _getElementsByTagNameNS }); }
+    function _getElementsByTagNameNS(ns, name) { var ret = []; _xmlTraverseAllRec(this.childNodes, function (node) { if (node.localName == name && (node.namespace == ns || ns == '*')) { ret.push(node); } }); return ret; }
+    function _getElementsByTagName(name) { var ret = []; _xmlTraverseAllRec(this.childNodes, function (node) { if (node.localName == name) { ret.push(node); } }); return ret; }
+    function _getChildElementsByTagName(name) { var ret = []; if (this.childNodes != null) { for (var node in this.childNodes) { if (this.childNodes[node].localName == name) { ret.push(this.childNodes[node]); } } } return (ret); }
+    function _getChildElementsByTagNameNS(ns, name) { var ret = []; if (this.childNodes != null) { for (var node in this.childNodes) { if (this.childNodes[node].localName == name && (ns == '*' || this.childNodes[node].namespace == ns)) { ret.push(this.childNodes[node]); } } } return (ret); }
+    function _xmlTraverseAllRec(nodes, func) { for (var i in nodes) { func(nodes[i]); if (nodes[i].childNodes) { _xmlTraverseAllRec(nodes[i].childNodes, func); } } }
+    function _turnToXmlRec(text) {
+        var elementStack = new _treeBuilder(), lastElement = null, x1 = text.split('<'), ret = [], element = null, currentElementName = null;
+        for (var i in x1) {
+            var x2 = x1[i].split('>'), x3 = x2[0].split(' '), elementName = x3[0];
+            if ((elementName.length > 0) && (elementName[0] != '?')) {
+                if (elementName[0] != '/') {
+                    var attributes = [], localName, localname2 = elementName.split(' ')[0].split(':'), localName = (localname2.length > 1) ? localname2[1] : localname2[0];
+                    Object.defineProperty(attributes, "get",
+                    {
+                        value: function () {
+                            if (arguments.length == 1) {
+                                for (var a in this) { if (this[a].name == arguments[0]) { return (this[a]); } }
+                            }
+                            else if (arguments.length == 2) {
+                                for (var a in this) { if (this[a].name == arguments[1] && (arguments[0] == '*' || this[a].namespace == arguments[0])) { return (this[a]); } }
+                            }
+                            else {
+                                throw ('attributes.get(): Invalid number of parameters');
+                            }
+                        }
+                    });
+                    elementStack.push({ name: elementName, localName: localName, getChildElementsByTagName: _getChildElementsByTagName, getElementsByTagNameNS: _getElementsByTagNameNS, getChildElementsByTagNameNS: _getChildElementsByTagNameNS, attributes: attributes, childNodes: [], nsTable: {} });
+                    // Parse Attributes
+                    if (x3.length > 0) {
+                        var skip = false;
+                        for (var j in x3) {
+                            if (x3[j] == '/') {
+                                // This is an empty Element
+                                elementStack.peek().namespace = elementStack.peek().name == elementStack.peek().localName ? elementStack.getNamespace('*') : elementStack.getNamespace(elementStack.peek().name.substring(0, elementStack.peek().name.indexOf(':')));
+                                elementStack.peek().textContent = '';
+                                lastElement = elementStack.pop();
+                                skip = true;
+                                break;
+                            }
+                            var k = x3[j].indexOf('=');
+                            if (k > 0) {
+                                var attrName = x3[j].substring(0, k);
+                                var attrValue = x3[j].substring(k + 2, x3[j].length - 1);
+                                var attrNS = elementStack.getNamespace('*');
+
+                                if (attrName == 'xmlns') {
+                                    elementStack.addNamespace('*', attrValue);
+                                    attrNS = attrValue;
+                                } else if (attrName.startsWith('xmlns:')) {
+                                    elementStack.addNamespace(attrName.substring(6), attrValue);
+                                } else {
+                                    var ax = attrName.split(':');
+                                    if (ax.length == 2) { attrName = ax[1]; attrNS = elementStack.getNamespace(ax[0]); }
+                                }
+                                var x = { name: attrName, value: attrValue }
+                                if (attrNS != null) x.namespace = attrNS;
+                                elementStack.peek().attributes.push(x);
+                            }
+                        }
+                        if (skip) { continue; }
+                    }
+                    elementStack.peek().namespace = elementStack.peek().name == elementStack.peek().localName ? elementStack.getNamespace('*') : elementStack.getNamespace(elementStack.peek().name.substring(0, elementStack.peek().name.indexOf(':')));
+                    if (x2[1]) { elementStack.peek().textContent = x2[1]; }
+                } else { lastElement = elementStack.pop(); }
+            }
+        }
+        return lastElement;
+    }
+    */
 
     return obj;
 }
@@ -32302,7 +32415,7 @@ script_functionTable2 = ['encodeuri', 'decodeuri', 'passwordcheck', 'atob', 'bto
 script_functionTableX2 = [encodeURI, decodeURI, passwordcheck, window.atob.bind(window), window.btoa.bind(window), hex2rstr, rstr2hex, random, rstr_md5, MakeToArray, ReadShort, ReadShortX, ReadInt, ReadSInt, ReadIntX, ShortToStr, ShortToStrX, IntToStr, IntToStrX];
 
 // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-script_functionTable3 = ['pullsystemstatus', 'pulleventlog', 'pullauditlog', 'pullcertificates', 'pullwatchdog', 'pullsystemdefense', 'pullhardware', 'pulluserinfo', 'pullremoteaccess', 'highlightblock', 'disconnect', 'getsidstring', 'getsidbytearray'];
+script_functionTable3 = ['pullsystemstatus', 'pulleventlog', 'pullauditlog', 'pullcertificates', 'pullwatchdog', 'pullsystemdefense', 'pullhardware', 'pulluserinfo', 'pullremoteaccess', 'highlightblock', 'disconnect', 'getsidstring', 'getsidbytearray', 'pulleventsubscriptions'];
 
 // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
 script_functionTableX3 = [
@@ -32338,7 +32451,10 @@ script_functionTableX3 = [
     function (runner, x) { return GetSidString(x); }
     ,
     function (runner, x) { return GetSidByteArray(x); }
-];
+    ,
+    
+    PullEventSubscriptions
+    ];
 
 // Setup the script state
 function script_setup(binary, startvars) {
@@ -32960,7 +33076,7 @@ if (typeof module !== "undefined" && module.exports) {
     });
 }
 
-        var version = '0.5.3';
+        var version = '0.5.7';
         var urlvars = null;
         var amtstack;
         var wsstack = null;
@@ -33076,14 +33192,17 @@ if (typeof module !== "undefined" && module.exports) {
         }
 
         function handleKeyUp(e) {
+            //console.log('handleKeyUp', e);
             if (xxdialogMode) return;
         }
 
         function handleKeyDown(e) {
+            //console.log('handleKeyDown', e);
             if (xxdialogMode) return;
         }
 
         function handleKeyPress(e) {
+            //console.log('handleKeyPress', e);
             if (xxdialogMode) return;
         }
 
@@ -33200,6 +33319,7 @@ if (typeof module !== "undefined" && module.exports) {
             if (amtstack) {
                 amtstack.onProcessChanged = null; // Un-hook progress indicator
                 amtstack.CancelAllQueries(999); // Fail all pending WSMAN calls. Set to 999 to indicate not to call back any of the pending calls with errors.
+                amtstack = null;
             }
             cleanup();
             wsstack = null;
@@ -36227,6 +36347,8 @@ if (typeof module !== "undefined" && module.exports) {
             if (amtPowerBootCapabilities["SecureErase"] == true) {
                 addOption('d5actionSelect', "Reset to Secure Erase", 104);
             }
+            addOption('d5actionSelect', 'Reset to PXE', 400);
+            addOption('d5actionSelect', 'Power on to PXE', 401);
 
             addOption('d5actionSelect', 'Custom action...', 999);
             if (amtversion > 5) { addOption('d5actionSelect', 'User consent...', 998); } // On AMT 5 and higher, offer the option of doing user consent alone.
@@ -36251,7 +36373,7 @@ if (typeof module !== "undefined" && module.exports) {
             if (action == 998) { amtstack.Get("IPS_OptInService", powerActionResponse0, 0, 1); return; }
 
             // Some actions will not work if KVM/SOL/IDER are connected. If we perform these, disconnect now.
-            if (action < 10) {
+            if ((action < 10) && (action > 2)) {
             }
 
             statusbox("Power Action", "Checking state...");
@@ -36300,7 +36422,7 @@ if (typeof module !== "undefined" && module.exports) {
             showAdvPowerDlgChange();
         }
 
-        function showAdvPowerDlgChange() { }
+        function showAdvPowerDlgChange() { QV('idd_d24IDERBootDevice', Q('d24UseIDER').checked); }
 
         function showAdvPowerDlgOk() {
             // Fetch all of the user data
@@ -36454,12 +36576,12 @@ if (typeof module !== "undefined" && module.exports) {
             //if (action == 104 && !r["SecureErase"]) { /*console.log("This Intel&reg; AMT does not support Secure Erase");*/ cleanup(); return; }
             //console.log("Setting Boot Settings: " + ObjectToString2(r), action);
             statusbox("Power Action", "Setting boot settings...");
-            amtstack.Put("AMT_BootSettingData", r, powerActionResponse2, 0, 1);
+            amtstack.Put("AMT_BootSettingData", r, powerActionResponse2, r, 1);
         }
 
-        function powerActionResponse2(stack, name, response, status) {
+        function powerActionResponse2(stack, name, response, status, tag) {
             //console.log("powerActionResponse2(" + name + "," + response + "," + status + ")");
-            if (status != 200) { messagebox("Power Action", "Error #" + status); return; }
+            if (status != 200) { messagebox("Power Action", "PUT AMT_BootSettingData, Error #" + status); console.log(tag); return; }
             //if (status == 408) { messagebox("Power Action", "Access denied."); return; }
             //if (errcheck(status, stack)) return;
             //console.log("Setup next boot...");
@@ -36469,9 +36591,16 @@ if (typeof module !== "undefined" && module.exports) {
 
         function powerActionResponse3x(stack, name, response, status) {
             //console.log("powerActionResponse3x(" + name + "," + response + "," + status + ")");
-            var action = d5actionSelect.value;
-            var bootSource = null;
-            if (action == 300 || action == 301) { bootSource = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: Force Diagnostic Boot</Selector></SelectorSet></ReferenceParameters>'; }
+            var action = d5actionSelect.value, bootSource = null;
+
+            if (action == 999) {
+                if (idx_d24ForceBootDevice.value > 0) { bootSource = ['Force CD/DVD Boot', 'Force PXE Boot', 'Force Hard-drive Boot', 'Force Diagnostic Boot'][idx_d24ForceBootDevice.value - 1]; }
+            } else {
+                if (action == 300 || action == 301) { bootSource = 'Force Diagnostic Boot'; }
+                if (action == 400 || action == 401) { bootSource = 'Force PXE Boot'; }
+
+            }
+            if (bootSource != null) { bootSource = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootSource + '</Selector></SelectorSet></ReferenceParameters>'; }
             amtstack.CIM_BootConfigSetting_ChangeBootOrder(bootSource, powerActionResponse3);
         }
 
@@ -36482,8 +36611,8 @@ if (typeof module !== "undefined" && module.exports) {
             //console.log("Performing Power State Change...");
             statusbox("Power Action", "Performing power action...");
             var action = d5actionSelect.value;
-            if (action == 100 || action == 201 || action == 203 || action == 300) action = 2; // Power up
-            if (action == 101 || action == 200 || action == 202 || action == 301) action = 10; // Reset
+            if (action == 100 || action == 201 || action == 203 || action == 300 || action == 401) action = 2; // Power up
+            if (action == 101 || action == 200 || action == 202 || action == 301 || action == 400) action = 10; // Reset
             if (action == 104) action = 10; // Reset with Remote Secure Erase
 
             if (action == 999) action = AvdPowerDlg.Action;
@@ -37033,7 +37162,7 @@ if (typeof module !== "undefined" && module.exports) {
                     // Success
                     var x;
                     try { x = JSON.parse(request.responseText); } catch (e) {}
-                    if (x['blocks']) { script_StartingBuildingBlocks = x['blocks']; script_setBuildBlocks(script_StartingBuildingBlocks); }
+                    if ((x) && (x['blocks'])) { script_StartingBuildingBlocks = x['blocks']; script_setBuildBlocks(script_StartingBuildingBlocks); }
                 }
             };
             request.onerror = function() { console.log('Failed to get script blocks'); };
@@ -37571,9 +37700,6 @@ if (typeof module !== "undefined" && module.exports) {
                 if (s == 401) { QH('id_messageviewstr', 'Authentication Error<br /><br /><input type=button value="Set new credentials" onclick=meshcentral2credCallback(true)></input>'); }
                 go(100);
                 QS('id_progressbar').width = 0;
-// ###BEGIN###{Mode-ComputerSelector}
-                Q('id_messageviewbutton').focus();
-// ###END###{Mode-ComputerSelector}
 
             }
             return (s != 200);

@@ -21,6 +21,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     obj.user = user;
     obj.pass = pass;
     obj.tls = tls;
+    obj.tlsv1only = 1;
     obj.cnonce = Math.random().toString(36).substring(7); // Generate a random client nonce
 
     // Private method
@@ -115,7 +116,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
         obj.socketData = '';
         obj.socketState = 1;
 
-        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=1&host=" + obj.host + "&port=" + obj.port + "&tls=" + obj.tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=1" indicates to the relay that this is a WSMAN session
+        console.log(obj.tlsv1only);
+        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=1&host=" + obj.host + "&port=" + obj.port + "&tls=" + obj.tls + "&tlsv1only=" + obj.tlsv1only + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=1" indicates to the relay that this is a WSMAN session
         obj.socket.onopen = _OnSocketConnected;
         obj.socket.onmessage = _OnMessage;
         obj.socket.onclose = _OnSocketClosed;

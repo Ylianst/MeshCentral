@@ -17,6 +17,8 @@ var CreateAmtRedirect = function (module) {
     obj.user = null;
     obj.pass = null;
     obj.authuri = "/RedirectionService";
+    obj.tlsv1only = 0;
+    obj.inDataCount = 0;
     // ###END###{!Mode-Firmware}
     obj.connectstate = 0;
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
@@ -36,6 +38,7 @@ var CreateAmtRedirect = function (module) {
         obj.user = user;
         obj.pass = pass;
         obj.connectstate = 0;
+        obj.inDataCount = 0;
         obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
@@ -52,6 +55,7 @@ var CreateAmtRedirect = function (module) {
     }
 
     obj.xxOnMessage = function (e) {
+        obj.inDataCount++;
         if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
@@ -264,7 +268,15 @@ var CreateAmtRedirect = function (module) {
 
     obj.xxOnSocketClosed = function () {
         //obj.Debug("Redir Socket Closed");
-        obj.Stop();
+        if ((obj.inDataCount == 0) && (obj.tlsv1only == 0)) {
+            obj.tlsv1only = 1;
+            obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + obj.host + "&port=" + obj.port + "&tls=" + obj.tls + "&tls1only=1" + ((obj.user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + obj.user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
+            obj.socket.onopen = obj.xxOnSocketConnected;
+            obj.socket.onmessage = obj.xxOnMessage;
+            obj.socket.onclose = obj.xxOnSocketClosed;
+        } else {
+            obj.Stop();
+        }
     }
 
     obj.xxStateChange = function(newstate) {
