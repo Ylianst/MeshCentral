@@ -67,6 +67,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.users = {};
     obj.meshes = {};
     obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
+    obj.tlsSniCredentials;
+    obj.dnsDomains = {};
+
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -84,8 +87,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     const SITERIGHT_FILEACCESS = 8;
     const SITERIGHT_SERVERUPDATE = 16;
 
+    // Setup SSPI authentication if needed
+    if ((obj.parent.platform == 'win32') && (obj.args.nousers != true) && (obj.parent.config != null) && (obj.parent.config.domains != null)) {
+        for (var i in obj.parent.config.domains) { if (obj.parent.config.domains[i].auth == 'sspi') { var nodeSSPI = require('node-sspi'); obj.parent.config.domains[i].sspi = new nodeSSPI({ retrieveGroups: true, offerBasic: false }); } }
+    }
+
     // Perform hash on web certificate and agent certificate
     obj.webCertificateHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
+    obj.webCertificateHashs = { '': obj.webCertificateHash };
+    for (var i in obj.parent.config.domains) { if (obj.parent.config.domains[i].dns != null) { obj.webCertificateHashs[i] = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.config.domains[i].certs.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }); } }
     obj.webCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
     obj.agentCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -112,6 +122,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
     obj.crypto.randomBytes(48, function (err, buf) { obj.relayRandom = buf; });
 
+    // Setup DNS domain TLS SNI credentials
+    {
+        var dnscount = 0;
+        obj.tlsSniCredentials = {};
+        for (var i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.crypto.createCredentials(obj.certificates.dns[i]).context; dnscount++; } }
+        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.crypto.createCredentials({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca }).context; } else { obj.tlsSniCredentials = null; }
+    }
+    function TlsSniCallback(name, cb) { var c = obj.tlsSniCredentials[name]; if (c != null) { cb(null, c); } else { cb(null, obj.tlsSniCredentials['']); } }
+
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
@@ -120,9 +139,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.expressWs = require('express-ws')(obj.app);
     } else {
         // Setup the HTTP server with TLS
-        //var certOperations = require('./certoperations.js').CertificateOperations();
-        //var webServerCert = certOperations.GetWebServerCertificate('./data', 'SampleServer.org', 'US', 'SampleOrg');
-        obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.calist, rejectUnauthorized: true }, obj.app);
+        if (obj.tlsSniCredentials != null) {
+            // We have multiple web server certificate used depending on the domain name
+            obj.tlsServer = require('https').createServer({ SNICallback: TlsSniCallback, cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca, rejectUnauthorized: true }, obj.app);
+        } else {
+            // We have a single web server certificate
+            obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca, rejectUnauthorized: true }, obj.app);
+        }
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
     
@@ -245,9 +268,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Return the current domain of the request
     function getDomain(req) {
+        if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
         var x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
-        if (parent.config.domains[x[1].toLowerCase()]) return parent.config.domains[x[1].toLowerCase()];
+        var d = parent.config.domains[x[1].toLowerCase()];
+        if ((d != null) && (d.dns == null)) return parent.config.domains[x[1].toLowerCase()];
         return parent.config.domains[''];
     }
     
@@ -554,9 +579,23 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (domain == null) return;
         if (!obj.args) { res.sendStatus(500); return; }
         var domain = getDomain(req);
+
+        if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
+            // Login using SSPI
+            domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } })
+        } else {
+            // Login using a different system
+            handleRootRequestEx(req, res, domain);
+        }
+    }
+
+    function handleRootRequestEx(req, res, domain) {
+        var nologout = false;
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+
         // Check if we have an incomplete domain name in the path
-        if (domain.id != '' && req.url.split('/').length == 2) { res.redirect(domain.url); return; }
+        if ((domain.id != '') && (domain.dns == null) && (req.url.split('/').length == 2)) { res.redirect(domain.url); return; }
+
         if (obj.args.nousers == true) {
             // If in single user mode, setup things here.
             if (req.session && req.session.loginmode) { delete req.session.loginmode; }
@@ -583,7 +622,33 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
             }
+        } else if (domain.sspi != null) {
+            // SSPI login (Windows only)
+            //console.log(req.connection.user, req.connection.userSid);
+            if ((req.connection.user == null) || (req.connection.userSid == null)) {
+                res.sendStatus(404); return;
+            } else {
+                nologout = true;
+                req.session.userid = 'user/' + domain.id + '/' + req.connection.user;
+                req.session.usersid = req.connection.userSid;
+                req.session.usersGroups = req.connection.userGroups;
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+
+                // Check if this user exists, create it if not.
+                var user = obj.users[req.session.userid];
+                if ((user == null) || (user.sid != req.session.usersid)) {
+                    // Create the domain user
+                    var usercount = 0, user = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid };
+                    for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                    if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; } // If this is the first user, give the account site admin.
+                    obj.users[req.session.userid] = user;
+                    obj.db.SetUser(user);
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: req.connection.user, account: user, action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id })
+                }
+            }
         }
+
         // If a user is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid) {
             if (req.session.domainid != domain.id) { req.session.destroy(function () { res.redirect(domain.url); }); return; } // Check is the session is for the correct domain
@@ -613,16 +678,16 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (obj.args.nousers == true) { features += 4; } // Single user mode
             if (domain.userQuota == -1) { features += 8; } // No server files mode
             if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
-            if (parent.config.settings.allowFraming == true) { features += 32; } // Allow site within iframe
-            if ((!obj.args.user) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.certificates.CommonName, serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
+            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowFraming == true)) { features += 32; } // Allow site within iframe
+            if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
         } else {
             // Send back the login application
             var loginmode = req.session.loginmode;
             delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
             var features = 0;
-            if (parent.config.settings.allowFraming == true) { features += 32; } // Allow site within iframe
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.certificates.CommonName, serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features });
+            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowFraming == true)) { features += 32; } // Allow site within iframe
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features });
         }
     }
     
@@ -1377,7 +1442,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         debugLevel: 0
                     }
                     if (user != null) { meshaction.username = user.name; }
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.certificates.CommonName + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                     res.send(JSON.stringify(meshaction, null, ' '));
                 });
@@ -1391,7 +1456,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     debugLevel: 0
                 }
                 if (user != null) { meshaction.username = user.name; }
-                if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.certificates.CommonName + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                 res.send(JSON.stringify(meshaction, null, ' '));
             } else {
@@ -1412,7 +1477,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.send(response);
         }
     }
-    
+
+    // Get the web server hostname. This may change if using a domain with a DNS name.
+    function getWebServerName(domain) {
+        if (domain.dns != null) return domain.dns;
+        return obj.certificates.CommonName;
+    }
+
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         var domain = checkUserIpAddress(req, res);
@@ -1432,10 +1503,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
             var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
-            var xdomain = domain.id;
+            // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+            var xdomain = (domain.dns == null) ? domain.id : '';
             if (xdomain != '') xdomain += "/";
             var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-            if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + certificates.CommonName + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+            if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
 
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
             res.send(meshsettings);
@@ -1489,7 +1561,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
 
         // Receive mesh agent connections
-        obj.app.ws(url + 'agent.ashx', function (ws, req) { try { var domain = getDomain(req); obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); } });
+        obj.app.ws(url + 'agent.ashx', function (ws, req) { try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); } });
 
         obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
 

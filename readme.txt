@@ -2,6 +2,7 @@ MeshCentral
 ===========
 
 For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
+Download the [full PDF user's guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2UserGuide.pdf) with more information on installing, configuring and running MeshCentral2.
 
 This is a full computer management web site. With MeshCentral, you can run your own web server and it to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, will create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it, etc. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 

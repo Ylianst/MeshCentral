@@ -91,6 +91,7 @@ module.exports.CreateDB = function (args, datapath) {
     obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, { type: 0 }, func); }
     obj.Remove = function (id) { obj.file.remove({ _id: id }); }
     obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); }
+    obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); }
     obj.InsertMany = function (data, func) { obj.file.insert(data, func); }
     obj.StoreEvent = function (ids, source, event) { obj.file.insert(event); }
     obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }, func) } }

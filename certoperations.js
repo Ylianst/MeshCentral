@@ -126,14 +126,14 @@ module.exports.CertificateOperations = function () {
     }
 
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
-    obj.GetMeshServerCertificate = function (directory, args, func) {
+    obj.GetMeshServerCertificate = function (directory, args, config, func) {
         var certargs = args.cert;
         var strongCertificate = (args.fastcert ? false : true);
+        var rcountmax = 5;
         // commonName, country, organization
         
         // If the certificates directory does not exist, create it.
         if (!obj.dirExists(directory)) { obj.fs.mkdirSync(directory); }
-        
         var r = {}, rcount = 0;
         
         // If the root certificate already exist, load it
@@ -209,8 +209,8 @@ module.exports.CertificateOperations = function () {
             }
             caindex++;
         } while (caok == true);
-        r.calist = calist;
-                
+        r.ca = calist;
+
         // Decode certificate arguments
         var commonName = 'un-configured', country, organization, forceWebCertGen = 0;
         if (certargs != undefined) {
@@ -220,7 +220,44 @@ module.exports.CertificateOperations = function () {
             if (args.length > 2) organization = args[2];
         }
 
-        if (rcount == 5) {
+        // Look for domains that have DNS names and load their certificates
+        r.dns = {};
+        for (var i in config.domains) {
+            if ((i != '') && (config.domains[i] != null) && (config.domains[i].dns != null)) {
+                var dnsname = config.domains[i].dns;
+                if (args.tlsoffload == true) {
+                    // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
+                    if (obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt')) {
+                        r.dns[i] = { cert: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-public.crt', 'utf8') };
+                        config.domains[i].certs = r.dns[i];
+                    } else {
+                        console.log('WARNING: File "webserver-' + i + '-cert-public.crt" missing, domain "' + i + '" will not work correctly.');
+                    }
+                } else {
+                    // If the web certificate already exist, load it. Load both certificate and private key
+                    if (obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt') && obj.fileExists(directory + '/webserver-' + i + '-cert-private.key')) {
+                        r.dns[i] = { cert: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-public.crt', 'utf8'), key: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-private.key', 'utf8') };
+                        config.domains[i].certs = r.dns[i];
+                        // If CA certificates are present, load them
+                        var caok, caindex = 1, calist = [];
+                        do {
+                            caok = false;
+                            if (obj.fileExists(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt')) {
+                                var caCertificate = obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt', 'utf8');
+                                calist.push(caCertificate);
+                                caok = true;
+                            }
+                            caindex++;
+                        } while (caok == true);
+                        r.dns[i].ca = calist;
+                    } else {
+                        rcountmax++; // This certificate must be generated
+                    }
+                }
+            }
+        }
+
+        if (rcount == rcountmax) {
             // Fetch the Intel AMT console name
             var consoleCertificate = obj.pki.certificateFromPem(r.console.cert);
             r.AmtConsoleName = consoleCertificate.subject.getField('CN').value;
@@ -239,7 +276,7 @@ module.exports.CertificateOperations = function () {
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
             if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == commonName)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
         }
-        //console.log('Generating certificates, may take a few minutes...');
+        console.log('Generating certificates, may take a few minutes...');
 
         // If a certificate is missing, but web certificate is present and --cert is not used, set the names to be the same as the web certificate
         if ((certargs == null) && (r.web != null)) {
@@ -333,7 +370,41 @@ module.exports.CertificateOperations = function () {
             amtConsoleName = consoleCertAndKey.cert.subject.getField('CN').value;
         }
 
-        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, calist: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName };
+        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, dns: {} };
+
+        // Look for domains with DNS names that have no certificates and generated them.
+        for (var i in config.domains) {
+            if ((i != '') && (config.domains[i] != null) && (config.domains[i].dns != null)) {
+                var dnsname = config.domains[i].dns;
+                if (args.tlsoffload != true) {
+                    // If the web certificate does not exist, create it
+                    if ((obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt') == false) || (obj.fileExists(directory + '/webserver-' + i + '-cert-private.key') == false)) {
+                        console.log('Generating HTTPS certificate for ' + i + '...');
+                        var xwebCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, dnsname, country, organization, null, strongCertificate);
+                        var xwebCertificate = obj.pki.certificateToPem(xwebCertAndKey.cert);
+                        var xwebPrivateKey = obj.pki.privateKeyToPem(xwebCertAndKey.key);
+                        obj.fs.writeFileSync(directory + '/webserver-' + i + '-cert-public.crt', xwebCertificate);
+                        obj.fs.writeFileSync(directory + '/webserver-' + i + '-cert-private.key', xwebPrivateKey);
+                        r.dns[i] = { cert: xwebCertificate, key: xwebPrivateKey };
+                        config.domains[i].certs = r.dns[i];
+
+                        // If CA certificates are present, load them
+                        var caok, caindex = 1, calist = [];
+                        do {
+                            caok = false;
+                            if (obj.fileExists(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt')) {
+                                var caCertificate = obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt', 'utf8');
+                                calist.push(caCertificate);
+                                caok = true;
+                            }
+                            caindex++;
+                        } while (caok == true);
+                        r.dns[i].ca = calist;
+                    }
+                }
+            }
+        }
+
         if (func != undefined) { func(r); }
         return r;
     }

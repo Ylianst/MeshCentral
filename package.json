@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.1.1-h",
+  "version": "0.1.1-r",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -46,6 +46,7 @@
     "xmldom": "^0.1.27"
   },
   "optionalDependencies": {
+    "node-sspi": "^0.2.2",
     "node-windows": "^0.1.14",
     "mongojs": "^2.4.0"
   },

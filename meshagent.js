@@ -72,7 +72,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
                         } else {
                             // Update new core
-                            if (obj.agentExeInfo.amt == true) {
+                            if (obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].amt == true) {
                                 obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + obj.parent.parent.defaultMeshCoreHash + obj.parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core (with MEI support)
                             } else {
                                 obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + obj.parent.parent.defaultMeshCoreNoMeiHash + obj.parent.parent.defaultMeshCoreNoMei); // Command 10, ask mesh agent to set the core (No MEI)
@@ -157,7 +157,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 // Check that the server hash matches our own web certificate hash (SHA386)
-                if (obj.parent.webCertificateHash != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash, holding connection (' + obj.remoteaddr + ').'); return; }
+                if (getWebCertHash(obj.domain) != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash, holding connection (' + obj.remoteaddr + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 var privateKey, certasn1;
@@ -239,14 +239,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
     obj.nonce = obj.forge.random.getBytesSync(48);
-    obj.send(obj.common.ShortToStr(1) + parent.webCertificateHash + obj.nonce); // Command 1, hash + nonce
+    obj.send(obj.common.ShortToStr(1) + getWebCertHash(obj.domain) + obj.nonce); // Command 1, hash + nonce
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
         if (obj.authenticated =! 1 || obj.meshid == null) return;
         // Check that the mesh exists
         obj.db.Get(obj.dbMeshKey, function (err, meshes) {
-            if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+            if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
             var mesh = meshes[0];
             if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
 
@@ -270,16 +270,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (device.agent == null) {
                         device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
                     } else {
-                        var changes = [], change = 0;
+                        var changes = [], change = 0, log = 0;
                         if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
                         if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
                         if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                        if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
+                        if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
                         if (change == 1) {
                             obj.db.Set(device);
 
                             // Event the node change
-                            var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
+                            var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
+                            if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
                             var device2 = obj.common.Clone(device);
                             if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                             event.node = device;
@@ -354,11 +355,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             });
         });
     }
-    
+
+    // Get the web certificate hash for the speficied domain
+    function getWebCertHash(domain) {
+        //var hash = obj.parent.webCertificateHashs[domain.id];
+        //if (hash == null) return obj.parent.webCertificateHash; else return hash;
+        return obj.parent.webCertificateHash;
+    }
+
     // Verify the agent signature
     function processAgentSignature(msg) {
         var md = obj.forge.md.sha384.create(); // TODO: Switch this to SHA384 on node instead of forge.
-        md.update(obj.parent.webCertificateHash, 'binary');
+        md.update(getWebCertHash(obj.domain), 'binary');
         md.update(obj.nonce, 'binary');
         md.update(obj.agentnonce, 'binary');
         if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }

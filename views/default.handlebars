@@ -331,6 +331,9 @@
                         </tr>
                         <tr id=deskarea4>
                             <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div style="float:right;text-align:right">
+                                    <select id="termdisplays" style="display:none" onchange="deskSetDisplay(event)" onclick="deskGetDisplayNumbers(event)"></select>&nbsp;
+                                </div>
                                 <div>
                                     &nbsp;
                                     <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
@@ -773,7 +776,7 @@
             xdr.open("HEAD", window.location.href);
             xdr.timeout = 15000;
             xdr.onload = function () { reload(); };
-            xdr.onerror = xdr.ontimeout = function () { console.log('error'); setTimeout(serverPoll, 10000); };
+            xdr.onerror = xdr.ontimeout = function () { setTimeout(serverPoll, 10000); };
             xdr.send();
         }
 
@@ -2917,6 +2920,7 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
+                    desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.Start(desktopNode._id);
                     desktop.contype = 1;
                 }
@@ -2942,6 +2946,7 @@
                     delete desktop;
                     desktop = null;
                     QV('DeskFocus', false);
+                    QV('termdisplays', false);
                     deskFocusBtn.value = 'All Focus';
                     if (fullscreen == true) { deskToggleFull(); }
                     break;
@@ -3056,6 +3061,20 @@
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
             Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
+        }
+
+        function deskDisplayInfo(sender, info, selDisplay, selItem) {
+            var txt = Q('termdisplays').value;
+            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x])?' selected':'') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
+            QV('termdisplays', info.length > 0);
+        }
+
+        function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
+
+        function deskSetDisplay(e) {
+            var display = 0, txt = Q('termdisplays').value;
+            if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
+            desktop.m.SetDisplay(display);
         }
 
         function dmousedown(e) { if (!xxdialogMode && desktop != null) desktop.m.mousedown(e) }

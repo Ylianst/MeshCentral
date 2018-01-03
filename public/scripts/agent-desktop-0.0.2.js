@@ -47,6 +47,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.onConnectCountChanged = null;
     obj.onDebugMessage = null;
     obj.onTouchEnabledChanged = null;
+    obj.onDisplayinfo = null;
 
     obj.Start = function () {
         obj.State = 0;
@@ -200,29 +201,20 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.Send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
                 break;
             case 11: // GetDisplays
-                var dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
-                if (dcount == 0) {
-                    // One display present
-                    if (document.getElementById('termdisplays') != null) document.getElementById('termdisplays').style.display = 'none';
-                    if (document.getElementById('termdisplays2') != null) document.getElementById('termdisplays2').style.display = 'none';
-                } else {
+                var myOptions = [], dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
+                if (dcount > 0) {
                     // Many displays present
-                    var seldisp = ((str.charCodeAt(6 + (dcount * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (dcount * 2)) & 0xFF);
-                    var selitem = 0;
-                    var myOptions = [];
+                    var selitem = 0, seldisp = ((str.charCodeAt(6 + (dcount * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (dcount * 2)) & 0xFF);
                     for (var i = 0; i < dcount; i++) {
                         var disp = ((str.charCodeAt(6 + (i * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (i * 2)) & 0xFF);
-                        if (disp == 65535) {
-                            myOptions.push('All Displays');
-                        } else {
-                            myOptions.push('Display ' + disp);
-                        }
+                        if (disp == 65535) { myOptions.push('All Displays'); } else { myOptions.push('Display ' + disp); }
                         if (disp == seldisp) selitem = i;
                     }
                 }
-                // TODO
+                if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, myOptions, selitem); }
                 break;
             case 12: // SetDisplay
+                console.log('SetDisplayConfirm');
                 break;
             case 14: // KVM_INIT_TOUCH
                 obj.touchenabled = 1;
@@ -339,7 +331,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.GetDisplayNumbers = function () { obj.Send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
-    obj.SetDisplay = function (number) { obj.Send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
+    obj.SetDisplay = function (number) { console.log('SetDisplay', number); obj.Send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 
