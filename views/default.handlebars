@@ -195,6 +195,14 @@
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
                         <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style=display:none value="Delete All..." />&nbsp;</div>
                         <div class="auto-style1" style="height:100%;float:right">
+                            Show
+                            <select id=p3limitdropdown onchange=refreshEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                            </select>
                             <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
                             <div class="h2" style="height:100%;float:right;">&nbsp;</div>
                         </div>
@@ -815,7 +823,7 @@
                 updateUsers();
                 if (xxcurrentView == 4) go(1);
             }
-            meshserver.Send({ action: 'events' });
+            meshserver.Send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
             QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
         }
 
@@ -968,7 +976,12 @@
                     break;
                 }
                 case 'event': {
-                    if (!message.event.nolog) { events.unshift(message.event); events_update(); }
+                    if (!message.event.nolog) {
+                        events.unshift(message.event);
+                        var eventLimit = parseInt(p3limitdropdown.value);
+                        while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
+                        events_update();
+                    }
                     switch (message.event.action) {
                         case 'accountcreate':
                         case 'accountchange': {
@@ -4351,6 +4364,9 @@
             meshserver.Send({ action: 'clearevents' });
         }
 
+        function refreshEvents() {
+            meshserver.Send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+        }
 
         //
         // MY USERS

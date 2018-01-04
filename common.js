@@ -117,3 +117,12 @@ module.exports.ComputeDigesthash = function (username, password, realm, method, 
 module.exports.toNumber = function (str) { var x = parseInt(str); if (x == str) return x; return str; }
 module.exports.escapeHtml = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' }[s]; }); }
 module.exports.escapeHtmlBreaks = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); }
+
+// Lowercase all the names in a object recursively
+module.exports.objKeysToLower = function (obj) {
+    for (var i in obj) {
+        if (i.toLowerCase() !== i) { obj[i.toLowerCase()] = obj[i]; delete obj[i]; } // LowerCase all key names
+        if (typeof obj[i] == 'object') { module.exports.objKeysToLower(obj[i]); } // LowerCase all key names in the child object
+    } 
+    return obj;
+}

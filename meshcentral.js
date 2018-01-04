@@ -198,6 +198,7 @@ function CreateMeshCentralServer() {
             // Set the command line arguments to the config file if they are not present
             if (obj.config.settings) { for (var i in obj.config.settings) { if (obj.args[i] == null) obj.args[i] = obj.config.settings[i]; } }
         }
+        obj.common.objKeysToLower(obj.config); // Lower case all keys in the config file
         
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
         var xenv = ['user', 'port', 'mpsport', 'redirport', 'exactport', 'debug'];
@@ -211,7 +212,6 @@ function CreateMeshCentralServer() {
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (var i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
         for (var i in obj.config.domains) {
-            for (var j in obj.config.domains[i]) { if (j.toLocaleLowerCase() !== j) { obj.config.domains[i][j.toLocaleLowerCase()] = obj.config.domains[i][j]; delete obj.config.domains[i][j]; } } // LowerCase all domain keys
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
             if (typeof obj.config.domains[i].userallowedip == 'string') { obj.config.domains[i].userallowedip = null; if (obj.config.domains[i].userallowedip != "") { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); } }
@@ -385,7 +385,7 @@ function CreateMeshCentralServer() {
                             obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
 
                             // Load the login cookie encryption key from the database if allowed
-                            if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowLoginToken == true)) {
+                            if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
                                 obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
                                     if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
                                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
@@ -697,6 +697,7 @@ function CreateMeshCentralServer() {
     }
 
     // Update the default mesh core
+    obj.updateMeshCoreTimer = 'notset';
     obj.updateMeshCore = function (func) {
         // Figure out where meshcore.js is
         var meshcorePath = obj.datapath;
@@ -731,9 +732,19 @@ function CreateMeshCentralServer() {
         obj.defaultMeshCoreNoMei = obj.common.IntToStr(0) + moduleAdditionsNoMei + meshCore;
         obj.defaultMeshCoreNoMeiHash = obj.crypto.createHash('sha384').update(obj.defaultMeshCoreNoMei).digest("binary");
         if (func != null) { func(true); }
+
+        // If meshcore.js is in the data folder, monitor the file for changes.
+        if ((obj.updateMeshCoreTimer === 'notset') && (meshcorePath == obj.datapath)) {
+            obj.updateMeshCoreTimer = null;
+            obj.fs.watch(obj.path.join(meshcorePath, 'meshcore.js'), function (eventType, filename) {
+                if (obj.updateMeshCoreTimer != null) { clearTimeout(obj.updateMeshCoreTimer); obj.updateMeshCoreTimer = null; }
+                obj.updateMeshCoreTimer = setTimeout(function () { obj.updateMeshCore(); console.log('Updated meshcore.js.'); }, 5000);
+            })
+        }
     }
 
     // Update the default meshcmd
+    obj.updateMeshCmdTimer = 'notset';
     obj.updateMeshCmd = function (func) {
         // Figure out where meshcmd.js is
         var meshcmdPath = obj.datapath;
@@ -762,6 +773,15 @@ function CreateMeshCentralServer() {
         // Set the new default meshcmd.js
         obj.defaultMeshCmd = moduleAdditions + meshCmd;
         if (func != null) { func(true); }
+
+        // If meshcore.js is in the data folder, monitor the file for changes.
+        if ((obj.updateMeshCmdTimer === 'notset') && (meshcmdPath == obj.datapath)) {
+            obj.updateMeshCmdTimer = null;
+            obj.fs.watch(obj.path.join(meshcmdPath, 'meshcmd.js'), function (eventType, filename) {
+                if (obj.updateMeshCmdTimer != null) { clearTimeout(obj.updateMeshCmdTimer); obj.updateMeshCmdTimer = null; }
+                obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); console.log('Updated meshcmd.js.'); }, 5000);
+            })
+        }
     }
 
     // List of possible mesh agent install scripts

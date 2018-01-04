@@ -73,14 +73,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // Request a list of all meshes this user as rights to
                         var docs = [];
                         for (var i in user.links) { if (obj.parent.meshes[i]) { docs.push(obj.parent.meshes[i]); } }
-                        ws.send(JSON.stringify({ action: 'meshes', meshes: docs }));
+                        ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag }));
                         break;
                     }
                 case 'nodes':
                     {
-                        // Request a list of all meshes this user as rights to
                         var links = [];
-                        for (var i in user.links) { links.push(i); }
+                        if (command.meshid == null) {
+                            // Request a list of all meshes this user as rights to
+                            for (var i in user.links) { links.push(i); }
+                        } else {
+                            // Request list of all nodes for one specific meshid
+                            var meshid = command.meshid;
+                            if (meshid.split('/').length == 0) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                            if (user.links[meshid] != null) { links.push(meshid); }
+                        }
 
                         // Request a list of all nodes
                         obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', function (err, docs) {
@@ -105,7 +112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                                 r[meshid].push(docs[i]);
                             }
-                            ws.send(JSON.stringify({ action: 'nodes', nodes: r }));
+                            ws.send(JSON.stringify({ action: 'nodes', nodes: r, tag: command.tag }));
                         });
                         break;
                     }
@@ -148,11 +155,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                         }
                                     }
                                 }
-                                ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline }));
+                                ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag }));
                             } else {
                                 // No records found, send current state if we have it
                                 var state = obj.parent.parent.GetConnectivityState(command.nodeid);
-                                if (state != null) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState] })); }
+                                if (state != null) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); }
                             }
                         });
                         break;
@@ -223,8 +230,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     }
                 case 'events':
                     {
-                        // Send the list of events for this session
-                        obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs })); });
+                        if ((command.limit == null) || (typeof command.limit != 'number')) {
+                            // Send the list of all events for this session
+                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
+                        } else {
+                            // Send the list of most recent events for this session, up to 'limit' count
+                            obj.db.GetEventsWithLimit(user.subscriptions, domain.id, command.limit, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
+                        }
                         break;
                     }
                 case 'clearevents':
@@ -253,7 +265,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 docs.push(userinfo);
                             }
                         }
-                        ws.send(JSON.stringify({ action: 'users', users: docs }));
+                        ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag }));
                         break;
                     }
                 case 'changeemail':
@@ -320,7 +332,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // We have peer servers, use more complex session counting
                             for (var userid in obj.sessionsCount) { if (userid.split('/')[1] == domain.id) { wssessions[userid] = obj.sessionsCount[userid]; } }
                         }
-                        ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions })); // wssessions is: userid --> count
+                        ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); // wssessions is: userid --> count
                         break;
                     }
                 case 'deleteuser':
