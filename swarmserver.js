@@ -1,6 +1,8 @@
 /**
-* @description Meshcentral1 legacy swarm server, used to update agents and get them on MeshCentral2
+* @description MeshCentral v1 legacy Swarm Server, used to update agents and get them on MeshCentral2
 * @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
 * @version v0.0.1
 */
 

@@ -1,6 +1,8 @@
 /**
-* @description Meshcentral
+* @description MeshCentral main module
 * @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
 * @version v0.0.1
 */
 

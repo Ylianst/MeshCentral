@@ -1,6 +1,8 @@
 /**
-* @description Meshcentral web server
+* @description MeshCentral web server
 * @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
 * @version v0.0.1
 */
 
@@ -126,8 +128,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     {
         var dnscount = 0;
         obj.tlsSniCredentials = {};
-        for (var i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.crypto.createCredentials(obj.certificates.dns[i]).context; dnscount++; } }
-        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.crypto.createCredentials({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca }).context; } else { obj.tlsSniCredentials = null; }
+        for (var i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.tls.createSecureContext(obj.certificates.dns[i]).context; dnscount++; } }
+        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.tls.createSecureContext({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca }).context; } else { obj.tlsSniCredentials = null; }
     }
     function TlsSniCallback(name, cb) { var c = obj.tlsSniCredentials[name]; if (c != null) { cb(null, c); } else { cb(null, obj.tlsSniCredentials['']); } }
 
@@ -1535,6 +1537,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.app.post('/restoreserver.ashx', handleRestoreRequest);
     if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); } ); }
     for (var i in parent.config.domains) {
+        if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
         var url = parent.config.domains[i].url;
         obj.app.get(url, handleRootRequest);
         obj.app.get(url + 'terms', handleTermsRequest);

@@ -1,6 +1,8 @@
 /**
-* @description Meshcentral MeshAgent
+* @description MeshCentral MeshAgent communication module
 * @author Ylian Saint-Hilaire & Bryan Roe
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
 * @version v0.0.1
 */
 
