@@ -1,11 +1,11 @@
 /*
-Copyright 2017 Intel Corporation
+Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+                    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@ limitations under the License.
 
 function createMeshCore(agent) {
     var obj = {};
-
+    
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     obj.meshCoreInfo = "MeshCore v4";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
@@ -36,7 +36,7 @@ function createMeshCore(agent) {
     var wifiScannerLib = null;
     var wifiScanner = null;
     var networkMonitor = null;
-
+    
     // Try to load up the network monitor
     try {
         networkMonitor = require('NetworkMonitor');
@@ -44,7 +44,7 @@ function createMeshCore(agent) {
         networkMonitor.on('add', function (addr) { sendNetworkUpdateNagle(); });
         networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
     } catch (e) { networkMonitor = null; }
-
+    
     // Try to load up the MEI module
     try {
         var amtMeiLib = require('amt_heci');
@@ -53,21 +53,21 @@ function createMeshCore(agent) {
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
         amtMei.on('connect', function () { amtMeiConnected = 2; getAmtInfo(); });
     } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
-
+    
     // Try to load up the WIFI scanner
     try {
         var wifiScannerLib = require('WifiScanner');
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
     } catch (e) { wifiScannerLib = null; wifiScanner = null; }
-
+    
     // If we are running in Duktape, agent will be null
     if (agent == null) {
         // Running in native agent, Import libraries
         db = require('SimpleDataStore').Shared();
         sha = require('SHA256Stream');
         mesh = require('MeshAgent');
-        processManager = require('ILibProcessPipe');
+        childProcess = require('child_process');
         if (mesh.hasKVM == 1) { obj.meshCoreCapabilities |= 1; }
     } else {
         // Running in nodejs
@@ -75,7 +75,7 @@ function createMeshCore(agent) {
         obj.meshCoreCapabilities = 8;
         mesh = agent.getMeshApi();
     }
-
+    
     // Get our location (lat/long) using our public IP address
     var getIpLocationDataExInProgress = false;
     var getIpLocationDataExCounts = [0, 0];
@@ -91,27 +91,27 @@ function createMeshCore(agent) {
                 headers: { Host: "ipinfo.io" }
             },
                 function (resp) {
-                    if (resp.statusCode == 200) {
-                        var geoData = '';
-                        resp.data = function (geoipdata) { geoData += geoipdata; };
-                        resp.end = function () {
-                            var location = null;
-                            try {
-                                if (typeof geoData == 'string') {
-                                    var result = JSON.parse(geoData);
-                                    if (result.ip && result.loc) { location = result; }
-                                }
-                            } catch (e) { }
-                            if (func) { getIpLocationDataExCounts[1]++; func(location); }
-                        }
-                    } else { func(null); }
-                    getIpLocationDataExInProgress = false;
-                }).end();
+                if (resp.statusCode == 200) {
+                    var geoData = '';
+                    resp.data = function (geoipdata) { geoData += geoipdata; };
+                    resp.end = function () {
+                        var location = null;
+                        try {
+                            if (typeof geoData == 'string') {
+                                var result = JSON.parse(geoData);
+                                if (result.ip && result.loc) { location = result; }
+                            }
+                        } catch (e) { }
+                        if (func) { getIpLocationDataExCounts[1]++; func(location); }
+                    }
+                } else { func(null); }
+                getIpLocationDataExInProgress = false;
+            }).end();
             return true;
         }
         catch (e) { return false; }
     }
-
+    
     // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
     function clearGatewayMac(str) {
         if (str == null) return null;
@@ -119,7 +119,7 @@ function createMeshCore(agent) {
         for (var i in x.netif) { if (x.netif[i].gatewaymac) { delete x.netif[i].gatewaymac } }
         return JSON.stringify(x);
     }
-
+    
     function getIpLocationData(func) {
         // Get the location information for the cache if possible
         var publicLocationInfo = db.Get('publicLocationInfo');
@@ -158,7 +158,7 @@ function createMeshCore(agent) {
             }
         }
     }
-
+    
     // Polyfill String.endsWith
     if (!String.prototype.endsWith) {
         String.prototype.endsWith = function (searchString, position) {
@@ -169,7 +169,7 @@ function createMeshCore(agent) {
             return lastIndex !== -1 && lastIndex === position;
         };
     }
-
+    
     // Polyfill path.join
     obj.path = {
         join: function () {
@@ -188,19 +188,19 @@ function createMeshCore(agent) {
             return x.join('/');
         }
     };
-
+    
     // Replace a string with a number if the string is an exact number
     function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
-
+    
     // Convert decimal to hex
     function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }
-
+    
     // Convert a raw string to a hex string
     function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }
-
+    
     // Convert a buffer into a string
     function buf2rstr(buf) { var r = ''; for (var i = 0; i < buf.length; i++) { r += String.fromCharCode(buf[i]); } return r; }
-
+    
     // Convert a hex string to a raw string // TODO: Do this using Buffer(), will be MUCH faster
     function hex2rstr(d) {
         if (typeof d != "string" || d.length == 0) return '';
@@ -208,7 +208,7 @@ function createMeshCore(agent) {
         while (t = m.shift()) r += String.fromCharCode('0x' + t);
         return r
     }
-
+    
     // Convert an object to string with all functions
     function objToString(x, p, ret) {
         if (ret == undefined) ret = '';
@@ -223,17 +223,17 @@ function createMeshCore(agent) {
         for (var i in x) { r += (addPad(p + 2, ret) + i + ': ' + objToString(x[i], p + 2, ret) + (ret ? '\r\n' : ' ')); }
         return r + addPad(p, ret) + '}';
     }
-
+    
     // Return p number of spaces 
     function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ret; } return r; }
-
+    
     // Split a string taking into account the quoats. Used for command line parsing
     function splitArgs(str) {
         var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi;
         do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null);
         return myArray;
     }
-
+    
     // Parse arguments string array into an object
     function parseArgs(argv) {
         var results = { '_': [] }, current = null;
@@ -249,7 +249,7 @@ function createMeshCore(agent) {
         if (current != null) { results[current] = true; }
         return results;
     }
-
+    
     // Get server target url with a custom path
     function getServerTargetUrl(path) {
         var x = mesh.ServerUrl;
@@ -260,13 +260,13 @@ function createMeshCore(agent) {
         if (x == null) return null;
         return x.protocol + '//' + x.host + ':' + x.port + '/' + path;
     }
-
+    
     // Get server url. If the url starts with "*/..." change it, it not use the url as is.
     function getServerTargetUrlEx(url) {
         if (url.substring(0, 2) == '*/') { return getServerTargetUrl(url.substring(2)); }
         return url;
     }
-
+    
     // Send a wake-on-lan packet
     function sendWakeOnLan(hexMac) {
         var count = 0;
@@ -275,7 +275,7 @@ function createMeshCore(agent) {
             var magic = 'FFFFFFFFFFFF';
             for (var x = 1; x <= 16; ++x) { magic += hexMac; }
             var magicbin = Buffer.from(magic, 'hex');
-
+            
             for (var adapter in interfaces) {
                 if (interfaces.hasOwnProperty(adapter)) {
                     for (var i = 0; i < interfaces[adapter].length; ++i) {
@@ -293,7 +293,7 @@ function createMeshCore(agent) {
         } catch (e) { }
         return count;
     }
-
+    
     // Handle a mesh agent command
     function handleServerCommand(data) {
         if (typeof data == 'object') {
@@ -311,6 +311,7 @@ function createMeshCore(agent) {
                         var xurl = getServerTargetUrlEx(data.value);
                         if (xurl != null) {
                             var woptions = http.parseUri(xurl);
+                            woptions.rejectUnauthorized = 0;
                             sendConsoleText(JSON.stringify(woptions));
                             var tunnel = http.request(woptions);
                             tunnel.upgrade = onTunnelUpgrade;
@@ -322,13 +323,14 @@ function createMeshCore(agent) {
                             tunnel.protocol = 0;
                             tunnel.tcpaddr = data.tcpaddr;
                             tunnel.tcpport = data.tcpport;
-
+                            tunnel.end();
+                            sendConsoleText('tunnel.end() called');
                             // Put the tunnel in the tunnels list
                             var index = 1;
                             while (tunnels[index]) { index++; }
                             tunnel.index = index;
                             tunnels[index] = tunnel;
-
+                            
                             sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
                         }
                     }
@@ -360,7 +362,7 @@ function createMeshCore(agent) {
             }
         }
     }
-
+    
     // Called when a file changed in the file system
     /*
     function onFileWatcher(a, b) {
@@ -390,7 +392,7 @@ function createMeshCore(agent) {
             if (reqpath == '') { reqpath = '/'; }
             var xpath = obj.path.join(reqpath, '*');
             var results = null;
-
+            
             try { results = fs.readdirSync(xpath); } catch (e) { }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
@@ -410,13 +412,13 @@ function createMeshCore(agent) {
         }
         return response;
     }
-
+    
     // Tunnel callback operations
     function onTunnelUpgrade(response, s, head) {
         this.s = s;
         s.httprequest = this;
         s.end = onTunnelClosed;
-
+        
         if (this.tcpport != null) {
             // This is a TCP relay connection, pause now and try to connect to the target.
             s.pause();
@@ -430,7 +432,7 @@ function createMeshCore(agent) {
             s.data = onTunnelData;
         }
     }
-
+    
     // Called when the TCP relay target is connected
     function onTcpRelayTargetTunnelConnect() {
         var peerTunnel = tunnels[this.peerindex];
@@ -438,17 +440,17 @@ function createMeshCore(agent) {
         peerTunnel.s.first = true;
         peerTunnel.s.resume();
     }
-
+    
     // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
     function onTcpRelayServerTunnelData(data) {
         if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
     }
-
+    
     function onTunnelClosed() {
         sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
         if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }
         delete tunnels[this.httprequest.index];
-
+        
         /*
         // Close the watcher if required
         if (this.httprequest.watcher != undefined) {
@@ -466,7 +468,7 @@ function createMeshCore(agent) {
     function onTunnelData(data) {
         //console.log("OnTunnelData");
         //sendConsoleText('OnTunnelData, ' +  data.length + ', ' + typeof data + ', ' + data);
-
+        
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {
             try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
@@ -481,7 +483,7 @@ function createMeshCore(agent) {
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
             return;
         }
-
+        
         // Setup remote desktop & terminal without using native pipes
         if ((this.httprequest.desktop) && (obj.useNativePipes == false)) {
             if (data.length > 21 && data.toString().startsWith('**********%%%%%%###**')) {
@@ -502,7 +504,7 @@ function createMeshCore(agent) {
             return;
         }
         if ((this.httprequest.terminal) && (obj.useNativePipes == false)) { this.httprequest.terminal.write(data); return; }
-
+        
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
             if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
@@ -516,24 +518,26 @@ function createMeshCore(agent) {
                     if (obj.useNativePipes == false) {
                         // Remote Terminal without using native pipes
                         if (process.platform == "win32") {
-                            this.httprequest.terminal = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                            this.httprequest.terminal = childProcess.execFile("%windir%\\system32\\cmd.exe");
                         } else {
-                            this.httprequest.terminal = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                            this.httprequest.terminal = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
                         }
                         this.httprequest.terminal.tunnel = this;
-                        this.httprequest.terminal.on('data', function (chunk) { this.tunnel.write(chunk); });
-                        this.httprequest.terminal.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
+                        this.httprequest.terminal.on('exit', function (ecode, sig) { this.tunnel.end(); });
+                        this.httprequest.terminal.stdout.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
+                        this.httprequest.terminal.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
                     } else {
                         // Remote terminal using native pipes
                         if (process.platform == "win32") {
-                            this.httprequest.process = processManager.CreateProcess("%windir%\\system32\\cmd.exe");
+                            this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
                         } else {
-                            this.httprequest.process = processManager.CreateProcess("/bin/sh", "sh", ILibProcessPipe_SpawnTypes.TERM);
+                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
                         }
                         this.httprequest.process.tunnel = this;
-                        this.httprequest.process.error.data = function (chunk) { this.parent.tunnel.write(chunk); }
-                        this.httprequest.process.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.pipe(this.httprequest.process, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
+                        this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
+                        this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                     }
                 }
                 if (this.httprequest.protocol == 2) {
@@ -604,7 +608,7 @@ function createMeshCore(agent) {
                         var response = getDirectoryInfo(cmd.path);
                         if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
                         this.write(new Buffer(JSON.stringify(response)));
-
+                        
                         /*
                         // Start the directory watcher
                         if ((cmd.path != '') && (samepath == false)) {
@@ -672,17 +676,17 @@ function createMeshCore(agent) {
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
         }
     }
-
+    
     // Console state
     var consoleWebSockets = {};
     var consoleHttpRequest = null;
-
+    
     // Console HTTP response
     function consoleHttpResponse(response) {
         response.data = function (data) { sendConsoleText(rstr2hex(buf2rstr(data)), this.sessionid); consoleHttpRequest = null; }
         response.close = function () { sendConsoleText('httprequest.response.close', this.sessionid); consoleHttpRequest = null; }
     };
-
+    
     // Process a mesh agent console command
     function processConsoleCommand(cmd, args, rights, sessionid) {
         try {
@@ -810,12 +814,14 @@ function createMeshCore(agent) {
                     } else {
                         var httprequest = null;
                         try {
-                            httprequest = http.request(http.parseUri(args['_'][0]));
+                            var options = http.parseUri(args['_'][0]);
+                            options.rejectUnauthorized = 0;
+                            httprequest = http.request(options);
                         } catch (e) { response = 'Invalid HTTP websocket request'; }
                         if (httprequest != null) {
                             httprequest.upgrade = onWebSocketUpgrade;
                             httprequest.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
-
+                            
                             var index = 1;
                             while (consoleWebSockets[index]) { index++; }
                             httprequest.sessionid = sessionid;
@@ -949,16 +955,16 @@ function createMeshCore(agent) {
         } catch (e) { response = 'Command returned an exception error: ' + e; console.log(e); }
         if (response != null) { sendConsoleText(response, sessionid); }
     }
-
+    
     // Send a mesh agent console command
     function sendConsoleText(text, sessionid) {
         if (typeof text == 'object') { text = JSON.stringify(text); }
         mesh.SendCommand({ "action": "msg", "type": "console", "value": text, "sessionid": sessionid });
     }
-
+    
     // Called before the process exits
     //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
-
+    
     // Called when the server connection state changes
     function handleServerConnection(state) {
         meshServerConnectionState = state;
@@ -974,7 +980,7 @@ function createMeshCore(agent) {
             //if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 60000); } // Should be a long time, like 20 minutes. For now, 1 minute.
         }
     }
-
+    
     // Build a bunch a self information data that will be sent to the server
     // We need to do this periodically and if anything changes, send the update to the server.
     function buildSelfInfo() {
@@ -992,20 +998,20 @@ function createMeshCore(agent) {
         }
         return JSON.stringify(r);
     }
-
+    
     // Update the server with the latest network interface information
     var sendNetworkUpdateNagleTimer = null;
     function sendNetworkUpdateNagle() { if (sendNetworkUpdateNagleTimer != null) { clearTimeout(sendNetworkUpdateNagleTimer); sendNetworkUpdateNagleTimer = null; } sendNetworkUpdateNagleTimer = setTimeout(sendNetworkUpdate, 5000); }
     function sendNetworkUpdate(force) {
         sendNetworkUpdateNagleTimer = null;
-
+        
         // Update the network interfaces information data
         var netInfo = mesh.NetInfo;
         netInfo.action = 'netinfo';
         var netInfoStr = JSON.stringify(netInfo);
         if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
     }
-
+    
     // Called periodically to check if we need to send updates to the server
     function sendPeriodicServerUpdate(force) {
         if ((amtMeiConnected != 1) || (force == true)) { // If we are pending MEI connection, hold off on updating the server on self-info
@@ -1017,7 +1023,7 @@ function createMeshCore(agent) {
         // Update network information
         sendNetworkUpdateNagle(force);
     }
-
+    
     // Get Intel AMT information using MEI
     function getAmtInfo(func) {
         if (amtMei == null || amtMeiConnected != 2) { if (func != null) { func(null); } return; }
@@ -1031,13 +1037,13 @@ function createMeshCore(agent) {
         //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
         amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } amtMeiState = amtMeiTmpState; sendPeriodicServerUpdate(); if (func != null) { func(amtMeiState); } });
     }
-
+    
     // Called on MicroLMS Intel AMT user notification
     function handleAmtNotification(notification) {
         var amtMessage = notification.messageId;
         var amtMessageArg = notification.messageArguments;
         var notify = null;
-
+        
         switch (amtMessage) {
             case 'iAMT0050': {
                 // Serial over lan
@@ -1063,14 +1069,14 @@ function createMeshCore(agent) {
                 break;
             }
         }
-
+        
         if (notify != null) {
             var notification = { "action": "msg", "type": "notify", "value": notify, "tag": "general" };
             //mesh.SendCommand(notification); // no sessionid or userid specified, notification will go to the entire mesh
             //console.log("handleAmtNotification", JSON.stringify(notification));
         }
     }
-
+    
     // Starting function
     obj.start = function () {
         // Setup the mesh agent event handlers
@@ -1078,14 +1084,14 @@ function createMeshCore(agent) {
         mesh.AddConnectHandler(handleServerConnection);
         //mesh.lmsNotification = handleAmtNotification; // TODO
         sendPeriodicServerUpdate(true); // TODO: Check if connected before sending
-
+        
         // Parse input arguments
         //var args = parseArgs(process.argv);
         //console.log(args);
-
+        
         //console.log('Stopping.');
         //process.exit();
-
+        
         // Launch LMS
         try {
             var lme_heci = require('lme_heci');
@@ -1095,16 +1101,16 @@ function createMeshCore(agent) {
             amtLms.on('connect', function () { amtLmsState = 2; });
         } catch (e) { amtLmsState = -1; amtLms = null; }
     }
-
+    
     obj.stop = function () {
         mesh.AddCommandHandler(null);
         mesh.AddConnectHandler(null);
     }
-
+    
     function onWebSocketClosed() { sendConsoleText("WebSocket #" + this.httprequest.index + " closed.", this.httprequest.sessionid); delete consoleWebSockets[this.httprequest.index]; }
     function onWebSocketData(data) { sendConsoleText("Got WebSocket #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid); }
     function onWebSocketSendOk() { sendConsoleText("WebSocket #" + this.index + " SendOK.", this.sessionid); }
-
+    
     function onWebSocketUpgrade(response, s, head) {
         sendConsoleText("WebSocket #" + this.index + " connected.", this.sessionid);
         this.s = s;
@@ -1112,7 +1118,7 @@ function createMeshCore(agent) {
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
     }
-
+    
     return obj;
 }
 

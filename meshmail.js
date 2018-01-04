@@ -1,6 +1,8 @@
 /**
-* @description Meshcentral MeshMail
+* @description MeshCentral e-mail server communication modules
 * @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
 * @version v0.0.1
 */
 
@@ -32,7 +34,14 @@ module.exports.CreateMeshMain = function (parent) {
 
     // Perform all e-mail substitution
     function mailReplacements(text, domain, username, email, cookie) {
-        var url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + parent.certificates.CommonName + ':' + obj.parent.args.port + domain.url;
+        var url;
+        if (domain.dns == null) {
+            // Default domain or subdomain of the default.
+            url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + parent.certificates.CommonName + ':' + obj.parent.args.port + domain.url;
+        } else {
+            // Domain with a DNS name.
+            url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + domain.dns + ':' + obj.parent.args.port + domain.url;
+        }
         if (cookie != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'checkmail?c=' + cookie) }
         return text.split('[[[USERNAME]]]').join(username).split('[[[SERVERURL]]]').join(url).split('[[[SERVERNAME]]]').join(domain.title);
     }
