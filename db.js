@@ -96,7 +96,8 @@ module.exports.CreateDB = function (args, datapath) {
     obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); }
     obj.InsertMany = function (data, func) { obj.file.insert(data, func); }
     obj.StoreEvent = function (ids, source, event) { obj.file.insert(event); }
-    obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0 }).sort({ time: -1 }, func) } }
+    obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func) } }
+    obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } }
     obj.RemoveMesh = function (id) { obj.file.remove({ mesh: id }, { multi: true }); obj.file.remove({ _id: id }); }
     obj.RemoveAllEvents = function (domain) { obj.file.remove({ type: 'event', domain: domain }, { multi: true }); }
     obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); }

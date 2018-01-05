@@ -370,7 +370,7 @@ module.exports.CreateMultiServer = function (parent, args) {
     // If we have no peering configuration, don't setup this object
     if (obj.peerConfig == null) { return null; }
     obj.serverid = obj.parent.config.peers.serverId;
-    if (obj.serverid == null) { obj.serverid = require("os").hostname(); }
+    if (obj.serverid == null) { obj.serverid = require("os").hostname().toLowerCase(); }
     if (obj.parent.config.peers.servers[obj.serverid] == null) { console.log("Error: Unable to peer with other servers, \"" + obj.serverid + "\" not present in peer servers list."); return null; }
 
     // Return the private key of a peer server
