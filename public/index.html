@@ -1112,7 +1112,6 @@
             if (meshidx[0] == '/') meshidx = meshidx.substring(1);
             var x = "To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += addHtmlValue('Mesh Agent', '<a href="meshagent?id=1" target="_blank">Windows executable (.exe)</a>');
-            x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>');
             setDialogMode(2, "Add Mesh Agent", 1, null, x);
         }
 
