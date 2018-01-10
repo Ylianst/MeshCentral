@@ -6,6 +6,9 @@
 * @version v0.0.1
 */
 
+// If app metrics is available
+if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
+
 function CreateMeshCentralServer() {
     var obj = {};
     obj.db;
@@ -30,7 +33,7 @@ function CreateMeshCentralServer() {
     obj.debugLevel = 0;
     obj.config = {};                  // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
-    obj.certificateOperations = require('./certoperations.js').CertificateOperations();
+    obj.certificateOperations = null;
     obj.defaultMeshCmd = null;
     obj.defaultMeshCore = null;
     obj.defaultMeshCoreHash = null;
@@ -308,8 +311,10 @@ function CreateMeshCentralServer() {
                 obj.updateMeshCmd();
 
                 // Load server certificates
+                obj.certificateOperations = require('./certoperations.js').CertificateOperations()
                 obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
                     obj.certificates = certs;
+                    obj.certificateOperations.acceleratorPerformSetState(certs); // Set the state of the accelerators
 
                     // If the certificate is un-configured, force LAN-only mode
                     if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }
@@ -719,7 +724,7 @@ function CreateMeshCentralServer() {
                     var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                     var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules_meshcore', modulesDir[i])).toString('base64');
                     moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
-                    if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci')) {
+                    if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci') && (moduleName != 'amt-0.2.0.js') && (moduleName != 'amt-script-0.2.0.js') && (moduleName != 'amt-wsman-0.2.0.js') && (moduleName != 'amt-wsman-duk-0.2.0.js')) {
                         moduleAdditionsNoMei += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
                     }
                 }

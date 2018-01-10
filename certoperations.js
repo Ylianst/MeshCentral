@@ -412,5 +412,52 @@ module.exports.CertificateOperations = function () {
         return r;
     }
 
+    // Start accelerators
+    const fork = require('child_process').fork;
+    const program = require('path').resolve('meshaccelerator.js');
+    const acceleratorCreateCount = require('os').cpus().length;
+    var freeAccelerators = [];
+
+    // Create a new accelerator module
+    obj.getAccelerator = function() {
+        if (freeAccelerators.length > 0) { return freeAccelerators.pop(); }
+        if (acceleratorCreateCount > 0) {
+            var accelerator = fork(program, [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
+            accelerator.on('message', function (message) { this.func(message); freeAccelerators.push(this); });
+            if (obj.acceleratorCertStore != null) { accelerator.send({ action: 'setState', certs: obj.acceleratorCertStore }); }
+            return accelerator;
+        }
+        return null;
+    }
+
+    // Set the state of the accelerators. This way, we don't have to send certificate & keys to them each time.
+    obj.acceleratorCertStore = null;
+    obj.acceleratorPerformSetState = function (certificates) {
+        obj.acceleratorCertStore = [{ cert: certificates.agent.cert, key: certificates.agent.key }];
+        if (certificates.swarmserver != null) { obj.acceleratorCertStore.push({ cert: certificates.swarmserver.cert, key: certificates.swarmserver.key }); }
+    }
+
+    // Perform any RSA signature, just pass in the private key and data.
+    obj.acceleratorPerformSignature = function (privatekey, data, func) {
+        var acc = obj.getAccelerator();
+        if (acc == null) {
+            // No accelerators available
+            if (typeof privatekey == 'number') { privatekey = obj.acceleratorCertStore[privatekey].key; }
+            const sign = crypto.createSign('SHA384');
+            sign.end(new Buffer(data, 'binary'));
+            func(sign.sign(privatekey).toString('binary'));
+        } else {
+            // Use the accelerator
+            acc.func = func;
+            acc.send({ action: 'sign', key: privatekey, data: data });
+        }
+    }
+
+    // Perform a RSA signature. This is time consuming
+    obj.acceleratorPerformVerify = function (publickey, data, msg, func) {
+        console.log('Performing verification...');
+        func(publickey.verify(data, msg));
+    }
+
     return obj;
 };

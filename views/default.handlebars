@@ -482,7 +482,7 @@
                         </tr>
                         <tr>
                             <td style="background:black;text-align:center;height:500px;position:relative">
-                                <div id="p15agentConsole" style="background:black;margin:0;padding:0;color:lightgray;width:100%;max-width:930px;height:100%;text-align:left;overflow-y:scroll"></div>
+                                <div id=p15agentConsole style="background:black;margin:0;padding:0;color:lightgray;width:100%;max-width:930px;height:100%;text-align:left;overflow-y:scroll"><pre id=p15agentConsoleText></pre></div>
                             </td>
                         </tr>
                         <tr>
@@ -509,7 +509,9 @@
             <div id=footer class=noselect>
                 <table cellpadding=0 cellspacing=10 style="width:100%">
                     <tr>
-                        <td style="text-align:left"></td>
+                        <td style="text-align:left;color:white">
+                            {{{footer}}}
+                        </td>
                         <td style="text-align:right">
                             <a id="verifyEmailId2" style="color:yellow;margin-left:3px;cursor:pointer;display:none" onclick="account_showVerifyEmail()">Verify Email</a>
                             <a style="margin-left:3px" href="terms">Terms &amp; Privacy</a>
@@ -2919,6 +2921,7 @@
                     // Setup the Intel AMT remote desktop
                     if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
                     desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'));
+                    desktop.debugmode = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
@@ -2929,7 +2932,9 @@
                 } else {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
-                    desktop.attemptWebRTC = debugmode;
+                    desktop.debugmode = debugmode;
+                    desktop.m.debugmode = debugmode;
+                    //desktop.attemptWebRTC = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -3165,13 +3170,16 @@
                     // Setup the Intel AMT terminal
                     if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
                     terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term'));
+                    terminal.debugmode = debugmode;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id, 16994, '*', '*', 0);
                     terminal.contype = 2;
                 } else {
                     // Setup a mesh agent terminal
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
-                    terminal.attemptWebRTC = debugmode;
+                    terminal.debugmode = debugmode;
+                    terminal.m.debugmode = debugmode;
+                    //terminal.attemptWebRTC = debugmode;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
@@ -3649,6 +3657,7 @@
                     if ((e.keyCode == 38) && ((consoleHistory.length - 1) > hindex)) { box.value = consoleHistory[hindex + 1]; }
                     else if ((e.keyCode == 40) && (hindex > 0)) { box.value = consoleHistory[hindex - 1]; }
                     else if ((e.keyCode == 40) && (hindex == 0)) { box.value = ''; }
+                    processed = 1;
                 }
             } else {
                 if (e.charCode != 0 && consoleFocus == 0) { box.value = ((box.value + String.fromCharCode(e.charCode))); processed = 1; }
@@ -3667,7 +3676,7 @@
             if ((meshrights & 16) != 0) {
                 if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
                 if (samenode == false) {
-                    QH('p15agentConsole', consoleNode.consoleText);
+                    QH('p15agentConsoleText', consoleNode.consoleText);
                     Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
                 }
                 var online = ((consoleNode.conn & 1) != 0)?true:false;
@@ -3683,7 +3692,7 @@
 
         // Clear the console for this node
         function p15consoleClear() {
-            QH('p15agentConsole', '');
+            QH('p15agentConsoleText', '');
             Q('id_p15consoleClear').blur();
             consoleNode.consoleText = '';
         }
@@ -3693,7 +3702,7 @@
         function p15consoleSend(e) {
             if (e && e.keyCode != 13) return;
             var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(Q('p15consoleText').value) + '<br/></div>';
-            Q('p15agentConsole').innerHTML += t;
+            Q('p15agentConsoleText').innerHTML += t;
             consoleNode.consoleText += t;
             Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
             Q('p15consoleText').value = '';
@@ -3716,7 +3725,7 @@
             data = '<div>' + EscapeHtmlBreaks(data) + '</div>'
             if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
             if (consoleNode == node) {
-                Q('p15agentConsole').innerHTML += data;
+                Q('p15agentConsoleText').innerHTML += data;
                 Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
             }
         }

@@ -20,6 +20,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.webrtc = null;
     obj.webchannel = null;
     obj.onStateChanged = null;
+    obj.debugmode = 0;
 
     // Private method
     //obj.debug = function (msg) { console.log(msg); }
@@ -41,6 +42,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     }
 
     obj.xxOnSocketConnected = function () {
+        if (obj.debugmode == 1) { console.log('onSocketConnected'); }
         //obj.debug("Agent Redir Socket Connected");
         obj.xxStateChange(2);
     }
@@ -63,6 +65,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     }
 
     obj.xxOnMessage = function (e) {
+        if (obj.debugmode == 1) { console.log('Recv', e.data); }
         if (obj.State < 3) {
             if (e.data == 'c') {
                 obj.socket.send(obj.protocol);
@@ -156,10 +159,18 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         //obj.debug("Agent Redir Send(" + x.length + "): " + rstr2hex(x));
         if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
             if (typeof x == 'string') {
-                var b = new Uint8Array(x.length);
-                for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
-                obj.socket.send(b.buffer);
+                if (obj.debugmode == 1) {
+                    var b = new Uint8Array(x.length), c = [];
+                    for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); c.push(x.charCodeAt(i)); }
+                    obj.socket.send(b.buffer);
+                    console.log('Send', c);
+                } else {
+                    var b = new Uint8Array(x.length);
+                    for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
+                    obj.socket.send(b.buffer);
+                }
             } else {
+                if (obj.debugmode == 1) { console.log('Send', x); }
                 obj.socket.send(x);
             }
         }
@@ -167,7 +178,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
     obj.xxOnSocketClosed = function () {
         //obj.debug("Agent Redir Socket Closed");
-        obj.Stop();
+        if (obj.debugmode == 1) { console.log('onSocketClosed'); }
+        obj.Stop(1);
     }
 
     obj.xxStateChange = function(newstate) {
@@ -177,7 +189,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         if (obj.onStateChanged != null) obj.onStateChanged(obj, obj.State);
     }
 
-    obj.Stop = function () {
+    obj.Stop = function (x) {
+        if (obj.debugmode == 1) { console.log('stop', x); }
         //obj.debug("Agent Redir Socket Stopped");
         obj.xxStateChange(0);
         obj.connectstate = -1;

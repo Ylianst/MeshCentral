@@ -36,7 +36,24 @@ function createMeshCore(agent) {
     var wifiScannerLib = null;
     var wifiScanner = null;
     var networkMonitor = null;
-    
+    var amtscanner = null;
+
+    /*
+    var AMTScanner = require("AMTScanner");
+    var scan = new AMTScanner();
+
+    scan.on("found", function (data) {
+        if (typeof data === 'string') {
+            console.log(data);
+        } else {
+            console.log(JSON.stringify(data, null, " "));
+        }
+    });
+    scan.scan("10.2.55.140", 1000);
+    scan.scan("10.2.55.139-10.2.55.145", 1000);
+    scan.scan("10.2.55.128/25", 2000);
+    */
+
     // Try to load up the network monitor
     try {
         networkMonitor = require('NetworkMonitor');
@@ -44,6 +61,13 @@ function createMeshCore(agent) {
         networkMonitor.on('add', function (addr) { sendNetworkUpdateNagle(); });
         networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
     } catch (e) { networkMonitor = null; }
+
+    // Try to load up the Intel AMT scanner
+    try {
+        var AMTScannerModule = require('amt-scanner');
+        amtscanner = new AMTScannerModule();
+        //amtscanner.on('found', function (data) { if (typeof data != 'string') { data = JSON.stringify(data, null, " "); } sendConsoleText(data); });
+    } catch (e) { amtscanner = null; }
     
     // Try to load up the MEI module
     try {
@@ -693,7 +717,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist,\r\nwsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt.';
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -945,6 +969,36 @@ function createMeshCore(agent) {
                         var wifiPresent = wifiScanner.hasWireless;
                         if (wifiPresent) { response = "Perfoming Wifi scan..."; wifiScanner.Scan(); } else { response = "Wifi absent."; }
                     } else { response = "Wifi module not present."; }
+                    break;
+                }
+                case 'scanamt': {
+                    if (amtscanner != null) {
+                        if (args['_'].length != 1) {
+                            response = 'Usage examples:\r\n  scanamt 1.2.3.4\r\n  scanamt 1.2.3.0-1.2.3.255\r\n  scanamt 1.2.3.0/24\r\n'; // Display correct command usage
+                        } else {
+                            response = 'Scanning: ' + args['_'][0] + '...';
+                            amtscanner.scan(args['_'][0], 2000, function (data) {
+                                if (data.length > 0) {
+                                    var r = '', pstates = ['NotActivated', 'InActivation', 'Activated'];
+                                    for (var i in data) {
+                                        var x = data[i];
+                                        if (r != '') { r += '\r\n'; }
+                                        r += x.address + ' - Intel AMT v' + x.majorVersion + '.' + x.minorVersion;
+                                        if (x.provisioningState < 3) { r += (', ' + pstates[x.provisioningState]); }
+                                        if (x.provisioningState == 2) { r += (', ' + x.openPorts.join(', ')); }
+                                        r += '.';
+                                    }
+                                } else {
+                                    r = 'No Intel AMT found.';
+                                }
+                                sendConsoleText(r);
+                            });
+                        }
+                    } else { response = "Intel AMT scanner module not present."; }
+                    break;
+                }
+                case 'modules': {
+                    response = JSON.stringify(addedModules);
                     break;
                 }
                 default: { // This is an unknown command, return an error message

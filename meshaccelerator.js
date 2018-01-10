@@ -1,0 +1,28 @@
+/**
+* @description MeshCentral accelerator
+* @author Ylian Saint-Hilaire
+* @copyright Intel Corporation 2018
+* @license Apache-2.0
+* @version v0.0.1
+*/
+
+const crypto = require('crypto');
+var certStore = null;
+
+process.on('message', function (message) {
+    switch (message.action) {
+        case 'sign': {
+            if (typeof message.key == 'number') { message.key = certStore[message.key].key; }
+            try {
+                const sign = crypto.createSign('SHA384');
+                sign.end(new Buffer(message.data, 'binary'));
+                process.send(sign.sign(message.key).toString('binary'));
+            } catch (e) { process.send(null); }
+            break;
+        }
+        case 'setState': {
+            certStore = message.certs;
+            break;
+        }
+    }
+});

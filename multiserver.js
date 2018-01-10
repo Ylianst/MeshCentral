@@ -95,14 +95,13 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.servernonce = msg.substring(50);
 
                             // Use our agent certificate root private key to sign the ServerHash + ServerNonce + PeerNonce
-                            var privateKey = obj.forge.pki.privateKeyFromPem(obj.certificates.agent.key);
                             var md = obj.forge.md.sha384.create();
                             md.update(msg.substring(2), 'binary');
                             md.update(obj.nonce, 'binary');
 
                             // Send back our certificate + signature
-                            agentRootCertificateAsn1 = obj.forge.asn1.toDer(obj.forge.pki.certificateToAsn1(obj.forge.pki.certificateFromPem(obj.certificates.agent.cert))).getBytes();
-                            obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(agentRootCertificateAsn1.length) + agentRootCertificatAsn1 + privateKey.sign(md)); // Command 3, signature
+                            agentRootCertificateAsn1 = obj.forge.asn1.toDer(obj.forge.pki.certificateToAsn1(obj.certificates.agent.fcert)).getBytes();
+                            obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(agentRootCertificateAsn1.length) + agentRootCertificatAsn1 + obj.certificates.agent.fkey.sign(md)); // Command 3, signature
                             break;
                         }
                         case 2: {
@@ -261,14 +260,13 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (obj.webCertificateHash != msg.substring(2, 50)) { obj.close(); return; }
 
                     // Use our server private key to sign the ServerHash + PeerNonce + ServerNonce
-                    var privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.parent.certificates.agent.key);
                     var md = obj.forge.md.sha384.create();
                     md.update(msg.substring(2), 'binary');
                     md.update(obj.nonce, 'binary');
                     obj.peernonce = msg.substring(50);
 
                     // Send back our certificate + signature
-                    obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + privateKey.sign(md)); // Command 2, certificate + signature
+                    obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + obj.parent.parent.certificates.agent.fkey.sign(md)); // Command 2, certificate + signature
 
                     // Check the peer server signature if we can
                     if (obj.unauthsign != null) {
