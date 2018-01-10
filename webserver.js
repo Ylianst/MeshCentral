@@ -39,7 +39,7 @@ if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchSt
 module.exports.CreateWebServer = function (parent, db, args, secret, certificates) {
     var obj = {};
 
-    // Modules    
+    // Modules
     obj.fs = require('fs');
     obj.net = require('net');
     obj.tls = require('tls');
@@ -270,6 +270,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Return the current domain of the request
     function getDomain(req) {
+        if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
         if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
         var x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
@@ -682,14 +683,14 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64 });
+            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
         } else {
             // Send back the login application
             var loginmode = req.session.loginmode;
             delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
             var features = 0;
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features });
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer });
         }
     }
     
@@ -1518,18 +1519,33 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
-        // Two more headers to take a look at:
-        //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
-        //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
         res.removeHeader("X-Powered-By");
-        if (obj.args.notls) {
-            // Default headers if no TLS is used
-            res.set({ 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" });
+        var domain = req.xdomain = getDomain(req);
+
+        // Detect if this is a file sharing domain, if so, just share files.
+        if ((domain != null) && (domain.share != null)) {
+            var rpath;
+            if (domain.dns == null) { rpath = req.url.split('/'); rpath.splice(1, 1); rpath = rpath.join('/'); } else { rpath = req.url; }
+            if ((res.headers != null) && (res.headers.upgrade)) {
+                // If this is a websocket, stop here.
+                res.sendStatus(404);
+            } else {
+                // Check if the file exists, if so, serve it.
+                obj.fs.exists(obj.path.join(domain.share, rpath), function (exists) { if (exists == true) { res.sendfile(rpath, { root: domain.share }); } else { res.sendStatus(404); } });
+            }
         } else {
-            // Default headers if TLS is used
-            res.set({ 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" });
+            // Two more headers to take a look at:
+            //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
+            //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
+            if (obj.args.notls) {
+                // Default headers if no TLS is used
+                res.set({ 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" });
+            } else {
+                // Default headers if TLS is used
+                res.set({ 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" });
+            }
+            return next();
         }
-        return next();
     });
 
     // Setup all HTTP handlers

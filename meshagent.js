@@ -162,23 +162,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (getWebCertHash(obj.domain) != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash, holding connection (' + obj.remoteaddr + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
-                var privateKey, certasn1;
-                if (obj.useSwarmCert == true) {
-                    // Use older SwarmServer certificate of MC1
-                    certasn1 = obj.parent.swarmCertificateAsn1;
-                    privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.swarmserver.key);
-                } else {
-                    // Use new MC2 certificate
-                    certasn1 = obj.parent.agentCertificateAsn1;
-                    privateKey = obj.forge.pki.privateKeyFromPem(obj.parent.certificates.agent.key);
-                }
-                var md = obj.forge.md.sha384.create();
-                md.update(msg.substring(2), 'binary');
-                md.update(obj.nonce, 'binary');
                 obj.agentnonce = msg.substring(50);
-
-                // Send back our certificate + signature
-                obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(certasn1.length) + certasn1 + privateKey.sign(md)); // Command 2, certificate + signature
+                if (obj.useSwarmCert == true) {
+                    // Perform the hash signature using older swarm server certificate
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, function (signature) {
+                        // Send back our certificate + signature
+                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.swarmCertificateAsn1.length) + obj.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
+                    });
+                } else {
+                    // Perform the hash signature using new server agent certificate
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
+                        // Send back our certificate + signature
+                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.agentCertificateAsn1.length) + obj.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                    });
+                }
 
                 // Check the agent signature if we can
                 if (obj.unauthsign != null) {
@@ -371,7 +368,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         md.update(getWebCertHash(obj.domain), 'binary');
         md.update(obj.nonce, 'binary');
         md.update(obj.agentnonce, 'binary');
-        if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; }
+        if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; } // TODO: Check if this is slow or not. May n
 
         // Connection is a success, clean up
         obj.nodeid = obj.unauth.nodeid;

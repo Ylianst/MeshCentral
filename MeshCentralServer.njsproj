@@ -190,6 +190,7 @@
     <Folder Include="typings\globals\express-handlebars\" />
     <Folder Include="typings\globals\express-session\" />
     <Folder Include="typings\globals\node-forge\" />
+    <Folder Include="typings\globals\nodemailer\" />
     <Folder Include="typings\globals\node\" />
     <Folder Include="views\" />
   </ItemGroup>
@@ -198,6 +199,7 @@
     <TypeScriptCompile Include="typings\globals\express-handlebars\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\express-session\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\nodemailer\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>

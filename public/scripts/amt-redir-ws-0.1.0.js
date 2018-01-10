@@ -22,6 +22,7 @@ var CreateAmtRedirect = function (module) {
     // ###END###{!Mode-Firmware}
     obj.connectstate = 0;
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
+    obj.debugmode = 0;
 
     obj.amtaccumulator = "";
     obj.amtsequence = 1;
@@ -48,6 +49,7 @@ var CreateAmtRedirect = function (module) {
 
     obj.xxOnSocketConnected = function () {
         //obj.Debug("Redir Socket Connected");
+        if (obj.debugmode == 1) { console.log('onSocketConnected'); }
         obj.xxStateChange(2);
         if (obj.protocol == 1) obj.xxSend(obj.RedirectStartSol); // TODO: Put these strings in higher level module to tighten code
         if (obj.protocol == 2) obj.xxSend(obj.RedirectStartKvm); // Don't need these is the feature is not compiled-in.
@@ -55,6 +57,7 @@ var CreateAmtRedirect = function (module) {
     }
 
     obj.xxOnMessage = function (e) {
+        if (obj.debugmode == 1) { console.log('Recv', e.data); }
         obj.inDataCount++;
         if (typeof e.data == 'object') {
             var f = new FileReader();
@@ -113,7 +116,7 @@ var CreateAmtRedirect = function (module) {
                             cmdsize = (13 + oemlen);
                             break;
                         default:
-                            obj.Stop();
+                            obj.Stop(1);
                             break;
                     }
                     break;
@@ -141,7 +144,7 @@ var CreateAmtRedirect = function (module) {
                             // Basic Auth (Probably a good idea to not support this unless this is an old version of Intel AMT)
                             obj.xxSend(String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x01) + IntToStrX(obj.user.length + obj.pass.length + 2) + String.fromCharCode(obj.user.length) + obj.user + String.fromCharCode(obj.pass.length) + obj.pass);
                         }
-                        else obj.Stop();
+                        else obj.Stop(2);
                     }
                     else if ((authType == 3 || authType == 4) && status == 1) {
                         var curptr = 0;
@@ -197,7 +200,7 @@ var CreateAmtRedirect = function (module) {
                             obj.connectstate = 1;
                             obj.xxStateChange(3);
                         }
-                    } else obj.Stop();
+                    } else obj.Stop(3);
                     break;
                 case 0x21: // Response to settings (33)
                     if (obj.amtaccumulator.length < 23) break;
@@ -232,7 +235,7 @@ var CreateAmtRedirect = function (module) {
                     break;
                 default:
                     console.log("Unknown Intel AMT command: " + obj.amtaccumulator.charCodeAt(0) + " acclen=" + obj.amtaccumulator.length);
-                    obj.Stop();
+                    obj.Stop(4);
                     return;
             }
             if (cmdsize == 0) return;
@@ -243,6 +246,7 @@ var CreateAmtRedirect = function (module) {
     obj.xxSend = function (x) {
         //obj.Debug("Redir Send(" + x.length + "): " + rstr2hex(x));
         if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
+            if (obj.debugmode == 1) { console.log('Send', x); }
             var b = new Uint8Array(x.length);
             for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
             obj.socket.send(b.buffer);
@@ -267,6 +271,7 @@ var CreateAmtRedirect = function (module) {
     }
 
     obj.xxOnSocketClosed = function () {
+        if (obj.debugmode == 1) { console.log('onSocketClosed'); }
         //obj.Debug("Redir Socket Closed");
         if ((obj.inDataCount == 0) && (obj.tlsv1only == 0)) {
             obj.tlsv1only = 1;
@@ -275,7 +280,7 @@ var CreateAmtRedirect = function (module) {
             obj.socket.onmessage = obj.xxOnMessage;
             obj.socket.onclose = obj.xxOnSocketClosed;
         } else {
-            obj.Stop();
+            obj.Stop(5);
         }
     }
 
@@ -286,7 +291,8 @@ var CreateAmtRedirect = function (module) {
         if (obj.onStateChanged != null) obj.onStateChanged(obj, obj.State);
     }
 
-    obj.Stop = function () {
+    obj.Stop = function (x) {
+        if (obj.debugmode == 1) { console.log('onSocketStop', x); }
         //obj.Debug("Redir Socket Stopped");
         obj.xxStateChange(0);
         obj.connectstate = -1;

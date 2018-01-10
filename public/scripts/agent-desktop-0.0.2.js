@@ -28,6 +28,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.connectioncount = 0;
     obj.rotation = 0;
     obj.protocol = 2; // KVM
+    obj.debugmode = 0;
 
     obj.sessionid = 0;
     obj.username;
@@ -169,13 +170,15 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2);
         if (command >= 18) { console.error("Invalid KVM command " + command + " of size " + cmdsize); obj.parent.Stop(); return; }
-        if (cmdsize > str.length) return;
+        if (cmdsize > str.length) { console.error("KVM invalid command size", cmdsize, str.length); return; }
         //meshOnDebug("KVM Command: " + command + " Len:" + cmdsize);
+        if (obj.debugmode == 1) { console.log("KVM Command: " + command + " Len:" + cmdsize); }
 
         if (command == 3 || command == 4 || command == 7) {
             cmdmsg = str.substring(4, cmdsize);
             X = ((cmdmsg.charCodeAt(0) & 0xFF) << 8) + (cmdmsg.charCodeAt(1) & 0xFF);
             Y = ((cmdmsg.charCodeAt(2) & 0xFF) << 8) + (cmdmsg.charCodeAt(3) & 0xFF);
+            //if (obj.debugmode == 1) { console.log("X=" + X + " Y=" + Y); }
         }
 
         switch (command) {
