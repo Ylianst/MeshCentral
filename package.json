@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "_from": "meshcentral",
   "_id": "meshcentral@0.1.2-b",
   "_inBundle": false,
@@ -19,6 +20,15 @@
     "#USER",
     "/",
     "/meshcentral"
+=======
+  "name": "meshcentral",
+  "version": "0.1.2-h",
+  "keywords": [
+    "Remote Management",
+    "Intel AMT",
+    "Active Management",
+    "Remote Desktop"
+>>>>>>> upstream/master
   ],
   "_resolved": "https://registry.npmjs.org/meshcentral/-/meshcentral-0.1.2-b.tgz",
   "_shasum": "d64ca266607487ee9628c3e5b9ba554864c9d550",
