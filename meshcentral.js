@@ -314,7 +314,7 @@ function CreateMeshCentralServer() {
                 obj.certificateOperations = require('./certoperations.js').CertificateOperations()
                 obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
                     obj.certificates = certs;
-                    obj.certificateOperations.acceleratorPerformSetState(certs); // Set the state of the accelerators
+                    obj.certificateOperations.acceleratorStart(certs); // Set the state of the accelerators
 
                     // If the certificate is un-configured, force LAN-only mode
                     if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }

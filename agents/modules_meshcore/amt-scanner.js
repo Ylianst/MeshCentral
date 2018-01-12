@@ -79,7 +79,7 @@ function AMTScanner() {
         server.bind({ address: '0.0.0.0', port: 0, exclusive: true });
         var tmout = setTimeout(function cb() {
             //console.log("Server closed");
-            //server.close();
+            server.close();
             server.parent.emit('found', server.scanResults);
             if (func != null) { func(server.scanResults); }
             delete server;

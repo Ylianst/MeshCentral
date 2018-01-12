@@ -472,7 +472,6 @@ function createMeshCore(agent) {
     
     function onTunnelClosed() {
         sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
-        if (this.httprequest.protocol == 1) { this.httprequest.process.end(); delete this.httprequest.process; }
         delete tunnels[this.httprequest.index];
         
         /*
@@ -561,7 +560,8 @@ function createMeshCore(agent) {
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
                         this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
                         this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                        this.prependListener('end', function () { this.httprequest.process.kill(); });
                     }
                 }
                 if (this.httprequest.protocol == 2) {
@@ -717,7 +717,15 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, parseuri, httpget, wslist,\r\nwsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt.';
+                    break;
+                }
+                case 'eval': { // Eval JavaScript
+                    if (args['_'].length < 1) {
+                        response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
+                    } else {
+                        response = JSON.stringify(mesh.eval(args['_'][0]));
+                    }
                     break;
                 }
                 case 'notify': { // Send a notification message to the mesh
@@ -735,6 +743,7 @@ function createMeshCore(agent) {
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amtLmsState >= 0) { response += '\r\nBuilt -in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
+                    response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     response += '\r\ServerState: ' + meshServerConnectionState + '.';
@@ -1136,15 +1145,10 @@ function createMeshCore(agent) {
         // Setup the mesh agent event handlers
         mesh.AddCommandHandler(handleServerCommand);
         mesh.AddConnectHandler(handleServerConnection);
-        //mesh.lmsNotification = handleAmtNotification; // TODO
-        sendPeriodicServerUpdate(true); // TODO: Check if connected before sending
-        
+
         // Parse input arguments
         //var args = parseArgs(process.argv);
         //console.log(args);
-        
-        //console.log('Stopping.');
-        //process.exit();
         
         // Launch LMS
         try {
@@ -1154,6 +1158,14 @@ function createMeshCore(agent) {
             amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
             amtLms.on('connect', function () { amtLmsState = 2; });
         } catch (e) { amtLmsState = -1; amtLms = null; }
+
+        // Check if the control channel is connected
+        if (mesh.isControlChannelConnected) {
+            sendPeriodicServerUpdate(true); // Send the server update
+        }
+
+        //console.log('Stopping.');
+        //process.exit();
     }
     
     obj.stop = function () {

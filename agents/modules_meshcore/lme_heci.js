@@ -123,7 +123,7 @@ function lme_heci()
 
     this._LME = heci.create();
     this._LME.LMS = this;
-    this._LME.on('error', function (e) { this.Parent.emit('error', e); });
+    this._LME.on('error', function (e) { this.LMS.emit('error', e); });
     this._LME.on('connect', function ()
     {
         this.LMS.emit('connect');

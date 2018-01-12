@@ -170,7 +170,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.swarmCertificateAsn1.length) + obj.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
                     });
                 } else {
-                    // Perform the hash signature using new server agent certificate
+                    // Perform the hash signature using the server agent certificate
                     obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
                         // Send back our certificate + signature
                         obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.agentCertificateAsn1.length) + obj.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
@@ -190,9 +190,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Decode the certificate
                 var certlen = obj.common.ReadShort(msg, 2);
                 obj.unauth = {};
-                obj.unauth.nodeCert = null;
-                try { obj.unauth.nodeCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { return; }
-                obj.unauth.nodeid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(obj.unauth.nodeCert.publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                try { obj.unauth.nodeid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))).publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } catch (e) { return; }
+                obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + new Buffer(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
 
                 // Check the agent signature if we can
                 if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').'); return; } }
@@ -237,7 +236,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
-    obj.nonce = obj.forge.random.getBytesSync(48);
+    obj.nonce = obj.parent.crypto.randomBytes(48).toString('binary');
     obj.send(obj.common.ShortToStr(1) + getWebCertHash(obj.domain) + obj.nonce); // Command 1, hash + nonce
 
     // Once we get all the information about an agent, run this to hook everything up to the server
@@ -357,18 +356,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Get the web certificate hash for the speficied domain
     function getWebCertHash(domain) {
-        //var hash = obj.parent.webCertificateHashs[domain.id];
-        //if (hash == null) return obj.parent.webCertificateHash; else return hash;
+        var hash = obj.parent.webCertificateHashs[domain.id];
+        if (hash != null) return hash;
         return obj.parent.webCertificateHash;
     }
 
     // Verify the agent signature
     function processAgentSignature(msg) {
-        var md = obj.forge.md.sha384.create(); // TODO: Switch this to SHA384 on node instead of forge.
-        md.update(getWebCertHash(obj.domain), 'binary');
-        md.update(obj.nonce, 'binary');
-        md.update(obj.agentnonce, 'binary');
-        if (obj.unauth.nodeCert.publicKey.verify(md.digest().bytes(), msg) == false) { return false; } // TODO: Check if this is slow or not. May n
+        // Verify the signature. This is the fast way, without using forge.
+        const verify = obj.parent.crypto.createVerify('SHA384');
+        verify.end(new Buffer(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));
+        if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { return false; }
 
         // Connection is a success, clean up
         obj.nodeid = obj.unauth.nodeid;
