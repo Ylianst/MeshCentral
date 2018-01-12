@@ -1486,7 +1486,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (domain.dns != null) return domain.dns;
         return obj.certificates.CommonName;
     }
-
+    
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         var domain = checkUserIpAddress(req, res);
@@ -1516,7 +1516,31 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.send(meshsettings);
         });
     }
-
+    
+    // Handle a request to download a mesh sfx agent 
+    obj.handleMeshSfxAgentRequest = function (req, res) { 
+        var domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        
+        obj.db.Get('mesh/' + domain.id + '/' + req.query.id, function (err, meshes) {
+            if (meshes.length != 1) { res.sendStatus(401); return; }
+            var mesh = meshes[0];
+            
+        if ((req.query.id != null) && (req.query.idx != null)) {
+            // Send a specific mesh sfx agent back
+            var sfxagentname = ''; 
+            var sfxagentpath = '';
+            var f = req.query.idx;
+            if (f == 0) { sfxagentname = mesh.filename1; sfxagentpath = mesh.path1; } 
+            if (f == 1) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; } 
+            if (f == 2) { sfxagentname = mesh.filename3; sfxagentpath = mesh.path3; }                 
+            if (sfxagentpath == null) { res.sendStatus(404); return; }            
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + sfxagentname });
+            res.sendFile(sfxagentpath);
+        } 
+        });
+    }
+    
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
         res.removeHeader("X-Powered-By");
@@ -1571,6 +1595,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
         obj.app.ws(url + 'control.ashx', function (ws, req) { try { var domain = checkUserIpAddress(ws, req); if (domain != null) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); } } catch (e) { console.log(e); } });
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
+        obj.app.get(url + 'meshsfxagents', obj.handleMeshSfxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
         obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
         obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
