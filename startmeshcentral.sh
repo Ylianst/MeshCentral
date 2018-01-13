@@ -11,13 +11,25 @@ else
     RPORT=$2
 fi
 
-cd ~
-npmbin=$(which node)
-$npmbin install meshcentral
-foreverbin=$(which forever)
-$foreverbin start node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
-sleep 10
-$foreverbin stop node_modules/meshcentral/meshcentral.js
+
+if [ $1 != "" ] ; then
+    PORT=$1
+fi
+
+if [ $2 != "" ]; then
+    REDIRPORT=$2
+fi
+
+su - meshcentral
+cd /home/meshcentral/
+npm install meshcentral
+
+if ! [ -f node_modules/.meshcentral-data/agentserver-cert-private.key ] ;then 
+	forever start node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
+	sleep 10
+	forever stop node_modules/meshcentral/meshcentral.js
+fi
+
 if [ -f ssl.key ]; then
     ln -sf ssl.key node_modules/.meshcentral-data/agentserver-cert-private.key  
     ln -sf ssl.cert node_modules/.meshcentral-data/agentserver-cert-public.crt
@@ -28,5 +40,6 @@ if [ -f ssl.key ]; then
     ln -sf ssl.key node_modules/.meshcentral-data/mpsserver-cert-private.key 
     ln -sf ssl.cert node_modules/.meshcentral-data/mpsserver-cert-public.crt
 fi
-$foreverbin start node_modules/meshcentral/meshcentral.js --port $PORT --redirport $RPORT
+
+forever start node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
  
