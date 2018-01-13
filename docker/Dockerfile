@@ -10,6 +10,8 @@ RUN apt-get update \
     && rm -f lzma1604.7z \
     && rm -rf lzma1604
 
+RUN apt-get install -y mongodb
+	
 RUN adduser --quiet meshserver \
     && chmod +x /startmeshcentral.sh \
 	&& su - meshserver \
@@ -20,6 +22,6 @@ ENV PORT 443
 ENV REDIRPORT 80  
 ENV MPSPORT 4443  
 
-EXPOSE 25 80 443 4443
+EXPOSE 25 80 443 4443 27017 27018
 
 ENTRYPOINT ["/startmeshcentral.sh"]

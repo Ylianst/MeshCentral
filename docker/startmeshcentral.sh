@@ -3,6 +3,8 @@ export PORT
 export REDIRPORT
 export MPSPORT
 
+service mongod start
+
 su - meshserver
 cd /home/meshserver/
 npm install meshcentral
