@@ -15,8 +15,7 @@ RUN adduser --quiet meshcentral \
     && chmod +x /startmeshcentral.sh \
 	&& su - meshcentral \
 	&& cd /home/meshcentral \
-    && npm install meshcentral node-7z greenlock-cli \
-	&& ls
+    && npm install meshcentral node-7z greenlock-cli 
     
 ENV PORT 443  
 ENV REDIRPORT 80  

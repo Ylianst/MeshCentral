@@ -11,6 +11,7 @@ else
     REDIRPORT=$2
 fi
 
+
 su - meshcentral
 cd /home/meshcentral/
 npm install meshcentral

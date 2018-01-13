@@ -15,7 +15,7 @@ cd /home/meshcentral/
 npm install meshcentral
 
 if ! [ -f node_modules/.meshcentral-data/agentserver-cert-private.key ] ;then 
-	forever start node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
+	node node_modules/meshcentral/meshcentral.js --cert $HOSTNAME --port $PORT --redirport $REDIRPORT
 elif [ -f ssl.key ]; then
     ln -sf ssl.key node_modules/.meshcentral-data/agentserver-cert-private.key  
     ln -sf ssl.cert node_modules/.meshcentral-data/agentserver-cert-public.crt
@@ -25,7 +25,8 @@ elif [ -f ssl.key ]; then
     ln -sf ssl.cert node_modules/.meshcentral-data/webserver-cert-public.crt
     ln -sf ssl.key node_modules/.meshcentral-data/mpsserver-cert-private.key 
     ln -sf ssl.cert node_modules/.meshcentral-data/mpsserver-cert-public.crt
+	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
 else
-	forever start node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
+	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
 fi
  
