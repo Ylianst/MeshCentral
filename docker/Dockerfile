@@ -10,10 +10,10 @@ RUN apt-get update \
     && rm -f lzma1604.7z \
     && rm -rf lzma1604
 
-RUN adduser --quiet meshcentral \
+RUN adduser --quiet meshserver \
     && chmod +x /startmeshcentral.sh \
-	&& su - meshcentral \
-	&& cd /home/meshcentral \
+	&& su - meshserver \
+	&& cd /home/meshserver \
     && npm install meshcentral node-7z greenlock-cli 
     
 ENV PORT 443  
