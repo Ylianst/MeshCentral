@@ -3,18 +3,6 @@ export PORT
 export REDIRPORT
 export MPSPORT
 
-if [ "$1" != "" ] ; then
-    PORT=$1
-fi
-
-if [ "$2" != "" ]; then
-    REDIRPORT=$2
-fi
-
-if [ "$3" != "" ]; then
-    MPSPORT=$3
-fi
-
 su - meshserver
 cd /home/meshserver/
 npm install meshcentral
