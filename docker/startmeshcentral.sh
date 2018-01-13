@@ -10,6 +10,7 @@ if [ $2 != "" ]; then
     REDIRPORT=$2
 fi
 
+su - meshcentral
 cd /home/meshcentral
 npmbin=$(which node)
 foreverbin=$(which forever)
