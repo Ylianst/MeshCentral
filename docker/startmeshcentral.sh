@@ -1,6 +1,7 @@
 #!/bin/sh
 export PORT  
 export REDIRPORT
+export MPSPORT
 
 if [ "$1" != "" ] ; then
     PORT=$1
@@ -8,6 +9,10 @@ fi
 
 if [ "$2" != "" ]; then
     REDIRPORT=$2
+fi
+
+if [ "$3" != "" ]; then
+    MPSPORT=$3
 fi
 
 su - meshserver
@@ -23,10 +28,10 @@ if [ -f "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" ]; then
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" meshcentral-data/webserver-cert-public.crt
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/privkey1.pem" meshcentral-data/mpsserver-cert-private.key 
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" meshcentral-data/mpsserver-cert-public.crt
-	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
+	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT --mpsport $MPSPORT
 elif ! [ -f meshcentral-data/agentserver-cert-private.key ] ;then 
-	node node_modules/meshcentral/meshcentral.js --cert $HOSTNAME --port $PORT --redirport $REDIRPORT
+	node node_modules/meshcentral/meshcentral.js --cert $HOSTNAME --port $PORT --redirport $REDIRPORT --mpsport $MPSPORT
 else
-	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
+	node node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT --mpsport $MPSPORT
 fi
  
