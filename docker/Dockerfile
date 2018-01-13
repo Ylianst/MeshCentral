@@ -3,7 +3,7 @@ MAINTAINER Lawrence Stubbs <technoexpressnet@gmail.com>
 
 COPY startmeshcentral.sh /
 RUN apt-get update \
-    && apt-get install -y p7zip-full which \
+    && apt-get install -y p7zip-full \
     && wget -q http://www.7-zip.org/a/lzma1604.7z \
     && 7z x lzma1604.7z -olzma1604 \
     && cp lzma1604/bin/*.sfx /usr/lib/p7zip/ \
@@ -15,7 +15,8 @@ RUN adduser --quiet meshcentral \
     && chmod +x /startmeshcentral.sh \
 	&& su - meshcentral \
 	&& cd /home/meshcentral \
-    && npm install meshcentral node-7z greenlock-cli
+    && npm install meshcentral node-7z greenlock-cli \
+	&& ls
     
 ENV PORT 443  
 ENV REDIRPORT 80  

@@ -12,14 +12,12 @@ fi
 
 su - meshcentral
 cd /home/meshcentral/
-npmbin=$(which node)
-foreverbin=$(which forever)
-$npmbin install meshcentral
+npm install meshcentral
 
 if ! [ -f node_modules/.meshcentral-data/agentserver-cert-private.key ] ;then 
-	$foreverbin start node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
+	forever start node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
 	sleep 10
-	$foreverbin stop node_modules/meshcentral/meshcentral.js
+	forever stop node_modules/meshcentral/meshcentral.js
 fi
 
 if [ -f ssl.key ]; then
@@ -33,5 +31,5 @@ if [ -f ssl.key ]; then
     ln -sf ssl.cert node_modules/.meshcentral-data/mpsserver-cert-public.crt
 fi
 
-$foreverbin start node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
+forever start node_modules/meshcentral/meshcentral.js --port $PORT --redirport $REDIRPORT
  
