@@ -11,12 +11,10 @@ RUN apt-get update \
     && rm -rf lzma1604 \
     && npm install -g forever
 
-RUN npm install greenlock-cli \
+RUN adduser --quiet meshcentral \
     && chmod +x /startmeshcentral.sh \
-    && adduser --quiet meshcentral
-
-RUN su - meshcentral \
-    && npm install meshcentral node-7z
+	&& su - meshcentral \
+    && npm install meshcentral node-7z greenlock-cli
     
 ENV PORT 443  
 ENV REDIRPORT 80  
