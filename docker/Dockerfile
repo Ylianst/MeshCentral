@@ -3,7 +3,7 @@ MAINTAINER Lawrence Stubbs <technoexpressnet@gmail.com>
 
 COPY startmeshcentral.sh /
 RUN apt-get update \
-    && apt-get install -y p7zip-full \
+    && apt-get install -y p7zip-full which \
     && wget -q http://www.7-zip.org/a/lzma1604.7z \
     && 7z x lzma1604.7z -olzma1604 \
     && cp lzma1604/bin/*.sfx /usr/lib/p7zip/ \

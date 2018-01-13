@@ -11,7 +11,7 @@ if [ $2 != "" ]; then
 fi
 
 su - meshcentral
-cd /home/meshcentral
+cd /home/meshcentral/
 npmbin=$(which node)
 foreverbin=$(which forever)
 $npmbin install meshcentral
