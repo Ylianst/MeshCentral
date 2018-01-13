@@ -14,7 +14,7 @@ RUN apt-get update \
 RUN adduser --quiet meshcentral \
     && chmod +x /startmeshcentral.sh \
 	&& su - meshcentral \
-	&& cd /home/meshcentral
+	&& cd /home/meshcentral \
     && npm install meshcentral node-7z greenlock-cli
     
 ENV PORT 443  
