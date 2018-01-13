@@ -8,8 +8,7 @@ RUN apt-get update \
     && 7z x lzma1604.7z -olzma1604 \
     && cp lzma1604/bin/*.sfx /usr/lib/p7zip/ \
     && rm -f lzma1604.7z \
-    && rm -rf lzma1604 \
-    && npm install -g forever
+    && rm -rf lzma1604
 
 RUN adduser --quiet meshcentral \
     && chmod +x /startmeshcentral.sh \
