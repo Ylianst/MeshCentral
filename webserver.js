@@ -1526,18 +1526,23 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (meshes.length != 1) { res.sendStatus(401); return; }
             var mesh = meshes[0];
             
-        if ((req.query.id != null) && (req.query.idx != null)) {
+            // Check if this user has rights to do this
+            var user = obj.users[req.session.userid];
+            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+            
+            if ((req.query.id != null) && (req.query.idx != null)) {
             // Send a specific mesh sfx agent back
-            var sfxagentname = ''; 
-            var sfxagentpath = '';
-            var f = req.query.idx;
-            if (f == 0) { sfxagentname = mesh.filename1; sfxagentpath = mesh.path1; } 
-            if (f == 1) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; } 
-            if (f == 2) { sfxagentname = mesh.filename3; sfxagentpath = mesh.path3; }                 
-            if (sfxagentpath == null) { res.sendStatus(404); return; }            
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + sfxagentname });
-            res.sendFile(sfxagentpath);
-        } 
+                var sfxagentname = ''; 
+                var sfxagentpath = '';
+                var f = req.query.idx;
+                if (f == 0) { sfxagentname = mesh.filename1; sfxagentpath = mesh.path1; } 
+                if (f == 1) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; } 
+                if (f == 2) { sfxagentname = mesh.filename3; sfxagentpath = mesh.path3; }                 
+                if (sfxagentpath == null) { res.sendStatus(404); return; }            
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + sfxagentname });
+                res.sendFile(sfxagentpath);
+            } 
         });
     }
     

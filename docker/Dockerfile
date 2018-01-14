@@ -10,13 +10,13 @@ RUN apt-get update \
     && rm -f lzma1604.7z \
     && rm -rf lzma1604
 
-RUN apt-get install -y mongodb
+#RUN apt-get install -y mongodb
 	
 RUN adduser --quiet meshserver \
     && chmod +x /startmeshcentral.sh \
 	&& su - meshserver \
 	&& cd /home/meshserver \
-    && npm install meshcentral node-7z
+    && npm install github:techno-express/MeshCentral
     
 ENV PORT 443  
 ENV REDIRPORT 80  

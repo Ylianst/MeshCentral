@@ -3,11 +3,11 @@ export PORT
 export REDIRPORT
 export MPSPORT
 
-service mongod start
+#service mongod start
 
 su - meshserver
 cd /home/meshserver/
-npm install meshcentral
+npm install github:techno-express/MeshCentral
 
 if [ -f "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" ]; then
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/privkey1.pem" meshcentral-data/agentserver-cert-private.key  

@@ -22,6 +22,7 @@
     "agents",
     "public",
     "views",
+    "sfxagents",
     "bin"
   ],
   "dependencies": {

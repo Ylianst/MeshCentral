@@ -29,22 +29,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 		var sfxagent32bit = obj.path.join(__dirname, 'agents', 'MeshService.exe' );
 		var sfxagent64bit = obj.path.join(__dirname, 'agents', 'MeshService64.exe' );
 		
-		var sfxagent = obj.path.join(__dirname, 'sfx', 'meshagent_' + sfx_ext);		
-		var sfxagentext = obj.path.join(__dirname, 'sfx', 'meshagent.bat' );
+		var sfxagent = obj.path.join(__dirname, 'sfxagents', 'meshagent_' + sfx_ext);		
+		var sfxagentext = obj.path.join(__dirname, 'agents', 'meshagent.bat' );
 		//var sfxbatfile = "@echo off\r\nreg Query \"HKLM\Hardware\Description\System\CentralProcessor\0\" | find /i 'x86' > NUL && set OS_bit=x86 || set OS_bit=x64\r\nif %OS_bit%=='x86' (\r\n\t    rename MeshService.exe meshagent.exe\r\n) else (\r\n\t    rename MeshService64.exe meshagent.exe\r\n)\r\nmeshagent.exe\r\n";
 		//obj.fs.writeFileSync(sfxagentext, sfxbatfile, 'utf8');
 		makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
 		        .then(function () {
 		            mesh.path1 = sfxagent;
 		            mesh.filename1 = 'meshagent_' + sfx_ext;
-		            sfxagent = obj.path.join(__dirname, 'sfx', 'remotesupport_' + sfx_ext);
-		            sfxagentext = obj.path.join(__dirname, 'sfx', 'meshinstall.bat' );
+		            sfxagent = obj.path.join(__dirname, 'sfxagents', 'remotesupport_' + sfx_ext);
+		            sfxagentext = obj.path.join(__dirname, 'agents', 'meshinstall.bat' );
 		            makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
 		                .then(function () {
 		                    mesh.path2 = sfxagent;
 		                    mesh.filename2 = 'remotesupport_' + sfx_ext;
-		                    sfxagent = obj.path.join(__dirname, 'sfx', 'uninstallremotesupport_' + sfx_ext);
-		                    sfxagentext = obj.path.join(__dirname, 'sfx', 'meshuninstall.bat' );
+		                    sfxagent = obj.path.join(__dirname, 'sfxagents', 'uninstallremotesupport_' + sfx_ext);
+		                    sfxagentext = obj.path.join(__dirname, 'agents', 'meshuninstall.bat' );
 		                    makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
 		                        .then(function () {
 		                            mesh.path3 = sfxagent;
@@ -598,7 +598,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                             obj.fs.unlink(tempfile2, (err) => { if (err) console.log(err); });
                                             var tempfile3 = obj.path.join(tempdir, 'MeshService64.exe' );
                                             obj.fs.unlink(tempfile3, (err) => { if (err) console.log(err); });
-                                            obj.fs.rmdir(tempdir, (err) => { if (err) console.log(err); });
                                         });
                                 }
                                 
