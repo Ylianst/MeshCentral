@@ -1110,9 +1110,10 @@
             var mesh = meshes[meshid];
             var meshidx = meshid.substring(5);
             if (meshidx[0] == '/') meshidx = meshidx.substring(1);
-            var x = "To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagent?id=1" target="_blank">Windows executable (.exe)</a>');
-            x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>');
+            var x = "To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the oneclick SFX application, it has a (.bat) script file, (.exe) mesh agents 32bit & 64bit, and (.msh) configuration file, run the application agent on the computer to manage.<br /><br />For <b>" + EscapeHtml(mesh.name) + "</b> Mesh Policy:<br />";
+            x += addHtmlValue(' Mesh Agent', '<a href="meshsfxagents?idx=0&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX executable (.exe)</a>');
+            x += addHtmlValue(' Oneclick Install', '<a href="meshsfxagents?idx=1&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Installer</a><br>');
+            x += addHtmlValue(' Oneclick Uninstall', '<a href="meshsfxagents?idx=2&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Uninstaller</a><br>');
             setDialogMode(2, "Add Mesh Agent", 1, null, x);
         }
 

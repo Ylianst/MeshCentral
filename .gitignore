@@ -3,7 +3,6 @@
 [Tt]yping/
 [Ii]mages-spare/
 [Dd]aemon/
-[Bb]in/
 [Aa]gent/
 meshcentral.db
 meshcentral.db.json
@@ -297,3 +296,4 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+*.db

@@ -12,11 +12,60 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.db = db;
     obj.ws = ws;
     obj.fs = parent.fs;
+    obj.path = parent.path;
+    obj.certificates = parent.certificates;
+    obj.certificateOperations = require('./certoperations.js').CertificateOperations();
     obj.args = args;
     obj.parent = parent;
     obj.domain = domain;
-    obj.common = parent.common;
-
+    obj.common = parent.common;                                  
+    var sfx = require('node-7z'); 
+    
+// Create windows sfx mesh agent    
+    function createSfxMeshAgent(mesh, sfxmeshfile) {
+        var sfxmodule = '7zS2.sfx'; 
+        var makesfx = new sfx();
+        var sfx_ext = EscapeHtml(mesh.name) + '.exe';
+		var sfxagent32bit = obj.path.join(__dirname, 'agents', 'MeshService.exe' );
+		var sfxagent64bit = obj.path.join(__dirname, 'agents', 'MeshService64.exe' );
+		
+		var sfxagent = obj.path.join(__dirname, 'sfx', 'meshagent_' + sfx_ext);		
+		var sfxagentext = obj.path.join(__dirname, 'sfx', 'meshagent.bat' );
+		//var sfxbatfile = "@echo off\r\nreg Query \"HKLM\Hardware\Description\System\CentralProcessor\0\" | find /i 'x86' > NUL && set OS_bit=x86 || set OS_bit=x64\r\nif %OS_bit%=='x86' (\r\n\t    rename MeshService.exe meshagent.exe\r\n) else (\r\n\t    rename MeshService64.exe meshagent.exe\r\n)\r\nmeshagent.exe\r\n";
+		//obj.fs.writeFileSync(sfxagentext, sfxbatfile, 'utf8');
+		makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+		        .then(function () {
+		            mesh.path1 = sfxagent;
+		            mesh.filename1 = 'meshagent_' + sfx_ext;
+		            sfxagent = obj.path.join(__dirname, 'sfx', 'remotesupport_' + sfx_ext);
+		            sfxagentext = obj.path.join(__dirname, 'sfx', 'meshinstall.bat' );
+		            makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+		                .then(function () {
+		                    mesh.path2 = sfxagent;
+		                    mesh.filename2 = 'remotesupport_' + sfx_ext;
+		                    sfxagent = obj.path.join(__dirname, 'sfx', 'uninstallremotesupport_' + sfx_ext);
+		                    sfxagentext = obj.path.join(__dirname, 'sfx', 'meshuninstall.bat' );
+		                    makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+		                        .then(function () {
+		                            mesh.path3 = sfxagent;
+		                            mesh.filename3 = 'uninstallremotesupport_' + sfx_ext;
+		                            obj.db.Set(mesh);
+		                            obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
+		                        })
+		                         .catch(function (err) {
+		                            console.error(err);
+		                        });
+		                })
+		                .catch(function (err) {
+		                        console.error(err);
+		                });
+		        })
+		        .catch(function (err) {
+		            console.error(err);
+		        });	
+		// makesfx.add([ 'mesh_' + EscapeHtml(mesh.name) ], [ 'meshagent.sh','meshagent_x86','meshagent_x86-64', sfxmeshfile ], { sfx: '7zCon.sfx' }); 
+		return;
+	}
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
 
@@ -427,10 +476,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((command.meshtype == 1) || (command.meshtype == 2)) {
                             // Create a type 1 agent-less Intel AMT mesh.
                             obj.parent.crypto.randomBytes(48, function (err, buf) {
-                                var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
-                                var links = {}
+                                var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                var links = {};
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
-                                var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
+                                var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, path1: '', filename1: '', path2: '', filename2: '', path3: '', filename3: '' };
                                 obj.db.Set(mesh);
                                 obj.parent.meshes[meshid] = mesh;
                                 obj.parent.parent.AddEventDispatch([meshid], ws);
@@ -439,7 +488,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 user.subscriptions = obj.parent.subscribe(user._id, ws);
                                 obj.db.SetUser(user);
                                 obj.parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id })
-                            });
+                                
+                            // Create mesh settings file for mesh sfx agent  
+                                obj.agentCertificateHashBase64 = new Buffer(obj.certificateOperations.forge.pki.getPublicKeyFingerprint(obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                
+                                if (domain.dns != null) {
+                                    var WebServerName = domain.dns;
+                                } else {
+                                    var WebServerName = obj.certificates.CommonName;
+                                }
+                                
+                                var meshidhex = new Buffer(meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                                var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                                var xdomain = (domain.dns == null) ? domain.id : '';
+                                if (xdomain != '') xdomain += "/";
+                                var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+                                if (obj.args.lanonly != true) { 
+                                    meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + WebServerName + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; 
+                                } else { 
+                                    meshsettings += "MeshServer=local"; 
+                                }
+                                
+                                var sfxmeshfile = obj.path.join(__dirname, 'agents', 'meshagent.msh' );   
+                                obj.fs.writeFileSync(sfxmeshfile, meshsettings, 'utf8');
+                                createSfxMeshAgent(mesh, sfxmeshfile);  
+                            }); 
                         }
                         break;
                     }
@@ -453,7 +526,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
+                                                           
+                            // Delete mesh SFX files, except the uninstall SFX just in case some remote system still have mesh agent running.
+                            if (mesh.path1 != null)
+                                obj.fs.unlink(mesh.path1, (err) => { if (err) console.log(err); });
+                            if (mesh.path2 != null)
+                                obj.fs.unlink(mesh.path2, (err) => { if (err) console.log(err); });
+                            
                             // Fire the removal event first, because after this, the event will not route
                             obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id })
 
@@ -473,10 +552,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var meshpath = getServerRootFilePath(mesh);
                                 if (meshpath != null) { deleteFolderRec(meshpath); }
                             } catch (e) { }
-
+                            
                             obj.parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
                             obj.db.RemoveMesh(command.meshid); // Remove mesh from database
-                            delete obj.parent.meshes[command.meshid]; // Remove mesh from memory
+                            delete obj.parent.meshes[command.meshid]; // Remove mesh from memory                         
                         });
                         break;
                     }
@@ -488,10 +567,44 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) return;
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
+                            var sfxname = mesh.name;
                             if (command.meshname && command.meshname != '' && command.meshname != mesh.name) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
                             if (command.desc != null && command.desc != mesh.desc) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                            if (change != '') { obj.db.Set(mesh); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
+                            if (change != '') {
+                                
+                                if (sfxname != mesh.name) {
+                                    var makesfx = new sfx();
+                                    var tempdir = obj.path.join(__dirname, 'tmp' );
+                                    // extract current mesh policy from Sfx                             
+                                    makesfx.extract( mesh.path1, tempdir )
+                                        .then(function () {
+                                            // Delete current mesh SFX files
+                                            if (mesh.path1 != null)
+                                                obj.fs.unlink(mesh.path1, (err) => { if (err) console.log(err); });
+                                            if (mesh.path2 != null)
+                                                obj.fs.unlink(mesh.path2, (err) => { if (err) console.log(err); });
+                                            if (mesh.path3 != null)
+                                                obj.fs.unlink(mesh.path3, (err) => { if (err) console.log(err); });
+                                            // change mesh name 
+                                            var sfxmeshfile = obj.path.join( tempdir, 'meshagent.msh');   
+                                            var data = obj.fs.readFileSync(sfxmeshfile, 'utf8'); 
+                                            var result = data.replace( sfxname , mesh.name );
+                                            obj.fs.writeFileSync(sfxmeshfile, result, 'utf8');
+                                            // recreate sfx
+                                            createSfxMeshAgent(mesh, sfxmeshfile); 
+                                            var tempfile = obj.path.join(tempdir, 'meshagent.bat' );
+                                            obj.fs.unlink(tempfile, (err) => { if (err) console.log(err); });
+                                            var tempfile2 = obj.path.join(tempdir, 'MeshService.exe' );
+                                            obj.fs.unlink(tempfile2, (err) => { if (err) console.log(err); });
+                                            var tempfile3 = obj.path.join(tempdir, 'MeshService64.exe' );
+                                            obj.fs.unlink(tempfile3, (err) => { if (err) console.log(err); });
+                                            obj.fs.rmdir(tempdir, (err) => { if (err) console.log(err); });
+                                        });
+                                }
+                                
+                                obj.db.Set(mesh);
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                            }
                         }
                         break;
                     }
