@@ -8,13 +8,14 @@ RUN apt-get update \
     && 7z x lzma1604.7z -olzma1604 \
     && cp lzma1604/bin/*.sfx /usr/lib/p7zip/ \
     && rm -f lzma1604.7z \
-    && rm -rf lzma1604
+    && rm -rf lzma1604 \
+    && adduser --quiet meshserver \
+    && chmod +x /startmeshcentral.sh 
 
 #RUN apt-get install -y mongodb
-	
-RUN adduser --quiet meshserver \
-    && chmod +x /startmeshcentral.sh \
-	&& su - meshserver \
+
+COPY package.json /home/meshserver/
+RUN su - meshserver \
 	&& cd /home/meshserver \
     && npm install github:techno-express/MeshCentral
     

@@ -1,0 +1,28 @@
+{
+  "name": "meshserver",
+  "version": "1.0.0",
+  "description": "Web based remote computer management and file server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lawrence Stubbs <technoexpressnet@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "meshcentral": "github:techno-express/MeshCentral",
+    "node-7z": "^0.4.0",
+    "win-7zip": "^0.1.1"
+  },
+  "optionalDependencies": {
+    "win-7zip": "^0.1.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techno-express/MeshCentral.git"
+  },
+  "bugs": {
+    "url": "https://github.com/techno-express/MeshCentral/issues"
+  },
+  "homepage": "https://github.com/techno-express/MeshCentral#readme"
+}
