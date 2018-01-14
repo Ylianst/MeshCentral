@@ -1,26 +1,4 @@
 {
-<<<<<<< HEAD
-  "_from": "meshcentral",
-  "_id": "meshcentral@0.1.2-b",
-  "_inBundle": false,
-  "_integrity": "sha1-1kyiZmB0h+6WKMPlubpVSGTJ1VA=",
-  "_location": "/meshcentral",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "meshcentral",
-    "name": "meshcentral",
-    "escapedName": "meshcentral",
-    "rawSpec": "",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/",
-    "/meshcentral"
-=======
   "name": "meshcentral",
   "version": "0.1.2-h",
   "keywords": [
@@ -28,20 +6,24 @@
     "Intel AMT",
     "Active Management",
     "Remote Desktop"
->>>>>>> upstream/master
   ],
-  "_resolved": "https://registry.npmjs.org/meshcentral/-/meshcentral-0.1.2-b.tgz",
-  "_shasum": "d64ca266607487ee9628c3e5b9ba554864c9d550",
-  "_spec": "meshcentral",
-  "_where": "C:\\Users\\Lawrence",
-  "author": {
-    "name": "Ylian Saint-Hilaire",
-    "email": "ysainthilaire@hotmail.com"
-  },
+  "homepage": "http://meshcommander.com",
+  "description": "Web based remote computer management and file server",
+  "author": "Ylian Saint-Hilaire <ysainthilaire@hotmail.com>",
+  "main": "meshcentral.js",
   "bin": {
     "meshcentral": "./bin/meshcentral"
   },
-  "bundleDependencies": false,
+  "license": "Apache-2.0",
+  "files": [
+    "*.js",
+    "license.txt",
+    "readme.txt",
+    "agents",
+    "public",
+    "views",
+    "bin"
+  ],
   "dependencies": {
     "archiver": "^1.3.0",
     "body-parser": "^1.18.2",
@@ -53,12 +35,11 @@
     "express-ws": "^2.0.0",
     "meshcentral": "*",
     "minimist": "^1.2.0",
-    "mongojs": "^2.4.0",
+    "mongojs": "^2.4.1",
     "multiparty": "^4.1.3",
     "nedb": "^1.8.0",
     "node-7z": "^0.4.0",
     "node-forge": "^0.6.49",
-    "node-sspi": "^0.2.2",
     "node-windows": "^0.1.14",
     "nodemailer": "^4.4.1",
     "unzip": "^0.1.11",
@@ -66,33 +47,12 @@
     "ws": "^3.2.0",
     "xmldom": "^0.1.27"
   },
-  "deprecated": false,
-  "description": "Web based remote computer management and file server",
-  "devDependencies": {},
-  "files": [
-    "*.js",
-    "license.txt",
-    "readme.txt",
-    "agents",
-    "public",
-    "views",
-    "bin"
-  ],
-  "homepage": "http://meshcommander.com",
-  "keywords": [
-    "Remote Management",
-    "Intel AMT",
-    "Active Management",
-    "Remote Desktop"
-  ],
-  "license": "Apache-2.0",
-  "main": "meshcentral.js",
-  "name": "meshcentral",
   "optionalDependencies": {
-    "mongojs": "^2.4.0",
     "node-sspi": "^0.2.2",
     "node-windows": "^0.1.14",
+    "mongojs": "^2.4.0",
     "win-7zip": "^0.1.1"
   },
-  "version": "0.1.2-b"
+  "devDependencies": {},
+  "readme": "readme.txt"
 }
