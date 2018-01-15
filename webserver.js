@@ -129,7 +129,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         var dnscount = 0;
         obj.tlsSniCredentials = {};
         for (var i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.tls.createSecureContext(obj.certificates.dns[i]).context; dnscount++; } }
-        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.tls.createSecureContext({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca }).context; } else { obj.tlsSniCredentials = null; }
+        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.tls.createSecureContext({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca }).context; } else { obj.tlsSniCredentials = null; }
     }
     function TlsSniCallback(name, cb) { var c = obj.tlsSniCredentials[name]; if (c != null) { cb(null, c); } else { cb(null, obj.tlsSniCredentials['']); } }
 
@@ -143,10 +143,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // Setup the HTTP server with TLS
         if (obj.tlsSniCredentials != null) {
             // We have multiple web server certificate used depending on the domain name
-            obj.tlsServer = require('https').createServer({ SNICallback: TlsSniCallback, cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca, rejectUnauthorized: true }, obj.app);
+            obj.tlsServer = require('https').createServer({ SNICallback: TlsSniCallback, cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true }, obj.app);
         } else {
             // We have a single web server certificate
-            obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.ca, rejectUnauthorized: true }, obj.app);
+            obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true }, obj.app);
         }
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }

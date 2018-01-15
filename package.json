@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.1.2-h",
+  "version": "0.1.2-s",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -48,7 +48,11 @@
   "optionalDependencies": {
     "node-sspi": "^0.2.2",
     "node-windows": "^0.1.14",
-    "mongojs": "^2.4.0"
+    "mongojs": "^2.4.0",
+    "greenlock": "^2.1.18",
+    "le-store-certbot": "^2.0.5",
+    "le-challenge-fs": "^2.0.8",
+    "le-acme-core": "^2.1.1"
   },
   "devDependencies": {},
   "readme": "readme.txt"

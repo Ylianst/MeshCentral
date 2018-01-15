@@ -29,6 +29,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.rotation = 0;
     obj.protocol = 2; // KVM
     obj.debugmode = 0;
+    obj.firstUpKeys = [];
+    obj.stopInput = false;
 
     obj.sessionid = 0;
     obj.username;
@@ -43,7 +45,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.width = 960;
     obj.height = 960;
 
-    obj.onScreenResize = null;
+    obj.onScreenSizeChange = null;
     obj.onMessage = null;
     obj.onConnectCountChanged = null;
     obj.onDebugMessage = null;
@@ -59,7 +61,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.UnGrabKeyInput();
         obj.UnGrabMouseInput();
         obj.touchenabled = 0;
-        if (obj.onScreenResize != null) obj.onScreenResize(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+        if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
         obj.Canvas.clearRect(0, 0, obj.CanvasId.width, obj.CanvasId.height);
     }
 
@@ -164,6 +166,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
         obj.SendCompressionLevel(1);
         obj.SendUnPause();
+        if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
     }
 
     obj.ProcessData = function (str) {
@@ -201,6 +204,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 18); // Alt
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 91); // Left-Windows
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 92); // Right-Windows
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 16); // Shift
                 obj.Send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
                 break;
             case 11: // GetDisplays
@@ -334,7 +338,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.GetDisplayNumbers = function () { obj.Send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
-    obj.SetDisplay = function (number) { console.log('SetDisplay', number); obj.Send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
+    obj.SetDisplay = function (number) { obj.Send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 
@@ -345,7 +349,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             obj.Canvas.canvas.width = obj.ScreenWidth;
             obj.Canvas.canvas.height = obj.ScreenHeight;
             obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
-            if (obj.onScreenResize != null) obj.onScreenResize(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+            if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
         }
         obj.FirstDraw = false;
         //obj.Debug("onResize: " + obj.ScreenWidth + " x " + obj.ScreenHeight);
@@ -363,15 +367,21 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxKeyPress = function (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
 
     // Key handlers
-    obj.handleKeys = function (e) { return obj.xxKeyPress(e); }
-    obj.handleKeyUp = function (e) { return obj.xxKeyUp(e); }
-    obj.handleKeyDown = function (e) { return obj.xxKeyDown(e); }
+    obj.handleKeys = function (e) { if (obj.stopInput == true || desktop.State != 3) return false; return obj.xxKeyPress(e); }
+    obj.handleKeyUp = function (e) {
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        if (obj.firstUpKeys.length < 5) {
+            obj.firstUpKeys.push(e.keyCode);
+            if ((obj.firstUpKeys.length == 5)) { var j = obj.firstUpKeys.join(','); if ((j == '16,17,91,91,16') || (j == '16,17,18,91,92')) { obj.stopInput = true; } }
+        } return obj.xxKeyUp(e);
+    }
+    obj.handleKeyDown = function (e) { if (obj.stopInput == true || desktop.State != 3) return false; return obj.xxKeyDown(e); }
 
     // Mouse handlers
-    obj.mousedown = function (e) { return obj.xxMouseDown(e); }
-    obj.mouseup = function (e) { return obj.xxMouseUp(e); }
-    obj.mousemove = function (e) { return obj.xxMouseMove(e); }
-    obj.mousewheel = function (e) { return obj.xxMouseWheel(e); }
+    obj.mousedown = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDown(e); }
+    obj.mouseup = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseUp(e); }
+    obj.mousemove = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseMove(e); }
+    obj.mousewheel = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseWheel(e); }
 
     obj.xxMsTouchEvent = function (evt) {
         if (evt.originalEvent.pointerType == 4) return; // If this is a mouse pointer, ignore this event. Touch & pen are ok.
@@ -573,7 +583,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
         obj.ScreenWidth = obj.Canvas.canvas.width;
         obj.ScreenHeight = obj.Canvas.canvas.height;
-        if (obj.onScreenResize != null) obj.onScreenResize(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
+        if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
         return true;
     }
 

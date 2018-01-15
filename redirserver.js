@@ -10,21 +10,25 @@
 // https://github.com/expressjs/express/blob/master/examples/auth/index.js
 
 // Construct a HTTP redirection web server object
-module.exports.CreateRedirServer = function (parent, db, args, certificates) {
+module.exports.CreateRedirServer = function (parent, db, args, func) {
     var obj = {};
     obj.parent = parent;
     obj.db = db;
     obj.args = args;
-    obj.certificates = certificates;
+    obj.certificates = null;
     obj.express = require('express');
     obj.net = require('net');
     obj.app = obj.express();
     obj.tcpServer;
+    obj.port = null;
         
     // Perform an HTTP to HTTPS redirection
     function performRedirection(req, res) {
-        var host = certificates.CommonName;
-        if ((certificates.CommonName == 'sample.org') || (certificates.CommonName == 'un-configured')) { host = req.headers.host; }
+        var host = req.headers.host;
+        if (obj.certificates != null) {
+            host = obj.certificates.CommonName;
+            if ((obj.certificates.CommonName == 'sample.org') || (obj.certificates.CommonName == 'un-configured')) { host = req.headers.host; }
+        }
         if (req.headers && req.headers.host && (req.headers.host.split(':')[0].toLowerCase() == 'localhost')) { res.redirect('https://localhost:' + args.port + req.url); } else { res.redirect('https://' + host + ':' + args.port + req.url); }
     }
     
@@ -54,17 +58,25 @@ module.exports.CreateRedirServer = function (parent, db, args, certificates) {
         return next();
     });
 
+    // Once the main web server is started, call this to hookup additional handlers
+    obj.hookMainWebServer = function (certs) {
+        obj.certificates = certs;
+        for (var i in parent.config.domains) {
+            if (parent.config.domains[i].dns != null) { continue; }
+            var url = parent.config.domains[i].url;
+            obj.app.post(url + 'amtevents.ashx', obj.parent.webserver.handleAmtEventRequest);
+            obj.app.get(url + 'meshsettings', obj.parent.webserver.handleMeshSettingsRequest);
+            obj.app.get(url + 'meshagents', obj.parent.webserver.handleMeshAgentRequest);
+        }
+    }
+
     // Setup all HTTP redirection handlers
     //obj.app.set('etag', false);
     for (var i in parent.config.domains) {
+        if (parent.config.domains[i].dns != null) { continue; }
         var url = parent.config.domains[i].url;
         obj.app.get(url, performRedirection);
-        obj.app.post(url + 'amtevents.ashx', obj.parent.webserver.handleAmtEventRequest);
-        obj.app.get(url + 'meshsettings', obj.parent.webserver.handleMeshSettingsRequest);
-        obj.app.get(url + 'meshagents', obj.parent.webserver.handleMeshAgentRequest);
-
-        // Indicates the clickonce folder is public
-        obj.app.use(url + 'clickonce', obj.express.static(obj.parent.path.join(__dirname, 'public/clickonce')));
+        obj.app.use(url + 'clickonce', obj.express.static(obj.parent.path.join(__dirname, 'public/clickonce'))); // Indicates the clickonce folder is public
     }
     
     // Find a free port starting with the specified one and going up.
@@ -79,8 +91,13 @@ module.exports.CreateRedirServer = function (parent, db, args, certificates) {
     // Start the ExpressJS web server, if the port is busy try the next one.
     function StartRedirServer(port) {
         if (port == 0 || port == 65535) return;
-        obj.args.redirport = port;
-        obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP redirection web server running on port ' + port + '.'); }).on('error', function (err) { if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); } });
+        obj.tcpServer = obj.app.listen(port, function () {
+            obj.port = port;
+            console.log('MeshCentral HTTP redirection web server running on port ' + port + '.');
+            func(obj.port);
+        }).on('error', function (err) {
+            if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }
+        });
     }
     
     CheckListenPort(args.redirport, StartRedirServer);

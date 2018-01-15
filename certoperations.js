@@ -213,7 +213,7 @@ module.exports.CertificateOperations = function () {
             }
             caindex++;
         } while (caok == true);
-        r.ca = calist;
+        r.web.ca = calist;
 
         // Decode certificate arguments
         var commonName = 'un-configured', country, organization, forceWebCertGen = 0;
