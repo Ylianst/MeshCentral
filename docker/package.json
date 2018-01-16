@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "meshcentral": "github:techno-express/MeshCentral",
-    "node-7z": "^0.4.0",
+    "node-7z": "github:quentinrossetti/node-7z",
     "win-7zip": "^0.1.1"
   },
   "optionalDependencies": {

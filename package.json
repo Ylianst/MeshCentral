@@ -39,24 +39,24 @@
     "mongojs": "^2.4.1",
     "multiparty": "^4.1.3",
     "nedb": "^1.8.0",
-    "node-7z": "^0.4.0",
     "node-forge": "^0.6.49",
     "node-windows": "^0.1.14",
     "nodemailer": "^4.4.1",
     "unzip": "^0.1.11",
-    "win-7zip": "^0.1.1",
     "ws": "^3.2.0",
-    "xmldom": "^0.1.27"
+    "xmldom": "^0.1.27",
+    "node-7z": "github:quentinrossetti/node-7z",
+    "win-7zip": "^0.1.1"
   },
   "optionalDependencies": {
     "node-sspi": "^0.2.2",
     "node-windows": "^0.1.14",
     "mongojs": "^2.4.0",
-    "win-7zip": "^0.1.1",
     "greenlock": "^2.1.18",
     "le-store-certbot": "^2.0.5",
     "le-challenge-fs": "^2.0.8",
-    "le-acme-core": "^2.1.1"
+    "le-acme-core": "^2.1.1",
+    "win-7zip": "^0.1.1"
   },
   "devDependencies": {},
   "readme": "readme.txt"
