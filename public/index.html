@@ -1114,9 +1114,12 @@
             x += addHtmlValue(' Mesh Agent', '<a href="meshsfxagents?idx=0&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX executable (.exe)</a>');
             x += addHtmlValue(' Oneclick Install', '<a href="meshsfxagents?idx=1&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Installer</a><br>');
             x += addHtmlValue(' Oneclick Uninstall', '<a href="meshsfxagents?idx=2&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Uninstaller</a><br>');
+            x += "To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
+            x += addHtmlValue('Mesh Agent', '<a href="meshagent?id=1" target="_blank">Windows executable (.exe)</a>');
+            x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>');
             setDialogMode(2, "Add Mesh Agent", 1, null, x);
         }
-
+        
         function validateDeviceToMesh() {
             QE('idx_dlgOkButton', (Q('dp1devicename').value.length > 0) && (passwordcheck(Q('dp1password').value)));
         }
