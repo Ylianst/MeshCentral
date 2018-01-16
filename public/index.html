@@ -1694,6 +1694,7 @@
         }
 
         function deskAdjust() {
+            console.log('deskAdjust');
             var x = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('Desk').clientHeight + Q('deskarea4').clientHeight + 2)) / 2;
             if (fullscreen) {
                 document.documentElement.style.overflow = 'hidden';

@@ -20,6 +20,7 @@ function CreateMeshCentralServer() {
     obj.amtEventHandler;
     obj.amtScanner;
     obj.meshScanner;
+    obj.letsencrypt;
     obj.eventsDispatch = {};
     obj.fs = require('fs');
     obj.path = require('path');
@@ -163,8 +164,11 @@ function CreateMeshCentralServer() {
                 } 
             }
         });
-        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } console.log(data); });
-        xprocess.stderr.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync(obj.path.join(obj.datapath, 'mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); });
+        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Updating server certificates...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } console.log(data); });
+        xprocess.stderr.on('data', function (data) {
+            if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
+            if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync(obj.path.join(obj.datapath, 'mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
+        });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
 
@@ -185,6 +189,9 @@ function CreateMeshCentralServer() {
 
     // Initiate server self-update
     obj.performServerUpdate = function () { console.log('Starting self upgrade...'); process.exit(200); }
+
+    // Initiate server self-update
+    obj.performServerCertUpdate = function () { console.log('Updating server certificates...'); process.exit(200); }
 
     obj.StartEx = function () {
         // Look to see if data and/or file path is specified
@@ -310,100 +317,122 @@ function CreateMeshCentralServer() {
                 obj.updateMeshCore();
                 obj.updateMeshCmd();
 
-                // Load server certificates
-                obj.certificateOperations = require('./certoperations.js').CertificateOperations()
-                obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
-                    obj.certificates = certs;
-                    obj.certificateOperations.acceleratorStart(certs); // Set the state of the accelerators
+                // Setup and start the redirection server if needed
+                if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
+                    obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.StartEx2);
+                } else {
+                    obj.StartEx2(); // If not needed, move on.
+                }
+            });
+        });
+    }
 
-                    // If the certificate is un-configured, force LAN-only mode
-                    if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }
+    // Done starting the redirection server, go on to load the server certificates
+    obj.StartEx2 = function () {
+        // Load server certificates
+        obj.certificateOperations = require('./certoperations.js').CertificateOperations()
+        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
+            if (obj.config.letsencrypt == null) {
+                obj.StartEx3(certs); // Just use the configured certificates
+            } else {
+                var le = require('./letsencrypt.js');
+                obj.letsencrypt = le.CreateLetsEncrypt(obj);
+                if (obj.letsencrypt != null) {
+                    obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt certificate
+                } else {
+                    console.log('ERROR: Unable to setup GreenLock module.');
+                    obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
+                }
+            }
+        });
+    }
 
-                    // Check that no sub-domains have the same DNS as the parent
-                    for (var i in obj.config.domains) {
-                        if ((obj.config.domains[i].dns != null) && (obj.certificates.CommonName.toLowerCase() === obj.config.domains[i].dns.toLowerCase())) {
-                            console.log("ERROR: Server sub-domain can't have same DNS name as the parent."); process.exit(0); return;
+    // Start the server with the given certificates
+    obj.StartEx3 = function (certs) {
+        obj.certificates = certs;
+        obj.certificateOperations.acceleratorStart(certs); // Set the state of the accelerators
+
+        // If the certificate is un-configured, force LAN-only mode
+        if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }
+
+        // Check that no sub-domains have the same DNS as the parent
+        for (var i in obj.config.domains) {
+            if ((obj.config.domains[i].dns != null) && (obj.certificates.CommonName.toLowerCase() === obj.config.domains[i].dns.toLowerCase())) {
+                console.log("ERROR: Server sub-domain can't have same DNS name as the parent."); process.exit(0); return;
+            }
+        }
+
+        // Load the list of mesh agents and install scripts
+        if (obj.args.noagentupdate == 1) { for (var i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
+        obj.updateMeshAgentsTable(function () {
+            obj.updateMeshAgentInstallScripts();
+
+            // Setup and start the web server
+            require('crypto').randomBytes(48, function (err, buf) {
+                // Setup Mesh Multi-Server if needed
+                obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
+                if (obj.multiServer != null) {
+                    obj.serverId = obj.multiServer.serverid;
+                    for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
+                }
+
+                // If the server is set to "nousers", allow only loopback unless IP filter is set
+                if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
+
+                if (obj.args.secret) {
+                    // This secret is used to encrypt HTTP session information, if specified, user it.
+                    obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.args.secret, obj.certificates);
+                } else {
+                    // If the secret is not specified, generate a random number.
+                    obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, buf.toString('hex').toUpperCase(), obj.certificates);
+                }
+                if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
+
+                // Setup the Intel AMT event handler
+                obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
+
+                // Setup the Intel AMT local network scanner
+                if (obj.args.wanonly != true) {
+                    obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
+                    obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
+                }
+
+                // Setup and start the MPS server
+                if (obj.args.lanonly != true) {
+                    obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+                }
+
+                // Setup and start the legacy swarm server
+                if (obj.certificates.swarmserver != null) {
+                    if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
+                    obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
+                }
+
+                // Setup email server
+                if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
+                    obj.mailserver = require('./meshmail.js').CreateMeshMain(obj);
+                    obj.mailserver.verify();
+                    //obj.mailserver.sendMail('ylian.saint-hilaire@intel.com', 'Test Subject', 'This is a sample test', 'This is a <b>sample</b> html test');
+                }
+
+                // Start periodic maintenance
+                obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+
+                // Dispatch an event that the server is now running
+                obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
+
+                // Load the login cookie encryption key from the database if allowed
+                if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
+                    obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
+                        if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
+                            obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                        } else {
+                            obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
                         }
-                    }
-
-                    // Load the list of mesh agents and install scripts
-                    if (obj.args.noagentupdate == 1) { for (var i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
-                    obj.updateMeshAgentsTable(function () {
-                        obj.updateMeshAgentInstallScripts();
-
-                        // Setup and start the web server
-                        require('crypto').randomBytes(48, function (err, buf) {
-                            // Setup Mesh Multi-Server if needed
-                            obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
-                            if (obj.multiServer != null) {
-                                obj.serverId = obj.multiServer.serverid;
-                                for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
-                            }
-
-                            // If the server is set to "nousers", allow only loopback unless IP filter is set
-                            if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
-
-                            if (obj.args.secret) {
-                                // This secret is used to encrypt HTTP session information, if specified, user it.
-                                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.args.secret, obj.certificates);
-                            } else {
-                                // If the secret is not specified, generate a random number.
-                                obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, buf.toString('hex').toUpperCase(), obj.certificates);
-                            }
-
-                            // Setup and start the redirection server if needed
-                            if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
-                                obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.certificates);
-                            }
-
-                            // Setup the Intel AMT event handler
-                            obj.amtEventHandler = require('./amtevents.js').CreateAmtEventsHandler(obj);
-
-                            // Setup the Intel AMT local network scanner
-                            if (obj.args.wanonly != true) {
-                                obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
-                                obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
-                            }
-
-                            // Setup and start the MPS server
-                            if (obj.args.lanonly != true) {
-                                obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
-                            }
-
-                            // Setup and start the legacy swarm server
-                            if (obj.certificates.swarmserver != null) {
-                                if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
-                                obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
-                            }
-
-                            // Setup email server
-                            if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
-                                obj.mailserver = require('./meshmail.js').CreateMeshMain(obj);
-                                obj.mailserver.verify();
-                                //obj.mailserver.sendMail('ylian.saint-hilaire@intel.com', 'Test Subject', 'This is a sample test', 'This is a <b>sample</b> html test');
-                            }
-
-                            // Start periodic maintenance
-                            obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
-
-                            // Dispatch an event that the server is now running
-                            obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' })
-
-                            // Load the login cookie encryption key from the database if allowed
-                            if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
-                                obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
-                                        obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
-                                    } else {
-                                        obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
-                                    }
-                                });
-                            }
-
-                            obj.debug(1, 'Server started');
-                        });
                     });
-                });
+                }
+
+                obj.debug(1, 'Server started');
             });
         });
     }

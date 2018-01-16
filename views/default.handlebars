@@ -1242,7 +1242,7 @@
         }
 
         function ondockeypress(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && desktop.State == 3) return desktop.m.handleKeys(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeys(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
             if (xxdialogMode || xxcurrentView != 1) return;
@@ -1278,7 +1278,7 @@
         }
 
         function ondockeydown(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && desktop.State == 3) return desktop.m.handleKeyDown(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeyDown(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyDown(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
@@ -1295,7 +1295,7 @@
         }
 
         function ondockeyup(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && desktop.State == 3) return desktop.m.handleKeyUp(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
@@ -2935,6 +2935,7 @@
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.onDisplayinfo = deskDisplayInfo;
+                    desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
                     desktop.contype = 1;
                 }
