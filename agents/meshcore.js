@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-                    http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,6 @@ function createMeshCore(agent) {
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     obj.meshCoreInfo = "MeshCore v4";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
-    obj.useNativePipes = true; //(process.platform == 'win32');
     var meshServerConnectionState = 0;
     var tunnels = {};
     var lastSelfInfo = null;
@@ -54,6 +53,7 @@ function createMeshCore(agent) {
     scan.scan("10.2.55.128/25", 2000);
     */
 
+    /*
     // Try to load up the network monitor
     try {
         networkMonitor = require('NetworkMonitor');
@@ -61,6 +61,7 @@ function createMeshCore(agent) {
         networkMonitor.on('add', function (addr) { sendNetworkUpdateNagle(); });
         networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
     } catch (e) { networkMonitor = null; }
+    */
 
     // Try to load up the Intel AMT scanner
     try {
@@ -506,28 +507,7 @@ function createMeshCore(agent) {
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
             return;
         }
-        
-        // Setup remote desktop & terminal without using native pipes
-        if ((this.httprequest.desktop) && (obj.useNativePipes == false)) {
-            if (data.length > 21 && data.toString().startsWith('**********%%%%%%###**')) {
-                var controlMsg = JSON.parse(data.toString().substring(21));
-                if (controlMsg.type == 'offer') {
-                    this.webrtc = rtc.createConnection();
-                    this.webrtc.on('connected', function () { sendConsoleText('OnWebRTC_Connected'); });
-                    this.webrtc.on('dataChannel', function () { sendConsoleText('OnWebRTC_DataChannel'); });
-                    var counterOffer = this.webrtc.setOffer(controlMsg.sdp);
-                    this.write('**********%%%%%%###**' + JSON.stringify({ type: 'answer', sdp: counterOffer }));
-                    sendConsoleText('counterOfferSent');
-                } else {
-                    sendConsoleText(JSON.stringify(controlMsg));
-                }
-            } else {
-                this.httprequest.desktop.kvm.write(data);
-            }
-            return;
-        }
-        if ((this.httprequest.terminal) && (obj.useNativePipes == false)) { this.httprequest.terminal.write(data); return; }
-        
+                
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
             if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
@@ -538,59 +518,39 @@ function createMeshCore(agent) {
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
-                    if (obj.useNativePipes == false) {
-                        // Remote Terminal without using native pipes
-                        if (process.platform == "win32") {
-                            this.httprequest.terminal = childProcess.execFile("%windir%\\system32\\cmd.exe");
-                        } else {
-                            this.httprequest.terminal = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
-                        }
-                        this.httprequest.terminal.tunnel = this;
-                        this.httprequest.terminal.on('exit', function (ecode, sig) { this.tunnel.end(); });
-                        this.httprequest.terminal.stdout.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
-                        this.httprequest.terminal.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
+                    // Remote terminal using native pipes
+                    if (process.platform == "win32") {
+                        this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
                     } else {
-                        // Remote terminal using native pipes
-                        if (process.platform == "win32") {
-                            this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
-                        } else {
-                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
-                        }
-                        this.httprequest.process.tunnel = this;
-                        this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
-                        this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
-                        this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                        this.prependListener('end', function () { this.httprequest.process.kill(); });
+                        this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
                     }
+                    this.httprequest.process.tunnel = this;
+                    this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
+                    this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
+                    this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                    this.prependListener('end', function () { this.httprequest.process.kill(); });
+                    this.removeAllListeners('data');
+                    this.on('data', onTunnelControlData);
+                    //this.write('MeshCore Terminal Hello!1');
                 }
                 if (this.httprequest.protocol == 2) {
-                    if (obj.useNativePipes == false) {
-                        // Remote Desktop without using native pipes
-                        this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
-                        this.httprequest.desktop.kvm.tunnel = this;
-                        this.httprequest.desktop.kvm.on('data', function (data) { this.tunnel.write(data); });
-                        this.desktop = this.httprequest.desktop;
-                        this.end = function () { if (--this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); } };
-                        if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    } else {
-                        // Remote desktop using native pipes
-                        this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
-                        this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
-                        this.desktop = this.httprequest.desktop;
-                        this.end = function () {
-                            --this.desktop.kvm.connectionCount;
-                            this.unpipe(this.httprequest.desktop.kvm);
-                            this.httprequest.desktop.kvm.unpipe(this);
-                            if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
-                        };
-                        if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                        //this.write('Hello!');
-                        //sendConsoleText('KVM WriteHello');
-                        this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        //this.on('data', function (data) { sendConsoleText('KVM: ' + data); });
-                    }
+                    // Remote desktop using native pipes
+                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                    this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
+                    this.desktop = this.httprequest.desktop;
+                    this.end = function () {
+                        --this.desktop.kvm.connectionCount;
+                        this.unpipe(this.httprequest.desktop.kvm);
+                        this.httprequest.desktop.kvm.unpipe(this);
+                        if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
+                    };
+                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    this.removeAllListeners('data');
+                    this.on('data', onTunnelControlData);
+                    //this.write('MeshCore KVM Hello!1');
                 }
                 else if (this.httprequest.protocol == 5) {
                     // Setup files
@@ -700,7 +660,49 @@ function createMeshCore(agent) {
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
         }
     }
-    
+
+    // Attempt to setup and switch the tunnel over to WebRTC
+    function onTunnelControlData(data) {
+        sendConsoleText('onTunnelControlData: ' + data);
+        var obj = JSON.parse(data);
+        if (obj.type == 'offer') {
+            // This is a WebRTC offer.
+            this.webrtc = rtc.createConnection();
+            this.webrtc.websocket = this;
+            this.webrtc.on('connected', function () { sendConsoleText('WebRTC connected'); });
+            this.webrtc.on('dataChannel', function (rtcchannel) {
+                sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                this.rtcchannel = rtcchannel;
+                if (this.websocket.httprequest.protocol == 1) { // Terminal
+                    // This is a terminal data stream, re-setup the pipes
+                    // Un-pipe
+                    this.websocket.unpipe(this.websocket.httprequest.process.stdin);
+                    //this.websocket.httprequest.process.stdout.unpipe(this.websocket);
+                    // Re-pipe
+                    rtcchannel.pipe(this.websocket.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    //this.websocket.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                } else if (this.websocket.httprequest.protocol == 2) { // Desktop
+                    // This is a KVM data stream, re-setup the pipes
+                    // Un-pipe
+                    this.websocket.unpipe(this.websocket.httprequest.desktop.kvm);
+                    //this.websocket.httprequest.desktop.kvm.unpipe(this.websocket);
+                    // Re-pipe
+                    rtcchannel.pipe(this.websocket.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    //this.websocket.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                }
+                /*
+                else {
+                    // Debug, just display on agent console
+                    rtcchannel.on('data', function (buffer) { sendConsoleText("RTCReceived: " + buffer.length + " bytes"); });
+                    rtcchannel.on('end', function () { sendConsoleText("RTCChannel: " + this.name + " was closed"); });
+                    channel.write('WebRTC HELLO!');
+                }
+                */
+            });
+            this.write({ type: "answer", sdp: this.webrtc.setOffer(obj.sdp) });
+        }
+    }
+
     // Console state
     var consoleWebSockets = {};
     var consoleHttpRequest = null;
@@ -740,7 +742,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nNative Pipes: ' + obj.useNativePipes + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amtLmsState >= 0) { response += '\r\nBuilt -in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';

@@ -175,16 +175,16 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
             }
         }
     }
-    
-    ws.flushSink = function () {
-        try { ws.resume(); } catch (e) { }
-    };
+
+    ws.flushSink = function () { try { ws.resume(); } catch (e) { } };
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
         //console.log(typeof data, data.length);
-        //if (typeof data == 'string') console.log(data);
-        if (this.peer != null) { try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { } }
+        if (this.peer != null) {
+            //if (typeof data == 'string') { console.log('Relay: ' + data); }
+            try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { }
+        }
     });
 
     // If error, do nothing

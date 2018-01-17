@@ -203,17 +203,19 @@ module.exports.CertificateOperations = function () {
         }
 
         // If CA certificates are present, load them
-        var caok, caindex = 1, calist = [];
-        do {
-            caok = false;
-            if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
-                var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
-                calist.push(caCertificate);
-                caok = true;
-            }
-            caindex++;
-        } while (caok == true);
-        r.web.ca = calist;
+        if (r.web != null) {
+            var caok, caindex = 1, calist = [];
+            do {
+                caok = false;
+                if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
+                    var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
+                    calist.push(caCertificate);
+                    caok = true;
+                }
+                caindex++;
+            } while (caok == true);
+            r.web.ca = calist;
+        }
 
         // Decode certificate arguments
         var commonName = 'un-configured', country, organization, forceWebCertGen = 0;
@@ -374,7 +376,7 @@ module.exports.CertificateOperations = function () {
             amtConsoleName = consoleCertAndKey.cert.subject.getField('CN').value;
         }
 
-        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, dns: {} };
+        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, dns: {} };
 
         // Look for domains with DNS names that have no certificates and generated them.
         for (var i in config.domains) {
