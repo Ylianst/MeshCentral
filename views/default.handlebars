@@ -647,6 +647,7 @@
         var amtScanResults = null;
         var debugmode = false;
         var clickOnce = detectClickOnce();
+        var attemptWebRTC = false;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -2934,7 +2935,7 @@
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
-                    //desktop.attemptWebRTC = debugmode;
+                    desktop.attemptWebRTC = attemptWebRTC;
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -2954,7 +2955,10 @@
         function onDesktopStateChange(xdesktop, state) {
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
-            QH('deskstatus', StatusStrs[xstate]);
+            var str = StatusStrs[xstate];
+            if (desktop.webRtcActive == true) { str += ', WebRTC'; }
+            //if (desktop.m.stopInput == true) { str += ', Loopback'; }
+            QH('deskstatus', str);
             QE('deskSaveBtn', state == 3);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (state != 0) && (desktopsettings.showfocus));
             QE('DeskCAD', state == 3);
@@ -3143,7 +3147,9 @@
         function onTerminalStateChange(xterminal, state) {
             var xstate = state;
             if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
-            QH('termstatus', StatusStrs[xstate]);
+            var str = StatusStrs[xstate];
+            if (terminal.webRtcActive == true) { str += ', WebRTC'; }
+            QH('termstatus', str);
             switch (state) {
                 case 0:
                     // Disconnected, clear the terminal
@@ -3180,7 +3186,7 @@
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
-                    //terminal.attemptWebRTC = debugmode;
+                    terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
@@ -3251,7 +3257,9 @@
 
         function onFilesStateChange(xfiles, state) {
             p13Connect.value = (state == 0) ? 'Connect' : 'Disconnect';
-            Q('p13Status').textContent = StatusStrs[state];
+            var str = StatusStrs[state];
+            if (files.webRtcActive == true) { str += ', WebRTC'; }
+            Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
                     // Disconnected, clear the files
@@ -3286,7 +3294,7 @@
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort);
-                files.attemptWebRTC = debugmode;
+                files.attemptWebRTC = false;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
             } else {
@@ -3492,7 +3500,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our file transport
-            downloadFile.attemptWebRTC = debugmode;
+            downloadFile.attemptWebRTC = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
             downloadFile.xfile = decodeURIComponent(y);
@@ -3571,7 +3579,7 @@
         // Connect again
         function p13uploadReconnect() {
             uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort);
-            uploadFile.ws.attemptWebRTC = debugmode;
+            uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
             uploadFile.ws.Start(filesNode._id);
         }

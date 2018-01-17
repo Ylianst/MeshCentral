@@ -17,6 +17,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.tunnelid = Math.random().toString(36).substring(2); // Generate a random client tunnel id
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
     obj.attemptWebRTC = false;
+    obj.webRtcActive = false;
     obj.webrtc = null;
     obj.webchannel = null;
     obj.onStateChanged = null;
@@ -49,12 +50,10 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
     // Called to pass websocket control messages
     obj.xxOnControlCommand = function (msg) {
-        //console.log(msg);
-        //obj.socket.send('hellobob');
         var controlMsg = JSON.parse(msg);
         if ((controlMsg.type == 'answer') && (obj.webrtc != null)) {
-            console.log('gotAnswer', JSON.stringify(controlMsg));
-            obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { console.log('WebRTC remote ok'); }, obj.xxCloseWebRTC);
+            //console.log('gotAnswer', JSON.stringify(controlMsg));
+            obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
         }
     }
 
@@ -65,7 +64,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     }
 
     obj.xxOnMessage = function (e) {
-        if (obj.debugmode == 1) { console.log('Recv', e.data); }
+        //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         if (obj.State < 3) {
             if (e.data == 'c') {
                 obj.socket.send(obj.protocol);
@@ -79,28 +78,27 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
                     if (obj.webrtc != null) {
                         obj.webchannel = obj.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
-                        obj.webchannel.onmessage = function (event) { console.log("DataChannel - onmessage", event.data); };
-                        obj.webchannel.onopen = function () { console.log("DataChannel - onopen"); };
-                        obj.webchannel.onclose = function (event) { console.log("DataChannel - onclose"); }
-                        obj.webrtc.ondatachannel = function (e) { console.log('ondatachannel'); } // TODO: Should not be needed
+                        obj.webchannel.onmessage = function (event) { console.log("DataChannel - onmessage", event.data); obj.xxOnMessage(event.data); };
+                        obj.webchannel.onopen = function () { obj.webRtcActive = true; if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); } /*obj.webchannel.send("Browser WebRTC Hello!!!");*/ };
+                        obj.webchannel.onclose = function (event) { obj.Stop(); }
                         obj.webrtc.onicecandidate = function (e) {
                             if (e.candidate == null) {
-                                console.log('createOffer', JSON.stringify(obj.webrtcoffer));
-                                obj.socket.send('**********%%%%%%###**' + JSON.stringify(obj.webrtcoffer)); // End of candidates, send the offer
+                                //console.log('createOffer', JSON.stringify(obj.webrtcoffer));
+                                obj.socket.send(JSON.stringify(obj.webrtcoffer)); // End of candidates, send the offer
                             } else {
                                 obj.webrtcoffer.sdp += ("a=" + e.candidate.candidate + "\r\n"); // New candidate, add it to the SDP
                             }
                         }
                         obj.webrtc.oniceconnectionstatechange = function () {
                             if (obj.webrtc != null) {
-                                console.log('oniceconnectionstatechange', obj.webrtc.iceConnectionState);
+                                //console.log('WebRTC ICE', obj.webrtc.iceConnectionState);
                                 if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); }
                             }
                         }
                         obj.webrtc.createOffer(function (offer) {
                             // Got the offer
                             obj.webrtcoffer = offer;
-                            obj.webrtc.setLocalDescription(offer, function () { console.log('WebRTC local ok'); }, obj.xxCloseWebRTC);
+                            obj.webrtc.setLocalDescription(offer, function () { /*console.log('WebRTC local ok');*/ }, obj.xxCloseWebRTC);
                         }, obj.xxCloseWebRTC, { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } });
                     }
                 }
@@ -108,10 +106,14 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                 return;
             }
         }
+
         if (typeof e.data == 'string') {
             // Control messages, most likely WebRTC setup 
             obj.xxOnControlCommand(e.data);
-        } else if (typeof e.data == 'object') {
+            return;
+        }
+
+        if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
                 // Chrome & Firefox (Draft)
@@ -138,7 +140,6 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
    
     obj.xxOnSocketData = function (data) {
         if (!data || obj.connectstate == -1) return;
-
         if (typeof data === 'object') {
             // This is an ArrayBuffer, convert it to a string array (used in IE)
             var binary = "", bytes = new Uint8Array(data), length = bytes.byteLength;
@@ -146,39 +147,35 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
             data = binary;
         }
         else if (typeof data !== 'string') return;
-
-        // TODO: Don't use a prefix anymore, use string encoding instead
-        if (data.length > 21 && data.startsWith('**********%%%%%%###**')) { obj.xxOnControlCommand(data.substring(21)); return; }
-
         //console.log("xxOnSocketData", rstr2hex(data));
-
         return obj.m.ProcessData(data);
     }
     
     obj.Send = function (x) {
-        //obj.debug("Agent Redir Send(" + x.length + "): " + rstr2hex(x));
+        //obj.debug("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
+        //console.log("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
         if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
             if (typeof x == 'string') {
                 if (obj.debugmode == 1) {
                     var b = new Uint8Array(x.length), c = [];
                     for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); c.push(x.charCodeAt(i)); }
-                    obj.socket.send(b.buffer);
-                    console.log('Send', c);
+                    if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
+                    //console.log('Send', c);
                 } else {
                     var b = new Uint8Array(x.length);
                     for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
-                    obj.socket.send(b.buffer);
+                    if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
                 }
             } else {
-                if (obj.debugmode == 1) { console.log('Send', x); }
-                obj.socket.send(x);
+                //if (obj.debugmode == 1) { console.log('Send', x); }
+                if (obj.webRtcActive == true) { obj.webchannel.send(x); } else { obj.socket.send(x); }
             }
         }
     }
 
     obj.xxOnSocketClosed = function () {
         //obj.debug("Agent Redir Socket Closed");
-        if (obj.debugmode == 1) { console.log('onSocketClosed'); }
+        //if (obj.debugmode == 1) { console.log('onSocketClosed'); }
         obj.Stop(1);
     }
 
@@ -192,6 +189,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.Stop = function (x) {
         if (obj.debugmode == 1) { console.log('stop', x); }
         //obj.debug("Agent Redir Socket Stopped");
+        obj.webRtcActive = false;
+        obj.webrtc = null;
+        obj.webchannel = null;
         obj.xxStateChange(0);
         obj.connectstate = -1;
         obj.xxCloseWebRTC();

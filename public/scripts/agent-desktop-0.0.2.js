@@ -172,7 +172,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ProcessData = function (str) {
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2);
-        if (command >= 18) { console.error("Invalid KVM command " + command + " of size " + cmdsize); obj.parent.Stop(); return; }
+        if (command >= 18) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; }
         if (cmdsize > str.length) { console.error("KVM invalid command size", cmdsize, str.length); return; }
         //meshOnDebug("KVM Command: " + command + " Len:" + cmdsize);
         if (obj.debugmode == 1) { console.log("KVM Command: " + command + " Len:" + cmdsize); }
