@@ -44,7 +44,6 @@
     <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
-    <Compile Include="public\relay.js" />
     <Compile Include="public\scripts\amt-0.2.0.js" />
     <Compile Include="public\scripts\agent-desktop-0.0.2.js" />
     <Compile Include="public\scripts\amt-desktop-0.0.2.js" />
@@ -58,7 +57,6 @@
     <Compile Include="public\scripts\amt-wsman-ws-0.2.0.js" />
     <Compile Include="public\scripts\common-0.0.1.js" />
     <Compile Include="public\scripts\filesaver.1.1.20151003.js" />
-    <Compile Include="public\scripts\inflate.js" />
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="webserver.js" />
@@ -119,8 +117,6 @@
     <Content Include="public\images\mapmarker.png" />
     <Content Include="public\images\meshicon50.png" />
     <Content Include="public\images\trash.png" />
-    <Content Include="public\index.html" />
-    <Content Include="public\relay.htm" />
     <Content Include="public\scriptblocks.txt" />
     <Content Include="public\sounds\chimes.mp3" />
     <Content Include="public\styles\font-awesome\css\font-awesome.min.css" />

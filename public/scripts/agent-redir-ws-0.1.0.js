@@ -50,17 +50,25 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
     // Called to pass websocket control messages
     obj.xxOnControlCommand = function (msg) {
-        var controlMsg = JSON.parse(msg);
-        if ((controlMsg.type == 'answer') && (obj.webrtc != null)) {
-            //console.log('gotAnswer', JSON.stringify(controlMsg));
-            obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
+        var controlMsg;
+        try { controlMsg = JSON.parse(msg); } catch (e) { return; }
+        if (obj.webrtc != null) {
+            if (controlMsg.type == 'answer') {
+                obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
+            } else if (controlMsg.type == 'webrtc1') {
+                obj.socket.send("{\"type\":\"webrtc2\"}"); // Confirm we got end of data marker, indicates data will no longer be received on websocket.
+            } else if (controlMsg.type == 'webrtc2') {
+                // TODO: Resume/Start sending data over WebRTC
+            }
         }
     }
 
     // Close the WebRTC connection, should be called if a problem occurs during WebRTC setup.
     obj.xxCloseWebRTC = function () {
-        if (obj.webchannel != null) { obj.webchannel.close(); obj.webchannel = null; }
-        if (obj.webrtc != null) { obj.webrtc.close(); obj.webrtc = null; }
+        try { obj.webchannel.send("{\"type\":\"close\"}"); } catch (e) { }
+        if (obj.webchannel != null) { try { obj.webchannel.close(); } catch (e) { } obj.webchannel = null; }
+        if (obj.webrtc != null) { try { obj.webrtc.close(); } catch (e) { }  obj.webrtc = null; }
+        obj.webRtcActive = false;
     }
 
     obj.xxOnMessage = function (e) {
@@ -78,23 +86,22 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
                     if (obj.webrtc != null) {
                         obj.webchannel = obj.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
-                        obj.webchannel.onmessage = function (event) { console.log("DataChannel - onmessage", event.data); obj.xxOnMessage(event.data); };
-                        obj.webchannel.onopen = function () { obj.webRtcActive = true; if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); } /*obj.webchannel.send("Browser WebRTC Hello!!!");*/ };
-                        obj.webchannel.onclose = function (event) { obj.Stop(); }
+                        obj.webchannel.onmessage = function (event) { obj.xxOnMessage({ data: event.data }); };
+                        obj.webchannel.onopen = function () {
+                            obj.webRtcActive = true;
+                            obj.socket.send("{\"type\":\"webrtc1\"}"); // Indicate to the other side that data traffic will no longer be sent over websocket.
+                            // TODO: Hold/Stop sending data over websocket
+                            if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
+                        };
+                        obj.webchannel.onclose = function (event) { console.log('WebRTC close'); obj.Stop(); }
                         obj.webrtc.onicecandidate = function (e) {
                             if (e.candidate == null) {
-                                //console.log('createOffer', JSON.stringify(obj.webrtcoffer));
                                 obj.socket.send(JSON.stringify(obj.webrtcoffer)); // End of candidates, send the offer
                             } else {
                                 obj.webrtcoffer.sdp += ("a=" + e.candidate.candidate + "\r\n"); // New candidate, add it to the SDP
                             }
                         }
-                        obj.webrtc.oniceconnectionstatechange = function () {
-                            if (obj.webrtc != null) {
-                                //console.log('WebRTC ICE', obj.webrtc.iceConnectionState);
-                                if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); }
-                            }
-                        }
+                        obj.webrtc.oniceconnectionstatechange = function () { if (obj.webrtc != null) { if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); } } }
                         obj.webrtc.createOffer(function (offer) {
                             // Got the offer
                             obj.webrtcoffer = offer;
@@ -189,13 +196,14 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.Stop = function (x) {
         if (obj.debugmode == 1) { console.log('stop', x); }
         //obj.debug("Agent Redir Socket Stopped");
-        obj.webRtcActive = false;
-        obj.webrtc = null;
-        obj.webchannel = null;
-        obj.xxStateChange(0);
         obj.connectstate = -1;
         obj.xxCloseWebRTC();
-        if (obj.socket != null) { obj.socket.close(); obj.socket = null; }
+        if (obj.socket != null) {
+            try { obj.socket.send("{\"type\":\"close\"}"); } catch (e) { }
+            try { obj.socket.close(); } catch (e) { }
+            obj.socket = null;
+        }
+        obj.xxStateChange(0);
     }
 
     return obj;

@@ -93,15 +93,18 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ProcessPictureMsg = function (str, X, Y) {
         //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
         var tile = new Image();
-        obj.tilesReceived++;
+        tile.xcount = obj.tilesReceived++;
+        //console.log('Tile #' + tile.xcount);
         var r = obj.tilesReceived;
         tile.src = "data:image/jpeg;base64," + btoa(str.substring(4, str.length));
         tile.onload = function () {
+            //console.log('DecodeTile #' + this.xcount);
             if (obj.Canvas != null && obj.KillDraw < r && obj.State != 0) {
                 obj.PendingOperations.push([r, 2, tile, X, Y]);
                 while (obj.DoPendingOperations()) { }
             }
         }
+        tile.error = function () { console.log('DecodeTileError'); }
     }
 
     obj.DoPendingOperations = function () {

@@ -36,6 +36,7 @@ function createMeshCore(agent) {
     var wifiScanner = null;
     var networkMonitor = null;
     var amtscanner = null;
+    var nextTunnelIndex = 1;
 
     /*
     var AMTScanner = require("AMTScanner");
@@ -337,7 +338,7 @@ function createMeshCore(agent) {
                         if (xurl != null) {
                             var woptions = http.parseUri(xurl);
                             woptions.rejectUnauthorized = 0;
-                            sendConsoleText(JSON.stringify(woptions));
+                            //sendConsoleText(JSON.stringify(woptions));
                             var tunnel = http.request(woptions);
                             tunnel.upgrade = onTunnelUpgrade;
                             tunnel.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
@@ -349,10 +350,8 @@ function createMeshCore(agent) {
                             tunnel.tcpaddr = data.tcpaddr;
                             tunnel.tcpport = data.tcpport;
                             tunnel.end();
-                            sendConsoleText('tunnel.end() called');
                             // Put the tunnel in the tunnels list
-                            var index = 1;
-                            while (tunnels[index]) { index++; }
+                            var index = nextTunnelIndex++;;
                             tunnel.index = index;
                             tunnels[index] = tunnel;
                             
@@ -443,6 +442,7 @@ function createMeshCore(agent) {
         this.s = s;
         s.httprequest = this;
         s.end = onTunnelClosed;
+        s.tunnel = this;
         
         if (this.tcpport != null) {
             // This is a TCP relay connection, pause now and try to connect to the target.
@@ -472,6 +472,7 @@ function createMeshCore(agent) {
     }
     
     function onTunnelClosed() {
+        if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
         sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
         delete tunnels[this.httprequest.index];
         
@@ -487,6 +488,21 @@ function createMeshCore(agent) {
         // If there is a upload or download active on this connection, close the file
         if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
         if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; }
+
+        // Clean up WebRTC
+        if (this.webrtc != null) {
+            if (this.webrtc.rtcchannel) { try { this.webrtc.rtcchannel.close(); } catch (e) { } this.webrtc.rtcchannel.removeAllListeners('data'); this.webrtc.rtcchannel.removeAllListeners('end'); delete this.webrtc.rtcchannel; }
+            if (this.webrtc.websocket) { delete this.webrtc.websocket; }
+            try { this.webrtc.close(); } catch (e) { }
+            this.webrtc.removeAllListeners('connected');
+            this.webrtc.removeAllListeners('disconnected');
+            this.webrtc.removeAllListeners('dataChannel');
+            delete this.webrtc;
+        }
+
+        // Clean up WebSocket
+        this.removeAllListeners('data');
+        delete this;
     }
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
@@ -661,34 +677,71 @@ function createMeshCore(agent) {
         }
     }
 
-    // Attempt to setup and switch the tunnel over to WebRTC
+    // Called when receiving control data on WebRTC
+    function onTunnelWebRTCControlData(data) {
+        if (typeof data != 'string') return;
+        var obj;
+        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON on WebRTC'); return; }
+        if (obj.type == 'close') {
+            sendConsoleText('Tunnel #' + this.xrtc.websocket.tunnel.index + ' WebRTC control close');
+            try { this.close(); } catch (e) { }
+            try { this.xrtc.close(); } catch (e) { }
+        }
+    }
+
+    // Called when receiving control data on websocket
     function onTunnelControlData(data) {
-        sendConsoleText('onTunnelControlData: ' + data);
-        var obj = JSON.parse(data);
-        if (obj.type == 'offer') {
+        if (typeof data != 'string') return;
+        //sendConsoleText('onTunnelControlData: ' + data);
+        //console.log('onTunnelControlData: ' + data);
+
+        var obj;
+        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON'); return; }
+
+        if (obj.type == 'close') {
+            // We received the close on the websocket
+            sendConsoleText('Tunnel #' + this.tunnel.index + ' WebSocket control close');
+            try { this.close(); } catch (e) { }
+        } else if (obj.type == 'webrtc1') {
+            this.write("{\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
+            if (this.httprequest.protocol == 1) { // Terminal
+                // Switch the user input from websocket to webrtc at this point.
+                this.unpipe(this.httprequest.process.stdin);
+                this.rtcchannel.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                this.resume(); // Resume the websocket to keep receiving control data
+            } else if (this.httprequest.protocol == 2) { // Desktop
+                // Switch the user input from websocket to webrtc at this point.
+                this.unpipe(this.httprequest.desktop.kvm);
+                this.webrtc.rtcchannel.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                this.resume(); // Resume the websocket to keep receiving control data
+            }
+        } else if (obj.type == 'webrtc2') {
+            // Other side received websocket end of data marker, start sending data on WebRTC channel
+            if (this.httprequest.protocol == 1) { // Terminal
+                this.httprequest.process.stdout.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+            } else if (this.httprequest.protocol == 2) { // Desktop
+                this.httprequest.desktop.kvm.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+            }
+        } else if (obj.type == 'offer') {
             // This is a WebRTC offer.
             this.webrtc = rtc.createConnection();
             this.webrtc.websocket = this;
-            this.webrtc.on('connected', function () { sendConsoleText('WebRTC connected'); });
+            this.webrtc.on('connected', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected'); });
+            this.webrtc.on('disconnected', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected'); });
             this.webrtc.on('dataChannel', function (rtcchannel) {
-                sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                rtcchannel.xrtc = this;
                 this.rtcchannel = rtcchannel;
+                this.rtcchannel.on('data', onTunnelWebRTCControlData);
+                this.rtcchannel.on('end', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed'); });
                 if (this.websocket.httprequest.protocol == 1) { // Terminal
-                    // This is a terminal data stream, re-setup the pipes
-                    // Un-pipe
-                    this.websocket.unpipe(this.websocket.httprequest.process.stdin);
-                    //this.websocket.httprequest.process.stdout.unpipe(this.websocket);
-                    // Re-pipe
-                    rtcchannel.pipe(this.websocket.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                    //this.websocket.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                    // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
+                    this.websocket.httprequest.process.stdout.unpipe(this.websocket);
+                    this.websocket.write("{\"type\":\"webrtc1\"}");  // End of data marker
                 } else if (this.websocket.httprequest.protocol == 2) { // Desktop
-                    // This is a KVM data stream, re-setup the pipes
-                    // Un-pipe
-                    this.websocket.unpipe(this.websocket.httprequest.desktop.kvm);
-                    //this.websocket.httprequest.desktop.kvm.unpipe(this.websocket);
-                    // Re-pipe
-                    rtcchannel.pipe(this.websocket.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                    //this.websocket.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket
+                    this.websocket.httprequest.desktop.kvm.unpipe(this.websocket);
+                    this.websocket.write("{\"type\":\"webrtc1\"}"); // End of data marker
                 }
                 /*
                 else {
