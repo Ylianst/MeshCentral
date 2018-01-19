@@ -1611,7 +1611,7 @@
             }
             Q('aginsSelect').focus();
         }
-
+        
         function addAgentToMeshClick() {
             var v = Q('aginsSelect').value;
             QV('agins_windows_sfx', v == 0);
@@ -1620,7 +1620,36 @@
             QV('agins_windows_un', v == 3);
             QV('agins_linux_un', v == 4);
         }
+              
+        function emailAgentToMesh(meshid) {
+            if (xxdialogMode) return;
+            var focus = [];
+            var mesh = meshes[meshid];
+            var meshidx = meshid.substring(5);
+            if (meshidx[0] == '/') meshidx = meshidx.substring(1);
+            
+            var x = "";
+            x += "Enter the customer info to send mesh agent invite to gain remote system control.<br /><br />";
+            x += addHtmlValue('Customer Name', '<input id=dp20meshid value=' + meshid.split('/')[2] + ' hidden /><input id=dp20emailname value="client name" style=width:230px maxlength=32 onchange=p20emailnameValidate() onkeyup=p20emailnameValidate() />');
+            x += addHtmlValue('Customer Email', '<input id=dp20emailaddress value="client@email" style=width:230px maxlength=32 onchange=p20emailnameValidate() onkeyup=p20emailnameValidate() />');
+            x += addHtmlValue('Operating System', '<select id=dp20aginsSelectOS style=width:236px><option value=1 >Windows</option><option value=2>Linux</option></select>') + '<hr>';
 
+            setDialogMode(2, "Email Mesh SFX Agent", 3, emailMeshAgentEx, x);
+            
+            emailnameValidate();            
+            if (focus == 2) { Q('dp20emailaddress').focus(); } else { Q('dp20emailname').focus(); }
+
+            Q('dp20aginsSelectOS').focus();
+        }
+        
+        function emailnameValidate() {
+            QE('idx_dlgOkButton', (Q('dp20emailaddress').value.length > 0) && (Q('dp20emailaddress').value.length > 0));
+        }
+
+        function emailMeshAgentEx() {
+            meshserver.Send({ action: 'emailsfxagent', meshid: currentMesh._id, clientname: Q('dp20emailname').value, clientemail: Q('dp20emailaddress').value, agenturl: 'meshsfxagents?idx=' + Q('dp20aginsSelectOS').value + '&invite=1&id=' + Q('dp20meshid').value });
+        } 
+        
         function validateDeviceToMesh() {
             QE('idx_dlgOkButton', (Q('dp1devicename').value.length > 0) && (passwordcheck(Q('dp1password').value)));
         }
@@ -3988,6 +4017,7 @@
                 }
                 if (currentMesh.mtype == 2) {
                     x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new computer to this mesh by installing the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
+                    x += '<a onclick=emailAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Email a invite to add new computer to this mesh by having end user install the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Email</a>';
                 }
             }
 

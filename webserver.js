@@ -1526,9 +1526,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (meshes.length != 1) { res.sendStatus(401); return; }
             var mesh = meshes[0];
             
-            // Check if this user has rights to do this
-            var user = obj.users[req.session.userid];
-            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if (req.query.invite == null) {
+                // Check if this user has rights to do this, if this isn't an email agent request
+                var user = obj.users[req.session.userid];
+                if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)){ res.sendStatus(401); return; }
+            }
             if (domain.id != mesh.domain) { res.sendStatus(401); return; }
             
             if ((req.query.id != null) && (req.query.idx != null)) {

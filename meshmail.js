@@ -26,6 +26,31 @@ module.exports.CreateMeshMain = function (parent) {
     var accountResetMailHtml = '<div style="font-family:Arial,Helvetica,sans-serif"><table style="background-color:#003366;color:lightgray;width:100%" cellpadding=8><tr><td><b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Verification</b></td></tr></table><p>Hi [[[USERNAME]]], <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting an account password reset, click on the following link to complete the process.</p><p style="margin-left:30px"><a href="[[[CALLBACKURL]]]">Click here to reset your account password.</a></p>If you did not initiate this request, please ignore this mail.</div>';
     var accountResetMailText = '[[[SERVERNAME]]] - Account Reset\r\n\r\nHi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process: [[[CALLBACKURL]]]\r\nIf you did not initiate this request, please ignore this mail.\r\n';
 
+    // Email Agent template
+    var emailAgentSubject = '[[[SERVERNAME]]] - Remote Support Agent';
+    var emailAgentCheckMailHtml = '<div style="font-family:Arial,Helvetica,sans-serif"><table style="background-color:#003366;color:lightgray;width:100%" cellpadding=8><tr><td><b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Remote Support Agent</b></td></tr></table><p>Hello [[[CLIENTNAME]]], <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting you to download the following software to start the remote control session.</p><p style="margin-left:30px"><a href="[[[AGENTURL]]]">Click here to begin remote session.</a></p>If you did not initiate this request, please ignore this mail.<br><br>Best regards,<br>[[[USERNAME]]]<br></div>';
+    var emailAgentCheckMailText = '[[[SERVERNAME]]] - Remote Support Agent\r\n\r\nHello [[[CLIENTNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting you to download the following software to start the remote control session. Nagivate to the following link to complete the process: [[[AGENTURL]]]\r\nIf you did not initiate this request, please ignore this mail.\r\n\rBest regards,\r\n[[[USERNAME]]]\r\n';
+
+    // Perform email sfx agent e-mail substitution
+    function mailAgentReplacements(text, domain, username, clientname, agenturl) {
+        var url;
+        if (domain.dns == null) {
+            // Default domain or subdomain of the default.
+            url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + parent.certificates.CommonName + ':' + obj.parent.args.port + domain.url;
+        } else {
+            // Domain with a DNS name.
+            url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + domain.dns + ':' + obj.parent.args.port + domain.url;
+        }
+        if (agenturl != null) { text = text.split('[[[AGENTURL]]]').join(url + agenturl) }
+        return text.split('[[[USERNAME]]]').join(username).split('[[[SERVERURL]]]').join(url).split('[[[SERVERNAME]]]').join(domain.title).split('[[[CLIENTNAME]]]').join(clientname);
+    }    
+ 
+    // Send email link to client/enduser to download mesh Sfx agent 
+    obj.sendAgentMail = function (domain, clientemail, username, clientname, agenturl) {
+        obj.pendingMails.push({ to: clientemail, from: parent.config.smtp.from, subject: mailAgentReplacements(emailAgentSubject, domain, username, clientname, agenturl ), text: mailAgentReplacements(emailAgentCheckMailText, domain, username, clientname, agenturl ), html: mailAgentReplacements(emailAgentCheckMailHtml, domain, username, clientname, agenturl ) });
+        sendNextMail();
+    }   
+    
     // Setup mail server
     var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { rejectUnauthorized: false } };
     if (parent.config.smtp.port != null) { options.port = parent.config.smtp.port; }

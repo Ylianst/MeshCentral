@@ -607,6 +607,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'emailsfxagent':
+                    {
+                        var mesh = obj.parent.meshes[command.meshid];
+                        // Send a link to download mesh sfx agent by email
+                        if ((command.clientemail != null) && (typeof command.clientemail == 'string') && (command.clientemail.length < 1024)) {
+                            var x = command.clientemail.split('@');
+                            if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
+                                if (obj.parent.parent.mailserver != null) {
+                                    obj.parent.parent.mailserver.sendAgentMail( domain, command.clientemail, user.name, command.clientname, command.agenturl );
+                                    obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'user', username: user.name, action: 'emailsfxagent', msg: 'Sent remote session invite to: ' + command.clientname + ', At: ' + command.clientemail });
+                                }
+                            }
+                        }
+                        break;
+                    }
                 case 'addmeshuser':
                     {
                         // Check if the user exists
