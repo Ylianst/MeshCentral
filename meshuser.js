@@ -29,44 +29,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 		var sfxagent32bit = obj.path.join(__dirname, 'agents', 'MeshService.exe' );
 		var sfxagent64bit = obj.path.join(__dirname, 'agents', 'MeshService64.exe' );
 		
-		var sfxagent = obj.path.join(__dirname, 'sfxagents', 'meshagent_' + sfx_ext);		
-		var sfxagentext = obj.path.join(__dirname, 'agents', 'meshagent.bat' );
-		//var sfxbatfile = "@echo off\r\nreg Query \"HKLM\Hardware\Description\System\CentralProcessor\0\" | find /i 'x86' > NUL && set OS_bit=x86 || set OS_bit=x64\r\nif %OS_bit%=='x86' (\r\n\t    rename MeshService.exe meshagent.exe\r\n) else (\r\n\t    rename MeshService64.exe meshagent.exe\r\n)\r\nmeshagent.exe\r\n";
-		//obj.fs.writeFileSync(sfxagentext, sfxbatfile, 'utf8');
-		makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
-		        .then(function () {
-		            mesh.path1 = sfxagent;
-		            mesh.filename1 = 'meshagent_' + sfx_ext;
-		            sfxagent = obj.path.join(__dirname, 'sfxagents', 'remotesupport_' + sfx_ext);
-		            sfxagentext = obj.path.join(__dirname, 'agents', 'meshinstall.bat' );
-		            sfxagentextun = obj.path.join(__dirname, 'agents', 'meshuninstaller.bat' );
-		            sfxagentextreg = obj.path.join(__dirname, 'agents', 'meshagent.reg' );
-		            sfxagentextreg64 = obj.path.join(__dirname, 'agents', 'meshagent64.reg' );
-		            makesfx.add( sfxagent, [ sfxagentext, sfxagentextun, sfxagentextreg, sfxagentextreg64, sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
-		                .then(function () {
-		                    mesh.path2 = sfxagent;
-		                    mesh.filename2 = 'remotesupport_' + sfx_ext;
-		                    sfxagent = obj.path.join(__dirname, 'sfxagents', 'uninstallremotesupport_' + sfx_ext);
-		                    sfxagentext = obj.path.join(__dirname, 'agents', 'meshuninstall.bat' );
-		                    makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
-		                        .then(function () {
-		                            mesh.path3 = sfxagent;
-		                            mesh.filename3 = 'uninstallremotesupport_' + sfx_ext;
-		                            obj.db.Set(mesh);
-		                            obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
-		                        })
-		                         .catch(function (err) {
-		                            console.error(err);
-		                        });
-		                })
-		                .catch(function (err) {
-		                        console.error(err);
-		                });
+		var sfxagent = obj.path.join(__dirname, 'sfxagents', 'remotesupport_' + sfx_ext);
+		var sfxagentext = obj.path.join(__dirname, 'agents', 'meshinstall.bat' );
+		var sfxagentextun = obj.path.join(__dirname, 'agents', 'meshuninstaller.bat' );
+		var sfxagentextreg = obj.path.join(__dirname, 'agents', 'meshagent.reg' );
+		var sfxagentextreg64 = obj.path.join(__dirname, 'agents', 'meshagent64.reg' );
+		makesfx.add( sfxagent, [ sfxagentext, sfxagentextun, sfxagentextreg, sfxagentextreg64, sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+			.then(function () {
+				mesh.path = sfxagent;
+				mesh.filename = 'remotesupport_' + sfx_ext;
+				sfxagent = obj.path.join(__dirname, 'sfxagents', 'uninstallremotesupport_' + sfx_ext);
+				sfxagentext = obj.path.join(__dirname, 'agents', 'meshuninstall.bat' );
+				makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+					.then(function () {
+						mesh.path2 = sfxagent;
+						mesh.filename2 = 'uninstallremotesupport_' + sfx_ext;
+						obj.db.Set(mesh);
+						obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
+						})
+						.catch(function (err) {
+							console.error(err);
+						});
 		        })
-		        .catch(function (err) {
-		            console.error(err);
-		        });	
-		// makesfx.add([ 'mesh_' + EscapeHtml(mesh.name) ], [ 'meshagent.sh','meshagent_x86','meshagent_x86-64', sfxmeshfile ], { sfx: '7zCon.sfx' }); 
+				.catch(function (err) {
+					console.error(err);
+				});
 		return;
 	}
     // Send a message to the user
@@ -482,7 +469,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                                 var links = {};
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
-                                var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, path1: '', filename1: '', path2: '', filename2: '', path3: '', filename3: '' };
+                                var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, path: '', filename: '', path2: '', filename2: '' };
                                 obj.db.Set(mesh);
                                 obj.parent.meshes[meshid] = mesh;
                                 obj.parent.parent.AddEventDispatch([meshid], ws);
@@ -530,9 +517,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                                                            
-                            // Delete mesh SFX files, except the uninstall SFX just in case some remote system still have mesh agent running.
+                            // Delete mesh SFX files
                             if (mesh.path1 != null)
-                                obj.fs.unlink(mesh.path1, (err) => { if (err) console.log(err); });
+                                obj.fs.unlink(mesh.path, (err) => { if (err) console.log(err); });
                             if (mesh.path2 != null)
                                 obj.fs.unlink(mesh.path2, (err) => { if (err) console.log(err); });
                             
@@ -579,15 +566,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     var makesfx = new sfx();
                                     var tempdir = obj.path.join(__dirname, 'tmp' );
                                     // extract current mesh policy from Sfx                             
-                                    makesfx.extract( mesh.path1, tempdir )
+                                    makesfx.extract( mesh.path2, tempdir )
                                         .then(function () {
                                             // Delete current mesh SFX files
                                             if (mesh.path1 != null)
-                                                obj.fs.unlink(mesh.path1, (err) => { if (err) console.log(err); });
+                                                obj.fs.unlink(mesh.path, (err) => { if (err) console.log(err); });
                                             if (mesh.path2 != null)
                                                 obj.fs.unlink(mesh.path2, (err) => { if (err) console.log(err); });
-                                            if (mesh.path3 != null)
-                                                obj.fs.unlink(mesh.path3, (err) => { if (err) console.log(err); });
                                             // change mesh name 
                                             var sfxmeshfile = obj.path.join( tempdir, 'meshagent.msh');   
                                             var data = obj.fs.readFileSync(sfxmeshfile, 'utf8'); 
@@ -595,7 +580,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                             obj.fs.writeFileSync(sfxmeshfile, result, 'utf8');
                                             // recreate sfx
                                             createSfxMeshAgent(mesh, sfxmeshfile); 
-                                            var tempfile = obj.path.join(tempdir, 'meshagent.bat' );
+                                            var tempfile = obj.path.join(tempdir, 'meshuninstall.bat' );
                                             obj.fs.unlink(tempfile, (err) => { if (err) console.log(err); });
                                             var tempfile2 = obj.path.join(tempdir, 'MeshService.exe' );
                                             obj.fs.unlink(tempfile2, (err) => { if (err) console.log(err); });
@@ -619,7 +604,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
                                 if (obj.parent.parent.mailserver != null) {
                                     obj.parent.parent.mailserver.sendAgentMail( domain, command.clientemail, user.name, command.clientname, command.agenturl );
-                                    obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'user', username: user.name, action: 'emailsfxagent', msg: 'Sent remote session invite to: ' + command.clientname + ', At: ' + command.clientemail });
+                                    obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'user', username: user.name, action: 'emailsfxagent', msg: 'User: ' + user.name + 'sent remote session invite to: ' + command.clientname + ', At: ' + command.clientemail });
                                 }
                             }
                         }

@@ -1572,9 +1572,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 var sfxagentname = ''; 
                 var sfxagentpath = '';
                 var f = req.query.idx;
-                if (f == 0) { sfxagentname = mesh.filename1; sfxagentpath = mesh.path1; } 
-                if (f == 1) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; } 
-                if (f == 2) { sfxagentname = mesh.filename3; sfxagentpath = mesh.path3; }                 
+                if (f == 1) { sfxagentname = mesh.filename; sfxagentpath = mesh.path; } 
+                if (f == 2) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; }                 
                 if (sfxagentpath == null) { res.sendStatus(404); return; }            
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + sfxagentname });
                 res.sendFile(sfxagentpath);
