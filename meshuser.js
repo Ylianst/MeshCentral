@@ -18,13 +18,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.args = args;
     obj.parent = parent;
     obj.domain = domain;
-    obj.common = parent.common;                                  
-    var sfx = require('node-7z'); 
+    obj.common = parent.common;                 
+    var makesfx = require("7zip-standalone");  
     
 // Create windows sfx mesh agent    
     function createSfxMeshAgent(mesh, sfxmeshfile) {
         var sfxmodule = '7zS2.sfx'; 
-        var makesfx = new sfx();
         var sfx_ext = EscapeHtml(mesh.name) + '.exe';
 		var sfxagent32bit = obj.path.join(__dirname, 'agents', 'MeshService.exe' );
 		var sfxagent64bit = obj.path.join(__dirname, 'agents', 'MeshService64.exe' );
