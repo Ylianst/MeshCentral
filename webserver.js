@@ -1397,12 +1397,40 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
+        var domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
         if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
             if (argentInfo == null) { res.sendStatus(404); return; }
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
-            res.sendFile(argentInfo.path);
+            if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
+                res.sendFile(argentInfo.path);
+            } else {
+                // We are going to embed the .msh file into the Windows executable (signed or not).
+                // First, query the meshid to build the .msh file
+                obj.db.Get('mesh/' + domain.id + '/' + req.query.meshid, function (err, meshes) {
+                    if (meshes.length != 1) { res.sendStatus(401); return; }
+                    var mesh = meshes[0];
+
+                    // Check if this user has rights to do this
+                    //var user = obj.users[req.session.userid];
+                    //if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+                    //if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+
+                    var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                    var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+
+                    // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+                    var xdomain = (domain.dns == null) ? domain.id : '';
+                    if (xdomain != '') xdomain += "/";
+                    var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+                    if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
+                    obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
+                });
+            }
         } else if (req.query.script != null) {
             // Send a specific mesh install script back
             var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
@@ -1413,6 +1441,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             // Send meshcmd for a specific platform back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.meshcmd];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
+            res.statusCode = 200;
+            obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: new Buffer(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
+
+            /*
             // Load the agent
             obj.fs.readFile(argentInfo.path, function (err, agentexe) {
                 if (err != null) { res.sendStatus(404); return; }
@@ -1423,6 +1456,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 tail.writeInt32BE(agentexe.length + meshcmdbuf.length + 8, 4);
                 res.send(Buffer.concat([agentexe, meshcmdbuf, tail]));
             });
+            */
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
             if (domain == null) { res.sendStatus(404); return; }
@@ -1773,3 +1807,4 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
     return obj;
 }
+
