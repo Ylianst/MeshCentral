@@ -26,6 +26,7 @@
     "bin"
   ],
   "dependencies": {
+	"7zip-standalone", "github:techno-express/node-7zip-standalone",
     "archiver": "^1.3.0",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
@@ -44,9 +45,7 @@
     "nodemailer": "^4.4.1",
     "unzip": "^0.1.11",
     "ws": "^3.2.0",
-    "xmldom": "^0.1.27",
-    "node-7z": "github:quentinrossetti/node-7z",
-    "win-7zip": "^0.1.1"
+    "xmldom": "^0.1.27"
   },
   "optionalDependencies": {
     "node-sspi": "^0.2.2",
@@ -55,8 +54,7 @@
     "greenlock": "^2.1.18",
     "le-store-certbot": "^2.0.5",
     "le-challenge-fs": "^2.0.8",
-    "le-acme-core": "^2.1.1",
-    "win-7zip": "^0.1.1"
+    "le-acme-core": "^2.1.1"
   },
   "devDependencies": {},
   "readme": "readme.txt"
