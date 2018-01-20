@@ -279,12 +279,12 @@ function startLms() {
                 //console.log("WebSocket for " + req.url.split('?')[0]);
                 switch (req.url.split('?')[0]) {
                     case '/lms.ashx': // MeshCommander control channel (PTHI)
-                        socket.upgradeWebSocket();
-                        socket.on('data', processLmsControlData);
+                        socket.ws = socket.upgradeWebSocket();
+                        socket.ws.on('data', processLmsControlData);
                         break;
                     case '/webrelay.ashx': // MeshCommander data channel (LME)
-                        socket.upgradeWebSocket();
-                        amtLms.bindDuplexStream(socket, 'IPv4', 16992);
+                        socket.ws = socket.upgradeWebSocket();
+                        amtLms.bindDuplexStream(socket.ws, 'IPv4', 16992);
                         break;
                     default:
                         socket.end();
@@ -295,9 +295,8 @@ function startLms() {
                 //console.log("WebRequest for " + req.url.split('?')[0]);
                 switch (req.url.split('?')[0]) {
                     case '/': // Serve MeshCommander Web Application for LMS
-                        rsp.writeHead(200, 'OK', { Server: 'JSLMS', 'Cache-Control': 'max-age=0, no-cache', 'X-Frame-Options': 'DENY', 'Content-Type': 'text/html', 'Content-Encoding': 'gzip', ETag: _IntelAmtWebApp_etag });
-                        rsp.write(Buffer.from(_IntelAmtWebApp, 'base64'));
-                        rsp.end();
+                        rsp.writeHead(200, 'OK', { Server: 'JSLMS', 'Cache-Control': 'max-age=0, no-cache', 'X-Frame-Options': 'DENY', 'Content-Type': 'text/html', 'Content-Encoding': 'gzip', 'Transfer-Encoding': 'chunked', ETag: _IntelAmtWebApp_etag });
+                        rsp.end(Buffer.from(_IntelAmtWebApp, 'base64'));
                         break;
                     default: // Unknown request
                         rsp.statusCode = 404;

@@ -692,7 +692,7 @@ function createMeshCore(agent) {
     // Called when receiving control data on websocket
     function onTunnelControlData(data) {
         if (typeof data != 'string') return;
-        //sendConsoleText('onTunnelControlData: ' + data);
+        sendConsoleText('onTunnelControlData: ' + data);
         //console.log('onTunnelControlData: ' + data);
 
         var obj;
@@ -729,7 +729,7 @@ function createMeshCore(agent) {
             this.webrtc.on('connected', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected'); });
             this.webrtc.on('disconnected', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected'); });
             this.webrtc.on('dataChannel', function (rtcchannel) {
-                //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
                 rtcchannel.xrtc = this;
                 this.rtcchannel = rtcchannel;
                 this.rtcchannel.on('data', onTunnelWebRTCControlData);

@@ -28,6 +28,7 @@
     <Compile Include="amtevents.js" />
     <Compile Include="amtscanner.js" />
     <Compile Include="amtscript.js" />
+    <Compile Include="exeHandler.js" />
     <Compile Include="letsencrypt.js" />
     <Compile Include="meshaccelerator.js" />
     <Compile Include="meshmail.js" />
