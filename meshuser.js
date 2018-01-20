@@ -39,7 +39,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 		            mesh.filename1 = 'meshagent_' + sfx_ext;
 		            sfxagent = obj.path.join(__dirname, 'sfxagents', 'remotesupport_' + sfx_ext);
 		            sfxagentext = obj.path.join(__dirname, 'agents', 'meshinstall.bat' );
-		            makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+		            sfxagentextun = obj.path.join(__dirname, 'agents', 'meshuninstaller.bat' );
+		            sfxagentextreg = obj.path.join(__dirname, 'agents', 'meshagent.reg' );
+		            sfxagentextreg64 = obj.path.join(__dirname, 'agents', 'meshagent64.reg' );
+		            makesfx.add( sfxagent, [ sfxagentext, sfxagentextun, sfxagentextreg, sfxagentextreg64, sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
 		                .then(function () {
 		                    mesh.path2 = sfxagent;
 		                    mesh.filename2 = 'remotesupport_' + sfx_ext;
