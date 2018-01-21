@@ -18,8 +18,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.args = args;
     obj.parent = parent;
     obj.domain = domain;
-    obj.common = parent.common;                 
-    var makesfx = require("7zip-standalone");  
+    obj.common = parent.common;      
+    var Zip = require('node-7z-esf');
+    var makesfx = new Zip();
+    const exePath = obj.path.resolve(__dirname, '..', '7zip-standalone','binaries','win','x86', '7z.exe');
     
 // Create windows sfx mesh agent    
     function createSfxMeshAgent(mesh, sfxmeshfile) {
@@ -33,13 +35,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 		var sfxagentextun = obj.path.join(__dirname, 'agents', 'meshuninstaller.bat' );
 		var sfxagentextreg = obj.path.join(__dirname, 'agents', 'meshagent.reg' );
 		var sfxagentextreg64 = obj.path.join(__dirname, 'agents', 'meshagent64.reg' );
-		makesfx.add( sfxagent, [ sfxagentext, sfxagentextun, sfxagentextreg, sfxagentextreg64, sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+		makesfx.add( sfxagent, [ sfxagentext, sfxagentextun, sfxagentextreg, sfxagentextreg64, sfxagent32bit, sfxagent64bit, sfxmeshfile ], { exePath, sfx: sfxmodule } )
 			.then(function () {
 				mesh.path = sfxagent;
 				mesh.filename = 'remotesupport_' + sfx_ext;
 				sfxagent = obj.path.join(__dirname, 'sfxagents', 'uninstallremotesupport_' + sfx_ext);
 				sfxagentext = obj.path.join(__dirname, 'agents', 'meshuninstall.bat' );
-				makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { sfx: sfxmodule } )
+				makesfx.add( sfxagent , [ sfxagentext ,sfxagent32bit, sfxagent64bit, sfxmeshfile ], { exePath, sfx: sfxmodule } )
 					.then(function () {
 						mesh.path2 = sfxagent;
 						mesh.filename2 = 'uninstallremotesupport_' + sfx_ext;
@@ -47,11 +49,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 						obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
 						})
 						.catch(function (err) {
-							console.error(err);
+							console.error( 'Error 2: ' + err + exePath );
 						});
 		        })
 				.catch(function (err) {
-					console.error(err);
+                    console.error( 'Error 1: ' + err + exePath );
 				});
 		return;
 	}
@@ -565,7 +567,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     var makesfx = new sfx();
                                     var tempdir = obj.path.join(__dirname, 'tmp' );
                                     // extract current mesh policy from Sfx                             
-                                    makesfx.extract( mesh.path2, tempdir )
+                                    makesfx.extract( mesh.path2, tempdir, { exePath } )
                                         .then(function () {
                                             // Delete current mesh SFX files
                                             if (mesh.path1 != null)

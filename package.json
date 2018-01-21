@@ -26,7 +26,6 @@
     "bin"
   ],
   "dependencies": {
-	"7zip-standalone": "github:techno-express/node-7zip-standalone",
     "archiver": "^1.3.0",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
@@ -45,7 +44,9 @@
     "nodemailer": "^4.4.1",
     "unzip": "^0.1.11",
     "ws": "^3.2.0",
-    "xmldom": "^0.1.27"
+    "xmldom": "^0.1.27",
+	"7zip-standalone": "github:techno-express/node-7zip-standalone",
+    "node-7z-esf": "^0.4.1"
   },
   "optionalDependencies": {
     "node-sspi": "^0.2.2",
