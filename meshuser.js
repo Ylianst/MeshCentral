@@ -19,7 +19,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.parent = parent;
     obj.domain = domain;
     obj.common = parent.common;      
-    var Zip = require('node-7z-esf');
+    var Zip = require('node-7z');
     var makesfx = new Zip();
     const exePath = obj.path.resolve(__dirname, '..', '7zip-standalone','binaries','win','x86', '7z.exe');
     
