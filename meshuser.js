@@ -18,18 +18,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.args = args;
     obj.parent = parent;
     obj.domain = domain;
-    obj.common = parent.common;      
-    var Zip = require('node-7z');
-    var makesfx = new Zip();
-    const exePath = obj.path.resolve(__dirname, '..', '7zip-standalone','binaries','win','x86', '7z.exe');
-    
+    obj.common = parent.common;     
+    var Zip = require('node-7z');  
+    var exePath = { path: obj.path.resolve(__dirname, '..', '7zip-standalone','binaries',process.platform, process.platform === "win32" ? '7z.exe' : '7z' ) };
+        
 // Create windows sfx mesh agent    
     function createSfxMeshAgent(mesh, sfxmeshfile) {
         var sfxmodule = '7zS2.sfx'; 
         var sfx_ext = EscapeHtml(mesh.name) + '.exe';
 		var sfxagent32bit = obj.path.join(__dirname, 'agents', 'MeshService.exe' );
 		var sfxagent64bit = obj.path.join(__dirname, 'agents', 'MeshService64.exe' );
-		
+        var makesfx = new Zip();
 		var sfxagent = obj.path.join(__dirname, 'sfxagents', 'remotesupport_' + sfx_ext);
 		var sfxagentext = obj.path.join(__dirname, 'agents', 'meshinstall.bat' );
 		var sfxagentextun = obj.path.join(__dirname, 'agents', 'meshuninstaller.bat' );
@@ -49,11 +48,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 						obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
 						})
 						.catch(function (err) {
-							console.error( 'Error 2: ' + err + exePath );
+							console.error( err + ' #2 ' + exePath.path );
+                            obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
 						});
 		        })
 				.catch(function (err) {
-                    console.error( 'Error 1: ' + err + exePath );
+                    console.error( err + ' #1 ' + exePath.path );
+                    obj.fs.unlink(sfxmeshfile, (err) => { if (err) console.log(err); });
 				});
 		return;
 	}
@@ -564,10 +565,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if (change != '') {
                                 
                                 if (sfxname != mesh.name) {
-                                    var makesfx = new sfx();
+                                    var makesfx = new Zip();
                                     var tempdir = obj.path.join(__dirname, 'tmp' );
                                     // extract current mesh policy from Sfx                             
-                                    makesfx.extract( mesh.path2, tempdir, { exePath } )
+                                    makesfx.extract( mesh.path2, tempdir, exePath )
                                         .then(function () {
                                             // Delete current mesh SFX files
                                             if (mesh.path1 != null)
