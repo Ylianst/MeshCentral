@@ -9,12 +9,8 @@
   "author": "Lawrence Stubbs <technoexpressnet@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "meshcentral": "github:techno-express/MeshCentral",
-    "node-7z": "github:quentinrossetti/node-7z",
-    "win-7zip": "^0.1.1"
   },
   "optionalDependencies": {
-    "win-7zip": "^0.1.1"
   },
   "devDependencies": {},
   "repository": {

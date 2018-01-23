@@ -8,8 +8,6 @@ if command -v apt-get &> /dev/null; then
     #apt-get install -y mongodb-org
     apt-get install -y python-software-properties
     curl -sL https://deb.nodesource.com/setup_9.x | bash -
-    apt-get install -y nodejs p7zip-full
-    sfxdirectory='/usr/lib/p7zip/'
 elif command -v rpm &> /dev/null; then
 #    echo '[mongodb-org-3.6]
 #name=MongoDB Repository
@@ -21,22 +19,13 @@ elif command -v rpm &> /dev/null; then
     curl -sL https://rpm.nodesource.com/setup_9.x | bash -
     version=$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)
     rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-$version.noarch.rpm
-    sfxdirectory='/usr/libexec/p7zip/'
     if command -v dnf &> /dev/null; then
         #dnf install -y mongodb-org
-        dnf install -y nodejs p7zip p7zip-plugins
+        dnf install -y nodejs
     else
         #yum install -y mongodb-org
-        yum install -y nodejs p7zip p7zip-plugins
+        yum install -y nodejs
     fi
 fi
 
-if [ $sfxdirectory != "" ] && command -v 7z &> /dev/null; then
-    wget -q http://www.7-zip.org/a/lzma1604.7z
-    7z x lzma1604.7z -olzma1604
-    cp lzma1604/bin/*.sfx $sfxdirectory
-    rm -f lzma1604.7z
-    rm -rf lzma1604
-fi
-
-npm install -g forever #-g letsencrypt-cli
+npm install -g forever

@@ -520,7 +520,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                                                            
                             // Delete mesh SFX files
-                            if (mesh.path1 != null)
+                            if (mesh.path != null)
                                 obj.fs.unlink(mesh.path, (err) => { if (err) console.log(err); });
                             if (mesh.path2 != null)
                                 obj.fs.unlink(mesh.path2, (err) => { if (err) console.log(err); });

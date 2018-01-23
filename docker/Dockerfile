@@ -2,14 +2,7 @@ FROM node:stretch
 MAINTAINER Lawrence Stubbs <technoexpressnet@gmail.com>
 
 COPY startmeshcentral.sh /
-RUN apt-get update \
-    && apt-get install -y p7zip-full \
-    && wget -q http://www.7-zip.org/a/lzma1604.7z \
-    && 7z x lzma1604.7z -olzma1604 \
-    && cp lzma1604/bin/*.sfx /usr/lib/p7zip/ \
-    && rm -f lzma1604.7z \
-    && rm -rf lzma1604 \
-    && adduser --quiet meshserver \
+RUN adduser --quiet meshserver \
     && mkdir -p /home/meshserver/meshcentral-data \
     && chmod +x /startmeshcentral.sh 
 

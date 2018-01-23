@@ -1580,7 +1580,7 @@
             x += "<div id=agins_windows_sfx>To add a new computer to mesh <b>" + EscapeHtml(mesh.name) + "</b>, download the oneclick SFX application, it has a (.bat) script file, (.reg) registry file to add Programs and Features entry, (.exe) mesh agents 32bit & 64bit, and (.msh) configuration file, run the application agent on the computer to manage.<br /><br />For <b>" + EscapeHtml(mesh.name) + "</b> Mesh Policy:<br />";
             x += addHtmlValue(' Auto Installer', '<a href="meshsfxagents?idx=1&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Installer</a><br>');
             x += addHtmlValue(' Auto Uninstaller', '<a href="meshsfxagents?idx=2&id=' + meshid.split('/')[2] + '" target="_blank">Windows SFX Uninstaller</a><br>');
-            x += "</div>";
+            x += "</div><br><br>";
             
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
