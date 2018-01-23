@@ -1,3 +1,18 @@
+/*
+Copyright 2018 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;
@@ -21,8 +36,7 @@ var APF_CHANNEL_CLOSE = 97;
 var APF_PROTOCOLVERSION = 192;
 
 
-function lme_object()
-{
+function lme_object() {
     this.ourId = ++lme_id;
     this.amtId = -1;
     this.LME_CHANNEL_STATUS = 'LME_CS_FREE';
@@ -32,12 +46,11 @@ function lme_object()
     this.errorCount = 0;
 }
 
-function stream_bufferedWrite()
-{
+function stream_bufferedWrite() {
     var emitterUtils = require('events').inherits(this);
     this.buffer = [];
     this._readCheckImmediate = undefined;
-
+    
     // Writable Events
     emitterUtils.createEvent('close');
     emitterUtils.createEvent('drain');
@@ -45,21 +58,17 @@ function stream_bufferedWrite()
     emitterUtils.createEvent('finish');
     emitterUtils.createEvent('pipe');
     emitterUtils.createEvent('unpipe');
-
+    
     // Readable Events
     emitterUtils.createEvent('readable');
-    this.isEmpty = function ()
-    {
+    this.isEmpty = function () {
         return (this.buffer.length == 0);
     };
-    this.isWaiting = function ()
-    {
+    this.isWaiting = function () {
         return (this._readCheckImmediate == undefined);
     };
-    this.write = function (chunk)
-    {
-        for (var args in arguments)
-        {
+    this.write = function (chunk) {
+        for (var args in arguments) {
             if (typeof (arguments[args]) == 'function') { this.once('drain', arguments[args]); break; }
         }
         var tmp = Buffer.alloc(chunk.length);
@@ -68,41 +77,34 @@ function stream_bufferedWrite()
         this.emit('readable');
         return (this.buffer.length == 0 ? true : false);
     };
-    this.read = function ()
-    {
+    this.read = function () {
         var size = arguments.length == 0 ? undefined : arguments[0];
         var bytesRead = 0;
         var list = [];
-        while((size == undefined || bytesRead < size) && this.buffer.length > 0)
-        {
+        while ((size == undefined || bytesRead < size) && this.buffer.length > 0) {
             var len = this.buffer[0].data.length - this.buffer[0].offset;
             var offset = this.buffer[0].offset;
-
-            if(len > (size - bytesRead))
-            {
+            
+            if (len > (size - bytesRead)) {
                 // Only reading a subset
                 list.push(this.buffer[0].data.slice(offset, offset + size - bytesRead));
                 this.buffer[0].offset += (size - bytesRead);
                 bytesRead += (size - bytesRead);
             }
-            else
-            {
+            else {
                 // Reading the entire thing
                 list.push(this.buffer[0].data.slice(offset));
                 bytesRead += len;
                 this.buffer.shift();
             }
         }
-        this._readCheckImmediate = setImmediate(function (buffered)
-        {
+        this._readCheckImmediate = setImmediate(function (buffered) {
             buffered._readCheckImmediate = undefined;
-            if(buffered.buffer.length == 0)
-            {
+            if (buffered.buffer.length == 0) {
                 // drained
                 buffered.emit('drain');
             }
-            else
-            {
+            else {
                 // not drained
                 buffered.emit('readable');
             }
@@ -112,38 +114,33 @@ function stream_bufferedWrite()
 }
 
 
-function lme_heci()
-{
+function lme_heci() {
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
     emitterUtils.createEvent('connect');
-
+    
     var heci = require('heci');
     this.INITIAL_RXWINDOW_SIZE = 4096;
-
+    
     this._LME = heci.create();
     this._LME.LMS = this;
     this._LME.on('error', function (e) { this.LMS.emit('error', e); });
-    this._LME.on('connect', function ()
-    {
+    this._LME.on('connect', function () {
         this.LMS.emit('connect');
-        this.on('data', function (chunk)
-        {
+        this.on('data', function (chunk) {
             // this = HECI
             var cmd = chunk.readUInt8(0);
-           
-            switch(cmd)
-            {
+            
+            switch (cmd) {
                 default:
                     //console.log('Received ' + chunk.length + ' bytes of data for LMS');
                     //console.log('Command = ' + cmd);
                     break;
-                case APF_SERVICE_REQUEST:     
+                case APF_SERVICE_REQUEST:
                     var nameLen = chunk.readUInt32BE(1);
                     var name = chunk.slice(5, nameLen + 5);
                     //console.log("Service Request for: " + name);
-                    if (name == 'pfwd@amt.intel.com' || name == 'auth@amt.intel.com')
-                    {
+                    if (name == 'pfwd@amt.intel.com' || name == 'auth@amt.intel.com') {
                         var outBuffer = Buffer.alloc(5 + nameLen);
                         outBuffer.writeUInt8(6, 0);
                         outBuffer.writeUInt32BE(nameLen, 1);
@@ -151,30 +148,26 @@ function lme_heci()
                         this.write(outBuffer);
                         //console.log('Answering APF_SERVICE_REQUEST');
                     }
-                    else
-                    {
+                    else {
                         //console.log('UNKNOWN APF_SERVICE_REQUEST');
                     }
                     break;
-                case APF_GLOBAL_REQUEST:    
+                case APF_GLOBAL_REQUEST:
                     var nameLen = chunk.readUInt32BE(1);
                     var name = chunk.slice(5, nameLen + 5).toString();
                     
-                    switch(name)
-                    {
+                    switch (name) {
                         case 'tcpip-forward':
                             var len = chunk.readUInt32BE(nameLen + 6);
                             var port = chunk.readUInt32BE(nameLen + 10 + len);
                             //console.log("[" + chunk.length + "/" + len + "] APF_GLOBAL_REQUEST for: " + name + " on port " + port);
-                            if (this[name] == undefined)
-                            {
+                            if (this[name] == undefined) {
                                 this[name] = {};
                             }
                             this[name][port] = require('net').createServer();
                             this[name][port].HECI = this;
-                            this[name][port].listen({ port: port });
-                            this[name][port].on('connection', function (socket)
-                            {
+                            this[name][port].listen({ port: port, host: '127.0.0.1' });
+                            this[name][port].on('connection', function (socket) {
                                 //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
                                 this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort);
                             });
@@ -192,54 +185,48 @@ function lme_heci()
                             break;
                     }
                     break;
-                case APF_CHANNEL_OPEN_CONFIRMATION:    
-			        var rChannel = chunk.readUInt32BE(1);
-			        var sChannel = chunk.readUInt32BE(5);
-			        var wSize = chunk.readUInt32BE(9);
-			        //console.log('rChannel/' + rChannel + ', sChannel/' + sChannel + ', wSize/' + wSize);
-			        if (this.sockets[rChannel] != undefined)
-			        {
-			            this.sockets[rChannel].lme.amtId = sChannel;
-			            this.sockets[rChannel].lme.rxWindow = wSize;
-			            this.sockets[rChannel].lme.txWindow = wSize;
-			            this.sockets[rChannel].lme.LME_CHANNEL_STATUS = 'LME_CS_CONNECTED';
-			            //console.log('LME_CS_CONNECTED');
-			            this.sockets[rChannel].bufferedStream = new stream_bufferedWrite();
-			            this.sockets[rChannel].bufferedStream.socket = this.sockets[rChannel];
-			            this.sockets[rChannel].bufferedStream.on('readable', function ()
-			            {
-			                if(this.socket.lme.txWindow > 0)
-			                {
-			                    var buffer = this.read(this.socket.lme.txWindow);
-			                    var packet = Buffer.alloc(9 + buffer.length);
-			                    packet.writeUInt8(APF_CHANNEL_DATA, 0);
-			                    packet.writeUInt32BE(this.socket.lme.amtId, 1);
-			                    packet.writeUInt32BE(buffer.length, 5);
-			                    buffer.copy(packet, 9);
-			                    this.socket.lme.txWindow -= buffer.length;
-			                    this.socket.HECI.write(packet);
-			                }
-			            });
-			            this.sockets[rChannel].bufferedStream.on('drain', function ()
-			            {
-			                this.socket.resume();
-			            });
-			            this.sockets[rChannel].on('data', function (chunk)
-			            {
-			                if (!this.bufferedStream.write(chunk)) { this.pause(); }
-			            });
-			            this.sockets[rChannel].on('end', function () 
-			            {
-			                var outBuffer = Buffer.alloc(5);
-			                outBuffer.writeUInt8(APF_CHANNEL_CLOSE, 0);
-			                outBuffer.writeUInt32BE(this.lme.amtId, 1);
-			                this.HECI.write(outBuffer);
-			            });
-			            this.sockets[rChannel].resume();
-			        }
-
-		    	    break;
-                case APF_PROTOCOLVERSION:   
+                case APF_CHANNEL_OPEN_CONFIRMATION:
+                    var rChannel = chunk.readUInt32BE(1);
+                    var sChannel = chunk.readUInt32BE(5);
+                    var wSize = chunk.readUInt32BE(9);
+                    //console.log('rChannel/' + rChannel + ', sChannel/' + sChannel + ', wSize/' + wSize);
+                    if (this.sockets[rChannel] != undefined) {
+                        this.sockets[rChannel].lme.amtId = sChannel;
+                        this.sockets[rChannel].lme.rxWindow = wSize;
+                        this.sockets[rChannel].lme.txWindow = wSize;
+                        this.sockets[rChannel].lme.LME_CHANNEL_STATUS = 'LME_CS_CONNECTED';
+                        //console.log('LME_CS_CONNECTED');
+                        this.sockets[rChannel].bufferedStream = new stream_bufferedWrite();
+                        this.sockets[rChannel].bufferedStream.socket = this.sockets[rChannel];
+                        this.sockets[rChannel].bufferedStream.on('readable', function () {
+                            if (this.socket.lme.txWindow > 0) {
+                                var buffer = this.read(this.socket.lme.txWindow);
+                                var packet = Buffer.alloc(9 + buffer.length);
+                                packet.writeUInt8(APF_CHANNEL_DATA, 0);
+                                packet.writeUInt32BE(this.socket.lme.amtId, 1);
+                                packet.writeUInt32BE(buffer.length, 5);
+                                buffer.copy(packet, 9);
+                                this.socket.lme.txWindow -= buffer.length;
+                                this.socket.HECI.write(packet);
+                            }
+                        });
+                        this.sockets[rChannel].bufferedStream.on('drain', function () {
+                            this.socket.resume();
+                        });
+                        this.sockets[rChannel].on('data', function (chunk) {
+                            if (!this.bufferedStream.write(chunk)) { this.pause(); }
+                        });
+                        this.sockets[rChannel].on('end', function () {
+                            var outBuffer = Buffer.alloc(5);
+                            outBuffer.writeUInt8(APF_CHANNEL_CLOSE, 0);
+                            outBuffer.writeUInt32BE(this.lme.amtId, 1);
+                            this.HECI.write(outBuffer);
+                        });
+                        this.sockets[rChannel].resume();
+                    }
+                    
+                    break;
+                case APF_PROTOCOLVERSION:
                     var major = chunk.readUInt32BE(1);
                     var minor = chunk.readUInt32BE(5);
                     var reason = chunk.readUInt32BE(9);
@@ -254,16 +241,13 @@ function lme_heci()
                 case APF_CHANNEL_WINDOW_ADJUST:
                     var rChannelId = chunk.readUInt32BE(1);
                     var bytesToAdd = chunk.readUInt32BE(5);
-                    if (this.sockets[rChannelId] != undefined)
-                    {
+                    if (this.sockets[rChannelId] != undefined) {
                         this.sockets[rChannelId].lme.txWindow += bytesToAdd;
-                        if (!this.sockets[rChannelId].bufferedStream.isEmpty() && this.sockets[rChannelId].bufferedStream.isWaiting())
-                        {
+                        if (!this.sockets[rChannelId].bufferedStream.isEmpty() && this.sockets[rChannelId].bufferedStream.isWaiting()) {
                             this.sockets[rChannelId].bufferedStream.emit('readable');
                         }
                     }
-                    else
-                    {
+                    else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_WINDOW_ADJUST');
                     }
                     break;
@@ -271,11 +255,9 @@ function lme_heci()
                     var rChannelId = chunk.readUInt32BE(1);
                     var dataLen = chunk.readUInt32BE(5);
                     var data = chunk.slice(9, 9 + dataLen);
-                    if (this.sockets[rChannelId] != undefined)
-                    {
+                    if (this.sockets[rChannelId] != undefined) {
                         this.sockets[rChannelId].pendingBytes.push(data.length);
-                        this.sockets[rChannelId].write(data, function ()
-                        {
+                        this.sockets[rChannelId].write(data, function () {
                             var written = this.pendingBytes.shift();
                             var outBuffer = Buffer.alloc(9);
                             outBuffer.writeUInt8(APF_CHANNEL_WINDOW_ADJUST, 0);
@@ -284,35 +266,31 @@ function lme_heci()
                             this.HECI.write(outBuffer);
                         });
                     }
-                    else
-                    {
+                    else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_DATA');
                     }
                     break;
                 case APF_CHANNEL_CLOSE:
                     var rChannelId = chunk.readUInt32BE(1);
-                    if (this.sockets[rChannelId] != undefined)
-                    {
-                        this.sockets[rChannelId].end();                    
+                    if (this.sockets[rChannelId] != undefined) {
+                        this.sockets[rChannelId].end();
                         var amtId = this.sockets[rChannelId].lme.amtId;
                         var buffer = Buffer.alloc(5);
                         delete this.sockets[rChannelId];
-
+                        
                         buffer.writeUInt8(APF_CHANNEL_CLOSE, 0);
                         buffer.writeUInt32BE(amtId, 1);
                         this.write(buffer);
                     }
-                    else
-                    {
+                    else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_CLOSE');
                     }
                     break;
             }
         });
     });
-   
-    this.bindDuplexStream = function (duplexStream, remoteFamily, localPort)
-    {
+    
+    this.bindDuplexStream = function (duplexStream, remoteFamily, localPort) {
         var socket = duplexStream;
         //console.log('New [' + remoteFamily + '] Virtual Connection/' + socket.localPort);
         socket.pendingBytes = [];
@@ -327,19 +305,16 @@ function lme_heci()
         buffer.writeUInt32BE(socket.lme.ourId);
         buffer.writeUInt32BE(this.INITIAL_RXWINDOW_SIZE);
         buffer.writeUInt32BE(0xFFFFFFFF);
-        for (var i = 0; i < 2; ++i)
-        {
-            if (remoteFamily == 'IPv6')
-            {
+        for (var i = 0; i < 2; ++i) {
+            if (remoteFamily == 'IPv6') {
                 buffer.writeUInt32BE(3);
                 buffer.write('::1');
             }
-            else
-            {
+            else {
                 buffer.writeUInt32BE(9);
                 buffer.write('127.0.0.1');
             }
-
+            
             buffer.writeUInt32BE(localPort);
         }
         this._LME.write(buffer.buffer);
@@ -347,7 +322,7 @@ function lme_heci()
         this._LME.sockets[socket.lme.ourId] = socket;
         socket.pause();
     };
-
+    
     this._LME.connect(heci.GUIDS.LME, { noPipeline: 0 });
 }
 

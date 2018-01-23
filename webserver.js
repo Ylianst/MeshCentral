@@ -675,6 +675,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 user = obj.users[req.session.userid]
                 logoutcontrol = 'Welcome ' + user.name + '.';
             }
+
+            // Give the web page a list of supported server features
             var features = 0;
             if (obj.args.wanonly == true) { features += 1; } // WAN-only mode
             if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
@@ -682,6 +684,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (domain.userQuota == -1) { features += 8; } // No server files mode
             if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
+            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured')) { features += 64; } // Email invites
+
+            // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
         } else {
@@ -1426,7 +1431,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     if (xdomain != '') xdomain += "/";
                     var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
                     if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
-
+                    if (req.query.tag != true) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
                     obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
                 });
