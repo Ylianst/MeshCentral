@@ -45,7 +45,6 @@
     "unzip": "^0.1.11",
     "ws": "^3.2.0",
     "xmldom": "^0.1.27",
-	"7zip-standalone": "github:techno-express/node-7zip-standalone",
     "node-7z": "github:techno-express/node-7z"
   },
   "optionalDependencies": {
