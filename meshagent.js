@@ -148,10 +148,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
             else if (cmdid == 15) { // MeshCommand_AgentTag
-                ChangeAgentTag(msg.substring(2));
+                var tag = msg.substring(2);
+                while (tag.charCodeAt(tag.length - 1) == 0) { tag = tag.substring(0, tag.length - 1); } // Remove end-of-line zeros.
+                ChangeAgentTag(tag);
             }
-        }
-        else if (obj.authenticated < 2) { // We are not authenticated
+        } else if (obj.authenticated < 2) { // We are not authenticated
             var cmd = obj.common.ReadShort(msg, 0);
             if (cmd == 1) {
                 // Agent authentication request

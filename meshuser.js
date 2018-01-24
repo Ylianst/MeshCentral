@@ -469,7 +469,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Create a type 1 agent-less Intel AMT mesh.
                             obj.parent.crypto.randomBytes(48, function (err, buf) {
                                 var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                                var links = {};
+                                var links = {}
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                                 var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, path: '', filename: '', path2: '', filename2: '' };
                                 obj.db.Set(mesh);
@@ -991,6 +991,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 }
                             }
                         });
+                        break;
+                    }
+                case 'inviteAgent':
+                    {
+                        if (obj.parent.parent.mailserver == null) return; // This operation requires the email server
+                        if ((obj.parent.parent.certificates.CommonName == null) || (obj.parent.parent.certificates.CommonName == 'un-configured')) return; // Server name must be configured
+                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
+                        // Get the mesh
+                        var mesh = obj.parent.meshes[command.meshid];
+                        if (mesh) {
+                            if (mesh.mtype != 2) return; // This operation is only allowed for mesh type 2, agent mesh
+
+                            // Check if this user has rights to do this
+                            //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
+
+                            // Perform email invitation
+                            obj.parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid);
+                        }
                         break;
                     }
             }

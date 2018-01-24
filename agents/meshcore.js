@@ -719,6 +719,7 @@ function createMeshCore(agent) {
             // Other side received websocket end of data marker, start sending data on WebRTC channel
             if (this.httprequest.protocol == 1) { // Terminal
                 this.httprequest.process.stdout.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                this.httprequest.process.stderr.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
             } else if (this.httprequest.protocol == 2) { // Desktop
                 this.httprequest.desktop.kvm.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
             }
@@ -731,12 +732,15 @@ function createMeshCore(agent) {
             this.webrtc.on('dataChannel', function (rtcchannel) {
                 sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
                 rtcchannel.xrtc = this;
+                rtcchannel.websocket = this.websocket;
                 this.rtcchannel = rtcchannel;
-                this.rtcchannel.on('data', onTunnelWebRTCControlData);
-                this.rtcchannel.on('end', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed'); });
+                this.websocket.rtcchannel = rtcchannel;
+                this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
+                this.websocket.rtcchannel.on('end', function () { sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed'); });
                 if (this.websocket.httprequest.protocol == 1) { // Terminal
                     // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
                     this.websocket.httprequest.process.stdout.unpipe(this.websocket);
+                    this.websocket.httprequest.process.stderr.unpipe(this.websocket);
                     this.websocket.write("{\"type\":\"webrtc1\"}");  // End of data marker
                 } else if (this.websocket.httprequest.protocol == 2) { // Desktop
                     // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket

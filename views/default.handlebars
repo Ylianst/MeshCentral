@@ -1283,9 +1283,10 @@
         }
 
         function ondockeydown(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeyDown(e);
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyDown(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop) { return desktop.m.handleKeyDown(e); }
+            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             var processed = 0;
             if (Q('viewselect').value < 3) {
@@ -1460,6 +1461,9 @@
             }
             if (mesh.mtype == 2) {
                 r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
+                if (features & 64) {
+                    r += ' <a style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent." onclick=inviteAgentToMesh(\"' + mesh._id + '\")>Invite</a>';
+                }
             }
             return r;
         }
@@ -1568,6 +1572,33 @@
             QV('dlgAddCira2', val == 2);
         }
 
+        // Return true is the input string looks like an email address
+        function checkEmail(str) {
+            var x = str.split('@');
+            var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
+            if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
+            return ok;
+        }
+
+        function inviteAgentToMesh(meshid) {
+            if (xxdialogMode) return;
+            var mesh = meshes[meshid];
+            var meshidx = meshid.substring(5);
+            if (meshidx[0] == '/') meshidx = meshidx.substring(1);
+            var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
+            x += addHtmlValue('E-Mail', '<input id=agentInviteEmail style=width:240px onkeyup=validateAgentInvite()></input>');
+            setDialogMode(2, "Invite Mesh Agent", 3, performAgentInvite, x, meshid);
+            validateAgentInvite();
+        }
+
+        function validateAgentInvite() {
+            QE('idx_dlgOkButton', checkEmail(Q('agentInviteEmail').value));
+        }
+
+        function performAgentInvite(button, meshid) {
+            meshserver.Send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value });
+        }
+
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid];
@@ -1586,7 +1617,7 @@
             //x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
             x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank">Windows executable (.exe)</a>');
-            //x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>');
+            if (debugmode == true) { x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
             // Linux agent install
@@ -2527,7 +2558,9 @@
 
                 // Attribute: Mesh Agent Tag
                 if ((node.agent != null) && (node.agent.tag != null)) {
-                    x += addDeviceAttribute('Agent Tag', node.agent.tag);
+                    var tag = EscapeHtml(node.agent.tag);
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    x += addDeviceAttribute('Agent Tag', tag);
                 }
 
                 // Attribute: Intel AMT
@@ -3700,7 +3733,6 @@
                 if (e.keyCode == 13 && consoleFocus == 0) { p15consoleSend(e); processed = 1; }
                 else if (e.keyCode == 8 && consoleFocus == 0) { var x = box.value; box.value = x.substring(0, x.length - 1); processed = 1; }
                 else if (e.keyCode == 27) { box.value = ''; processed = 1; }
-                else if (e.key.length === 1 && consoleFocus == 0) { box.value = ((box.value + e.key)); processed = 1; }
                 else if ((e.keyCode == 38) || (e.keyCode == 40)) { // Arrow up || Arrow down
                     var hindex = consoleHistory.indexOf(box.value);
                     //console.log(hindex, consoleHistory);
@@ -3709,10 +3741,25 @@
                     else if ((e.keyCode == 40) && (hindex == 0)) { box.value = ''; }
                     processed = 1;
                 }
+                else if (e.key.length === 1) {
+                    //box.value = ((box.value + e.key));
+                    insertTextAtCursor(box, e.key);
+                    processed = 1;
+                }
             } else {
                 if (e.charCode != 0 && consoleFocus == 0) { box.value = ((box.value + String.fromCharCode(e.charCode))); processed = 1; }
             }
             if (processed > 0) { return haltEvent(e); }
+        }
+
+        // Insert text at the cursor location on the 
+        function insertTextAtCursor(ctrl, val) {
+            if (document.selection) { ctrl.focus(); sel = document.selection.createRange(); sel.text = val; }
+            else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+                var start = ctrl.selectionStart, end = ctrl.selectionEnd;
+                ctrl.value = ctrl.value.substring(0, start) + val + ctrl.value.substring(end, ctrl.value.length);
+                ctrl.setSelectionRange(end + 1, end + 1);
+            } else { ctrl.value += myValue; }
         }
 
         var consoleNode;
