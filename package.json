@@ -45,7 +45,7 @@
     "unzip": "^0.1.11",
     "ws": "^3.2.0",
     "xmldom": "^0.1.27",
-    "node-7z": "github:techno-express/node-7z"
+    "node-7z-forall": "github:techno-express/node-7z"
   },
   "optionalDependencies": {
     "node-sspi": "^0.2.2",
