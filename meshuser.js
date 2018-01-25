@@ -19,8 +19,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.parent = parent;
     obj.domain = domain;
     obj.common = parent.common;     
-    var Zip = require('node-7z');  
-    var exePath = { path: obj.path.resolve(__dirname, '..', 'node-7z','binaries',process.platform, process.platform === "win32" ? '7za.exe' : '7za' ) };
+    var Zip = require('node-7z-forall');  
+    var exePath = { path: obj.path.resolve(__dirname, '..', 'node-7z-forall','binaries',process.platform, process.platform === "win32" ? '7za.exe' : '7za' ) };
         
 // Create windows sfx mesh agent    
     function createSfxMeshAgent(mesh, sfxmeshfile) {
