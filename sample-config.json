@@ -1,0 +1,51 @@
+{
+  "__comment__" : "This is a sample configuration file, edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
+  "_settings": {
+    "MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
+    "MongoDbCol": "meshcentral",
+    "Port": 443,
+    "RedirPort": 80,
+    "AllowLoginToken": true,
+    "AllowFraming": true
+  },
+  "_domains": {
+    "": {
+      "title": "MyServer",
+      "title2": "Servername",
+      "userQuota": 1048576,
+      "meshQuota": 248576,
+      "newAccounts": 1,
+      "footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>"
+    },
+    "customer1": {
+      "dns": "customer1.myserver.com",
+      "title": "Customer1",
+      "title2": "TestServer",
+      "newAccounts": 1,
+      "auth": "sspi",
+      "footer": "Test"
+    },
+    "info": {
+      "share": "C:\\ExtraWebSite"
+    }
+  },
+  "_letsencrypt": {
+    "email": "myemail@myserver.com ",
+    "names": "myserver.com,customer1.myserver.com",
+    "rsaKeySize": 3072,
+    "production": false
+  },
+  "_peers": {
+    "serverId": "server1",
+    "servers": {
+      "server1": { "url": "wss://192.168.2.133:443/" },
+      "server2": { "url": "wss://192.168.1.106:443/" }
+    }
+  },
+  "_smtp": {
+    "host": "smtp.myserver.com",
+    "port": 25,
+    "from": "myemail@myserver.com",
+    "tls": false
+  }
+}

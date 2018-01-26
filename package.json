@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.1.3-c",
+  "version": "0.1.3-e",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -17,6 +17,7 @@
   "license": "Apache-2.0",
   "files": [
     "*.js",
+    "sample-config.json",
     "license.txt",
     "readme.txt",
     "agents",

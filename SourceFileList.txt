@@ -1,6 +1,7 @@
 readme.txt
 license.txt
 package.json
+sample-config.json
 *.js
 views/*
 public/*
