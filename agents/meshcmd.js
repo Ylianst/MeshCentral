@@ -94,6 +94,8 @@ function run(argv) {
     if ((typeof args.out) == 'string') { settings.output = args.out; }
     if ((typeof args.output) == 'string') { settings.output = args.output; }
     if ((typeof args.debug) == 'string') { settings.debugLevel = parseInt(args.debug); }
+    if (args.noconsole) { settings.noconsole = true; }
+    if (args.nocommander) { settings.noconsole = true; }
     if (args.lmsdebug) { settings.lmsdebug = true; }
     if (args.tls) { settings.tls = true; }
     if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
@@ -133,7 +135,7 @@ function run(argv) {
     } else if ((settings.action == 'meversion') || (settings.action == 'meversions') || (settings.action == 'mever')) {
         var amtMeiModule = require('amt_heci');
         var amtMei = new amtMeiModule();
-        amtMei.on('error', function (e) { console.log(e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.on('connect', function () {
             this.getVersion(function (val) {
                 console.log("MEI Version = " + val.BiosVersion.toString());
@@ -144,14 +146,14 @@ function run(argv) {
     } else if (settings.action == 'mehashes') {
         var amtMeiModule = require('amt_heci');
         var amtMei = new amtMeiModule();
-        amtMei.on('error', function (e) { console.log(e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.on('connect', function () {
             this.getHashHandles(function (handles) {
                 exitOnCount = handles.length;
                 for (var i = 0; i < handles.length; ++i) {
                     this.getCertHashEntry(handles[i], function (result) {
-                        console.log('----------\r\n' + result.name + ', (' + (result.isDefault ? 'Default' : '') + (result.isActive ? ', Active' : ', Disabled') + ')\r\n' + result.hashAlgorithmStr + ': ' + result.certificateHash);
-                        if (--exitOnCount == 0) { console.log('----------'); exit(1); }
+                        console.log(result.name + ', (' + (result.isDefault ? 'Default' : '') + (result.isActive ? ', Active' : ', Disabled') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash);
+                        if (--exitOnCount == 0) { exit(1); }
                     });
                 }
             });
@@ -159,7 +161,7 @@ function run(argv) {
     } else if (settings.action == 'meinfo') {
         var amtMeiModule = require('amt_heci');
         var amtMei = new amtMeiModule();
-        amtMei.on('error', function (e) { console.log(e); exit(1); return; });
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.on('connect', function () {
             mestate = {};
             this.getVersion(function (val) { for (var version in val.Versions) { if (val.Versions[version].Description == 'AMT') { mestate.ver = val.Versions[version].Version; } } });
@@ -189,7 +191,7 @@ function run(argv) {
         debug(1, "Settings: " + JSON.stringify(settings));
         saveEntireAmtState();
     } else if (settings.action == 'amtlms') {
-        startLms();
+        startLms(function (state) { console.log(['MicroLMS did not start. MicroLMS must run as administrator or LMS any already be active.', 'MicroLMS started.', 'MicroLMS started, MeshCommander on HTTP/16994.'][state]); if (state == 0) { exit(0); } });
     } else {
         console.log('Invalid \"action\" specified.'); exit(1); return;
     }
@@ -197,17 +199,19 @@ function run(argv) {
 
 // Save the entire Intel AMT state
 function saveEntireAmtState() {
+    // See if MicroLMS needs to be started
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(); }
+
     console.log('Fetching all Intel AMT state, this may take a few minutes...');
     var transport = require('amt-wsman-duk-0.2.0');
     var wsman = require('amt-wsman-0.2.0');
     var amt = require('amt-0.2.0');
     wsstack = new wsman(transport, settings.hostname, settings.tls?16993:16992, settings.username, settings.password, settings.tls);
     amtstack = new amt(wsstack);
-    //amtstack.onProcessChanged = onWsmanProcessChanged;
-    //amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], onWsmanResponse);
-
-    //var AllWsman = "CIM_Controller,CIM_CoolingDevice".split(',');
+    amtstack.onProcessChanged = onWsmanProcessChanged;
+    //var AllWsman = "AMT_GeneralSystemDefenseCapabilities".split(',');
     var AllWsman = "AMT_8021xCredentialContext,AMT_8021XProfile,AMT_ActiveFilterStatistics,AMT_AgentPresenceCapabilities,AMT_AgentPresenceInterfacePolicy,AMT_AgentPresenceService,AMT_AgentPresenceWatchdog,AMT_AgentPresenceWatchdogAction,AMT_AlarmClockService,IPS_AlarmClockOccurrence,AMT_AssetTable,AMT_AssetTableService,AMT_AuditLog,AMT_AuditPolicyRule,AMT_AuthorizationService,AMT_BootCapabilities,AMT_BootSettingData,AMT_ComplexFilterEntryBase,AMT_CRL,AMT_CryptographicCapabilities,AMT_EACCredentialContext,AMT_EndpointAccessControlService,AMT_EnvironmentDetectionInterfacePolicy,AMT_EnvironmentDetectionSettingData,AMT_EthernetPortSettings,AMT_EventLogEntry,AMT_EventManagerService,AMT_EventSubscriber,AMT_FilterEntryBase,AMT_FilterInSystemDefensePolicy,AMT_GeneralSettings,AMT_GeneralSystemDefenseCapabilities,AMT_Hdr8021Filter,AMT_HeuristicPacketFilterInterfacePolicy,AMT_HeuristicPacketFilterSettings,AMT_HeuristicPacketFilterStatistics,AMT_InterfacePolicy,AMT_IPHeadersFilter,AMT_KerberosSettingData,AMT_ManagementPresenceRemoteSAP,AMT_MessageLog,AMT_MPSUsernamePassword,AMT_NetworkFilter,AMT_NetworkPortDefaultSystemDefensePolicy,AMT_NetworkPortSystemDefenseCapabilities,AMT_NetworkPortSystemDefensePolicy,AMT_PCIDevice,AMT_PETCapabilities,AMT_PETFilterForTarget,AMT_PETFilterSetting,AMT_ProvisioningCertificateHash,AMT_PublicKeyCertificate,AMT_PublicKeyManagementCapabilities,AMT_PublicKeyManagementService,AMT_PublicPrivateKeyPair,AMT_RedirectionService,AMT_RemoteAccessCapabilities,AMT_RemoteAccessCredentialContext,AMT_RemoteAccessPolicyAppliesToMPS,AMT_RemoteAccessPolicyRule,AMT_RemoteAccessService,AMT_SetupAndConfigurationService,AMT_SNMPEventSubscriber,AMT_StateTransitionCondition,AMT_SystemDefensePolicy,AMT_SystemDefensePolicyInService,AMT_SystemDefenseService,AMT_SystemPowerScheme,AMT_ThirdPartyDataStorageAdministrationService,AMT_ThirdPartyDataStorageService,AMT_TimeSynchronizationService,AMT_TLSCredentialContext,AMT_TLSProtocolEndpoint,AMT_TLSProtocolEndpointCollection,AMT_TLSSettingData,AMT_TrapTargetForService,AMT_UserInitiatedConnectionService,AMT_WebUIService,AMT_WiFiPortConfigurationService,CIM_AbstractIndicationSubscription,CIM_Account,CIM_AccountManagementCapabilities,CIM_AccountManagementService,CIM_AccountOnSystem,CIM_AdminDomain,CIM_AlertIndication,CIM_AssignedIdentity,CIM_AssociatedPowerManagementService,CIM_AuthenticationService,CIM_AuthorizationService,CIM_BIOSElement,CIM_BIOSFeature,CIM_BIOSFeatureBIOSElements,CIM_BootConfigSetting,CIM_BootService,CIM_BootSettingData,CIM_BootSourceSetting,CIM_Capabilities,CIM_Card,CIM_Chassis,CIM_Chip,CIM_Collection,CIM_Component,CIM_ComputerSystem,CIM_ComputerSystemPackage,CIM_ConcreteComponent,CIM_ConcreteDependency,CIM_Controller,CIM_CoolingDevice,CIM_Credential,CIM_CredentialContext,CIM_CredentialManagementService,CIM_Dependency,CIM_DeviceSAPImplementation,CIM_ElementCapabilities,CIM_ElementConformsToProfile,CIM_ElementLocation,CIM_ElementSettingData,CIM_ElementSoftwareIdentity,CIM_ElementStatisticalData,CIM_EnabledLogicalElement,CIM_EnabledLogicalElementCapabilities,CIM_EthernetPort,CIM_Fan,CIM_FilterCollection,CIM_FilterCollectionSubscription,CIM_HostedAccessPoint,CIM_HostedDependency,CIM_HostedService,CIM_Identity,CIM_IEEE8021xCapabilities,CIM_IEEE8021xSettings,CIM_Indication,CIM_IndicationService,CIM_InstalledSoftwareIdentity,CIM_KVMRedirectionSAP,CIM_LANEndpoint,CIM_ListenerDestination,CIM_ListenerDestinationWSManagement,CIM_Location,CIM_Log,CIM_LogEntry,CIM_LogicalDevice,CIM_LogicalElement,CIM_LogicalPort,CIM_LogicalPortCapabilities,CIM_LogManagesRecord,CIM_ManagedCredential,CIM_ManagedElement,CIM_ManagedSystemElement,CIM_MediaAccessDevice,CIM_MemberOfCollection,CIM_Memory,CIM_MessageLog,CIM_NetworkPort,CIM_NetworkPortCapabilities,CIM_NetworkPortConfigurationService,CIM_OrderedComponent,CIM_OwningCollectionElement,CIM_OwningJobElement,CIM_PCIController,CIM_PhysicalComponent,CIM_PhysicalElement,CIM_PhysicalElementLocation,CIM_PhysicalFrame,CIM_PhysicalMemory,CIM_PhysicalPackage,CIM_Policy,CIM_PolicyAction,CIM_PolicyCondition,CIM_PolicyInSystem,CIM_PolicyRule,CIM_PolicyRuleInSystem,CIM_PolicySet,CIM_PolicySetAppliesToElement,CIM_PolicySetInSystem,CIM_PowerManagementCapabilities,CIM_PowerManagementService,CIM_PowerSupply,CIM_Privilege,CIM_PrivilegeManagementCapabilities,CIM_PrivilegeManagementService,CIM_ProcessIndication,CIM_Processor,CIM_ProtocolEndpoint,CIM_ProvidesServiceToElement,CIM_Realizes,CIM_RecordForLog,CIM_RecordLog,CIM_RedirectionService,CIM_ReferencedProfile,CIM_RegisteredProfile,CIM_RemoteAccessAvailableToElement,CIM_RemoteIdentity,CIM_RemotePort,CIM_RemoteServiceAccessPoint,CIM_Role,CIM_RoleBasedAuthorizationService,CIM_RoleBasedManagementCapabilities,CIM_RoleLimitedToTarget,CIM_SAPAvailableForElement,CIM_SecurityService,CIM_Sensor,CIM_Service,CIM_ServiceAccessBySAP,CIM_ServiceAccessPoint,CIM_ServiceAffectsElement,CIM_ServiceAvailableToElement,CIM_ServiceSAPDependency,CIM_ServiceServiceDependency,CIM_SettingData,CIM_SharedCredential,CIM_SoftwareElement,CIM_SoftwareFeature,CIM_SoftwareFeatureSoftwareElements,CIM_SoftwareIdentity,CIM_StatisticalData,CIM_StorageExtent,CIM_System,CIM_SystemBIOS,CIM_SystemComponent,CIM_SystemDevice,CIM_SystemPackaging,CIM_UseOfLog,CIM_Watchdog,CIM_WiFiEndpoint,CIM_WiFiEndpointCapabilities,CIM_WiFiEndpointSettings,CIM_WiFiPort,CIM_WiFiPortCapabilities,IPS_AdminProvisioningRecord,IPS_ClientProvisioningRecord,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IderSessionUsingPort,IPS_IPv6PortSettings,IPS_KVMRedirectionSettingData,IPS_KvmSessionUsingPort,IPS_ManualProvisioningRecord,IPS_OptInService,IPS_ProvisioningAuditRecord,IPS_ProvisioningRecordLog,IPS_RasSessionUsingPort,IPS_ScreenSettingData,IPS_SecIOService,IPS_SessionUsingPort,IPS_SolSessionUsingPort,IPS_TLSProvisioningRecord".split(',');
+    IntelAmtEntireStateProgress = 101;
     IntelAmtEntireStateCalls = 3;
     IntelAmtEntireState = { 'localtime': Date(), 'utctime': new Date().toUTCString(), 'isotime': new Date().toISOString() };
     amtstack.BatchEnum(null, AllWsman, saveEntireAmtStateOk2, null, true);
@@ -215,12 +219,12 @@ function saveEntireAmtState() {
     amtstack.GetMessageLog(saveEntireAmtStateOk4);
 }
 
-//function onWsmanProcessChanged(a, b) { console.log('onWsmanProcessChanged', a, b); }
+function onWsmanProcessChanged(a, b) { var x = Math.floor((a * 100) / b); if (x < IntelAmtEntireStateProgress) { IntelAmtEntireStateProgress = x; console.log((100 - x) + '%'); } }
 //function onWsmanResponse(stack, name, responses, status) { console.log('onWsmanResponse', JSON.stringify(responses), status); exit(1); }
 
-function saveEntireAmtStateOk2(stack, name, responses, status) { IntelAmtEntireState['wsmanenums'] = responses; saveEntireAmtStateDone(); }
-function saveEntireAmtStateOk3(stack, messages) { IntelAmtEntireState['auditlog'] = messages; saveEntireAmtStateDone(); }
-function saveEntireAmtStateOk4(stack, messages) { IntelAmtEntireState['eventlog'] = messages; saveEntireAmtStateDone(); }
+function saveEntireAmtStateOk2(stack, name, responses, status) { if (status == 600) { console.log('ERROR: Unable to connect to Intel(R) AMT.'); exit(2); } IntelAmtEntireState['wsmanenums'] = responses; saveEntireAmtStateDone(); }
+function saveEntireAmtStateOk3(stack, messages, status) { if (status == 600) { console.log('ERROR: Unable to connect to Intel(R) AMT.'); exit(2); } IntelAmtEntireState['auditlog'] = messages; saveEntireAmtStateDone(); }
+function saveEntireAmtStateOk4(stack, messages, tag, status) { if (status == 600) { console.log('ERROR: Unable to connect to Intel(R) AMT.'); exit(2); } IntelAmtEntireState['eventlog'] = messages; saveEntireAmtStateDone(); }
 
 function saveEntireAmtStateDone() {
     if (--IntelAmtEntireStateCalls != 0) return;
@@ -267,7 +271,7 @@ function getAmtInfo(func, tag) {
 }
 
 // Start LMS
-function startLms() {
+function startLms(func) {
     var lme_heci = require('lme_heci');
     var amtLms = null;
     var http = require('http');
@@ -276,49 +280,59 @@ function startLms() {
 
     var amtMeiModule = require('amt_heci');
     amtMei = new amtMeiModule();
-    amtMei.on('error', function (e) { console.log(e); exit(1); return; });
+    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
     //console.log('PTHI Connecting...');
     amtMei.on('connect', function () {
         //console.log("PTHI Connected.");
         amtLms = new lme_heci({ debug: settings.lmsdebug });
-        amtLms.on('error', function (e) { console.log('LME connection failed', e); });
+        amtLms.on('error', function (e) {
+            //console.log('LME connection failed', e);
+            if (func) { func(0); }
+        });
         //console.log('LME Connecting...');
         amtLms.on('connect', function () {
             //console.log("LME Connected.");
-            amtLms.meshCommander = http.createServer();
-            amtLms.meshCommander.listen(16994);
-            amtLms.meshCommander.on('upgrade', function (req, socket, head) {
-                //console.log("WebSocket for " + req.url.split('?')[0]);
-                switch (req.url.split('?')[0]) {
-                    case '/lms.ashx': // MeshCommander control channel (PTHI)
-                        socket.ws = socket.upgradeWebSocket();
-                        socket.ws.on('data', processLmsControlData);
-                        break;
-                    case '/webrelay.ashx': // MeshCommander data channel (LME)
-                        socket.ws = socket.upgradeWebSocket();
-                        amtLms.bindDuplexStream(socket.ws, 'IPv4', 16992);
-                        break;
-                    default:
-                        socket.end();
-                        break;
-                }
-            });
-            amtLms.meshCommander.on('request', function (req, rsp) {
-                //console.log("WebRequest for " + req.url.split('?')[0]);
-                switch (req.url.split('?')[0]) {
-                    case '/': // Serve MeshCommander Web Application for LMS
-                        rsp.writeHead(200, 'OK', { Server: 'JSLMS', 'Cache-Control': 'max-age=0, no-cache', 'X-Frame-Options': 'DENY', 'Content-Type': 'text/html', 'Content-Encoding': 'gzip', 'Transfer-Encoding': 'chunked', ETag: _IntelAmtWebApp_etag });
-                        rsp.end(Buffer.from(_IntelAmtWebApp, 'base64'));
-                        break;
-                    default: // Unknown request
-                        rsp.statusCode = 404;
-                        rsp.statusMessage = "Not Found";
-                        rsp.end();
-                        break;
-                }
+            if (settings.noconsole !== true) {
+                amtLms.meshCommander = http.createServer();
+                amtLms.meshCommander.listen(16994);
+                amtLms.meshCommander.on('upgrade', function (req, socket, head) {
+                    //console.log("WebSocket for " + req.url.split('?')[0]);
+                    switch (req.url.split('?')[0]) {
+                        case '/lms.ashx': // MeshCommander control channel (PTHI)
+                            socket.ws = socket.upgradeWebSocket();
+                            socket.ws.on('data', processLmsControlData);
+                            break;
+                        case '/webrelay.ashx': // MeshCommander data channel (LME)
+                            socket.ws = socket.upgradeWebSocket();
+                            amtLms.bindDuplexStream(socket.ws, 'IPv4', 16992);
+                            break;
+                        default:
+                            socket.end();
+                            break;
+                    }
+                });
+                amtLms.meshCommander.on('request', function (req, rsp) {
+                    //console.log("WebRequest for " + req.url.split('?')[0]);
+                    switch (req.url.split('?')[0]) {
+                        case '/': // Serve MeshCommander Web Application for LMS
+                            rsp.writeHead(200, 'OK', { Server: 'JSLMS', 'Cache-Control': 'max-age=0, no-cache', 'X-Frame-Options': 'DENY', 'Content-Type': 'text/html', 'Content-Encoding': 'gzip', 'Transfer-Encoding': 'chunked', ETag: _IntelAmtWebApp_etag });
+                            rsp.end(Buffer.from(_IntelAmtWebApp, 'base64'));
+                            break;
+                        default: // Unknown request
+                            rsp.statusCode = 404;
+                            rsp.statusMessage = "Not Found";
+                            rsp.end();
+                            break;
+                    }
 
-            });
-            console.log("LMS started, MeshCommander on HTTP/16994.");
+                });
+                //console.log("LMS started, MeshCommander on HTTP/16994.");
+                if (func) { func(2); }
+            } else {
+                //console.log("LMS started.");
+                if (func) { func(1); }
+            }
+            
         });
     });
 }
@@ -374,7 +388,7 @@ function processLmsControlData(data) {
 // Starts the router
 function startRouter() {
     tcpserver = net.createServer(OnTcpClientConnected);
-    tcpserver.on('error', function (err) { console.log(err); exit(0); return; });
+    tcpserver.on('error', function (e) { console.log('ERROR: ' + e); exit(0); return; });
     tcpserver.listen(settings.localPort, function () {
         // We started listening.
         if (settings.remoteName == null) {
@@ -405,7 +419,7 @@ function OnTcpClientConnected(c) {
         c.websocket.tcp = c;
         c.websocket.tunneling = false;
         c.websocket.upgrade = OnWebSocket;
-        c.websocket.on('error', function (msg) { console.log(msg); });
+        c.websocket.on('error', function (e) { console.log('ERROR: ' + e); });
         c.websocket.end();
     } catch (e) { debug(2, e); }
 }
@@ -576,4 +590,4 @@ function deleteStorage(name, func, noretry) {
     req.end();
 }
 
-try { run(process.argv); } catch (e) { console.log(e); }
+try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); }
