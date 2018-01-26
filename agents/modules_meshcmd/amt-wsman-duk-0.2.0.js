@@ -33,6 +33,7 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
     obj.pass = pass;
     obj.tls = tls;
     obj.digest = null;
+    obj.RequestCount = 0;
 
     // Private method
     //   pri = priority, if set to 1, the call is high priority and put on top of the stack.
@@ -58,13 +59,16 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
     obj.PerformAjaxEx = function (postdata, callback, tag, url, action) {
         if (obj.FailAllError != 0) { if (obj.FailAllError != 999) { obj.gotNextMessagesError({ status: obj.FailAllError }, 'error', null, [postdata, callback, tag]); } return; }
         if (!postdata) postdata = "";
-        // console.log("SEND: " + postdata); // DEBUG
+        //console.log("SEND: " + postdata); // DEBUG
 
         // We are in a DukTape environement
         if (obj.digest == null) { obj.digest = require('http-digest').create(obj.user, obj.pass); obj.digest.http = require('http'); }
-        var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port };
-        var req = obj.digest.request(request,
-        function (response) {
+        var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { console.log('checkServerIdentity', JSON.stringify(cert)); } };
+        var req = obj.digest.request(request);
+        //console.log('Request ' + (obj.RequestCount++));
+        req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
+        req.on('response', function (response) {
+            //console.log('Response: ' + response.statusCode);
             if (response.statusCode != 200) {
                 console.log('ERR:' + JSON.stringify(response));
                 obj.gotNextMessagesError({ status: response.statusCode }, 'error', null, [postdata, callback, tag]);
@@ -74,11 +78,11 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
                 response.on('end', function () { obj.gotNextMessages(response.acc, 'success', { status: response.statusCode }, [postdata, callback, tag]); });
             }
         });
-        req.on('error', function (e) { console.log(JSON.stringify(e)); obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
 
         // Send POST body, this work with binary.
         req.write(postdata);
         req.end();
+        obj.ActiveAjaxCount++;
         return req;
     }
 
@@ -101,7 +105,7 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
         obj.ActiveAjaxCount--;
         if (obj.FailAllError == 999) return;
         if (obj.FailAllError != 0) { callArgs[1](null, obj.FailAllError, callArgs[2]); return; }
-        // if (s != 200) { console.log("ERROR, status=" + status + "\r\n\r\nreq=" + callArgs[0]); } // Debug: Display the request & response if something did not work.
+        //if (status != 200) { console.log("ERROR, status=" + status + "\r\n\r\nreq=" + callArgs[0]); } // Debug: Display the request & response if something did not work.
         if (obj.FailAllError != 999) { callArgs[1]({ Header: { HttpError: request.status } }, request.status, callArgs[2]); }
         obj.PerformNextAjax();
     }

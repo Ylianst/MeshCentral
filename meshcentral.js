@@ -49,7 +49,7 @@ function CreateMeshCentralServer() {
     obj.currentVer = null;
     obj.serverKey = new Buffer(obj.crypto.randomBytes(32), 'binary');
     obj.loginCookieEncryptionKey = null;
-    try { obj.currentVer = JSON.parse(require('fs').readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
+    try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
@@ -200,14 +200,18 @@ function CreateMeshCentralServer() {
         if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
 
         // Read configuration file if present and change arguments.
-        if (require('fs').existsSync(obj.path.join(obj.datapath, 'config.json'))) {
+        var configFilePath = obj.path.join(obj.datapath, 'config.json');
+        if (obj.fs.existsSync(configFilePath)) {
             // Load and validate the configuration file
-            try { obj.config = require(obj.path.join(obj.datapath, 'config.json')); } catch (e) { console.log('ERROR: Unable to parse ./data/config.json.'); return; }
+            try { obj.config = require(configFilePath); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return; }
             if (obj.config.domains == null) { obj.config.domains = {}; }
             for (var i in obj.config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return; } }
-            
             // Set the command line arguments to the config file if they are not present
             if (obj.config.settings) { for (var i in obj.config.settings) { if (obj.args[i] == null) obj.args[i] = obj.config.settings[i]; } }
+        } else {
+            // Copy the "sample-config.json" to give users a starting point
+            var sampleConfigPath = obj.path.join(__dirname, 'sample-config.json');
+            if (obj.fs.existsSync(sampleConfigPath)) { obj.fs.createReadStream(sampleConfigPath).pipe(obj.fs.createWriteStream(configFilePath)); }
         }
         obj.common.objKeysToLower(obj.config); // Lower case all keys in the config file
         
@@ -399,12 +403,12 @@ function CreateMeshCentralServer() {
                 }
 
                 // Setup and start the MPS server
-                if (obj.args.lanonly != true) {
+                if ((obj.args.lanonly != true) && (obj.args.mpsport !== 0)) {
                     obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
                 }
 
                 // Setup and start the legacy swarm server
-                if (obj.certificates.swarmserver != null) {
+                if ((obj.certificates.swarmserver != null) && (obj.args.swarmport !== 0)) {
                     if (obj.args.swarmport == null) { obj.args.swarmport = 8080; }
                     obj.swarmserver = require('./swarmserver.js').CreateSwarmServer(obj, obj.db, obj.args, obj.certificates);
                 }
@@ -474,9 +478,8 @@ function CreateMeshCentralServer() {
             if (restoreFile) {
                 obj.debug(1, 'Server stopped, updating settings: ' + restoreFile);
                 console.log('Updating settings folder...');
-                var fs = require('fs');
                 var unzip = require('unzip');
-                var rs = fs.createReadStream(restoreFile);
+                var rs = obj.fs.createReadStream(restoreFile);
                 rs.on('end', () => { setTimeout(function () { fs.unlinkSync(restoreFile); process.exit(123); }, 500); });
                 rs.pipe(unzip.Extract({ path: obj.datapath }));
             } else {

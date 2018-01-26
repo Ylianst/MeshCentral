@@ -800,7 +800,7 @@ function createMeshCore(agent) {
                 }
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
-                    if (amtLmsState >= 0) { response += '\r\nBuilt -in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
+                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';
                     var oldNodeId = db.Get('OldNodeId');

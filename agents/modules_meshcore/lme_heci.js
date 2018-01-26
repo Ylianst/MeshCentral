@@ -16,6 +16,7 @@ limitations under the License.
 
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;
+var lme_port_offset = 0; // Debug: Set this to "-100" to bind to 16892 & 16893 and IN_ADDRANY. This is for LMS debugging.
 
 
 var APF_DISCONNECT = 1;
@@ -68,9 +69,7 @@ function stream_bufferedWrite() {
         return (this._readCheckImmediate == undefined);
     };
     this.write = function (chunk) {
-        for (var args in arguments) {
-            if (typeof (arguments[args]) == 'function') { this.once('drain', arguments[args]); break; }
-        }
+        for (var args in arguments) { if (typeof (arguments[args]) == 'function') { this.once('drain', arguments[args]); break; } }
         var tmp = Buffer.alloc(chunk.length);
         chunk.copy(tmp);
         this.buffer.push({ offset: 0, data: tmp });
@@ -90,8 +89,7 @@ function stream_bufferedWrite() {
                 list.push(this.buffer[0].data.slice(offset, offset + size - bytesRead));
                 this.buffer[0].offset += (size - bytesRead);
                 bytesRead += (size - bytesRead);
-            }
-            else {
+            } else {
                 // Reading the entire thing
                 list.push(this.buffer[0].data.slice(offset));
                 bytesRead += len;
@@ -101,12 +99,9 @@ function stream_bufferedWrite() {
         this._readCheckImmediate = setImmediate(function (buffered) {
             buffered._readCheckImmediate = undefined;
             if (buffered.buffer.length == 0) {
-                // drained
-                buffered.emit('drain');
-            }
-            else {
-                // not drained
-                buffered.emit('readable');
+                buffered.emit('drain'); // Drained
+            } else {
+                buffered.emit('readable'); // Not drained
             }
         }, this);
         return (Buffer.concat(list));
@@ -114,11 +109,13 @@ function stream_bufferedWrite() {
 }
 
 
-function lme_heci() {
+function lme_heci(options) {
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
     emitterUtils.createEvent('connect');
     
+    if (options.debug == true) { lme_port_offset = -100; } // LMS debug mode
+
     var heci = require('heci');
     this.INITIAL_RXWINDOW_SIZE = 4096;
     
@@ -147,8 +144,7 @@ function lme_heci() {
                         outBuffer.write(name.toString(), 5);
                         this.write(outBuffer);
                         //console.log('Answering APF_SERVICE_REQUEST');
-                    }
-                    else {
+                    } else {
                         //console.log('UNKNOWN APF_SERVICE_REQUEST');
                     }
                     break;
@@ -166,10 +162,14 @@ function lme_heci() {
                             }
                             this[name][port] = require('net').createServer();
                             this[name][port].HECI = this;
-                            this[name][port].listen({ port: port, host: '127.0.0.1' });
+                            if (lme_port_offset == 0) {
+                                this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
+                            } else {
+                                this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
+                            }
                             this[name][port].on('connection', function (socket) {
                                 //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
-                                this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort);
+                                this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);
                             });
                             var outBuffer = Buffer.alloc(5);
                             outBuffer.writeUInt8(81, 0);
@@ -246,8 +246,7 @@ function lme_heci() {
                         if (!this.sockets[rChannelId].bufferedStream.isEmpty() && this.sockets[rChannelId].bufferedStream.isWaiting()) {
                             this.sockets[rChannelId].bufferedStream.emit('readable');
                         }
-                    }
-                    else {
+                    } else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_WINDOW_ADJUST');
                     }
                     break;
@@ -265,8 +264,7 @@ function lme_heci() {
                             outBuffer.writeUInt32BE(written, 5);
                             this.HECI.write(outBuffer);
                         });
-                    }
-                    else {
+                    } else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_DATA');
                     }
                     break;
@@ -281,8 +279,7 @@ function lme_heci() {
                         buffer.writeUInt8(APF_CHANNEL_CLOSE, 0);
                         buffer.writeUInt32BE(amtId, 1);
                         this.write(buffer);
-                    }
-                    else {
+                    } else {
                         //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_CLOSE');
                     }
                     break;
@@ -309,12 +306,10 @@ function lme_heci() {
             if (remoteFamily == 'IPv6') {
                 buffer.writeUInt32BE(3);
                 buffer.write('::1');
-            }
-            else {
+            } else {
                 buffer.writeUInt32BE(9);
                 buffer.write('127.0.0.1');
             }
-            
             buffer.writeUInt32BE(localPort);
         }
         this._LME.write(buffer.buffer);

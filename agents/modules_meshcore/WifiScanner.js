@@ -1,19 +1,3 @@
-/*
-Copyright 2018 Intel Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 var MemoryStream = require('MemoryStream');
 var WindowsWireless = new Buffer([
 0x0A, 0x66, 0x75, 0x6E, 0x63, 0x74, 0x69, 0x6F, 0x6E, 0x20, 0x5F, 0x53, 0x63, 0x61, 0x6E, 0x28, 0x29, 0x0A, 0x7B, 0x0A, 0x20, 0x20, 0x20, 0x20, 0x76, 0x61, 0x72, 0x20, 0x77, 0x6C, 0x61, 0x6E,
@@ -187,7 +171,8 @@ function AccessPoint(_ssid, _bssid, _lq)
 }
 AccessPoint.prototype.toString = function ()
 {
-    return (this.ssid + " [" + this.bssid + "]: " + this.lq);
+    return ("[" + this.bssid + "]: " + this.ssid + " (" + this.lq + ")");
+    //return (this.ssid + " [" + this.bssid + "]: " + this.lq);
 }
 
 function WiFiScanner()
@@ -232,12 +217,12 @@ function WiFiScanner()
             }
             if (wlan != null)
             {
-                this.child = require('ILibProcessPipe').CreateProcess("/sbin/iwlist", "iwlist", wlan, "scan");
+                this.child = require('child_process').execFile('/sbin/iwlist', ['iwlist', wlan, 'scan']);
                 this.child.parent = this;
                 this.child.ms = new MemoryStream();
                 this.child.ms.parent = this.child;
-                this.child.on('data', function (buffer) { this.ms.write(buffer); });
-                this.child.on('end', function () { this.ms.end(); });
+                this.child.stdout.on('data', function (buffer) { this.parent.ms.write(buffer); });
+                this.child.on('exit', function () { this.ms.end(); });
                 this.child.ms.on('end', function ()
                 {
                     var str = this.buffer.toString();
@@ -262,6 +247,11 @@ function WiFiScanner()
                             if (lnblock.startsWith('Signal level='))
                             {
                                 _lq = lnblock.slice(13,lnblock.length-4);
+                            }
+                            else if (lnblock.startsWith('Quality='))
+                            {
+                                _lq = lnblock.slice(8, 10);
+                                var scale = lnblock.slice(11, 13);
                             }
                         }
                         this.parent.parent.emit('accessPoint', new AccessPoint(_ssid, _bssid, _lq));
