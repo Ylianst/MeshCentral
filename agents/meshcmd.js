@@ -39,6 +39,7 @@ var settings = {
 
 // Check the server certificate fingerprint
 function onVerifyServer(clientName, certs) {
+    if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverHttpsHash) { return; } } } catch (e) { }
     if (serverhash != null) { console.log('Error: Failed to verify server certificate.'); throw 'Invalid server certificate'; }
 }
@@ -388,7 +389,7 @@ function processLmsControlData(data) {
 // Starts the router
 function startRouter() {
     tcpserver = net.createServer(OnTcpClientConnected);
-    tcpserver.on('error', function (e) { console.log('ERROR: ' + e); exit(0); return; });
+    tcpserver.on('error', function (e) { console.log('ERRORa: ' + JSON.stringify(e)); exit(0); return; });
     tcpserver.listen(settings.localPort, function () {
         // We started listening.
         if (settings.remoteName == null) {
@@ -410,16 +411,16 @@ function OnTcpClientConnected(c) {
         debug(1, 'Client connected');
         c.on('end', function () { disconnectTunnel(this, this.websocket, 'Client closed'); });
         c.pause();
-
         try {
             options = http.parseUri(settings.serverUrl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remoteNodeId + '&tcpport=' + settings.remotePort);
         } catch (e) { console.log('Unable to parse \"serverUrl\".'); process.exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
+        options.rejectUnauthorized = false;
         c.websocket = http.request(options);
         c.websocket.tcp = c;
         c.websocket.tunneling = false;
         c.websocket.upgrade = OnWebSocket;
-        c.websocket.on('error', function (e) { console.log('ERROR: ' + e); });
+        c.websocket.on('error', function (e) { console.log('ERROR: ' + JSON.stringify(e)); });
         c.websocket.end();
     } catch (e) { debug(2, e); }
 }
@@ -576,7 +577,7 @@ function verifyStorage(name, data, func) {
     req.on('response', function (response) {
         response.ptr = 0;
         response.ok = true;
-        response.on('data', function (data2) { if (data2 != new Buffer(data.slice(response.ptr, response.ptr + data2.length))) { response.ok = false; console.log('Verifiy failed (' + response.ptr + ', ' + data2.length + ').'); } response.ptr += data2.length; });
+        response.on('data', function (data2) { if (data2.toString('hex') != data.slice(response.ptr, response.ptr + data2.length).toString('hex')) { response.ok = false; console.log('Verifiy failed (' + response.ptr + ', ' + data2.length + ').'); } response.ptr += data2.length; });
         response.on('end', function () { if (func != null) { func(response.ok); } });
     });
     req.end();
