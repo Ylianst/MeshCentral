@@ -1404,6 +1404,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.handleMeshAgentRequest = function (req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
+
+        // If required, check if this user has rights to do this
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
+
         if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
@@ -1418,10 +1422,12 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     if (meshes.length != 1) { res.sendStatus(401); return; }
                     var mesh = meshes[0];
 
-                    // Check if this user has rights to do this
-                    //var user = obj.users[req.session.userid];
-                    //if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
-                    //if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+                    // If required, check if this user has rights to do this
+                    if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+                        var user = obj.users[req.session.userid];
+                        if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+                        if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+                    }
 
                     var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                     var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
@@ -1449,19 +1455,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
             res.statusCode = 200;
             obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: new Buffer(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
-
-            /*
-            // Load the agent
-            obj.fs.readFile(argentInfo.path, function (err, agentexe) {
-                if (err != null) { res.sendStatus(404); return; }
-                // Send out merged meshcmd
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
-                var meshcmdbuf = new Buffer(obj.parent.defaultMeshCmd, 'utf8'), tail = new Buffer(8);
-                tail.writeInt32BE(meshcmdbuf.length, 0);
-                tail.writeInt32BE(agentexe.length + meshcmdbuf.length + 8, 4);
-                res.send(Buffer.concat([agentexe, meshcmdbuf, tail]));
-            });
-            */
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
             if (domain == null) { res.sendStatus(404); return; }
@@ -1531,16 +1524,21 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        
+
+        // If required, check if this user has rights to do this
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
+
         // Query the meshid
         obj.db.Get('mesh/' + domain.id + '/' + req.query.id, function (err, meshes) {
             if (meshes.length != 1) { res.sendStatus(401); return; }
             var mesh = meshes[0];
-            
-            // Check if this user has rights to do this
-            //var user = obj.users[req.session.userid];
-            //if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
-            //if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+
+            // If needed, check if this user has rights to do this
+            if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+                var user = obj.users[req.session.userid];
+                if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+                if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+            }
 
             var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
             var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();

@@ -21,7 +21,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     if (obj.args.tlsoffload) {
         obj.server = net.createServer(onConnection);
     } else {
-        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true }, onConnection);
+        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false }, onConnection);
     }
 
     obj.server.listen(args.mpsport, function () { console.log('MeshCentral Intel(R) AMT server running on ' + certificates.CommonName + ':' + args.mpsport + '.'); }).on('error', function (err) { console.error('ERROR: MeshCentral Intel(R) AMT server port ' + args.mpsport + ' is not available.'); if (args.exactports) { process.exit(); } });

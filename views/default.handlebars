@@ -3358,7 +3358,12 @@
                 p13filetree = data;
                 p13updateFiles(checkedNames);
             } else {
-                if ((data.path.replace(/\//g, "\\") == p13targetpath.replace(/\//g, "\\")) || ((data.path == '\\') && (p13targetpath == ''))) {
+                // Make both paths use the same seperator not start with /
+                var x1 = data.path.replace(/\//g, "\\");
+                var x2 = p13targetpath.replace(/\//g, "\\");
+                while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
+                while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
+                if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
                     // This is a different folder
                     p13filetree = data;
                     p13updateFiles();

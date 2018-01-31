@@ -69,6 +69,7 @@
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="webserver.js" />
+    <Content Include="LICENSE" />
     <Content Include="package.json" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.application" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.exe.config.deploy" />
@@ -165,6 +166,7 @@
     <Content Include="public\styles\font-awesome\scss\_variables.scss" />
     <Content Include="public\styles\style.css" />
     <Content Include="readme.txt" />
+    <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
