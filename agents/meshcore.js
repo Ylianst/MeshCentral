@@ -73,7 +73,7 @@ function createMeshCore(agent) {
     
     // Try to load up the MEI module
     try {
-        var amtMeiLib = require('amt_heci');
+        var amtMeiLib = require('amt-mei');
         amtMeiConnected = 1;
         amtMei = new amtMeiLib();
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
@@ -82,7 +82,7 @@ function createMeshCore(agent) {
     
     // Try to load up the WIFI scanner
     try {
-        var wifiScannerLib = require('WifiScanner');
+        var wifiScannerLib = require('wifi-scanner');
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
     } catch (e) { wifiScannerLib = null; wifiScanner = null; }
@@ -1211,7 +1211,7 @@ function createMeshCore(agent) {
         
         // Launch LMS
         try {
-            var lme_heci = require('lme_heci');
+            var lme_heci = require('amt-lme');
             amtLmsState = 1;
             amtLms = new lme_heci();
             amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
