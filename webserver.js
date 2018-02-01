@@ -72,7 +72,6 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.tlsSniCredentials;
     obj.dnsDomains = {};
 
-
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
     const MESHRIGHT_MANAGEUSERS = 2;
@@ -140,14 +139,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // Setup the HTTP server without TLS
         obj.expressWs = require('express-ws')(obj.app);
     } else {
-        // Setup the HTTP server with TLS
-        if (obj.tlsSniCredentials != null) {
-            // We have multiple web server certificate used depending on the domain name
-            obj.tlsServer = require('https').createServer({ SNICallback: TlsSniCallback, cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true }, obj.app);
-        } else {
-            // We have a single web server certificate
-            obj.tlsServer = require('https').createServer({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true }, obj.app);
-        }
+        // Setup the HTTP server with TLS, use only TLS 1.2 and higher.
+        var tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_NO_TLSv1 | obj.constants.SSL_OP_NO_TLSv11 };
+        if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
+        obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
     
