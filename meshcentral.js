@@ -9,7 +9,7 @@
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
 
-function CreateMeshCentralServer() {
+function CreateMeshCentralServer(config) {
     var obj = {};
     obj.db;
     obj.webserver;
@@ -33,7 +33,7 @@ function CreateMeshCentralServer() {
     obj.connectivityByNode = {};      // This object keeps a list of all connected CIRA and agents, by nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
     obj.peerConnectivityByNode = {};  // This object keeps a list of all connected CIRA and agents of peers, by serverid->nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
     obj.debugLevel = 0;
-    obj.config = {};                  // Configuration file
+    obj.config = config;              // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
     obj.certificateOperations = null;
     obj.defaultMeshCmd = null;
@@ -82,6 +82,7 @@ function CreateMeshCentralServer() {
         var validArguments = ['_', 'notls', 'user', 'port', 'mpsport', 'redirport', 'cert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
+        for (var i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
             console.log('MeshCentral2 Beta 2, a web-based remote computer management web portal.\r\n');
@@ -198,22 +199,6 @@ function CreateMeshCentralServer() {
         // Look to see if data and/or file path is specified
         if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
         if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
-
-        // Read configuration file if present and change arguments.
-        var configFilePath = obj.path.join(obj.datapath, 'config.json');
-        if (obj.fs.existsSync(configFilePath)) {
-            // Load and validate the configuration file
-            try { obj.config = require(configFilePath); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return; }
-            if (obj.config.domains == null) { obj.config.domains = {}; }
-            for (var i in obj.config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return; } }
-            // Set the command line arguments to the config file if they are not present
-            if (obj.config.settings) { for (var i in obj.config.settings) { if (obj.args[i] == null) obj.args[i] = obj.config.settings[i]; } }
-        } else {
-            // Copy the "sample-config.json" to give users a starting point
-            var sampleConfigPath = obj.path.join(__dirname, 'sample-config.json');
-            if (obj.fs.existsSync(sampleConfigPath)) { obj.fs.createReadStream(sampleConfigPath).pipe(obj.fs.createWriteStream(configFilePath)); }
-        }
-        obj.common.objKeysToLower(obj.config); // Lower case all keys in the config file
         
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
         var xenv = ['user', 'port', 'mpsport', 'redirport', 'exactport', 'debug'];
@@ -1033,10 +1018,49 @@ function CreateMeshCentralServer() {
     return obj;
 }
 
+// Return the server configuration
+function getConfig() {
+    // Figure out the datapath location
+    var fs = require('fs');
+    var path = require('path');
+    var datapath = null;
+    var args = require('minimist')(process.argv.slice(2));
+    if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
+        datapath = path.join(__dirname, '../../meshcentral-data');
+    } else {
+        datapath = path.join(__dirname, '../meshcentral-data');
+    }
+    if (args.datapath) { datapath = args.datapath; }
+    try { fs.mkdirSync(datapath); } catch (e) { }
+
+    // Read configuration file if present and change arguments.
+    var config = {}, configFilePath = path.join(datapath, 'config.json');
+    if (fs.existsSync(configFilePath)) {
+        // Load and validate the configuration file
+        try { config = require(configFilePath); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
+        if (config.domains == null) { config.domains = {}; }
+        for (var i in config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return null; } }
+    } else {
+        // Copy the "sample-config.json" to give users a starting point
+        var sampleConfigPath = path.join(__dirname, 'sample-config.json');
+        if (fs.existsSync(sampleConfigPath)) { fs.createReadStream(sampleConfigPath).pipe(fs.createWriteStream(configFilePath)); }
+    }
+
+    // Set the command line arguments to the config file if they are not present
+    if (!config.settings) { config.settings = {}; }
+    for (var i in args) { config.settings[i] = args[i]; }
+
+    // Lower case all keys in the config file
+    require('./common.js').objKeysToLower(config);
+    return config;
+}
+
+// Check if a list of modules are present and install any missing ones
 function InstallModules(modules, func) {
     if (modules.length > 0) { InstallModule(modules.shift(), InstallModules, modules, func); } else { func(); }
 }
 
+// Check if a module is present and install it if missing
 function InstallModule(modulename, func, tag1, tag2) {
     try {
         var module = require(modulename);
@@ -1057,10 +1081,20 @@ function InstallModule(modulename, func, tag1, tag2) {
 // Detect CTRL-C on Linux and stop nicely
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
-// Build the list of required modules
-var modules = ['nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'minimist', 'nodemailer', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
-if (require('os').platform() == 'win32') { modules.push("node-sspi"); modules.push("node-windows"); }
-
-// Run as a command line, if we are not using service arguments, don't need to install the service package.
+// Load the really basic modules
 var meshserver = null;
-InstallModules(modules, function () { meshserver = CreateMeshCentralServer(); meshserver.Start(); });
+InstallModules(['minimist'], function () {
+    // Get the server configuration
+    var config = getConfig();
+    if (config == null) { process.exit(); }
+
+    // Build the list of required modules
+    var modules = ['ws', 'nedb', 'https', 'unzip', 'xmldom', 'express', 'mongojs', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+    if (require('os').platform() == 'win32') { modules.push('node-sspi'); modules.push('node-windows'); } // Add Windows modules
+    if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+    if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
+    if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
+
+    // Install any missing modules and launch the server
+    InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config); meshserver.Start(); });
+});

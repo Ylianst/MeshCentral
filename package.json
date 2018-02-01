@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.1.3-r",
+  "version": "0.1.3-v",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -29,31 +29,19 @@
     "archiver": "^1.3.0",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
-    "connect-redis": "^3.3.2",
+    "connect-redis": "^3.3.3",
     "express": "^4.16.2",
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.6",
     "express-ws": "^2.0.0",
     "meshcentral": "*",
     "minimist": "^1.2.0",
-    "mongojs": "^2.4.1",
     "multiparty": "^4.1.3",
     "nedb": "^1.8.0",
     "node-forge": "^0.6.49",
-    "node-windows": "^0.1.14",
-    "nodemailer": "^4.4.1",
     "unzip": "^0.1.11",
-    "ws": "^3.2.0",
+    "ws": "^3.3.3",
     "xmldom": "^0.1.27"
-  },
-  "optionalDependencies": {
-    "node-sspi": "^0.2.2",
-    "node-windows": "^0.1.14",
-    "mongojs": "^2.4.0",
-    "greenlock": "^2.1.18",
-    "le-store-certbot": "^2.0.5",
-    "le-challenge-fs": "^2.0.8",
-    "le-acme-core": "^2.1.1"
   },
   "devDependencies": {},
   "readme": "readme.txt"

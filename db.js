@@ -25,7 +25,7 @@ module.exports.CreateDB = function (args, datapath) {
     if (args.mongodb) {
         // Use MongoDB
         obj.databaseType = 2;
-        var Datastore = require("mongojs");
+        var Datastore = require('mongojs');
         var db = Datastore(args.mongodb);
         var dbcollection = 'meshcentral';
         if (args.mongodbcol) { dbcollection = args.mongodbcol; }
