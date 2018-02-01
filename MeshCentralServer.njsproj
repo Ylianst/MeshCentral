@@ -20,6 +20,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
+    <Compile Include="agents\meshcmd.js" />
     <Compile Include="agents\meshcore.js" />
     <Compile Include="agents\modules_meshcmd\amt-0.2.0.js" />
     <Compile Include="agents\modules_meshcmd\amt-scanner.js" />
@@ -28,10 +29,11 @@
     <Compile Include="agents\modules_meshcmd\amt-wsman-duk-0.2.0.js" />
     <Compile Include="agents\modules_meshcmd\amt_heci.js" />
     <Compile Include="agents\modules_meshcmd\lme_heci.js" />
+    <Compile Include="agents\modules_meshcore\amt-lme.js" />
+    <Compile Include="agents\modules_meshcore\amt-mei.js" />
     <Compile Include="agents\modules_meshcore\amt-scanner.js" />
-    <Compile Include="agents\modules_meshcore\amt_heci.js" />
-    <Compile Include="agents\modules_meshcore\lme_heci.js" />
-    <Compile Include="agents\modules_meshcore\WifiScanner.js" />
+    <Compile Include="agents\modules_meshcore\amt-xml.js" />
+    <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amtevents.js" />
     <Compile Include="amtscanner.js" />
