@@ -317,8 +317,8 @@ function startLms(func) {
             //console.log('LME connection failed', e);
             if (func) { func(amtLms.connected == false?0:3); }
         });
-        amtLms.on('notify', function (data, options) {
-            //console.log('notify', data, options);
+        amtLms.on('notify', function (data, options, str) {
+            if (str != null) { console.log(str); } else { console.log(JSON.stringify(data)); }
         });
         //console.log('LME Connecting...');
         amtLms.on('connect', function () {

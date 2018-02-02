@@ -3731,7 +3731,7 @@
         }
 
         //
-        // MESH AGENT CONSOLE
+        // CONSOLE
         //
 
         function agentConsoleHandleKeys(e) {
@@ -3826,7 +3826,7 @@
 
         // Handle Mesh Agent console data
         function p15consoleReceive(node, data) {
-            data = '<div>' + EscapeHtmlBreaks(data) + '</div>'
+            data = '<div>' + data + '</div>'
             if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
             if (consoleNode == node) {
                 Q('p15agentConsoleText').innerHTML += data;

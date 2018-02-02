@@ -37,6 +37,7 @@ function createMeshCore(agent) {
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
+    var lastException = null;
 
     /*
     var AMTScanner = require("AMTScanner");
@@ -78,14 +79,14 @@ function createMeshCore(agent) {
         amtMei = new amtMeiLib();
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
         amtMei.on('connect', function () { amtMeiConnected = 2; getAmtInfo(); });
-    } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
+    } catch (e) { lastException = e; amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
     
     // Try to load up the WIFI scanner
     try {
         var wifiScannerLib = require('wifi-scanner');
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
-    } catch (e) { wifiScannerLib = null; wifiScanner = null; }
+    } catch (e) { lastException = e; wifiScannerLib = null; wifiScanner = null; }
     
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -800,12 +801,13 @@ function createMeshCore(agent) {
                 }
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
-                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
+                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected', 'Exception'][amtLmsState] + '.'; }
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     response += '\r\ServerState: ' + meshServerConnectionState + '.';
+                    if (lastException != null) { response += '\r\LastException: ' + JSON.stringify(lastException) + '.'; }
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -1161,42 +1163,17 @@ function createMeshCore(agent) {
     }
     
     // Called on MicroLMS Intel AMT user notification
-    function handleAmtNotification(notification) {
-        var amtMessage = notification.messageId;
-        var amtMessageArg = notification.messageArguments;
-        var notify = null;
-        
+    function handleAmtNotification(notifyMsg) {
+        if ((notifyMsg == null) || (notifyMsg.Body == null) || (notifyMsg.Body.MessageID == null) || (notifyMsg.Body.MessageArguments == null)) return null;
+        var amtMessage = notifyMsg.Body.MessageID, amtMessageArg = notifyMsg.Body.MessageArguments[0], notify = null;
+
         switch (amtMessage) {
-            case 'iAMT0050': {
-                // Serial over lan
-                if (amtMessageArg == '48') {
-                    // Connected
-                    notify = 'Intel&reg; AMT Serial-over-LAN connected';
-                }
-                else if (amtMessageArg == '49') {
-                    // Disconnected
-                    notify = 'Intel&reg; AMT Serial-over-LAN disconnected';
-                }
-            }
-            case 'iAMT0052': {
-                // HWKVM
-                if (amtMessageArg == '1') {
-                    // Connected
-                    notify = 'Intel&reg; AMT KVM connected';
-                }
-                else if (amtMessageArg == '2') {
-                    // Disconnected
-                    notify = 'Intel&reg; AMT KVM disconnected';
-                }
-                break;
-            }
+            case 'iAMT0050': { if (amtMessageArg == '48') { notify = 'Intel&reg; AMT Serial-over-LAN connected'; } else if (amtMessageArg == '49') { notify = 'Intel&reg; AMT Serial-over-LAN disconnected'; } break; } // SOL
+            case 'iAMT0052': { if (amtMessageArg == '1') { notify = 'Intel&reg; AMT KVM connected'; } else if (amtMessageArg == '2') { notify = 'Intel&reg; AMT KVM disconnected'; } break; } // KVM
         }
-        
-        if (notify != null) {
-            var notification = { "action": "msg", "type": "notify", "value": notify, "tag": "general" };
-            //mesh.SendCommand(notification); // no sessionid or userid specified, notification will go to the entire mesh
-            //console.log("handleAmtNotification", JSON.stringify(notification));
-        }
+
+        // Send to the entire mesh, no sessionid or userid specified.
+        if (notify != null) { mesh.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general" });  }
     }
     
     // Starting function
@@ -1216,7 +1193,11 @@ function createMeshCore(agent) {
             amtLms = new lme_heci();
             amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
             amtLms.on('connect', function () { amtLmsState = 2; });
-        } catch (e) { amtLmsState = -1; amtLms = null; }
+            amtLms.on('notify', function (data, options, str) {
+                if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
+                handleAmtNotification(data);
+            });
+        } catch (e) { lastException = e; amtLmsState = 3; amtLms = null; }
 
         // Check if the control channel is connected
         if (mesh.isControlChannelConnected) {
