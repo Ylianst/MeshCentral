@@ -318,7 +318,7 @@ function lme_heci(options) {
                     break;
                 case APF_CHANNEL_CLOSE:
                     var rChannelId = chunk.readUInt32BE(1);
-                    if (this.sockets[rChannelId] != undefined) {
+                    if ((this.sockets != null) && (this.sockets[rChannelId] != undefined)) {
                         this.sockets[rChannelId].end();
                         var amtId = this.sockets[rChannelId].lme.amtId;
                         var buffer = Buffer.alloc(5);
@@ -498,6 +498,7 @@ var lmsEvents = {
     "iAMT0052-0": "User Notification Alert - KVM session requested.",
     "iAMT0052-1": "User Notification Alert - KVM session started.",
     "iAMT0052-2": "User Notification Alert - KVM session stopped.",
+    "iAMT0052-3": "User Notification Alert - KVM data channel.",
     "iAMT0053": "User Notification Alert - RCS notification.",
     "iAMT0053-50": "User Notification Alert - RCS notification (HW button pressed. Connection initiated automatically).",
     "iAMT0053-52": "User Notification Alert - RCS notification (HW button pressed. Connection wasn't initiated automatically).",
@@ -512,7 +513,7 @@ var lmsEvents = {
     "iAMT0057": "User Notification Alert - Network State change notification.",
     "iAMT0058": "User Notification Alert - Remote Access change notification.",
     "iAMT0058-1": "User Notification Alert - Remote Access change notification - tunnel is closed.",
-    //"iAMT0058-1": "User Notification Alert - Remote Access change notification - tunnel is open.",
+    //"iAMT0058-1": "User Notification Alert - Remote Access change notification - tunnel is open.", // TODO
     "iAMT0059": "User Notification Alert - KVM enabled event.",
     "iAMT0059-0": "User Notification Alert - KVM enabled event - KVM disabled.",
     "iAMT0059-1": "User Notification Alert - KVM enabled event - KVM enabled (both from MEBx and PTNI).",

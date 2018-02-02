@@ -87,9 +87,9 @@ DownloadAgent() {
 	  UpdateMshFile
       if [ $starttype -eq 1 ]
       then
-        echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\n[Install]\nWantedBy=multi-user.target\nAlias=meshcentral.service\n" > /lib/systemd/system/meshcentral.service
-        systemctl enable meshcentral
-        systemctl start meshcentral
+        echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\n[Install]\nWantedBy=multi-user.target\nAlias=meshagent.service\n" > /lib/systemd/system/meshagent.service
+        systemctl enable meshagent
+        systemctl start meshagent
       else
         ./meshagent start
         ln -s /usr/local/mesh/meshagent /sbin/meshcmd
@@ -117,9 +117,9 @@ UninstallAgent() {
 
   if [ $starttype -eq 1 ]
   then
-    rm -f /sbin/meshcmd /lib/systemd/system/meshcentral.service
-    systemctl disable meshcentral
-    systemctl stop meshcentral
+    rm -f /sbin/meshcmd /lib/systemd/system/meshagent.service
+    systemctl disable meshagent
+    systemctl stop meshagent
   else
     rm -f /sbin/meshcmd /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
   fi

@@ -224,7 +224,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, myOptions, selitem); }
                 break;
             case 12: // SetDisplay
-                console.log('SetDisplayConfirm');
+                //console.log('SetDisplayConfirmed');
                 break;
             case 14: // KVM_INIT_TOUCH
                 obj.touchenabled = 1;

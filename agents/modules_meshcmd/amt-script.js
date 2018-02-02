@@ -27,74 +27,40 @@ script_functionTable1 = ['nop', 'jump', 'set', 'print', 'dialog', 'getitem', 'su
 script_functionTable2 = ['encodeuri', 'decodeuri', 'passwordcheck', 'atob', 'btoa', 'hex2str', 'str2hex', 'random', 'md5', 'maketoarray', 'readshort', 'readshortx', 'readint', 'readsint', 'readintx', 'shorttostr', 'shorttostrx', 'inttostr', 'inttostrx'];
 
 // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-script_functionTableX2 = [encodeURI, decodeURI, passwordcheck, window.atob.bind(window), window.btoa.bind(window), hex2rstr, rstr2hex, random, rstr_md5, MakeToArray, ReadShort, ReadShortX, ReadInt, ReadSInt, ReadIntX, ShortToStr, ShortToStrX, IntToStr, IntToStrX];
+script_functionTableX2 = [encodeURI, decodeURI, passwordcheck, atob, btoa, hex2rstr, rstr2hex, random, rstr_md5, MakeToArray, ReadShort, ReadShortX, ReadInt, ReadSInt, ReadIntX, ShortToStr, ShortToStrX, IntToStr, IntToStrX];
 
-// Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-script_functionTable3 = ['pullsystemstatus', 'pulleventlog', 'pullauditlog', 'pullcertificates', 'pullwatchdog', 'pullsystemdefense', 'pullhardware', 'pulluserinfo', 'pullremoteaccess', 'highlightblock', 'disconnect', 'getsidstring', 'getsidbytearray', 'pulleventsubscriptions'];
 
-// Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-script_functionTableX3 = [
-    PullSystemStatus
-    ,
-    // ###BEGIN###{EventLog}
-    PullEventLog
-    // ###END###{EventLog}
-    ,
-    // ###BEGIN###{AuditLog}
-    PullAuditLog
-    // ###END###{AuditLog}
-    ,
-    // ###BEGIN###{Certificates}
-    PullCertificates
-    // ###END###{Certificates}
-    ,
-    // ###BEGIN###{AgentPresence}
-    PullWatchdog
-    // ###END###{AgentPresence}
-    ,
-    // ###BEGIN###{SystemDefense}
-    PullSystemDefense
-    // ###END###{SystemDefense}
-    ,
-    // ###BEGIN###{HardwareInfo}
-    PullHardware
-    // ###END###{HardwareInfo}
-    ,
-    PullUserInfo
-    ,
-    // ###BEGIN###{RemoteAccess}
-    PullRemoteAccess
-    // ###END###{RemoteAccess}
-    ,
-    // ###BEGIN###{Scripting-Editor}
-    script_HighlightBlock
-    // ###END###{Scripting-Editor}
-    ,
-    // ###BEGIN###{ComputerSelector}
-    disconnect
-    // ###END###{ComputerSelector}
-    ,
-    function (runner, x) { return GetSidString(x); }
-    ,
-    function (runner, x) { return GetSidByteArray(x); }
-    ,
-    // ###BEGIN###{EventSubscriptions}
-    PullEventSubscriptions
-    // ###END###{EventSubscriptions}
-];
+function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
+function ReadShort(v, p) { return (v[p] << 8) + v[p + 1]; }
+function ReadShortX(v, p) { return (v[p + 1] << 8) + v[p]; }
+function ReadInt(v, p) { return (v[p] * 0x1000000) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; } // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
+function ReadSInt(v, p) { return (v[p] << 24) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; }
+function ReadIntX(v, p) { return (v[p + 3] * 0x1000000) + (v[p + 2] << 16) + (v[p + 1] << 8) + v[p]; }
+function ShortToStr(v) { return ''; } // TODO
+function ShortToStrX(v) { return ''; } // TODO
+function IntToStr(v) { return ''; } // TODO
+function IntToStrX(v) { return ''; } // TODO
+function btoa(x) { return Buffer.from(x).toString('base64'); }
+function atob(x) { var z = null; try { z = Buffer.from(x, 'base64').toString(); } catch (e) { console.log(e); } return z; }
+function passwordcheck(p) { if (p.length < 8) return false; var upper = 0, lower = 0, number = 0, nonalpha = 0; for (var i in p) { var c = p.charCodeAt(i); if ((c > 64) && (c < 91)) { upper = 1; } else if ((c > 96) && (c < 123)) { lower = 1; } else if ((c > 47) && (c < 58)) { number = 1; } else { nonalpha = 1; } } return ((upper + lower + number + nonalpha) == 4); }
+function hex2rstr(x) { Buffer.from(x, 'hex').toString(); }
+function rstr2hex(x) { Buffer.from(x).toString('hex'); }
+function random() { return 0; } // TODO
+function rstr_md5(x) { return null; } // TODO
 
 // Setup the script state
-function script_setup(binary, startvars) {
-    var obj = { startvars:startvars };
+module.exports.setup = function(binary, startvars) {
+    var obj = { startvars: startvars };
     if (binary.length < 6) { console.error('Invalid script length'); return null; } // Script must have at least 6 byte header
     if (ReadInt(binary, 0) != 0x247D2945) { console.error('Invalid binary script'); return null; } // Check the script magic header
     if (ReadShort(binary, 4) > 1) { console.error('Unsupported script version'); return null; } // Check the script version
-    obj.script = binary.substring(6);
+    obj.script = binary.slice(6);
     // obj.onStep;
     // obj.onConsole;
 
     // Reset the script to the start
     obj.reset = function (stepspeed) {
+        console.log('reset');
         obj.stop();
         obj.ip = 0;
         obj.variables = startvars;
@@ -103,13 +69,15 @@ function script_setup(binary, startvars) {
 
     // Start the script
     obj.start = function (stepspeed) {
+        console.log('start');
         obj.stop();
-        obj.stepspeed = stepspeed;
-        if (stepspeed > 0) { obj.timer = setInterval(function () { obj.step() }, stepspeed); }
+        if (stepspeed == null) { obj.stepspeed = 100; } else { obj.stepspeed = stepspeed; }
+        if (obj.stepspeed > 0) { obj.timer = setInterval(function () { obj.step() }, obj.stepspeed); }
     }
 
     // Stop the script
     obj.stop = function () {
+        console.log('stop');
         if (obj.timer != null) { clearInterval(obj.timer); }
         obj.timer = null;
         obj.stepspeed = 0;
@@ -123,6 +91,7 @@ function script_setup(binary, startvars) {
 
     // Run the script one step forward
     obj.step = function () {
+        console.log('step');
         if (obj.state != 1) return;
         if (obj.ip < obj.script.length) {
             var cmdid = ReadShort(obj.script, obj.ip);
@@ -133,11 +102,11 @@ function script_setup(binary, startvars) {
 
             // Clear all temp variables (This is optional)
             for (var i in obj.variables) { if (i.startsWith('__')) { delete obj.variables[i]; } }
-
+            
             // Loop on each argument, moving forward by the argument length each time
             for (var i = 0; i < argcount; i++) {
                 var arglen = ReadShort(obj.script, argptr);
-                var argval = obj.script.substring(argptr + 2, argptr + 2 + arglen);
+                var argval = obj.script.substring(argptr + 2, argptr + 2 + arglen); // <----------- Problem area
                 var argtyp = argval.charCodeAt(0);
                 argval = argval.substring(1);
                 if (argtyp < 2) {
@@ -152,7 +121,7 @@ function script_setup(binary, startvars) {
                 }
                 argptr += (2 + arglen);
             }
-
+            
             // Move instruction pointer forward by command size
             obj.ip += cmdlen;
 
@@ -277,12 +246,12 @@ function script_setup(binary, startvars) {
                 } else {
                     if (cmdid < 20000) {
                         // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-                        storeInArg0 = script_functionTableX2[cmdid - 10000](argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]);
+                        //storeInArg0 = script_functionTableX2[cmdid - 10000](argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]);
                     } else {
                         // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-                        if (script_functionTableX3 && script_functionTableX3[cmdid - 20000]) {
-                            storeInArg0 = script_functionTableX3[cmdid - 20000](obj, argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]); // Note that optional calls start with "obj" as first argument.
-                        }
+                        //if (script_functionTableX3 && script_functionTableX3[cmdid - 20000]) {
+                        //    storeInArg0 = script_functionTableX3[cmdid - 20000](obj, argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]); // Note that optional calls start with "obj" as first argument.
+                        //}
                     }
                 }
 
@@ -349,7 +318,7 @@ function script_setup(binary, startvars) {
 }
 
 // Argument types: 0 = Variable, 1 = String, 2 = Integer, 3 = Label
-function script_compile(script, onmsg) {
+module.exports.compile = function(script, onmsg) {
     var r = '', scriptlines = script.split('\n'), labels = {}, labelswap = [], swaps = [];
     // Go thru each script line and encode it
     for (var i in scriptlines) {
@@ -362,7 +331,6 @@ function script_compile(script, onmsg) {
         if (scriptline[0] == ':') { labels[keywords[0].toUpperCase()] = r.length; continue; } // Mark a label position
         var funcIndex = script_functionTable1.indexOf(keywords[0].toLowerCase());
         if (funcIndex == -1) { funcIndex = script_functionTable2.indexOf(keywords[0].toLowerCase()); if (funcIndex >= 0) funcIndex += 10000; }
-        if (funcIndex == -1) { funcIndex = script_functionTable3.indexOf(keywords[0].toLowerCase()); if (funcIndex >= 0) funcIndex += 20000; } // Optional methods
         if (funcIndex == -1) { if (onmsg) { onmsg("Unabled to compile, unknown command: " + keywords[0]); } return ''; }
         // Encode CommandId, CmdSize, ArgCount, Arg1Len, Arg1, Arg2Len, Arg2...
         var cmd = ShortToStr(keywords.length - 1);
@@ -397,7 +365,7 @@ function script_compile(script, onmsg) {
 }
 
 // Decompile the script, intended for debugging only
-function script_decompile(binary, onecmd) {
+module.exports.decompile = function(binary, onecmd) {
     var r = '', ptr = 6, labelcount = 0, labels = {};
     if (onecmd >= 0) {
         ptr = onecmd; // If we are decompiling just one command, set the ptr to that command.
@@ -436,11 +404,7 @@ function script_decompile(binary, onecmd) {
         if (cmdid < 10000) {
             r += script_functionTable1[cmdid] + argstr + "\n";
         } else {
-            if (cmdid >= 20000) {
-                r += script_functionTable3[cmdid - 20000] + argstr + "\n"; // Optional methods
-            } else {
-                r += script_functionTable2[cmdid - 10000] + argstr + "\n";
-            }
+            if ((cmdid >= 10000) && (cmdid < 10000)) { r += script_functionTable2[cmdid - 10000] + argstr + "\n"; }
         }
         ptr += cmdlen;
         if (onecmd >= 0) return r; // If we are decompiling just one command, exit now
