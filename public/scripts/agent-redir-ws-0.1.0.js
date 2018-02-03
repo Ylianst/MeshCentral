@@ -52,6 +52,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.xxOnControlCommand = function (msg) {
         var controlMsg;
         try { controlMsg = JSON.parse(msg); } catch (e) { return; }
+        //console.log(controlMsg);
         if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
@@ -93,7 +94,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                             // TODO: Hold/Stop sending data over websocket
                             if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
                         };
-                        obj.webchannel.onclose = function (event) { console.log('WebRTC close'); obj.Stop(); }
+                        obj.webchannel.onclose = function (event) { /*console.log('WebRTC close');*/ obj.Stop(); }
                         obj.webrtc.onicecandidate = function (e) {
                             if (e.candidate == null) {
                                 obj.socket.send(JSON.stringify(obj.webrtcoffer)); // End of candidates, send the offer
@@ -101,7 +102,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                                 obj.webrtcoffer.sdp += ("a=" + e.candidate.candidate + "\r\n"); // New candidate, add it to the SDP
                             }
                         }
-                        obj.webrtc.oniceconnectionstatechange = function () { if (obj.webrtc != null) { if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); } } }
+                        obj.webrtc.oniceconnectionstatechange = function () {
+                            if (obj.webrtc != null) {
+                                //console.log(obj.webrtc.iceConnectionState)
+                                if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); }
+                            }
+                        }
                         obj.webrtc.createOffer(function (offer) {
                             // Got the offer
                             obj.webrtcoffer = offer;

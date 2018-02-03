@@ -438,10 +438,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (len < 9) return 0;
                     var RecipientChannel = common.ReadInt(data, 1);
                     var ByteToAdd = common.ReadInt(data, 5);
-                    Debug(3, 'MPS:CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd);
                     var cirachannel = socket.tag.channels[RecipientChannel];
                     if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return; }
                     cirachannel.sendcredits += ByteToAdd;
+                    Debug(3, 'MPS:CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
                     if (cirachannel.state == 2 && cirachannel.sendBuffer != undefined) {
                         // Compute how much data we can send                
                         if (cirachannel.sendBuffer.length <= cirachannel.sendcredits) {

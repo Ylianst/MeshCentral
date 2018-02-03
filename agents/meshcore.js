@@ -37,7 +37,6 @@ function createMeshCore(agent) {
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
-    var lastException = null;
 
     /*
     var AMTScanner = require("AMTScanner");
@@ -79,14 +78,14 @@ function createMeshCore(agent) {
         amtMei = new amtMeiLib();
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
         amtMei.on('connect', function () { amtMeiConnected = 2; getAmtInfo(); });
-    } catch (e) { lastException = e; amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
+    } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
     
     // Try to load up the WIFI scanner
     try {
         var wifiScannerLib = require('wifi-scanner');
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
-    } catch (e) { lastException = e; wifiScannerLib = null; wifiScanner = null; }
+    } catch (e) { wifiScannerLib = null; wifiScanner = null; }
     
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -801,13 +800,12 @@ function createMeshCore(agent) {
                 }
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
-                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected', 'Exception'][amtLmsState] + '.'; }
+                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
                     response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
                     response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     response += '\r\ServerState: ' + meshServerConnectionState + '.';
-                    if (lastException != null) { response += '\r\LastException: ' + JSON.stringify(lastException) + '.'; }
                     break;
                 }
                 case 'selfinfo': { // Return self information block
@@ -1197,7 +1195,7 @@ function createMeshCore(agent) {
                 if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
                 handleAmtNotification(data);
             });
-        } catch (e) { lastException = e; amtLmsState = 3; amtLms = null; }
+        } catch (e) { amtLmsState = -1; amtLms = null; }
 
         // Check if the control channel is connected
         if (mesh.isControlChannelConnected) {
