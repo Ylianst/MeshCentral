@@ -442,7 +442,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (rights != null) { // TODO: Look at what rights are needed for message routing
                                         var sessions = obj.parent.wssessions[userid];
                                         // Send the message to all users on this server
-                                        for (var i in sessions) { sessions[i].send(cmdstr); }
+                                        for (var i in sessions) { try { sessions[i].send(cmdstr); } catch (e) { } }
                                     }
                                 }
                             }

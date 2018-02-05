@@ -18,6 +18,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
     obj.attemptWebRTC = false;
     obj.webRtcActive = false;
+    obj.webSwitchOk = false;
     obj.webrtc = null;
     obj.webchannel = null;
     obj.onStateChanged = null;
@@ -56,11 +57,22 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
+            } else if (controlMsg.type == 'webrtc0') {
+                obj.webSwitchOk = true; // Other side is ready for switch over
+                performWebRtcSwitch();
             } else if (controlMsg.type == 'webrtc1') {
                 obj.socket.send("{\"type\":\"webrtc2\"}"); // Confirm we got end of data marker, indicates data will no longer be received on websocket.
             } else if (controlMsg.type == 'webrtc2') {
                 // TODO: Resume/Start sending data over WebRTC
             }
+        }
+    }
+
+    function performWebRtcSwitch() {
+        if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
+            obj.socket.send("{\"type\":\"webrtc1\"}"); // Indicate to the other side that data traffic will no longer be sent over websocket.
+            // TODO: Hold/Stop sending data over websocket
+            if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
         }
     }
 
@@ -84,15 +96,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                     var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
                     if (typeof RTCPeerConnection !== 'undefined') { obj.webrtc = new RTCPeerConnection(configuration); }
                     else if (typeof webkitRTCPeerConnection !== 'undefined') { obj.webrtc = new webkitRTCPeerConnection(configuration); }
-
                     if (obj.webrtc != null) {
                         obj.webchannel = obj.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
                         obj.webchannel.onmessage = function (event) { obj.xxOnMessage({ data: event.data }); };
                         obj.webchannel.onopen = function () {
                             obj.webRtcActive = true;
-                            obj.socket.send("{\"type\":\"webrtc1\"}"); // Indicate to the other side that data traffic will no longer be sent over websocket.
-                            // TODO: Hold/Stop sending data over websocket
-                            if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
+                            performWebRtcSwitch();
                         };
                         obj.webchannel.onclose = function (event) { /*console.log('WebRTC close');*/ obj.Stop(); }
                         obj.webrtc.onicecandidate = function (e) {
@@ -104,7 +113,6 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                         }
                         obj.webrtc.oniceconnectionstatechange = function () {
                             if (obj.webrtc != null) {
-                                //console.log(obj.webrtc.iceConnectionState)
                                 if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); }
                             }
                         }
@@ -205,8 +213,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         obj.connectstate = -1;
         obj.xxCloseWebRTC();
         if (obj.socket != null) {
-            try { obj.socket.send("{\"type\":\"close\"}"); } catch (e) { }
-            try { obj.socket.close(); } catch (e) { }
+            try { if (obj.socket.readyState == 1) { obj.socket.send("{\"type\":\"close\"}"); obj.socket.close(); } } catch (e) { }
             obj.socket = null;
         }
         obj.xxStateChange(0);

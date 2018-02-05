@@ -650,7 +650,7 @@
         var amtScanResults = null;
         var debugmode = false;
         var clickOnce = detectClickOnce();
-        var attemptWebRTC = false;
+        var attemptWebRTC = true;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -663,7 +663,7 @@
             // Check if we are in debug mode
             args = parseUriArgs();
             debugmode = (args.debug == 1);
-            attemptWebRTC = (args.webrtc == 1);
+            //attemptWebRTC = (args.webrtc == 1);
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
