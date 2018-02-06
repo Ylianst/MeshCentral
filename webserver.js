@@ -1132,10 +1132,12 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 if (req.query.p == 1) {
                     Debug(3, 'INTERCEPTOR1', { host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor = obj.interceptor.CreateHttpInterceptor({ host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
+                    ws.interceptor.blockAmtStorage = true;
                 }
                 else if (req.query.p == 2) {
                     Debug(3, 'INTERCEPTOR2', { user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor = obj.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass });
+                    ws.interceptor.blockAmtStorage = true;
                 }
 
                 return;

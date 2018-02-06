@@ -22,6 +22,7 @@ module.exports.CreateHttpInterceptor = function (args) {
     obj.args = args;
     obj.amt = { acc: "", mode: 0, count: 0, error: false };  // mode: 0:Header, 1:LengthBody, 2:ChunkedBody, 3:UntilClose
     obj.ws = { acc: "", mode: 0, count: 0, error: false, authCNonce: obj.randomValueHex(10), authCNonceCount: 1 };
+    obj.blockAmtStorage = false;
     
     // Private method
     obj.Debug = function (msg) { console.log(msg); }
@@ -131,6 +132,8 @@ module.exports.CreateHttpInterceptor = function (args) {
             var headerlines = obj.ws.acc.substring(0, headerend).split('\r\n');
             obj.ws.acc = obj.ws.acc.substring(headerend + 4);
             obj.ws.directive = headerlines[0].split(' ');
+            // If required, block access to amt-storage. This is needed when web storage is not supported on CIRA.
+            if ((obj.blockAmtStorage == true) && (obj.ws.directive.length > 1) && (obj.ws.directive[1].indexOf('/amt-storage') == 0)) { obj.ws.directive[1] = obj.ws.directive[1].replace('/amt-storage', '/amt-dummy-storage'); }
             var headers = headerlines.slice(1);
             obj.ws.headers = {};
             obj.ws.mode = 3; // UntilClose

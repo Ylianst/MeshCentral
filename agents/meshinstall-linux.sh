@@ -87,7 +87,7 @@ DownloadAgent() {
 	  UpdateMshFile
       if [ $starttype -eq 1 ]
       then
-        echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\n[Install]\nWantedBy=multi-user.target\nAlias=meshagent.service\n" > /lib/systemd/system/meshagent.service
+        echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\nRestart=always\nRestartSec=3\n[Install]\nWantedBy=multi-user.target\nAlias=meshagent.service\n" > /lib/systemd/system/meshagent.service
         systemctl enable meshagent
         systemctl start meshagent
       else
