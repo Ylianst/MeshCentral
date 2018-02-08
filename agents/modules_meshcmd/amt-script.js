@@ -36,10 +36,10 @@ function ReadShortX(v, p) { return (v[p + 1] << 8) + v[p]; }
 function ReadInt(v, p) { return (v[p] * 0x1000000) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; } // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
 function ReadSInt(v, p) { return (v[p] << 24) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; }
 function ReadIntX(v, p) { return (v[p + 3] * 0x1000000) + (v[p + 2] << 16) + (v[p + 1] << 8) + v[p]; }
-function ShortToStr(v) { return ''; } // TODO
-function ShortToStrX(v) { return ''; } // TODO
-function IntToStr(v) { return ''; } // TODO
-function IntToStrX(v) { return ''; } // TODO
+function ShortToStr(v) { var b = Buffer.alloc(2); b.writeInt16BE(v); return b; }
+function ShortToStrX(v) { var b = Buffer.alloc(2); b.writeInt16LE(v); return b; }
+function IntToStr(v) { var b = Buffer.alloc(4); b.writeInt32BE(v); return b; }
+function IntToStrX(v) { var b = Buffer.alloc(4); b.writeInt32LE(v); return b; }
 function btoa(x) { return Buffer.from(x).toString('base64'); }
 function atob(x) { var z = null; try { z = Buffer.from(x, 'base64').toString(); } catch (e) { console.log(e); } return z; }
 function passwordcheck(p) { if (p.length < 8) return false; var upper = 0, lower = 0, number = 0, nonalpha = 0; for (var i in p) { var c = p.charCodeAt(i); if ((c > 64) && (c < 91)) { upper = 1; } else if ((c > 96) && (c < 123)) { lower = 1; } else if ((c > 47) && (c < 58)) { number = 1; } else { nonalpha = 1; } } return ((upper + lower + number + nonalpha) == 4); }
@@ -47,20 +47,32 @@ function hex2rstr(x) { Buffer.from(x, 'hex').toString(); }
 function rstr2hex(x) { Buffer.from(x).toString('hex'); }
 function random() { return 0; } // TODO
 function rstr_md5(x) { return null; } // TODO
+function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
+
+var httpErrorTable = {
+    200: 'OK',
+    401: 'Authentication Error',
+    408: 'Timeout Error',
+    601: 'WSMAN Parsing Error',
+    602: 'Unable to parse HTTP response header',
+    603: 'Unexpected HTTP enum response',
+    604: 'Unexpected HTTP pull response',
+    998: 'Invalid TLS certificate'
+}
 
 // Setup the script state
 module.exports.setup = function(binary, startvars) {
-    var obj = { startvars: startvars };
+    var obj = { startvars: startvars, onCompleted: null };
+    obj.wsRetryCall = null;
+    obj.wsRetryArgs = null;
+    obj.wsRetryTimes = null;
     if (binary.length < 6) { console.error('Invalid script length'); return null; } // Script must have at least 6 byte header
     if (ReadInt(binary, 0) != 0x247D2945) { console.error('Invalid binary script'); return null; } // Check the script magic header
     if (ReadShort(binary, 4) > 1) { console.error('Unsupported script version'); return null; } // Check the script version
     obj.script = binary.slice(6);
-    // obj.onStep;
-    // obj.onConsole;
 
     // Reset the script to the start
     obj.reset = function (stepspeed) {
-        console.log('reset');
         obj.stop();
         obj.ip = 0;
         obj.variables = startvars;
@@ -69,15 +81,13 @@ module.exports.setup = function(binary, startvars) {
 
     // Start the script
     obj.start = function (stepspeed) {
-        console.log('start');
         obj.stop();
-        if (stepspeed == null) { obj.stepspeed = 100; } else { obj.stepspeed = stepspeed; }
+        if (stepspeed == null) { obj.stepspeed = 10; } else { obj.stepspeed = stepspeed; }
         if (obj.stepspeed > 0) { obj.timer = setInterval(function () { obj.step() }, obj.stepspeed); }
     }
 
     // Stop the script
     obj.stop = function () {
-        console.log('stop');
         if (obj.timer != null) { clearInterval(obj.timer); }
         obj.timer = null;
         obj.stepspeed = 0;
@@ -91,7 +101,6 @@ module.exports.setup = function(binary, startvars) {
 
     // Run the script one step forward
     obj.step = function () {
-        console.log('step');
         if (obj.state != 1) return;
         if (obj.ip < obj.script.length) {
             var cmdid = ReadShort(obj.script, obj.ip);
@@ -99,18 +108,20 @@ module.exports.setup = function(binary, startvars) {
             var argcount = ReadShort(obj.script, obj.ip + 4);
             var argptr = obj.ip + 6;
             var args = [];
-
+            
             // Clear all temp variables (This is optional)
             for (var i in obj.variables) { if (i.startsWith('__')) { delete obj.variables[i]; } }
             
             // Loop on each argument, moving forward by the argument length each time
             for (var i = 0; i < argcount; i++) {
                 var arglen = ReadShort(obj.script, argptr);
-                var argval = obj.script.substring(argptr + 2, argptr + 2 + arglen); // <----------- Problem area
-                var argtyp = argval.charCodeAt(0);
-                argval = argval.substring(1);
+                var argval = obj.script.slice(argptr + 2, argptr + 2 + arglen);
+                var argtyp = argval[0];
+                argval = argval.slice(1);
                 if (argtyp < 2) {
                     // Get the value and replace all {var} with variable values
+                    argval = argval.toString();
+                    //console.log(argval);
                     while (argval.split("{").length > 1) { var t = argval.split("{").pop().split("}").shift(); argval = argval.replace('{' + t + '}', obj.getVar(t)); }
                     if (argtyp == 1) { obj.variables['__' + i] = decodeURI(argval); argval = '__' + i; } // If argtyp is 1, this is a literal. Store in temp variable.
                     args.push(argval);
@@ -122,6 +133,8 @@ module.exports.setup = function(binary, startvars) {
                 argptr += (2 + arglen);
             }
             
+            //console.log('CMD: ' + cmdid, args.join(', '));
+
             // Move instruction pointer forward by command size
             obj.ip += cmdlen;
 
@@ -130,13 +143,18 @@ module.exports.setup = function(binary, startvars) {
             for (var i = 0; i < 10; i++) { argsval.push(obj.getVar(args[i])); }
             var storeInArg0;
 
+            //console.log('VAR: ' + JSON.stringify(obj.variables));
+            //console.log('CMD: ' + cmdid, argsval.join(', '));
+
             try {
                 if (cmdid < 10000) {
                     // Lets run the actual command
+                    //console.log(cmdid);
                     switch (cmdid) {
                         case 0: // nop
                             break;
                         case 1: // jump(label) or jump(label, a, compare, b)
+                            //console.log('JUMP ' + argsval[1] + ' ' + argsval[2] + ' ' + argsval[3]);
                             if (argsval[2]) {
                                 if (
                                     (argsval[2] == '<' && argsval[1] < argsval[3]) ||
@@ -145,16 +163,24 @@ module.exports.setup = function(binary, startvars) {
                                     (argsval[2] == '=' && argsval[1] == argsval[3]) ||
                                     (argsval[2] == '>=' && argsval[1] >= argsval[3]) ||
                                     (argsval[2] == '>' && argsval[1] > argsval[3])
-                                ) { obj.ip = argsval[0]; }
+                                ) {
+                                    obj.ip = argsval[0];
+                                }
                             } else {
                                 obj.ip = argsval[0]; // Set the instruction pointer to the new location in the script
                             }
                             break;
                         case 2: // set(variable, value)
-                            if (args[1] == undefined) delete obj.variables[args[0]]; else obj.setVar(args[0], argsval[1]);
+                            if (args[1] == undefined) { if (obj.variables[args[0]]) { delete obj.variables[args[0]]; } } else {
+                                //console.log('SET ' + args[0] + ' TO ' + argsval[1]);
+                                obj.setVar(args[0], argsval[1]);
+                            }
                             break;
                         case 3: // print(message)
-                            if (obj.onConsole) { obj.onConsole(obj.toString(argsval[0]), obj); } else { console.log(obj.toString(argsval[0])); }
+                            var v = obj.toString(argsval[0]);
+                            if (v.indexOf('INFO: ') == 0) { v = v.substring(6); }
+                            if (v.indexOf('SUCCESS: ') == 0) { v = v.substring(9); }
+                            if (obj.onConsole) { obj.onConsole(v, obj); } else { console.log(v); }
                             //  Q(obj.consoleid).value += () + '\n'); Q(obj.console).scrollTop = Q(obj.console).scrollHeight;
                             break;
                         case 4: // dialog(title, content, buttons)
@@ -178,7 +204,7 @@ module.exports.setup = function(binary, startvars) {
                             storeInArg0 = argsval[1].join(argsval[2]);
                             break;
                         case 10: // length(variable_dest, variable_src)
-                            storeInArg0 = argsval[1].length;
+                            if (argsval[1] == null) { storeInArg0 = 0; } else { storeInArg0 = argsval[1].length; }
                             break;
                         case 11: // jsonparse(variable_dest, json)
                             storeInArg0 = JSON.parse(argsval[1]);
@@ -228,15 +254,11 @@ module.exports.setup = function(binary, startvars) {
                             obj.amtstack.UnSubscribe(argsval[0], obj.xxWsmanReturn, obj, 0, argsval[1]);
                             break;
                         case 24: // readchar(str, pos)
-                            console.log(argsval[1], argsval[2], argsval[1].charCodeAt(argsval[2]));
+                            //console.log('readchar', argsval[1], argsval[2], argsval[1].charCodeAt(argsval[2]));
                             storeInArg0 = argsval[1].charCodeAt(argsval[2]);
                             break;
                         case 25: // signWithDummyCa
-                            // ###BEGIN###{Certificates}
-                            obj.state = 2;
-                            // DERKey, xxCaPrivateKey, certattributes, issuerattributes
-                            amtcert_signWithCaKey(argsval[0], null, argsval[1], { 'CN': 'Untrusted Root Certificate' }, obj.xxSignWithDummyCaReturn);
-                            // ###END###{Certificates}
+                            // Not supported
                             break;
                         default: {
                             obj.state = 9;
@@ -246,23 +268,24 @@ module.exports.setup = function(binary, startvars) {
                 } else {
                     if (cmdid < 20000) {
                         // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-                        //storeInArg0 = script_functionTableX2[cmdid - 10000](argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]);
+                        storeInArg0 = script_functionTableX2[cmdid - 10000](argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]);
                     } else {
+                        //if (cmdid == 20009) { console.log('--------------------------------------'); }
                         // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
                         //if (script_functionTableX3 && script_functionTableX3[cmdid - 20000]) {
                         //    storeInArg0 = script_functionTableX3[cmdid - 20000](obj, argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]); // Note that optional calls start with "obj" as first argument.
                         //}
                     }
                 }
-
                 if (storeInArg0 != undefined) obj.setVar(args[0], storeInArg0);
             } catch (e) {
                 if (typeof e == 'object') { e = e.message; }
                 obj.setVar('_exception', e);
+                console.log('EXCEPTION: ' + e);
             }
         }
 
-        if (obj.state == 1 && obj.ip >= obj.script.length) { obj.state = 0; obj.stop(); }
+        if (obj.state == 1 && obj.ip >= obj.script.length) { obj.state = 0; obj.stop(); if (obj.onCompleted) { obj.onCompleted(); } }
         if (obj.onStep) obj.onStep(obj);
         return obj;
     }
@@ -274,42 +297,13 @@ module.exports.setup = function(binary, startvars) {
         if (obj.onStep) obj.onStep(obj);
     }
 
-    // ###BEGIN###{**ClosureAdvancedMode}
-    obj.xxWsmanReturnFix = function (x) {
-        if (!x || x == null) return;
-        if (x.Header) { x['Header'] = x.Header; delete x.Header; }
-        if (x.Body) { x['Body'] = x.Body; delete x.Body; }
-        if (x.Responses) { x['Responses'] = x.Responses; delete x.Responses; }
-        if (x.Response) { x['Response'] = x.Response; delete x.Response; }
-        if (x.ReturnValueStr) { x['ReturnValueStr'] = x.ReturnValueStr; delete x.ReturnValueStr; }
-    }
-    // ###END###{**ClosureAdvancedMode}
-
     obj.xxWsmanReturn = function (stack, name, responses, status) {
-        // ###BEGIN###{**ClosureAdvancedMode}
-        // This is required when Google Closure is used
-        if (responses) {
-            obj.xxWsmanReturnFix(responses);
-            for (var i in responses) {
-                obj.xxWsmanReturnFix(responses[i]);
-                for (var j in responses[i]) { obj.xxWsmanReturnFix(responses[i][j]); }
-            }
-        }
-        // ###END###{**ClosureAdvancedMode}
         obj.setVar(name, responses);
         obj.setVar('wsman_result', status);
         obj.setVar('wsman_result_str', ((httpErrorTable[status]) ? (httpErrorTable[status]) : ('Error #' + status)));
         obj.state = 1;
         if (obj.onStep) obj.onStep(obj);
     }
-
-    // ###BEGIN###{Certificates}
-    obj.xxSignWithDummyCaReturn = function (cert) {
-        obj.setVar('signed_cert', btoa(_arrayBufferToString(cert)));
-        obj.state = 1;
-        if (obj.onStep) obj.onStep(obj);
-    }
-    // ###END###{Certificates}
 
     obj.toString = function (x) { if (typeof x == 'object') return JSON.stringify(x); return x; }
 

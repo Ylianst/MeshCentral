@@ -1104,7 +1104,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 });
 
                 // If error, do nothing
-                ws.on('error', function (err) { console.log(err); });
+                ws.on('error', function (err) { console.log('WEBSERVER WSERR1: ' + err); });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function (req) {
@@ -1156,7 +1156,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 });
 
                 // If error, do nothing
-                ws.on('error', function (err) { console.log(err); });
+                ws.on('error', function (err) { console.log('WEBSERVER WSERR2: ' + err); });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function (req) {
@@ -1244,7 +1244,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         });
 
         // If error, do nothing
-        ws.on('error', function (err) { console.log(err); });
+        ws.on('error', function (err) { console.log('WEBSERVER WSERR3: ' + err); });
 
         // If closed, do nothing
         ws.on('close', function (req) { });

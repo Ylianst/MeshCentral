@@ -46,6 +46,7 @@ function amt_heci() {
         });
     });
     this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+    function trim(x) { var y = x.indexOf('\0'); if (y >= 0) { return x.substring(0, y); } else { return x; } }
 
     this.getCommand = function (chunk) {
         var command = chunk.length == 0 ? (this._amt.rq.peekQueue().cmd | 0x800000) : chunk.readUInt32LE(4);
@@ -216,6 +217,7 @@ function amt_heci() {
             this.getCertHashEntry(handles.shift(), this._getHashEntrySink, fn, opt, entries, handles);
         }, callback, optional);
     };
+
     this._getHashEntrySink = function (result, fn, opt, entries, handles) {
         entries.push(result);
         if (handles.length > 0) {
@@ -229,7 +231,7 @@ function amt_heci() {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt) {
-            if (header.Data.length == 68) { opt.unshift({ user: header.Data.slice(0, 34).toString(), pass: header.Data.slice(34, 67).toString(), raw: header.Data }); } else { opt.unshift(null); }
+            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 34).toString()), pass: trim(header.Data.slice(34, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
             fn.apply(this, opt);
         }, callback, optional);
     }
