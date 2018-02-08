@@ -70,7 +70,7 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
         req.on('response', function (response) {
             //console.log('Response: ' + response.statusCode);
             if (response.statusCode != 200) {
-                console.log('ERR:' + JSON.stringify(response));
+                //console.log('ERR:' + JSON.stringify(response));
                 obj.gotNextMessagesError({ status: response.statusCode }, 'error', null, [postdata, callback, tag]);
             } else {
                 response.acc = '';
@@ -80,8 +80,7 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
         });
 
         // Send POST body, this work with binary.
-        req.write(postdata);
-        req.end();
+        req.end(postdata);
         obj.ActiveAjaxCount++;
         return req;
     }

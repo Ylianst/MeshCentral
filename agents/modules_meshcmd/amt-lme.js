@@ -316,6 +316,18 @@ function lme_heci(options) {
                         console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_DATA');
                     }
                     break;
+                case APF_CHANNEL_OPEN_FAILURE:
+                    var rChannelId = chunk.readUInt32BE(1);
+                    var reasonCode = chunk.readUInt32BE(5);
+                    if ((this.sockets != null) && (this.sockets[rChannelId] != undefined)) {
+                        this.sockets[rChannelId].end();
+                        delete this.sockets[rChannelId];
+                    } else if ((this.insockets != null) && (this.insockets[rChannelId] != undefined)) {
+                        delete this.insockets[rChannelId];
+                    } else {
+                        console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_OPEN_FAILURE');
+                    }
+                    break;
                 case APF_CHANNEL_CLOSE:
                     var rChannelId = chunk.readUInt32BE(1);
                     if ((this.sockets != null) && (this.sockets[rChannelId] != undefined)) {

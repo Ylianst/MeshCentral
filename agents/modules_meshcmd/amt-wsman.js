@@ -181,8 +181,7 @@ function WsmanStackCreateService(CreateWsmanComm, host, port, user, pass, tls, e
 		            for (var i = 0; i < selectorArray.length; i++) {
 		                result += '<w:Selector' + _ObjectToXmlAttributes(selectorArray[i]) + '>' + selectorArray[i]['Value'] + '</w:Selector>';
 		            }
-		        }
-		        else {
+		        } else {
 		            result += '<w:Selector' + _ObjectToXmlAttributes(selectorArray) + '>' + selectorArray['Value'] + '</w:Selector>';
 		        }
 		        result += '</w:SelectorSet></a:ReferenceParameters></a:EndpointReference>';

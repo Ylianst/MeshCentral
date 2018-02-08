@@ -229,7 +229,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     });
 
     // If error, do nothing
-    ws.on('error', function (err) { console.log(err); });
+    ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
 
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });

@@ -663,7 +663,7 @@
             // Check if we are in debug mode
             args = parseUriArgs();
             debugmode = (args.debug == 1);
-            //attemptWebRTC = (args.webrtc == 1);
+            if (args.webrtc) { attemptWebRTC = (args.webrtc == 1); }
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
@@ -3262,6 +3262,7 @@
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
+                    terminal.m.lineFeed = ([1,2,3,4,21,22].indexOf(currentNode.agent.id) >= 0)?'\r\n':'\r'; // On windows, send \r\n, on Linux only \r
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);

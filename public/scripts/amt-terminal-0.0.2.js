@@ -17,6 +17,8 @@ var CreateAmtRemoteTerminal = function (divid) {
 
     obj.width = 80; // 80 or 100
     obj.height = 25; // 25 or 30
+    obj.lineFeed = '\r\n';
+
     var _Terminal_CellHeight = 21;
     var _Terminal_CellWidth = 13;
     var _TermColors = ['000000', 'BB0000', '00BB00', 'BBBB00', '0000BB', 'BB00BB', '00BBBB', 'BBBBBB', '555555', 'FF5555', '55FF55', 'FFFF55', '5555FF', 'FF55FF', '55FFFF', 'FFFFFF'];
@@ -574,7 +576,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     obj.TermHandleKeys = function (e) {
         if (!e.ctrlKey) {
             if (e.which == 127) obj.TermSendKey(8);
-            else if (e.which == 13) obj.TermSendKeys("\r\n");
+            else if (e.which == 13) obj.TermSendKeys(obj.lineFeed);
             else if (e.which != 0) obj.TermSendKey(e.which);
             return false;
         }

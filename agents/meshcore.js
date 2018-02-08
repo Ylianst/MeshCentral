@@ -548,7 +548,8 @@ function createMeshCore(agent) {
                     this.prependListener('end', function () { this.httprequest.process.kill(); });
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
-                    //this.write('MeshCore Terminal Hello!1');
+                    //this.write('MeshCore Terminal Hello');
+                    if (process.platform != 'win32') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
                 }
                 if (this.httprequest.protocol == 2) {
                     // Remote desktop using native pipes
