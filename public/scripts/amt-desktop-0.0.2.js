@@ -81,19 +81,19 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 //var version = parseFloat(obj.acc.substring(4, 11));
                 //obj.Debug("KVersion: " + version);
                 obj.state = 1;
-                obj.Send("RFB 003.008\n");
+                obj.send("RFB 003.008\n");
             }
             else if (obj.state == 1 && obj.acc.length >= 1) {
                 // Getting security options
                 cmdsize = obj.acc.charCodeAt(0) + 1;
-                obj.Send(String.fromCharCode(1)); // Send the "None" security type. Since we already authenticated using redirection digest auth, we don't need to do this again.
+                obj.send(String.fromCharCode(1)); // Send the "None" security type. Since we already authenticated using redirection digest auth, we don't need to do this again.
                 obj.state = 2;
             }
             else if (obj.state == 2 && obj.acc.length >= 4) {
                 // Getting security response
                 cmdsize = 4;
                 if (ReadInt(obj.acc, 0) != 0) { return obj.Stop(); }
-                obj.Send(String.fromCharCode(1)); // Send share desktop flag
+                obj.send(String.fromCharCode(1)); // Send share desktop flag
                 obj.state = 3;
             }
             else if (obj.state == 3 && obj.acc.length >= 24) {
@@ -138,11 +138,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 if (obj.useZRLE) supportedEncodings += IntToStr(16);
                 supportedEncodings += IntToStr(0);
 
-                obj.Send(String.fromCharCode(2, 0) + ShortToStr((supportedEncodings.length / 4) + 1) + supportedEncodings + IntToStr(-223));          // Supported Encodings + Desktop Size
+                obj.send(String.fromCharCode(2, 0) + ShortToStr((supportedEncodings.length / 4) + 1) + supportedEncodings + IntToStr(-223));          // Supported Encodings + Desktop Size
 
                 // Set the pixel encoding to something much smaller
-                // obj.Send(String.fromCharCode(0, 0, 0, 0, 16, 16, 0, 1) + ShortToStr(31) + ShortToStr(63) + ShortToStr(31) + String.fromCharCode(11, 5, 0, 0, 0, 0));                     // Setup 16 bit color RGB565 (This is the default, so we don't need to set it)
-                if (obj.bpp == 1) obj.Send(String.fromCharCode(0, 0, 0, 0, 8, 8, 0, 1) + ShortToStr(7) + ShortToStr(7) + ShortToStr(3) + String.fromCharCode(5, 2, 0, 0, 0, 0));            // Setup 8 bit color RGB332
+                // obj.send(String.fromCharCode(0, 0, 0, 0, 16, 16, 0, 1) + ShortToStr(31) + ShortToStr(63) + ShortToStr(31) + String.fromCharCode(11, 5, 0, 0, 0, 0));                     // Setup 16 bit color RGB565 (This is the default, so we don't need to set it)
+                if (obj.bpp == 1) obj.send(String.fromCharCode(0, 0, 0, 0, 8, 8, 0, 1) + ShortToStr(7) + ShortToStr(7) + ShortToStr(3) + String.fromCharCode(5, 2, 0, 0, 0, 0));            // Setup 8 bit color RGB332
 
                 obj.state = 4;
                 obj.parent.xxStateChange(3);
@@ -194,7 +194,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                     // Desktop Size (0xFFFFFF21, -223)
                     obj.canvas.canvas.width = obj.rwidth = obj.width = width;
                     obj.canvas.canvas.height = obj.rheight = obj.height = height;
-                    obj.Send(String.fromCharCode(3, 0, 0, 0, 0, 0) + ShortToStr(obj.width) + ShortToStr(obj.height)); // FramebufferUpdateRequest
+                    obj.send(String.fromCharCode(3, 0, 0, 0, 0, 0) + ShortToStr(obj.width) + ShortToStr(obj.height)); // FramebufferUpdateRequest
                     cmdsize = 12;
                     if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight); }
                     // obj.Debug("New desktop width: " + obj.width + ", height: " + obj.height);
@@ -454,13 +454,13 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         if (obj.focusmode > 0) {
             // Request only pixels around the last mouse position
             var df = obj.focusmode * 2;
-            obj.Send(String.fromCharCode(3, 1) + ShortToStr(Math.max(Math.min(obj.ox, obj.mx) - obj.focusmode, 0)) + ShortToStr(Math.max(Math.min(obj.oy, obj.my) - obj.focusmode, 0)) + ShortToStr(df + Math.abs(obj.ox - obj.mx)) + ShortToStr(df + Math.abs(obj.oy - obj.my))); // FramebufferUpdateRequest
+            obj.send(String.fromCharCode(3, 1) + ShortToStr(Math.max(Math.min(obj.ox, obj.mx) - obj.focusmode, 0)) + ShortToStr(Math.max(Math.min(obj.oy, obj.my) - obj.focusmode, 0)) + ShortToStr(df + Math.abs(obj.ox - obj.mx)) + ShortToStr(df + Math.abs(obj.oy - obj.my))); // FramebufferUpdateRequest
             obj.ox = obj.mx;
             obj.oy = obj.my;
         } else {
         // ###END###{DesktopFocus}
             // Request the entire screen
-            obj.Send(String.fromCharCode(3, 1, 0, 0, 0, 0) + ShortToStr(obj.rwidth) + ShortToStr(obj.rheight)); // FramebufferUpdateRequest
+            obj.send(String.fromCharCode(3, 1, 0, 0, 0, 0) + ShortToStr(obj.rwidth) + ShortToStr(obj.rheight)); // FramebufferUpdateRequest
         // ###BEGIN###{DesktopFocus}
         }
         // ###END###{DesktopFocus}
@@ -485,10 +485,10 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         obj.parent.Stop();
     }
 
-    obj.Send = function (x) {
+    obj.send = function (x) {
         //obj.Debug("KSend(" + x.length + "): " + rstr2hex(x));
         //obj.outbytes += x.length;
-        obj.parent.Send(x);
+        obj.parent.send(x);
     }
 
     /*
@@ -552,7 +552,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         return obj.haltEvent(e);
     }
 
-    obj.sendkey = function (k, d) { obj.Send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
+    obj.sendkey = function (k, d) { obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
 
     obj.SendCtrlAltDelMsg = function () { obj.sendcad(); }
     obj.sendcad = function () {
@@ -625,7 +625,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         }
         // ###END###{DesktopRotation}
 
-        obj.Send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
+        obj.send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
 
         // ###BEGIN###{DesktopFocus}
         // Update focus area if we are in focus mode

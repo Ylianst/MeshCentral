@@ -554,8 +554,8 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
     }
 
-    obj.TermSendKeys = function(keys) { obj.parent.Send(keys); }
-    obj.TermSendKey = function(key) { obj.parent.Send(String.fromCharCode(key)); }
+    obj.TermSendKeys = function(keys) { obj.parent.send(keys); }
+    obj.TermSendKey = function(key) { obj.parent.send(String.fromCharCode(key)); }
 
     function _TermMoveUp(linecount) {
         var x, y;

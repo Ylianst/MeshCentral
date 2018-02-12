@@ -253,7 +253,7 @@ var CreateAmtRedirect = function (module) {
         }
     }
 
-    obj.Send = function (x) {
+    obj.send = function (x) {
         if (obj.socket == null || obj.connectstate != 1) return;
         if (obj.protocol == 1) { obj.xxSend(String.fromCharCode(0x28, 0x00, 0x00, 0x00) + IntToStrX(obj.amtsequence++) + ShortToStrX(x.length) + x); } else { obj.xxSend(x); }
     }
