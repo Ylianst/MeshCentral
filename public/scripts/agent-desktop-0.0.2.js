@@ -83,9 +83,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         }
     }
 
-    obj.Send = function (x) {
+    obj.send = function (x) {
         //console.log("KSend(" + x.length + "): " + rstr2hex(x));
-        obj.parent.Send(x);
+        obj.parent.send(x);
     }
 
     // KVM Control.
@@ -138,24 +138,24 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.SendUnPause = function () {
         //obj.Debug("SendUnPause");
         //obj.xxStateChange(3);
-        obj.Send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x00));
+        obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x00));
     }
 
     obj.SendPause = function () {
         //obj.Debug("SendPause");
         //obj.xxStateChange(2);
-        obj.Send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
+        obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
     }
 
     obj.SendCompressionLevel = function (type, level, scaling, frametimer) {
         if (level) { obj.CompressionLevel = level; }
         if (scaling) { obj.ScalingLevel = scaling; }
         if (frametimer) { obj.FrameRateTimer = frametimer; }
-        obj.Send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
+        obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
     }
 
     obj.SendRefresh = function () {
-        obj.Send(String.fromCharCode(0x00, 0x06, 0x00, 0x04));
+        obj.send(String.fromCharCode(0x00, 0x06, 0x00, 0x04));
     }
 
     obj.ProcessScreenMsg = function (width, height) {
@@ -214,7 +214,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 91); // Left-Windows
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 92); // Right-Windows
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 16); // Shift
-                obj.Send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
+                obj.send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
                 break;
             case 11: // GetDisplays
                 var myOptions = [], dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
@@ -268,21 +268,21 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendMessage = function (msg) {
-        if (obj.State == 3) obj.Send(String.fromCharCode(0x00, 0x11) + obj.shortToStr(4 + msg.length) + msg); // 0x11 = 17 MNG_KVM_MESSAGE
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, 0x11) + obj.shortToStr(4 + msg.length) + msg); // 0x11 = 17 MNG_KVM_MESSAGE
     }
 
     obj.SendKeyMsgKC = function (action, kc) {
-        if (obj.State == 3) obj.Send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
     }
 
     obj.sendcad = function() { obj.SendCtrlAltDelMsg(); }
 
     obj.SendCtrlAltDelMsg = function () {
-        if (obj.State == 3) { obj.Send(String.fromCharCode(0x00, obj.InputType.CTRLALTDEL, 0x00, 0x04)); }
+        if (obj.State == 3) { obj.send(String.fromCharCode(0x00, obj.InputType.CTRLALTDEL, 0x00, 0x04)); }
     }
 
     obj.SendEscKey = function () {
-        if (obj.State == 3) obj.Send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, 0x00, 0x1B, 0x00, obj.InputType.KEY, 0x00, 0x06, 0x01, 0x1B));
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, 0x00, 0x1B, 0x00, obj.InputType.KEY, 0x00, 0x06, 0x01, 0x1B));
     }
 
     obj.SendStartMsg = function () {
@@ -298,7 +298,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendTouchMsg1 = function (id, flags, x, y) {
-        if (obj.State == 3) obj.Send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(14) + String.fromCharCode(0x01, id) + obj.intToStr(flags) + obj.shortToStr(x) + obj.shortToStr(y));
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(14) + String.fromCharCode(0x01, id) + obj.intToStr(flags) + obj.shortToStr(x) + obj.shortToStr(y));
     }
 
     obj.SendTouchMsg2 = function (id, flags) {
@@ -314,7 +314,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             msg += String.fromCharCode(k) + obj.intToStr(flags2) + obj.shortToStr(obj.TouchArray[k].x) + obj.shortToStr(obj.TouchArray[k].y);
             if (obj.TouchArray[k].f == 2) delete obj.TouchArray[k];
         }
-        if (obj.State == 3) obj.Send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(5 + msg.length) + String.fromCharCode(0x02) + msg);
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(5 + msg.length) + String.fromCharCode(0x02) + msg);
         if (Object.keys(obj.TouchArray).length == 0 && obj.touchtimer != null) { clearInterval(obj.touchtimer); obj.touchtimer = null; }
     }
 
@@ -342,13 +342,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 var MouseMsg = "";
                 if (Action == obj.KeyAction.SCROLL) MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0C, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF), ((Delta / 256) & 0xFF), (Delta & 0xFF));
                 else MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
-                if (obj.Action == obj.KeyAction.NONE) { if (obj.Alternate == 0 || obj.ipad) { obj.Send(MouseMsg); obj.Alternate = 1; } else { obj.Alternate = 0; } } else { obj.Send(MouseMsg); }
+                if (obj.Action == obj.KeyAction.NONE) { if (obj.Alternate == 0 || obj.ipad) { obj.send(MouseMsg); obj.Alternate = 1; } else { obj.Alternate = 0; } } else { obj.send(MouseMsg); }
             }
         }
     }
 
-    obj.GetDisplayNumbers = function () { obj.Send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
-    obj.SetDisplay = function (number) { obj.Send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
+    obj.GetDisplayNumbers = function () { obj.send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
+    obj.SetDisplay = function (number) { obj.send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 

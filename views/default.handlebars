@@ -777,9 +777,9 @@
                 setTimeout(serverPoll, 5000);
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
-                meshserver.Send({ action: 'meshes' });
-                meshserver.Send({ action: 'nodes' });
-                meshserver.Send({ action: 'files' });
+                meshserver.send({ action: 'meshes' });
+                meshserver.send({ action: 'nodes' });
+                meshserver.send({ action: 'files' });
             }
         }
 
@@ -821,8 +821,8 @@
             if ((userinfo.siteadmin & 2) != 0)
             {
                 // We are user administrator
-                if (users == null) { meshserver.Send({ action: 'users' }); }
-                if (wssessions == null) { meshserver.Send({ action: 'wssessioncount' }); }
+                if (users == null) { meshserver.send({ action: 'users' }); }
+                if (wssessions == null) { meshserver.send({ action: 'wssessioncount' }); }
             } else {
                 // We are not user administrator
                 users = null;
@@ -830,7 +830,7 @@
                 updateUsers();
                 if (xxcurrentView == 4) go(1);
             }
-            meshserver.Send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+            meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
             QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
         }
 
@@ -996,7 +996,7 @@
                             if (userinfo.name == message.event.account.name) {
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
-                                if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.Send({ action: 'files' }); }
+                                if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
                                 QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
@@ -1020,7 +1020,7 @@
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 updateMeshes();
                                 updateDevices();
-                                meshserver.Send({ action: 'files' });
+                                meshserver.send({ action: 'files' });
                             }
                             break;
                         }
@@ -1029,7 +1029,7 @@
                             if (meshes[message.event.meshid] == null) {
                                 // This is a new mesh for us
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
-                                meshserver.Send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                             } else {
                                 // This is an existing mesh
                                 meshes[message.event.meshid].name = message.event.name;
@@ -1052,7 +1052,7 @@
                             }
                             updateMeshes();
                             updateDevices();
-                            meshserver.Send({ action: 'files' });
+                            meshserver.send({ action: 'files' });
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView == 20 && currentMesh._id == message.event.meshid) { p20updateMesh(); }
@@ -1063,7 +1063,7 @@
                             if (meshes[message.event.meshid]) {
                                 delete meshes[message.event.meshid];
                                 updateMeshes();
-                                meshserver.Send({ action: 'files' });
+                                meshserver.send({ action: 'files' });
                             }
 
                             // Delete all nodes in that mesh
@@ -1505,7 +1505,7 @@
                 if (elements[i].checked) {
                     var ipaddr = elements[i].getAttribute('tag');
                     var amtinfo = amtScanResults[ipaddr];
-                    meshserver.Send({ action: 'addamtdevice', meshid: meshid, devicename: ipaddr, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
+                    meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: ipaddr, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
                 }
             }
         }
@@ -1515,7 +1515,7 @@
             QE('dp1range', false);
             QE('dp1rangebutton', false);
             QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px>Scanning...</div>');
-            meshserver.Send({ action: 'scanamtdevice', range: Q('dp1range').value });
+            meshserver.send({ action: 'scanamtdevice', range: Q('dp1range').value });
         }
 
         // Called when a scanned computer is checked or unchecked.
@@ -1596,7 +1596,7 @@
         }
 
         function performAgentInvite(button, meshid) {
-            meshserver.Send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value });
+            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value });
         }
 
         function addAgentToMesh(meshid) {
@@ -1660,7 +1660,7 @@
             if (amtuser == '') amtuser = 'admin';
             var host = Q('dp1hostname').value;
             if (host == '') host = Q('dp1devicename').value;
-            meshserver.Send({ action: 'addamtdevice', meshid: meshid, devicename: Q('dp1devicename').value, hostname: host, amtusername: amtuser, amtpassword: Q('dp1password').value, amttls: Q('dp1tls').value });
+            meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: Q('dp1devicename').value, hostname: host, amtusername: amtuser, amtpassword: Q('dp1password').value, amttls: Q('dp1tls').value });
         }
 
         function deviceHeaderSet() {
@@ -1735,7 +1735,7 @@
                 // Group wake
                 var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
                 for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-                meshserver.Send({ action: 'wakedevices', nodeids: nodeids });
+                meshserver.send({ action: 'wakedevices', nodeids: nodeids });
             } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var x = "Confirm delete selected devices(s)?<br /><br />";
@@ -1746,7 +1746,7 @@
                 // Power operation
                 var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
                 for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-                meshserver.Send({ action: 'poweraction', nodeids: nodeids, actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: nodeids, actiontype: op });
             }
         }
 
@@ -1755,7 +1755,7 @@
         function groupActionFunctionDelEx() {
             var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
             for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-            meshserver.Send({ action: 'removedevices', nodeids: nodeids });
+            meshserver.send({ action: 'removedevices', nodeids: nodeids });
         }
 
         function onSortSelectChange(skipsave) {
@@ -1875,7 +1875,7 @@
 
         // Clear Marker item
         var map_cm_clearMarker = { text: "Remove node location", callback: function (obj) {
-            meshserver.Send({ action: 'changedevice', nodeid: obj.data.a, userloc: [] }); // Clear the user position marker
+            meshserver.send({ action: 'changedevice', nodeid: obj.data.a, userloc: [] }); // Clear the user position marker
         }};
 
         // Save Marker item
@@ -2085,7 +2085,7 @@
                     var coord = ft.getGeometry().getCoordinates();
                     var v = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
                     var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
-                    meshserver.Send({ action: 'changedevice', nodeid: featid, userloc: vx }); // Send them to server to save changes
+                    meshserver.send({ action: 'changedevice', nodeid: featid, userloc: vx }); // Send them to server to save changes
                 }
             }
         }
@@ -2241,10 +2241,10 @@
                             if (activeInteraction) {
                                 saveMarkerloc(feature);
                             } else { // If this feature is not saved after its location is changed, then send updated coords to server.
-                                meshserver.Send({ action: 'changedevice', nodeid: node._id, userloc: vx }); // Send them to server to save changes
+                                meshserver.send({ action: 'changedevice', nodeid: node._id, userloc: vx }); // Send them to server to save changes
                             }
                         } else {
-                            meshserver.Send({ action: 'changedevice', nodeid: node._id, userloc: vx }); // This Node is not yet added to maps.
+                            meshserver.send({ action: 'changedevice', nodeid: node._id, userloc: vx }); // This Node is not yet added to maps.
                         }
                     }
                 }
@@ -2616,7 +2616,7 @@
                 QV('filesActionsBtn', (meshrights & 72) != 0);
 
                 // Request the power timeline
-                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.Send({ action: 'powertimeline', nodeid: currentNode._id }); }
+                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
             }
             if (!panel) panel = 10;
             go(panel);
@@ -2637,10 +2637,10 @@
             var op = Q('d2deviceop').value;
             if (op == 100) {
                 // Device wake
-                meshserver.Send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
+                meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
             } else {
                 // Power operation
-                meshserver.Send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
             }
         }
 
@@ -2661,7 +2661,7 @@
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
             if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null)) return;
-            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.Send({ action: 'powertimeline', nodeid: currentNode._id }); }
+            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
         }
 
         // Draw device power bars. The bars are 766px wide.
@@ -2746,14 +2746,14 @@
         function editDeviceAmtSettingsEx(button, tag) {
             if (button == 2) {
                 // Delete button pressed, remove credentials
-                meshserver.Send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: '', pass: '' } });
+                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: '', pass: '' } });
             } else {
                 // Change Intel AMT credentials
                 var amtuser = Q('dp10username').value;
                 if (amtuser == '') amtuser = 'admin';
                 var amtpass = Q('dp10password').value;
                 if (amtpass == '') amtuser = '';
-                meshserver.Send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: Q('dp10tls').value } });
+                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: Q('dp10tls').value } });
                 tag.node.intelamt.user = amtuser;
                 tag.node.intelamt.tls = Q('dp10tls').value;
                 if (tag.func) { setTimeout(tag.func, 300); }
@@ -2773,11 +2773,11 @@
         }
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
-            meshserver.Send({ action: 'removedevices', nodeids: [ nodeid ] });
+            meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
         function p10clickOnce(nodeid, protocol, port) {
-            meshserver.Send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'clickonce', protocol: protocol });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'clickonce', protocol: protocol });
         }
 
         // Show current location
@@ -2831,7 +2831,7 @@
         function p10showNodeNetInfoDialog() {
             if (xxdialogMode) return;
             setDialogMode(2, "Network Interfaces", 1, null, "<div id=d2netinfo>Loading...</div>", 'if' + currentNode._id );
-            meshserver.Send({ action: 'getnetworkinfo', nodeid: currentNode._id });
+            meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
         }
 
         // Show router dialog
@@ -2888,7 +2888,7 @@
 
         function p10setIcon(icon) {
             setDialogMode(0);
-            meshserver.Send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
+            meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
         var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description'];
@@ -2907,7 +2907,7 @@
         function showEditNodeValueDialogEx(button, mode) {
             var x = { action: 'changedevice', nodeid: currentNode._id };
             x[showEditNodeValueDialog_modes2[mode]] = Q('dp10devicevalue').value;
-            meshserver.Send(x);
+            meshserver.send(x);
         }
 
         function p10editdevicevalueValidate(mode, e) {
@@ -3314,7 +3314,7 @@
                     break;
                 case 3:
                     p13targetpath = '';
-                    files.Send(JSON.stringify({ action: 'ls', reqid: 1, path: '' }));
+                    files.send(JSON.stringify({ action: 'ls', reqid: 1, path: '' }));
                     break;
             }
         }
@@ -3335,7 +3335,7 @@
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort);
-                files.attemptWebRTC = false;
+                files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
             } else {
@@ -3351,7 +3351,11 @@
         var p13filetreelocation = [];
 
         function p13gotFiles(data) {
+            //console.log('p13gotFiles', data);
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; }
+            //console.log('p13gotFiles', data);
             data = JSON.parse(data);
+            if (data.action == 'download') { p13gotDownloadCommand(data); return; }
             data.path = data.path.replace(/\//g, "\\");
             if ((p13filetree != null) && (data.path == p13filetree.path)) {
                 // This is an update to the same folder
@@ -3450,13 +3454,13 @@
 
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
-            files.Send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
         }
 
         function p13folderup(x) {
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
-            files.Send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
         }
 
         var p13sortorder;
@@ -3501,11 +3505,11 @@
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
-        function p13createfolderEx() { files.Send(JSON.stringify({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value })); p13folderup(999); }
+        function p13createfolderEx() { files.send(JSON.stringify({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value })); p13folderup(999); }
         function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
-        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.Send(JSON.stringify({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles })); p13folderup(999); }
+        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.send(JSON.stringify({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles })); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
-        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.Send(JSON.stringify(t)); p13folderup(999); }
+        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.send(JSON.stringify(t)); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
@@ -3545,8 +3549,42 @@
 
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our file transport
-            downloadFile.attemptWebRTC = false;
+            if (xxdialogMode || downloadFile || !files) return;
+            downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
+            //console.log('p13downloadFileCancel', downloadFile);
+            files.send(JSON.stringify({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path }));
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+        }
+
+        // Called by the html page to cancel the download
+        function p13downloadFileCancel() { setDialogMode(0); files.send(JSON.stringify({ action: 'download', sub: 'cancel', id: downloadFile.id })); downloadFile = null; }
+
+        // Called by the transport when download control command is received
+        function p13gotDownloadCommand(cmd) {
+            //console.log('p13gotDownloadCommand', cmd);
+            if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
+            if (cmd.sub == 'start') { downloadFile.state = 1; files.send(JSON.stringify({ action: 'download', sub: 'startack', id: downloadFile.id })); }
+            else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
+            else if (cmd.sub == 'done') { saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); } // Save the file
+        }
+
+        // Called by the transport when binary data is received
+        function p13gotDownloadBinaryData(data) {
+            if (!downloadFile || downloadFile.state == 0) return;
+            downloadFile.tsize += (data.length - 4); // Add to the total bytes received
+            downloadFile.data += data.substring(4); // Append the data
+            Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
+            files.send(JSON.stringify({ action: 'download', sub: 'ack', id: downloadFile.id })); // Send the ACK
+        }
+
+        /*
+        var downloadFile; // Global state for file download
+
+        // Called by the html page to start a download, arguments are: path, file name and file size.
+        function p13downloadfile(x, y, z) {
+            if (xxdialogMode) return;
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our websocket file transport
+            downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
             downloadFile.xfile = decodeURIComponent(y);
@@ -3573,7 +3611,7 @@
                     if ((downloadFile != null) && (downloadFile.xstate == 1)) { saveAs(data2blob(downloadFile.xdata), downloadFile.xfile); } // Save the file
                     break;
                 case 3: // Transport as connected, send a command to indicate we want to start a file download
-                    downloadFile.Send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
+                    downloadFile.send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
                     break;
             }
         }
@@ -3585,7 +3623,7 @@
                 if (cmd.action == 'downloadstart') { // Yes, the file is about to start
                     downloadFile.xstate = 1; // Switch to state 1, we will start receiving the file data
                     downloadFile.xdata = ''; // Start with empty data
-                    downloadFile.Send('a'); // Send the first ACK
+                    downloadFile.send('a'); // Send the first ACK
                 } else if (cmd.action == 'downloaderror') { // Problem opening this file, cancel
                     p13downloadFileCancel();
                 }
@@ -3593,9 +3631,10 @@
                 downloadFile.xtsize += (data.length); // Add to the total bytes received
                 downloadFile.xdata += data; // Append the data
                 Q('d2progressBar').value = downloadFile.xtsize; // Change the progress bar
-                downloadFile.Send('a'); // Send the ACK
+                downloadFile.send('a'); // Send the ACK
             }
         }
+        */
 
         //
         // FILES UPLOAD
@@ -3603,6 +3642,7 @@
 
         var uploadFile;
         function p13doUploadFiles(files) {
+            if (xxdialogMode) return;
             uploadFile = {};
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
@@ -3626,6 +3666,7 @@
         function p13uploadReconnect() {
             uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort);
             uploadFile.ws.attemptWebRTC = false;
+            uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
             uploadFile.ws.Start(filesNode._id);
         }
@@ -3643,7 +3684,7 @@
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onload = function() {
                     uploadFile.xdata = uploadFile.xreader.result;
-                    uploadFile.ws.Send(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    uploadFile.ws.send(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
                 };
                 uploadFile.xreader.readAsArrayBuffer(file);
             } else {
@@ -3689,7 +3730,7 @@
                 if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
             } else {
                 var datapart = data.slice(start, end);
-                uploadFile.ws.Send(datapart);
+                uploadFile.ws.send(datapart);
                 uploadFile.xptr = end;
                 Q('d2progressBar').value = end;
             }
@@ -3777,7 +3818,7 @@
             Q('p15consoleText').value = '';
 
             // Send the command to the mesh agent
-            meshserver.Send({ action: 'msg', type:'console', nodeid: consoleNode._id, value: v });
+            meshserver.send({ action: 'msg', type:'console', nodeid: consoleNode._id, value: v });
 
             // Add command to history list
             if (v.length > 0) {
@@ -3802,8 +3843,8 @@
         // Called then user presses the "Change Core" button
         function p15uploadCore(e) {
             if (xxdialogMode) return;
-            if (e.shiftKey == true) { meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' }); } // Upload default core
-            else if (e.altKey == true) { meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id }); } // Clear the core
+            if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' }); } // Upload default core
+            else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
             else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select><div>Change Core</div>'); }
         }
@@ -3811,19 +3852,19 @@
         function p15uploadCoreEx() {
             if (Q('d3coreMode').value == 1) {
                 // Upload default core
-                meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' });
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' });
             } else if (Q('d3coreMode').value == 2) {
                 // Clear the core
-                meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id });
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id });
             } else if (Q('d3coreMode').value == 3) {
                 // Upload file as core
                 p15uploadCore2();
             } else if (Q('d3coreMode').value == 4) {
                 // Soft disconnect the mesh agent
-                meshserver.Send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 1 });
+                meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 1 });
             } else if (Q('d3coreMode').value == 5) {
                 // Hard disconnect the mesh agent
-                meshserver.Send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
+                meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
             }
         }
 
@@ -3844,7 +3885,7 @@
             } else {
                 // Upload server mesh agent code
                 var files = d3getFileSel();
-                if (files.length == 1) { meshserver.Send({ action: 'uploadagentcore', nodeid: consoleNode._id, path: d3filetreelocation.join('/') + '/' + files[0] }); }
+                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 
@@ -3859,7 +3900,7 @@
         }
 
         function account_showVerifyEmailEx() {
-            meshserver.Send({ action: 'verifyemail', email: userinfo.email });
+            meshserver.send({ action: 'verifyemail', email: userinfo.email });
         }
 
         function account_showChangeEmail() {
@@ -3880,7 +3921,7 @@
         }
 
         function account_changeEmail() {
-            meshserver.Send({ action: 'changeemail', email: Q('dp2email').value });
+            meshserver.send({ action: 'changeemail', email: Q('dp2email').value });
         }
 
         function account_showDeleteAccount() {
@@ -3933,7 +3974,7 @@
         }
 
         function account_createMeshEx(button, tag) {
-            meshserver.Send({ action: 'createmesh', meshname: Q('dp2meshname').value, meshtype: Q('dp2meshtype').value, desc: Q('dp2meshdesc').value });
+            meshserver.send({ action: 'createmesh', meshname: Q('dp2meshname').value, meshtype: Q('dp2meshtype').value, desc: Q('dp2meshdesc').value });
         }
 
         function account_validateDeleteAccount() {
@@ -4004,11 +4045,11 @@
         function server_showVersionDlg() {
             if (xxdialogMode) return;
             setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
-            meshserver.Send({ action: 'serverversion' });
+            meshserver.send({ action: 'serverversion' });
         }
 
         function server_showVersionDlgEx() {
-            meshserver.Send({ action: 'serverupdate' });
+            meshserver.send({ action: 'serverupdate' });
         }
 
         //
@@ -4091,7 +4132,7 @@
         }
 
         function p20showDeleteMeshDialogEx(buttons, tag) {
-            meshserver.Send({ action: 'deletemesh', meshid: currentMesh._id, meshname: currentMesh.name });
+            meshserver.send({ action: 'deletemesh', meshid: currentMesh._id, meshname: currentMesh.name });
         }
 
         function p20editmesh(focus) {
@@ -4107,7 +4148,7 @@
         }
 
         function p20editmeshEx() {
-            meshserver.Send({ action: 'editmesh', meshid: currentMesh._id, meshname: Q('dp20meshname').value, desc: Q('dp20meshdesc').value });
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, meshname: Q('dp20meshname').value, desc: Q('dp20meshdesc').value });
         }
 
         function p20editmeshValidate() {
@@ -4157,7 +4198,7 @@
                 if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
                 if (Q('p20wakedevices').checked == true) meshadmin += 64;
             }
-            meshserver.Send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
+            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
         }
 
         function p20viewuser(userid) {
@@ -4193,7 +4234,7 @@
         }
 
         function p20viewuserEx2(button, userid) {
-            meshserver.Send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid});
+            meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid});
         }
 
         //
@@ -4331,11 +4372,11 @@
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
-        function p5createfolderEx() { meshserver.Send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
+        function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
         function p5deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
-        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.Send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles}); }
+        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles}); }
         function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile}); focusTextBox('p5renameinput'); p5fileNameCheck(); }
-        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.Send(t); }
+        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
@@ -4439,11 +4480,11 @@
         }
 
         function showDeleteAllEventsDialogEx(buttons, tag) {
-            meshserver.Send({ action: 'clearevents' });
+            meshserver.send({ action: 'clearevents' });
         }
 
         function refreshEvents() {
-            meshserver.Send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+            meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
         }
 
         //
@@ -4506,7 +4547,7 @@
         }
 
         function showUserInfoDialogDelete(button, user) {
-            if (button == 2) { meshserver.Send({ action: 'deleteuser', userid: user._id, username: user.name }); }
+            if (button == 2) { meshserver.send({ action: 'deleteuser', userid: user._id, username: user.name }); }
         }
 
         function showCreateNewAccountDialog() {
@@ -4526,7 +4567,7 @@
         }
 
         function showCreateNewAccountDialogEx() {
-            meshserver.Send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value });
+            meshserver.send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value });
         }
 
         function showUserAdminDialog(e, userid) {
@@ -4583,7 +4624,7 @@
             }
             var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
-            meshserver.Send(x);
+            meshserver.send(x);
         }
 
         //

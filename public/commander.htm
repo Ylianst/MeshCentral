@@ -539,8 +539,8 @@ th {
             </div>
                         <div id="dialog12" style="margin:auto;margin:3px">
                 <br>
-                <div style='height:26px'><input id="idx_d12name" style="float:right;width:200px" onkeyup="updateWifiDialog()"><div>Profile Name</div></div>
-                <div style='height:26px'><input id="idx_d12ssid" style="float:right;width:200px" onkeyup="updateWifiDialog()"><div>SSID</div></div>
+                <div style='height:26px'><input id="idx_d12name" style="float:right;width:200px" maxlength="32" onkeyup="updateWifiDialog()" title="Maximum 32 characters"><div title="Maximum 32 characters">Profile Name</div></div>
+                <div style='height:26px'><input id="idx_d12ssid" style="float:right;width:200px" maxlength="32" onkeyup="updateWifiDialog()" title="Maximum 32 characters"><div title="Maximum 32 characters">SSID</div></div>
                 <div style='height:26px'>
                     <select id="idx_d12pri" style="float:right;width:200px" onclick="updateWifiDialog()"></select>
                     <div>Priority</div>
@@ -565,8 +565,8 @@ th {
                     </select>
                     <div>Encryption</div>
                 </div>
-                <div style='height:26px'><input id="idx_d12password1" type="password" style="float:right;width:200px" onkeyup="updateWifiDialog()"><div>Password*</div></div>
-                <div style='height:26px'><input id="idx_d12password2" type="password" style="float:right;width:200px" onkeyup="updateWifiDialog()"><div>Confirm Password</div></div>
+                <div style='height:26px'><input id="idx_d12password1" type="password" style="float:right;width:200px" maxlength="63" onkeyup="updateWifiDialog()" title="Length between 8 and 63 characters"><div title="Length between 8 and 63 characters">Password*</div></div>
+                <div style='height:26px'><input id="idx_d12password2" type="password" style="float:right;width:200px" maxlength="63" onkeyup="updateWifiDialog()" title="Length between 8 and 63 characters"><div title="Length between 8 and 63 characters">Confirm Password</div></div>
             </div>
                                                             <div id="dialog19" style="margin:auto;margin:3px">
                 This will save the entire state of Intel&reg; AMT for this machine into file. Passwords will not be saved, but some sensitive data may be included.<br><br>
@@ -1504,7 +1504,7 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
 
     // Perform a WSMAN PULL operation
     obj.ExecPull = function (resuri, enumctx, callback, tag, pri) {
-        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Pull xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\"><EnumerationContext>" + enumctx + "</EnumerationContext><MaxElements>999</MaxElements><MaxCharacters>99999</MaxCharacters></Pull></Body></Envelope>", callback, tag, pri);
+        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Pull xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\"><EnumerationContext>" + enumctx + "</EnumerationContext></Pull></Body></Envelope>", callback, tag, pri); // </EnumerationContext>--<MaxElements>999</MaxElements><MaxCharacters>99999</MaxCharacters>--</Pull>
     }
 
     // Private method
@@ -1644,9 +1644,8 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
     function _turnToXml(text) {
                 if (window.DOMParser) {
             return new DOMParser().parseFromString(text, "text/xml");
-        }
-        else // Internet Explorer
-        {
+        } else {
+            // Internet Explorer
             var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
             xmlDoc.async = false;
             xmlDoc.loadXML(text);
@@ -1823,9 +1822,9 @@ function AmtStackCreateService(wsmanStack) {
         if (response == null || response.Header["Method"] != "PullResponse") { callback(obj, name, null, 604, tag); _EnumDoNext(1); return; }
         for (var i in response.Body["Items"]) {
             if (response.Body["Items"][i] instanceof Array) {
-                for (var j in response.Body["Items"][i]) { items.push(response.Body["Items"][i][j]); }
+                for (var j in response.Body["Items"][i]) { if (typeof response.Body["Items"][i][j] != 'function') { items.push(response.Body["Items"][i][j]); } }
             } else {
-                items.push(response.Body["Items"][i]);
+                if (typeof response.Body["Items"][i] != 'function') { items.push(response.Body["Items"][i]); }
             }
         }
         if (response.Body["EnumerationContext"]) {
@@ -2078,6 +2077,8 @@ function AmtStackCreateService(wsmanStack) {
     obj.IPS_HostBasedSetupService_UpgradeClientToAdmin = function (McNonce, SigningAlgorithm, DigitalSignature, callback_func) { obj.Exec("IPS_HostBasedSetupService", "UpgradeClientToAdmin", { "McNonce": McNonce, "SigningAlgorithm": SigningAlgorithm, "DigitalSignature": DigitalSignature }, callback_func); }
     obj.IPS_HostBasedSetupService_DisableClientControlMode = function (_method_dummy, callback_func) { obj.Exec("IPS_HostBasedSetupService", "DisableClientControlMode", { "_method_dummy": _method_dummy }, callback_func); }
     obj.IPS_KVMRedirectionSettingData_TerminateSession = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "TerminateSession", {}, callback_func); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelRead = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelRead", {}, callback_func); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelWrite = function (Data, callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelWrite", { "DataMessage": Data }, callback_func); }
     obj.IPS_OptInService_StartOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "StartOptIn", {}, callback_func); }
     obj.IPS_OptInService_CancelOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "CancelOptIn", {}, callback_func); }
     obj.IPS_OptInService_SendOptInCode = function (OptInCode, callback_func) { obj.Exec("IPS_OptInService", "SendOptInCode", { "OptInCode": OptInCode }, callback_func); }
@@ -33061,7 +33062,7 @@ if (typeof module !== "undefined" && module.exports) {
     });
 }
 
-        var version = '0.5.8';
+        var version = '0.6.0';
         var urlvars = null;
         var amtstack;
         var wsstack = null;
@@ -33398,7 +33399,7 @@ if (typeof module !== "undefined" && module.exports) {
                         }
                     }
                 }
-                if (amtlogicalelements.length == 0) { disconnect(); return; } // Could not get Intel AMT version, disconnect();
+                if (amtlogicalelements.length == 0) { console.error('ERROR: Could not get Intel AMT version.'); disconnect(); return; } // Could not get Intel AMT version, disconnect();
                 var v = getInstance(amtlogicalelements, "AMT")["VersionString"];
                 amtversion = parseInt(v.split('.')[0]);
                 amtversionmin = parseInt(v.split('.')[1]);
@@ -34602,9 +34603,7 @@ if (typeof module !== "undefined" && module.exports) {
                         xx += getWatchdogTransitionStr(t['OldState']) + " &rarr; " + getWatchdogTransitionStr(t['NewState']);
                         if (t.actions) {
                             var action = t.actions[0];
-                            if (action['EventOnTransition'] == true) {
-                                xx += " : Event to log";
-                            }
+                            if (action['EventOnTransition'] == true) { xx += " : Event to log"; }
                         }
                     }
                     if (xx != '') { x += "<div style=padding:12px>" + xx + "</div>"; }
@@ -35298,8 +35297,7 @@ if (typeof module !== "undefined" && module.exports) {
 				    '__parameterType': 'reference',
 				    '__resourceUri': amtstack.CompleteName('CIM_WiFiEndpoint'),
 				    'Name': 'WiFi Endpoint 0'
-				},
-                {
+				}, {
 				    '__parameterType': 'instance',
 				    '__namespace': amtstack.CompleteName('CIM_WiFiEndpointSettings'),
 				    'ElementName': idx_d12name.value,
@@ -35328,7 +35326,7 @@ if (typeof module !== "undefined" && module.exports) {
             // Check if there is already a profile with this name
             for (var j in xxWireless['CIM_WiFiEndpointSettings'].responses) { if (xxWireless['CIM_WiFiEndpointSettings'].responses[j]['ElementName'] == idx_d12name.value) { r = false; } }
 
-            QE('idx_dlgOkButton', r == true && idx_d12name.value.length > 0 && idx_d12ssid.value.length > 0 && idx_d12password1.value.length > 0 && idx_d12password1.value == idx_d12password2.value);
+            QE('idx_dlgOkButton', r == true && (idx_d12name.value.length > 0) && (idx_d12ssid.value.length > 0) && (idx_d12password1.value.length > 7) && (idx_d12password1.value == idx_d12password2.value));
         }
 
 
@@ -35598,7 +35596,7 @@ if (typeof module !== "undefined" && module.exports) {
             QE('idx_dlgOkButton', ok);
         }
 
-        var xxUserPermissions = [ 'Local only' , 'Network only', 'All (Local & Network)'];
+        var xxUserPermissions = ['Local only' , 'Network only', 'All (Local & Network)'];
         function showUserDetails(h) {
             if (xxdialogMode) return;
             var a = xxAccountRealmInfo[h], x = '<div style=text-align:left>';
@@ -36275,7 +36273,7 @@ if (typeof module !== "undefined" && module.exports) {
             delete x["DefaultGateway"];
             delete x["PrimaryDNS"];
             delete x["SecondaryDNS"];
-            if (!y) {
+            if (d21o1.checked == false) {
                 x["IPAddress"] = idx_d21address.value;
                 x["SubnetMask"] = idx_d21subnet.value;
                 x["DefaultGateway"] = idx_d21gateway.value;

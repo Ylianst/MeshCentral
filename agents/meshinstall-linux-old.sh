@@ -2,16 +2,6 @@
 
 CheckStartupType() {
 #  echo "Checking process autostart system..."
-  starttype=`ps -p 1 | awk '/1/ {print $4}'`
-  if [[ $starttype == 'systemd' ]]; then return 1; # systemd;
-  elif [[ $starttype == 'init' ]]; then return 3; # sysv-init;
-  elif [[ `/sbin/init --version` =~ upstart ]]; then return 2; # upstart;
-  fi
-  return 0;
-}
-
-CheckStartupTypeOld() {
-#  echo "Checking process autostart system..."
   if [[ `systemctl` =~ -\.mount ]]; then return 1; # systemd;
   elif [[ `/sbin/init --version` =~ upstart ]]; then return 2; # upstart;
   elif [[ -f /etc/init.d/cron && ! -h /etc/init.d/cron ]]; then return 3; # sysv-init;
@@ -97,26 +87,15 @@ DownloadAgent() {
 	  UpdateMshFile
       if [ $starttype -eq 1 ]
       then
-	    # systemd
         echo -e "[Unit]\nDescription=MeshCentral Agent\n[Service]\nExecStart=/usr/local/mesh/meshagent\nStandardOutput=null\nRestart=always\nRestartSec=3\n[Install]\nWantedBy=multi-user.target\nAlias=meshagent.service\n" > /lib/systemd/system/meshagent.service
         systemctl enable meshagent
         systemctl start meshagent
       else
-        if [ $starttype -eq 3 ]
-        then
-		  # initd
-	      wget $url/meshagents?script=2 -q --no-check-certificate -O /etc/init.d/meshagent
-		  chmod +x /etc/init.d/meshagent
-		  update-rc.d meshagent default # creates symlinks for rc.d
-		  service meshagent start
-        else
-		  # upstart / others (???)
-          ./meshagent start
-          ln -s /usr/local/mesh/meshagent /sbin/meshcmd
-          ln -s /usr/local/mesh/meshagent /etc/rc2.d/S20mesh
-          ln -s /usr/local/mesh/meshagent /etc/rc3.d/S20mesh
-          ln -s /usr/local/mesh/meshagent /etc/rc5.d/S20mesh
-		fi
+        ./meshagent start
+        ln -s /usr/local/mesh/meshagent /sbin/meshcmd
+        ln -s /usr/local/mesh/meshagent /etc/rc2.d/S20mesh
+        ln -s /usr/local/mesh/meshagent /etc/rc3.d/S20mesh
+        ln -s /usr/local/mesh/meshagent /etc/rc5.d/S20mesh
       fi
 	  echo "Mesh agent started."
     else
@@ -138,20 +117,11 @@ UninstallAgent() {
 
   if [ $starttype -eq 1 ]
   then
-    # systemd
     rm -f /sbin/meshcmd /lib/systemd/system/meshagent.service
     systemctl disable meshagent
     systemctl stop meshagent
   else
-    if [ $starttype -eq 3 ]
-	then
-		# initd
-		service meshagent forceuninstall
-		rm -f /sbin/meshcmd /etc/init.d/meshagent
-	else
-		# upstart / others (???)
-		rm -f /sbin/meshcmd /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
-	fi
+    rm -f /sbin/meshcmd /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
   fi
 
   if [ -e $installpath ]

@@ -31,7 +31,7 @@ function createMeshCore(agent) {
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
     var amtMei = null, amtLms = null, amtLmsState = 0;
-    var amtMeiConnected = 0, amtMeiState = null, amtMeiTmpState = null;
+    var amtMeiConnected = 0, amtMeiTmpState = null;
     var wifiScannerLib = null;
     var wifiScanner = null;
     var networkMonitor = null;
@@ -77,7 +77,7 @@ function createMeshCore(agent) {
         amtMeiConnected = 1;
         amtMei = new amtMeiLib();
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
-        amtMei.on('connect', function () { amtMeiConnected = 2; getAmtInfo(); });
+        amtMei.on('connect', function () { amtMeiConnected = 2; sendPeriodicServerUpdate(); });
     } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
     
     // Try to load up the WIFI scanner
@@ -403,7 +403,7 @@ function createMeshCore(agent) {
             // List all the drives in the root, or the root itself
             var results = null;
             try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
-            //console.log('a', objToString(results, 0, '.'));
+            //console.log('a', objToString(results, 0, ' '));
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     var drive = { n: results[i].name, t: 1 };
@@ -515,6 +515,7 @@ function createMeshCore(agent) {
             this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
             return;
         }
+        /*
         // If this is a download, send more of the file
         if (this.httprequest.downloadFile) {
             var buf = new Buffer(4096);
@@ -523,14 +524,15 @@ function createMeshCore(agent) {
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
             return;
         }
-                
+        */
+
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
             if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
         } else {
             // Handle tunnel data
             if (this.httprequest.protocol == 0) { // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
-                // Take a look at the protocolab
+                // Take a look at the protocol
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
@@ -550,8 +552,7 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
                     if (process.platform != 'win32') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
-                }
-                if (this.httprequest.protocol == 2) {
+                } else if (this.httprequest.protocol == 2) {
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
@@ -568,8 +569,7 @@ function createMeshCore(agent) {
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
-                }
-                else if (this.httprequest.protocol == 5) {
+                } else if (this.httprequest.protocol == 5) {
                     // Setup files
                     // NOP
                 }
@@ -579,7 +579,6 @@ function createMeshCore(agent) {
                 this.httprequest.process.write(data);
             } else if (this.httprequest.protocol == 2) {
                 // Send data into remote desktop
-                // TODO ADD REMOTE DESKTOP (This is test code)
                 if (this.httprequest.desktop.state == 0) {
                     this.write(new Buffer(String.fromCharCode(0x11, 0xFE, 0x00, 0x00, 0x4D, 0x45, 0x53, 0x48, 0x00, 0x00, 0x00, 0x00, 0x02)));
                     this.httprequest.desktop.state = 1;
@@ -590,9 +589,13 @@ function createMeshCore(agent) {
                 // Process files commands
                 var cmd = null;
                 try { cmd = JSON.parse(data); } catch (e) { };
-                if ((cmd == null) || (cmd.action == undefined)) { return; }
+                if (cmd == null) { return; }
+                if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { onTunnelControlData(cmd, this); return; } // If this is control data, handle it now.
+                if (cmd.action == undefined) { return; }
+                //sendConsoleText('CMD: ' + JSON.stringify(cmd));
+
                 if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
-                //console.log(objToString(cmd, 0, '.'));
+                //console.log(objToString(cmd, 0, ' '));
                 switch (cmd.action) {
                     case 'ls': {
                         /*
@@ -643,6 +646,36 @@ function createMeshCore(agent) {
                         break;
                     }
                     case 'download': {
+                        // Download a file
+                        var sendNextBlock = 0;
+                        if (cmd.sub == 'start') { // Setup the download
+                            if (this.filedownload != null) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                            this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
+                            try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                            if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
+                        } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
+                            if (cmd.sub == 'startack') { sendNextBlock = 8; } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
+                        }
+                        // Send the next download block(s)
+                        while (sendNextBlock > 0) {
+                            sendNextBlock--;
+                            var buf = new Buffer(4096);
+                            buf.writeInt32BE(0x01020304, 0);
+                            var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
+                            this.filedownload.ptr += len;
+                            if (len > 0) {
+                                this.write(buf.slice(0, len + 4)); // Write as binary
+                            } else {
+                                fs.closeSync(this.filedownload.f);
+                                this.write({ action: 'download', sub: 'done', id: this.filedownload.id });
+                                delete this.filedownload;
+                                sendNextBlock = 0;
+                            }
+                        }
+                        break;
+                    }
+                    /*
+                    case 'download': {
                         // Packet download of a file, agent to browser
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
@@ -662,6 +695,7 @@ function createMeshCore(agent) {
                         this.httprequest.downloadFile.end = function () { }
                         break;
                     }
+                    */
                     case 'upload': {
                         // Upload a file, browser to agent
                         if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
@@ -691,65 +725,61 @@ function createMeshCore(agent) {
     }
 
     // Called when receiving control data on websocket
-    function onTunnelControlData(data) {
-        if (typeof data != 'string') return;
-        //sendConsoleText('onTunnelControlData: ' + data);
-        //console.log('onTunnelControlData: ' + data);
-
+    function onTunnelControlData(data, ws) {
         var obj;
-        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON'); return; }
+        if (ws == null) { ws = this; }
+        if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON'); return; } }
+        else if (typeof data == 'object') { obj = data; } else { return; }
+        //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
+        //console.log('onTunnelControlData: ' + JSON.stringify(data));
 
         if (obj.type == 'close') {
             // We received the close on the websocket
-            //sendConsoleText('Tunnel #' + this.tunnel.index + ' WebSocket control close');
-            try { this.close(); } catch (e) { }
+            //sendConsoleText('Tunnel #' + ws.tunnel.index + ' WebSocket control close');
+            try { ws.close(); } catch (e) { }
         } else if (obj.type == 'webrtc0') { // Browser indicates we can start WebRTC switch-over.
-            if (this.websocket.httprequest.protocol == 1) { // Terminal
+            if (ws.httprequest.protocol == 1) { // Terminal
                 // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
-                this.websocket.httprequest.process.stdout.unpipe(this.websocket);
-                this.websocket.httprequest.process.stderr.unpipe(this.websocket);
-                this.websocket.write("{\"type\":\"webrtc1\"}");  // End of data marker
-            } else if (this.websocket.httprequest.protocol == 2) { // Desktop
+                ws.httprequest.process.stdout.unpipe(ws);
+                ws.httprequest.process.stderr.unpipe(ws);
+            } else if (ws.httprequest.protocol == 2) { // Desktop
                 // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket
-                this.websocket.httprequest.desktop.kvm.unpipe(this.websocket);
-                this.websocket.write("{\"type\":\"webrtc1\"}"); // End of data marker
+                ws.httprequest.desktop.kvm.unpipe(ws);
+            } else {
+                // Switch things around so all WebRTC data goes to onTunnelData().
+                ws.rtcchannel.httprequest = ws.httprequest;
+                ws.rtcchannel.removeAllListeners('data');
+                ws.rtcchannel.on('data', onTunnelData);
             }
-            /*
-            else {
-                // Debug, just display on agent console
-                rtcchannel.on('data', function (buffer) { sendConsoleText("RTCReceived: " + buffer.length + " bytes"); });
-                rtcchannel.on('end', function () { sendConsoleText("RTCChannel: " + this.name + " was closed"); });
-                channel.write('WebRTC HELLO!');
-            }
-            */
+            ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // End of data marker
         } else if (obj.type == 'webrtc1') {
-            if (this.httprequest.protocol == 1) { // Terminal
+            if (ws.httprequest.protocol == 1) { // Terminal
                 // Switch the user input from websocket to webrtc at this point.
-                this.unpipe(this.httprequest.process.stdin);
-                this.rtcchannel.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                this.resume(); // Resume the websocket to keep receiving control data
-            } else if (this.httprequest.protocol == 2) { // Desktop
+                ws.unpipe(ws.httprequest.process.stdin);
+                ws.rtcchannel.pipe(ws.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                ws.resume(); // Resume the websocket to keep receiving control data
+            } else if (ws.httprequest.protocol == 2) { // Desktop
                 // Switch the user input from websocket to webrtc at this point.
-                this.unpipe(this.httprequest.desktop.kvm);
-                try { this.webrtc.rtcchannel.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
-                this.resume(); // Resume the websocket to keep receiving control data
+                ws.unpipe(ws.httprequest.desktop.kvm);
+                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1 }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                ws.resume(); // Resume the websocket to keep receiving control data
             }
-            this.write("{\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
+            ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
         } else if (obj.type == 'webrtc2') {
             // Other side received websocket end of data marker, start sending data on WebRTC channel
-            if (this.httprequest.protocol == 1) { // Terminal
-                this.httprequest.process.stdout.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                this.httprequest.process.stderr.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-            } else if (this.httprequest.protocol == 2) { // Desktop
-                this.httprequest.desktop.kvm.pipe(this.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+            if (ws.httprequest.protocol == 1) { // Terminal
+                ws.httprequest.process.stdout.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                ws.httprequest.process.stderr.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+            } else if (ws.httprequest.protocol == 2) { // Desktop
+                ws.httprequest.desktop.kvm.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
             }
         } else if (obj.type == 'offer') {
             // This is a WebRTC offer.
-            this.webrtc = rtc.createConnection();
-            this.webrtc.websocket = this;
-            this.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
-            this.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
-            this.webrtc.on('dataChannel', function (rtcchannel) {
+            ws.webrtc = rtc.createConnection();
+            ws.webrtc.websocket = ws;
+            ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
+            ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
+            ws.webrtc.on('dataChannel', function (rtcchannel) {
                 //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
                 rtcchannel.xrtc = this;
                 rtcchannel.websocket = this.websocket;
@@ -757,9 +787,9 @@ function createMeshCore(agent) {
                 this.websocket.rtcchannel = rtcchannel;
                 this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
                 this.websocket.rtcchannel.on('end', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');*/ });
-                this.websocket.write("{\"type\":\"webrtc0\"}"); // Indicate we are ready for WebRTC switch-over.
+                this.websocket.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate we are ready for WebRTC switch-over.
             });
-            this.write({ type: "answer", sdp: this.webrtc.setOffer(obj.sdp) });
+            ws.write({ type: 'answer', ctrlChannel: '102938', sdp: ws.webrtc.setOffer(obj.sdp) });
         }
     }
 
@@ -804,19 +834,19 @@ function createMeshCore(agent) {
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
-                    response += '\r\nModules: ' + JSON.stringify(addedModules) + '';
-                    response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '';
+                    response += '\r\nModules: ' + addedModules.join(', ');
+                    response += '\r\nServerConnected: ' + mesh.isControlChannelConnected;
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     response += '\r\ServerState: ' + meshServerConnectionState + '.';
                     break;
                 }
                 case 'selfinfo': { // Return self information block
-                    response = JSON.stringify(buildSelfInfo());
+                    buildSelfInfo(function (info) { sendConsoleText(objToString(info, 0, ' '), sessionid); });
                     break;
                 }
                 case 'args': { // Displays parsed command arguments
-                    response = 'args ' + objToString(args, 0, '.');
+                    response = 'args ' + objToString(args, 0, ' ');
                     break;
                 }
                 case 'print': { // Print a message on the mesh agent console, does nothing when running in the background
@@ -986,17 +1016,17 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'amt': { // Show Intel AMT status
-                    if (amtMeiState != null) {
-                        response = objToString(amtMeiState, 0, '.');
-                    } else {
-                        response = 'This mesh agent does not support Intel AMT.';
-                    }
+                    getAmtInfo(function (state) {
+                        var resp = 'Intel AMT not detected.';
+                        if (state != null) { resp = objToString(state, 0, ' '); }
+                        sendConsoleText(resp, sessionid);
+                    });
                     break;
                 }
                 case 'netinfo': { // Show network interface information
-                    //response = objToString(mesh.NetInfo, 0, '.');
+                    //response = objToString(mesh.NetInfo, 0, ' ');
                     var interfaces = require('os').networkInterfaces();
-                    response = objToString(interfaces, 0, '.');
+                    response = objToString(interfaces, 0, ' ');
                     break;
                 }
                 case 'wakeonlan': { // Send wake-on-lan
@@ -1027,7 +1057,7 @@ function createMeshCore(agent) {
                 }
                 case 'location': {
                     getIpLocationData(function (location) {
-                        sendConsoleText(objToString({ "action": "iplocation", "type": "publicip", "value": location }, 0, '.'));
+                        sendConsoleText(objToString({ "action": "iplocation", "type": "publicip", "value": location }, 0, ' '));
                     });
                     break;
                 }
@@ -1108,20 +1138,19 @@ function createMeshCore(agent) {
     
     // Build a bunch a self information data that will be sent to the server
     // We need to do this periodically and if anything changes, send the update to the server.
-    function buildSelfInfo() {
-        var r = { "action": "coreinfo", "value": obj.meshCoreInfo, "caps": obj.meshCoreCapabilities };
-        if (mesh.hasHECI == 1) {
-            var meinfo = amtMeiState;
-            var amtPresent = false, intelamt = {};
+    function buildSelfInfo(func) {
+        getAmtInfo(function (meinfo) {
+            var r = { "action": "coreinfo", "value": obj.meshCoreInfo, "caps": obj.meshCoreCapabilities };
             if (meinfo != null) {
-                if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; amtPresent = true; }
-                if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; amtPresent = true; }
-                if (meinfo.flags) { intelamt.flags = meinfo.Flags; amtPresent = true; }
-                if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; amtPresent = true; }
-                if (amtPresent == true) { r.intelamt = intelamt }
+                var intelamt = {}, p = false;
+                if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; p = true; }
+                if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; p = true; }
+                if (meinfo.flags) { intelamt.flags = meinfo.Flags; p = true; }
+                if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; p = true; }
+                if (p == true) { r.intelamt = intelamt }
             }
-        }
-        return JSON.stringify(r);
+            func(r);
+        });
     }
     
     // Update the server with the latest network interface information
@@ -1141,8 +1170,10 @@ function createMeshCore(agent) {
     function sendPeriodicServerUpdate(force) {
         if ((amtMeiConnected != 1) || (force == true)) { // If we are pending MEI connection, hold off on updating the server on self-info
             // Update the self information data
-            var selfInfo = buildSelfInfo(), selfInfoStr = JSON.stringify(selfInfo);
-            if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
+            buildSelfInfo(function (selfInfo) {
+                selfInfoStr = JSON.stringify(selfInfo);
+                if ((force == true) || (selfInfoStr != lastSelfInfo)) { mesh.SendCommand(selfInfo); lastSelfInfo = selfInfoStr; }
+            });
         }
         
         // Update network information
@@ -1160,7 +1191,7 @@ function createMeshCore(agent) {
         amtMei.getEHBCState(function (result) { if (result.EHBC == true) { amtMeiTmpState.Flags += 1; } });
         amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
         //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
-        amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } amtMeiState = amtMeiTmpState; sendPeriodicServerUpdate(); if (func != null) { func(amtMeiState); } });
+        amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
     }
     
     // Called on MicroLMS Intel AMT user notification

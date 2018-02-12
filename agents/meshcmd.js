@@ -391,7 +391,7 @@ function startLms(func) {
                 //var xx = AllWsman[4];
                 //console.log(xx);
                 //osamtstack.Get(AllWsmanRequests.shift(), startLmsWsmanResponse, null, true);
-                osamtstack.Get('IPS_SecIOService', startLmsWsmanResponse, null, true);
+                //osamtstack.Get('IPS_SecIOService', startLmsWsmanResponse, null, true);
                 //osamtstack.BatchEnum(null, ['IPS_KVMRedirectionSettingData', 'CIM_SoftwareIdentity'], startLmsWsmanResponse, null, true);
                 //osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
             });

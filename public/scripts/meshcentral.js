@@ -37,7 +37,7 @@ var MeshServerCreateControl = function (domain) {
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     
-    obj.Send = function (x) { if (obj.socket != null && obj.connectstate == 1) { obj.socket.send(JSON.stringify(x)); } }
+    obj.send = function (x) { if (obj.socket != null && obj.connectstate == 1) { obj.socket.send(JSON.stringify(x)); } }
 
     return obj;    
 }

@@ -374,7 +374,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var WindowSize = common.ReadInt(data, 9);
                     socket.tag.activetunnels++;
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel); return; }
+                    if (cirachannel == undefined) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return; }
                     cirachannel.amtchannelid = SenderChannel;
                     cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
                     Debug(3, 'MPS:CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
