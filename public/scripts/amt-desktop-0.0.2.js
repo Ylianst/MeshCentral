@@ -507,10 +507,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     function _keyevent(d, e) {
         if (!e) { e = window.event; }
-        var k = e.keyCode;
-        if (k == 173) k = 189; // '-' key (Firefox)
-        if (k == 61) k = 187; // '=' key (Firefox)
-        var kk = k;
+        var k = e.keyCode, kk = k;
         if (e.shiftKey == false && k >= 65 && k <= 90) kk = k + 32;
         if (k >= 112 && k <= 124) kk = k + 0xFF4E;
         if (k == 8) kk = 0xff08; // Backspace

@@ -660,17 +660,10 @@ function createMeshCore(agent) {
                         while (sendNextBlock > 0) {
                             sendNextBlock--;
                             var buf = new Buffer(4096);
-                            buf.writeInt32BE(0x01020304, 0);
                             var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
                             this.filedownload.ptr += len;
-                            if (len > 0) {
-                                this.write(buf.slice(0, len + 4)); // Write as binary
-                            } else {
-                                fs.closeSync(this.filedownload.f);
-                                this.write({ action: 'download', sub: 'done', id: this.filedownload.id });
-                                delete this.filedownload;
-                                sendNextBlock = 0;
-                            }
+                            if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                            this.write(buf.slice(0, len + 4)); // Write as binary
                         }
                         break;
                     }

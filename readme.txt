@@ -9,7 +9,7 @@ This is a full computer management web site. With MeshCentral, you can run your 
 
 This version of MeshCentral that is completely rebuild of the original MeshCentral coded in C#. It's simpler and includes many other design improvements over the original. At some point in the future, [MeshCentral.com](http://meshcentral.com) that is still running the older code will switch to using this code base. For now, this is early software, preview quality at best.
 
-Note that in this version, **the Mesh Agent works only on Windows**. This version is BETA and should not be used in production.
+This version is BETA and should not be used in production.
 
 
 Installation

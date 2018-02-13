@@ -188,7 +188,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     });
 
     // If error, do nothing
-    ws.on('error', function (err) { console.log(err); });
+    ws.on('error', function (err) { /*console.log('Relay Error: ' + err);*/ });
 
     // If the mesh relay web socket is closed
     ws.on('close', function (req) {
