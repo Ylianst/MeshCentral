@@ -107,7 +107,7 @@ DownloadAgent() {
 		  # initd
 	      wget $url/meshagents?script=2 -q --no-check-certificate -O /etc/init.d/meshagent
 		  chmod +x /etc/init.d/meshagent
-		  update-rc.d meshagent default # creates symlinks for rc.d
+		  update-rc.d meshagent defaults # creates symlinks for rc.d
 		  service meshagent start
         else
 		  # upstart / others (???)

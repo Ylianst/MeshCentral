@@ -649,8 +649,8 @@
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
         var debugmode = false;
-        var clickOnce = detectClickOnce();
-        var attemptWebRTC = true;
+        var clickOnce = (((features & 256) != 0) && detectClickOnce());
+        var attemptWebRTC = ((features & 128) != 0);
 
         function startup() {
             if ((features & 32) == 0) {
@@ -3601,16 +3601,21 @@
             if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
             if (cmd.sub == 'start') { downloadFile.state = 1; files.send(JSON.stringify({ action: 'download', sub: 'startack', id: downloadFile.id })); }
             else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
-            else if (cmd.sub == 'done') { saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); } // Save the file
         }
 
         // Called by the transport when binary data is received
         function p13gotDownloadBinaryData(data) {
             if (!downloadFile || downloadFile.state == 0) return;
-            downloadFile.tsize += (data.length - 4); // Add to the total bytes received
-            downloadFile.data += data.substring(4); // Append the data
-            Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
-            files.send(JSON.stringify({ action: 'download', sub: 'ack', id: downloadFile.id })); // Send the ACK
+            if (data.length > 4) {
+                downloadFile.tsize += (data.length - 4); // Add to the total bytes received
+                downloadFile.data += data.substring(4); // Append the data
+                Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
+            }
+            if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
+                saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
+            } else {
+                files.send(JSON.stringify({ action: 'download', sub: 'ack', id: downloadFile.id })); // Send the ACK
+            }
         }
 
         /*

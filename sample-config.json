@@ -6,7 +6,9 @@
     "Port": 443,
     "RedirPort": 80,
     "AllowLoginToken": true,
-    "AllowFraming": true
+    "AllowFraming": true,
+    "WebRTC": false,
+    "ClickOnce": false
   },
   "_domains": {
     "": {

@@ -405,7 +405,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var newuser = { type: 'user', _id: newuserid, name: newusername, email: command.email, creation: Date.now(), domain: domain.id };
                             obj.parent.users[newuserid] = newuser;
                             // Create a user, generate a salt and hash the password
-                            obj.parent.hash(command.pass, function (err, salt, hash) {
+                            require('./pass').hash(command.pass, function (err, salt, hash) {
                                 if (err) throw err;
                                 newuser.salt = salt;
                                 newuser.hash = hash;
