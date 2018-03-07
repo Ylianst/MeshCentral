@@ -231,7 +231,7 @@ function amt_heci() {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt) {
-            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 34).toString()), pass: trim(header.Data.slice(34, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
+            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
             fn.apply(this, opt);
         }, callback, optional);
     }

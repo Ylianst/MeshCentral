@@ -5,9 +5,9 @@ For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcomm
 
 Download the [full PDF user's guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2UserGuide.pdf) with more information on installing, configuring and running MeshCentral2.
 
-This is a full computer management web site. With MeshCentral, you can run your own web server and it to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, will create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it, etc. MeshCentral includes full web-based remote desktop, terminal and file management capability.
+This is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
-This version of MeshCentral that is completely rebuild of the original MeshCentral coded in C#. It's simpler and includes many other design improvements over the original. At some point in the future, [MeshCentral.com](http://meshcentral.com) that is still running the older code will switch to using this code base. For now, this is early software, preview quality at best.
+This version of MeshCentral that is completely rebuild of the original MeshCentral coded in C#. It's simpler and includes many other design improvements over the original. At some point in the future, [MeshCentral.com](http://meshcentral.com) that is still running the older code will switch to using this code base.
 
 This version is BETA and should not be used in production.
 
@@ -149,17 +149,17 @@ Tutorials
 
 How to install MeshCentral2 in a few minutes.
 
-[![MeshCentral2 - Installation](http://img.youtube.com/vi/LSiWuu71k_U/mqdefault.jpg)](http://www.youtube.com/watch?v=LSiWuu71k_U)
+[![MeshCentral2 - Installation](https://img.youtube.com/vi/LSiWuu71k_U/mqdefault.jpg)](https://www.youtube.com/watch?v=LSiWuu71k_U)
 
 
 Demonstration of MeshCentral2 usages and more tips & tricks.
 
-[![MeshCentral2 - Usages](http://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](http://www.youtube.com/watch?v=1E3NqGJzYds)
+[![MeshCentral2 - Usages](https://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](https://www.youtube.com/watch?v=1E3NqGJzYds)
 
 
 How to setup Intel&reg; AMT client initiated remote access (CIRA) to connect to MeshCentral2.
 
-[![MeshCentral2 - Intel AMT CIRA](http://img.youtube.com/vi/rA2KHa2jkO0/mqdefault.jpg)](http://www.youtube.com/watch?v=rA2KHa2jkO0)
+[![MeshCentral2 - Intel AMT CIRA](https://img.youtube.com/vi/rA2KHa2jkO0/mqdefault.jpg)](https://www.youtube.com/watch?v=rA2KHa2jkO0)
 
 
 License

@@ -36,17 +36,21 @@ function ReadShortX(v, p) { return (v[p + 1] << 8) + v[p]; }
 function ReadInt(v, p) { return (v[p] * 0x1000000) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; } // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
 function ReadSInt(v, p) { return (v[p] << 24) + (v[p + 1] << 16) + (v[p + 2] << 8) + v[p + 3]; }
 function ReadIntX(v, p) { return (v[p + 3] * 0x1000000) + (v[p + 2] << 16) + (v[p + 1] << 8) + v[p]; }
-function ShortToStr(v) { var b = Buffer.alloc(2); b.writeInt16BE(v); return b; }
-function ShortToStrX(v) { var b = Buffer.alloc(2); b.writeInt16LE(v); return b; }
-function IntToStr(v) { var b = Buffer.alloc(4); b.writeInt32BE(v); return b; }
-function IntToStrX(v) { var b = Buffer.alloc(4); b.writeInt32LE(v); return b; }
-function btoa(x) { return Buffer.from(x).toString('base64'); }
+function ShortToStr(v) { return String.fromCharCode((v >> 8) & 0xFF, v & 0xFF); } 
+function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); }
+function IntToStr(v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); }
+function IntToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); }
+//function ShortToStr(v) { var b = Buffer.alloc(2); b.writeInt16BE(v); return b; }
+//function ShortToStrX(v) { var b = Buffer.alloc(2); b.writeInt16LE(v); return b; }
+//function IntToStr(v) { var b = Buffer.alloc(4); b.writeInt32BE(v); return b; }
+//function IntToStrX(v) { var b = Buffer.alloc(4); b.writeInt32LE(v); return b; }
+function btoa(x) { return Buffer.from(x).toString('base64');}
 function atob(x) { var z = null; try { z = Buffer.from(x, 'base64').toString(); } catch (e) { console.log(e); } return z; }
 function passwordcheck(p) { if (p.length < 8) return false; var upper = 0, lower = 0, number = 0, nonalpha = 0; for (var i in p) { var c = p.charCodeAt(i); if ((c > 64) && (c < 91)) { upper = 1; } else if ((c > 96) && (c < 123)) { lower = 1; } else if ((c > 47) && (c < 58)) { number = 1; } else { nonalpha = 1; } } return ((upper + lower + number + nonalpha) == 4); }
 function hex2rstr(x) { Buffer.from(x, 'hex').toString(); }
 function rstr2hex(x) { Buffer.from(x).toString('hex'); }
-function random() { return 0; } // TODO
-function rstr_md5(x) { return null; } // TODO
+function random() { return Math.floor(Math.random()*max); }
+function rstr_md5(str) { return hex2rstr(hex_md5(str)); }
 function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
 
 var httpErrorTable = {
@@ -63,9 +67,6 @@ var httpErrorTable = {
 // Setup the script state
 module.exports.setup = function(binary, startvars) {
     var obj = { startvars: startvars, onCompleted: null };
-    obj.wsRetryCall = null;
-    obj.wsRetryArgs = null;
-    obj.wsRetryTimes = null;
     if (binary.length < 6) { console.error('Invalid script length'); return null; } // Script must have at least 6 byte header
     if (ReadInt(binary, 0) != 0x247D2945) { console.error('Invalid binary script'); return null; } // Check the script magic header
     if (ReadShort(binary, 4) > 1) { console.error('Unsupported script version'); return null; } // Check the script version
@@ -121,7 +122,6 @@ module.exports.setup = function(binary, startvars) {
                 if (argtyp < 2) {
                     // Get the value and replace all {var} with variable values
                     argval = argval.toString();
-                    //console.log(argval);
                     while (argval.split("{").length > 1) { var t = argval.split("{").pop().split("}").shift(); argval = argval.replace('{' + t + '}', obj.getVar(t)); }
                     if (argtyp == 1) { obj.variables['__' + i] = decodeURI(argval); argval = '__' + i; } // If argtyp is 1, this is a literal. Store in temp variable.
                     args.push(argval);
@@ -133,8 +133,6 @@ module.exports.setup = function(binary, startvars) {
                 argptr += (2 + arglen);
             }
             
-            //console.log('CMD: ' + cmdid, args.join(', '));
-
             // Move instruction pointer forward by command size
             obj.ip += cmdlen;
 
@@ -142,19 +140,13 @@ module.exports.setup = function(binary, startvars) {
             var argsval = [];
             for (var i = 0; i < 10; i++) { argsval.push(obj.getVar(args[i])); }
             var storeInArg0;
-
-            //console.log('VAR: ' + JSON.stringify(obj.variables));
-            //console.log('CMD: ' + cmdid, argsval.join(', '));
-
             try {
                 if (cmdid < 10000) {
                     // Lets run the actual command
-                    //console.log(cmdid);
                     switch (cmdid) {
                         case 0: // nop
                             break;
                         case 1: // jump(label) or jump(label, a, compare, b)
-                            //console.log('JUMP ' + argsval[1] + ' ' + argsval[2] + ' ' + argsval[3]);
                             if (argsval[2]) {
                                 if (
                                     (argsval[2] == '<' && argsval[1] < argsval[3]) ||
@@ -171,10 +163,7 @@ module.exports.setup = function(binary, startvars) {
                             }
                             break;
                         case 2: // set(variable, value)
-                            if (args[1] == undefined) { if (obj.variables[args[0]]) { delete obj.variables[args[0]]; } } else {
-                                //console.log('SET ' + args[0] + ' TO ' + argsval[1]);
-                                obj.setVar(args[0], argsval[1]);
-                            }
+                            if (args[1] == undefined) delete obj.variables[args[0]]; else obj.setVar(args[0], argsval[1]);
                             break;
                         case 3: // print(message)
                             var v = obj.toString(argsval[0]);
@@ -254,7 +243,7 @@ module.exports.setup = function(binary, startvars) {
                             obj.amtstack.UnSubscribe(argsval[0], obj.xxWsmanReturn, obj, 0, argsval[1]);
                             break;
                         case 24: // readchar(str, pos)
-                            //console.log('readchar', argsval[1], argsval[2], argsval[1].charCodeAt(argsval[2]));
+                            console.log(argsval[1], argsval[2], argsval[1].charCodeAt(argsval[2]));
                             storeInArg0 = argsval[1].charCodeAt(argsval[2]);
                             break;
                         case 25: // signWithDummyCa
@@ -270,7 +259,6 @@ module.exports.setup = function(binary, startvars) {
                         // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
                         storeInArg0 = script_functionTableX2[cmdid - 10000](argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]);
                     } else {
-                        //if (cmdid == 20009) { console.log('--------------------------------------'); }
                         // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
                         //if (script_functionTableX3 && script_functionTableX3[cmdid - 20000]) {
                         //    storeInArg0 = script_functionTableX3[cmdid - 20000](obj, argsval[1], argsval[2], argsval[3], argsval[4], argsval[5], argsval[6]); // Note that optional calls start with "obj" as first argument.
@@ -281,7 +269,6 @@ module.exports.setup = function(binary, startvars) {
             } catch (e) {
                 if (typeof e == 'object') { e = e.message; }
                 obj.setVar('_exception', e);
-                console.log('EXCEPTION: ' + e);
             }
         }
 
