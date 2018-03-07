@@ -476,8 +476,8 @@ th {
                             </div>
         </div>
     </div>
-    <div id="dialog" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial, Helvetica, sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;display:none">
-        <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+        <div id="dialog" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial, Helvetica, sans-serif;border-radius:5px;position:fixed;overflow:auto;top:75px;width:400px;max-height:550px;display:none">
+                <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
             <div id='id_dialogclose' style="float:right;padding:5px;cursor:pointer" onclick="setDialogMode()"><b>X</b></div>
             <div id='id_dialogtitle' style="padding:5px"></div>
             <div style="width:100%;margin:6px"></div>
@@ -33274,6 +33274,7 @@ if (typeof module !== "undefined" && module.exports) {
             xxFilterStatisticsTimerActive = false;
             QH('id_TableSystemDefense', LoadingHtml);
 
+
             // Start pulling Intel AMT information
             amtstack.BatchEnum("", ["CIM_SoftwareIdentity", "*AMT_SetupAndConfigurationService"], processSystemVersion); // Get Intel AMT version information and plenty more
             //amtstack.Enum("CIM_LogicalElement", processSystemVersion); // Get Intel AMT version information and plenty more
@@ -36550,7 +36551,8 @@ if (typeof module !== "undefined" && module.exports) {
                 r["LockSleepButton"] = false;
                 r["ReflashBIOS"] = false;
                 r["UseIDER"] = ((action > 199) && (action < 300));
-                r["UseSOL"] = ((currentView == 13) && (action != 8) && (action != 300) && (action != 301)); // If we are looking at the terminal, turn on SOL. SOL can't be used with diagnostic mode (300/301)
+                //r["UseSOL"] = ((currentView == 13) && (action != 8) && (action != 300) && (action != 301)); // If we are looking at the terminal, turn on SOL. SOL can't be used with diagnostic mode (300/301)
+                r["UseSOL"] = ((currentView == 13) && (action != 8)); // If we are looking at the terminal, turn on SOL.
                 r["UseSafeMode"] = false;
                 r["UserPasswordBypass"] = false;
                 if (r["SecureErase"]) { r["SecureErase"] = ((action == 104) && (amtPowerBootCapabilities["SecureErase"] == true)); }
@@ -36675,13 +36677,12 @@ if (typeof module !== "undefined" && module.exports) {
 
         function PullStorageResponse(data, status, tag) {
             if (amtstack.PendingBatchOperations == 0) refreshButtons(true); // If nothing is being done, re-enable refresh buttons
-
+            
             if (status == 200) {
                 QV('go21', true); // Show Storage Panel
 
-                var len;
-                do { len = data.length; data = data.replace('\x00',''); } while (len > data.length); // Remove all zero's, this is needed because firmware sometimes returns garbage we must fix.
-                do { len = data.length; data = data.replace('\x22\x01\x22','\x22\x22'); } while (len > data.length); // "\x01", this is needed because firmware sometimes returns garbage we must fix.
+                var len; // Remove all chars that are below 32, this will allow parsing even the the firmware gives us garbage.
+                for (var i = 0; i < 32; i++) { do { len = data.length; data = data.replace(String.fromCharCode(i),''); } while (len > data.length); }
                 try { xxStorage = JSON.parse(data); } catch (e) { return; }
                 xxStorageVendors = [];
                 xxStorageApplications = [];

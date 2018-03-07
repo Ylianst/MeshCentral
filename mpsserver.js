@@ -24,7 +24,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false }, onConnection);
     }
 
-    obj.server.listen(args.mpsport, function () { console.log('MeshCentral Intel(R) AMT server running on ' + certificates.CommonName + ':' + args.mpsport + '.'); }).on('error', function (err) { console.error('ERROR: MeshCentral Intel(R) AMT server port ' + args.mpsport + ' is not available.'); if (args.exactports) { process.exit(); } });
+    obj.server.listen(args.mpsport, function () { console.log('MeshCentral Intel(R) AMT server running on ' + certificates.AmtMpsName + ':' + args.mpsport + ((args.mpsaliasport != null) ? (', alias port ' + args.mpsaliasport):'') + '.'); }).on('error', function (err) { console.error('ERROR: MeshCentral Intel(R) AMT server port ' + args.mpsport + ' is not available.'); if (args.exactports) { process.exit(); } });
     
     var APFProtocol = {
         UNKNOWN: 0,

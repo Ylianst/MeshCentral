@@ -72,7 +72,7 @@
                                 <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
                                 <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
                                 <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
-                                <td class=style3 style=height:24px>&nbsp;</td>
+                                <td class=style3 style="text-align:right;height:24px"><span title="Toggle full width" style="cursor:pointer;opacity:0.2" onclick="toggleFullScreen(1)">&harr;</span>&nbsp;</td>
                             </tr>
                         </table>
                         <div id="MainSubMenuSpan" style=display:none>
@@ -126,7 +126,7 @@
                             <div style=float:right id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
-                                    <option value=1>3 wide</option>
+                                    <option value=1>Columns</option>
                                     <option value=2>List</option>
                                     <option id=viewselectmapoption value=3>Map</option>
                                 </select>
@@ -189,7 +189,8 @@
                     ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style=margin-left:40px;display:none>No meshes. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a><br /><br /></div>
+                    <div id=p2noMeshFound style=margin-left:40px;display:none>No meshes. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
+                    <br style=clear:both />
                 </div>
                 <div id=p3 style=display:none>
                     <h1>My Events</h1>
@@ -651,6 +652,8 @@
         var debugmode = false;
         var clickOnce = (((features & 256) != 0) && detectClickOnce());
         var attemptWebRTC = ((features & 128) != 0);
+        var webPageFullScreen = getstore('webPageFullScreen', false);;
+        if (webPageFullScreen == 'false') { webPageFullScreen = false; }
 
         function startup() {
             if ((features & 32) == 0) {
@@ -659,6 +662,8 @@
                 try { loc = top.location.toString().toLowerCase(); } catch (e) { }
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
+
+            toggleFullScreen();
 
             // Check if we are in debug mode
             args = parseUriArgs();
@@ -750,6 +755,26 @@
             var x = '';
             for (var c = 1; c < 27; c++) x += "<option value='" + c + "'>Ctrl-" + String.fromCharCode(64 + c) + " (" + c + ")</option>";
             QH('specialkeylist', x);
+        }
+
+        // Toggle the web page to full screen
+        function toggleFullScreen(toggle) {
+            if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            if (webPageFullScreen == false) {
+                QS('container').width = '960px';
+                QS('container')['border-right'] = '1px solid #b7b7b7';
+                QS('container')['border-left'] = '1px solid #b7b7b7';
+                QS('container')['min-width'] = '960px';
+                //QS('column_l').padding = '0 15px';
+                QS('column_l').width = '930px';
+            } else {
+                QS('container').width = '100%';
+                QS('container')['border-right'] = '0';
+                QS('container')['border-left'] = '0';
+                QS('container')['min-width'] = '700px';
+                //QS('column_l').padding = '0';
+                QS('column_l').width = 'calc(100% - 30px)';
+            }
         }
 
         function getNodeFromId(id) {
@@ -1352,9 +1377,9 @@
                             if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
                             var meshrights = meshlinks.rights;
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } r += '</tr></table>'; }
-                            r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span style=float:right>';
+                            r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += getMeshActions(mesh2, meshrights);
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></td></tr><tr>';
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
                             current = nodes[i].meshid;
                             displayedMeshes[current] = 1;
                             c = 0;
@@ -1364,20 +1389,16 @@
                         if (nodes[i].pwr !== current) {
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } r += '</tr></table>'; }
-                            r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></td></tr><tr>';
+                            r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
                             current = nodes[i].pwr;
                             c = 0;
                         }
                     } else if (sort == 2) {
                         // Device header
-                        if (current == null) { r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr>'; current = '1'; }
+                        if (current == null) { current = '1'; }
                     }
 
-                    // Node positioning
-                    if ((view == 1) && (c > 2)) { r += '</tr><tr>'; c = 0; }
-                    c++;
                     count++;
-
                     var title = EscapeHtml(nodes[i].name);
                     if (title.length == 0) { title = '<i>None</i>'; }
                     if ((nodes[i].host != null) && (nodes[i].host.length > 0)) { title += " / " + EscapeHtml(nodes[i].host); }
@@ -1390,10 +1411,15 @@
                     var nodestate = NodeStateStr(nodes[i]);
                     if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<td><div id=devs style=width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div></td>';
+                        r += '<div id=devs style=display:inline-block;width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
                     } else {
-                        r += '<td><div id=devs style=width:924px;height:20px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:2px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="j' + icon + '" style=width:16px;float:left;margin-top:3px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:858px><div style=float:right;margin-top:1px>' + nodestate + '</div><div style=margin-top:1px title="' + title + '">' + name + '</div></div><div class=g2></div></div></div></div></td></tr><tr>';
+                        r += '<tr><td><div id=devs class=bar18 style=height:18px;width:100%;font-size:medium>';
+                        r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
+                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                        r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
+                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\')><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
                     }
+
                     deviceHeaderTotal++;
                     if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
                 }
@@ -1550,7 +1576,7 @@
             x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" target="_blank">Root Certificate File</a>');
             x += addHtmlValue('Username', '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
             if (serverinfo.mpspass) { x += addHtmlValue('Password', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
-            if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.name) + ':' + serverinfo.mpsport + '" />'); }
+            if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
             x += "</div>";
 
             // Setup CIRA with certificate authentication (Really difficult, only is allowed)
@@ -1558,7 +1584,7 @@
                 x += "<div id=dlgAddCira2 style=display:none>To add a new Intel&reg; AMT device to mesh " + EscapeHtml(mesh.name) + " with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.<br /><br />";
                 x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" target="_blank">Root Certificate File</a>');
                 x += addHtmlValue('Organization', '<input style=width:230px readonly value="' + meshidx + '" />');
-                if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.name) + ':' + serverinfo.mpsport + '" />'); }
+                if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
                 x += "</div>";
             }
 
@@ -1610,7 +1636,8 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank">Windows executable (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             if (debugmode == true) { x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -1621,7 +1648,8 @@
 
             // Windows agent uninstall
             x += "<div id=agins_windows_un style=display:none>To remove a mesh agent, download the file below, run it and click \"uninstall\".<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" target="_blank">Windows executable (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             x += "</div>";
 
             // Linux agent uninstall
@@ -3076,6 +3104,7 @@
                 QS('container')['border-left'] = '1px solid #b7b7b7';
                 QS('column_l').padding = '0 15px';
                 QS('column_l').width = '930px';
+                toggleFullScreen();
             }
             deskAdjust();
         }
@@ -4006,7 +4035,7 @@
         }
 
         function updateMeshes() {
-            var r = '<table><tr>';
+            var r = '';
             var c = 0, count = 0;
             for (i in meshes) {
                 // Mesh positioning
@@ -4016,9 +4045,8 @@
 
                 // Mesh
                 var rights = 'Administrator'; // TODO
-                r += '<td><div style=width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div></td>';
+                r += '<div style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
-            r += '</tr></table>';
 
             meshcount = count;
             QH('p2meshes', r);
@@ -4465,7 +4493,10 @@
 
                 var msg = event.msg.split('(R)').join('&reg;');
                 if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td><div class=' + icon + ' style=float:left;width:16px;margin-top:2px;margin-left:2px;height:16px></div><div class=g1 style=height:18px></div><div class=bar18 style=height:18px;width:140px;font-size:14px>' + time.toLocaleTimeString() + '</div><div class=bar18 style=height:18px;width:724px;font-size:14px>' + msg + '</div><div class=g2 style=height:18px;float:left></div><div class=bar182 style=float:none></div></td></tr>';
+                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
+                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
+                x += '<div style=font-size:14px><span style=width:300px>' + time.toLocaleTimeString() + ' - ' + msg + '</span></div></div></td></tr>';
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -4519,12 +4550,13 @@
                 }
                 if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
                 if (user.name != userinfo.name) { msg += "</a>"; }
-                if (user.email != null) {
-                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':'') + '<td align=right>' + msg + '</table>';
-                } else {
-                    msg = '<table style=width:100%><tr><td>' + EscapeHtml(user.name) + '<td align=right>' + msg + '</table>';
-                }
-                x += '<tr><td style=cursor:pointer onclick=showUserInfoDialog(\"' + user._id + '\")><div class=' + icon + ' style=float:left;width:16px;margin-top:4px;margin-left:2px;height:16px></div><div class=g1 style=height:24px></div><div class=bar style=height:24px;width:864px;font-size:medium>' + msg + '</div><div class=g2 style=height:24px;float:left></div><div class=bar2 style=float:none></div></td></tr>';
+                var username = EscapeHtml(user.name);
+                if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':''); }
+                x += '<tr><td style=cursor:pointer onclick=showUserInfoDialog(\"' + user._id + '\")>';
+                x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
+                x += '<div style=float:left;height:24px;width:24px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
+                x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
+                x += '<div><span>' + username + '</span><span style=float:right>' + msg + '</span></div></div></td></tr>';
             }
             x += '</table>';
             QH('p3users', x);

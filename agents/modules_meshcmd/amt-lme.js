@@ -290,11 +290,8 @@ function lme_heci(options) {
                             var notify = null;
                             try { notify = xmlParser.ParseWsman(httpData); } catch (e) { }
 
-                            // Translate the event
-                            var notifyString = _lmsNotifyToString(notify);
-
                             // Event the http data
-                            if (notify != null) { this.LMS.emit('notify', notify, channel.options, notifyString); }
+                            if (notify != null) { this.LMS.emit('notify', notify, channel.options, _lmsNotifyToString(notify), _lmsNotifyToCode(notify)); }
 
                             // Send channel close
                             var buffer = Buffer.alloc(5);
@@ -437,6 +434,13 @@ function parseHttp(httpData) {
     return null;
 }
 
+function _lmsNotifyToCode(notify) {
+    if ((notify == null) || (notify.Body == null) || (notify.Body.MessageID == null)) return null;
+    var msgid = notify.Body.MessageID;
+    try { msgid += '-' + notify.Body.MessageArguments[0]; } catch (e) { }
+    return msgid;
+}
+
 function _lmsNotifyToString(notify) {
     if ((notify == null) || (notify.Body == null) || (notify.Body.MessageID == null)) return null;
     var msgid = notify.Body.MessageID;
@@ -520,7 +524,7 @@ var lmsEvents = {
     "iAMT0055-0": "User Notification Alert - Provisioning state change notification - Pre-configuration.",
     "iAMT0055-1": "User Notification Alert - Provisioning state change notification - In configuration.",
     "iAMT0055-2": "User Notification Alert - Provisioning state change notification - Post-configuration.",
-    "iAMT0055-3": "User Notification Alert - Provisioning state change notification - unprovision process has started.",
+    "iAMT0055-3": "User Notification Alert - Provisioning state change notification - Unprovision process has started.",
     "iAMT0056": "User Notification Alert - System Defense change notification.",
     "iAMT0057": "User Notification Alert - Network State change notification.",
     "iAMT0058": "User Notification Alert - Remote Access change notification.",

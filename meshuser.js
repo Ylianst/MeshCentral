@@ -926,12 +926,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             if (obj.parent.parent.multiServer != null) { obj.parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
         });
 
+        // Figure out the MPS port, use the alias if set
+        var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
+
+        // Build server information object
+        var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: obj.args.port, emailcheck: obj.parent.parent.mailserver != null }
+        if (obj.args.notls != true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
+
         // Send server information
-        if (obj.args.notls == true) {
-            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, port: obj.args.port, https: false, emailcheck: obj.parent.parent.mailserver != null } }));
-        } else {
-            ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: { name: obj.parent.certificates.CommonName, mpsport: obj.args.mpsport, mpspass: obj.args.mpspass, redirport: obj.args.redirport, port: obj.args.port, https: true, emailcheck: obj.parent.parent.mailserver != null } }));
-        }
+        ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo }));
 
         // Send user information to web socket, this is the first thing we send
         var userinfo = obj.common.Clone(obj.parent.users[req.session.userid]);

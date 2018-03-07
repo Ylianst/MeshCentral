@@ -132,6 +132,7 @@ module.exports.CertificateOperations = function () {
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (directory, args, config, func) {
         var certargs = args.cert;
+        var mpscertargs = args.mpscert;
         var strongCertificate = (args.fastcert ? false : true);
         var rcountmax = 5;
         // commonName, country, organization
@@ -218,12 +219,21 @@ module.exports.CertificateOperations = function () {
         }
 
         // Decode certificate arguments
-        var commonName = 'un-configured', country, organization, forceWebCertGen = 0;
+        var commonName = 'un-configured', country, organization, forceWebCertGen = 0, forceMpsCertGen = 0;
         if (certargs != undefined) {
             var args = certargs.split(',');
             if (args.length > 0) commonName = args[0];
             if (args.length > 1) country = args[1];
             if (args.length > 2) organization = args[2];
+        }
+
+        // Decode MPS certificate arguments, this is for the Intel AMT CIRA server
+        var mpsCommonName = commonName, mpsCountry = country, mpsOrganization = organization;
+        if (mpscertargs != undefined) {
+            var args = mpscertargs.split(',');
+            if (args.length > 0) mpsCommonName = args[0];
+            if (args.length > 1) mpsCountry = args[1];
+            if (args.length > 2) mpsOrganization = args[2];
         }
 
         // Look for domains that have DNS names and load their certificates
@@ -275,12 +285,23 @@ module.exports.CertificateOperations = function () {
             r.CommonName = webCertificate.subject.getField('CN').value;
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
             r.RootName = rootCertificate.subject.getField('CN').value;
-            if (certargs == undefined) { if (func != undefined) { func(r); } return r }; // If no certificate arguments are given, keep the certificate
+
+            if ((certargs == null) && (mpscertargs == null)) { if (func != undefined) { func(r); } return r }; // If no certificate arguments are given, keep the certificate
             var xcountry, xcountryField = webCertificate.subject.getField('C');
             if (xcountryField != null) { xcountry = xcountryField.value; }
             var xorganization, xorganizationField = webCertificate.subject.getField('O');
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
-            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == commonName)) { if (func != undefined) { func(r); } return r; } else { forceWebCertGen = 1; } // If the certificate matches what we want, keep it.
+            if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
+
+            // Check if we have correct certificates
+            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == mpsCommonName)) {
+                // Certificate matches what we want, keep it.
+                if (func != undefined) { func(r); } return r;
+            } else {
+                // Check what certificates we really need to re-generate.
+                if ((r.CommonName != commonName) || (xcountry != country) || (xorganization != organization)) { forceWebCertGen = 1; }
+                if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
+            } 
         }
         console.log('Generating certificates, may take a few minutes...');
 
@@ -345,9 +366,9 @@ module.exports.CertificateOperations = function () {
 
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
-        if ((r.mps == null) || (forceWebCertGen == 1)) {
+        if ((r.mps == null) || (forceMpsCertGen == 1)) {
             console.log('Generating Intel AMT MPS certificate...');
-            mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, false);
+            mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, mpsCommonName, mpsCountry, mpsOrganization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
             obj.fs.writeFileSync(directory + '/mpsserver-cert-public.crt', mpsCertificate);
@@ -376,7 +397,7 @@ module.exports.CertificateOperations = function () {
             amtConsoleName = consoleCertAndKey.cert.subject.getField('CN').value;
         }
 
-        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, dns: {} };
+        var r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, AmtMpsName: mpsCommonName, dns: {} };
 
         // Look for domains with DNS names that have no certificates and generated them.
         for (var i in config.domains) {
@@ -409,6 +430,34 @@ module.exports.CertificateOperations = function () {
                     }
                 }
             }
+        }
+
+        // If the swarm server certificate exist, load it (This is an optional certificate)
+        if (obj.fileExists(directory + '/swarmserver-cert-public.crt') && obj.fileExists(directory + '/swarmserver-cert-private.key')) {
+            var swarmServerCertificate = obj.fs.readFileSync(directory + '/swarmserver-cert-public.crt', 'utf8');
+            var swarmServerPrivateKey = obj.fs.readFileSync(directory + '/swarmserver-cert-private.key', 'utf8');
+            r.swarmserver = { cert: swarmServerCertificate, key: swarmServerPrivateKey };
+        }
+
+        // If the swarm server root certificate exist, load it (This is an optional certificate)
+        if (obj.fileExists(directory + '/swarmserverroot-cert-public.crt')) {
+            var swarmServerRootCertificate = obj.fs.readFileSync(directory + '/swarmserverroot-cert-public.crt', 'utf8');
+            r.swarmserverroot = { cert: swarmServerRootCertificate };
+        }
+
+        // If CA certificates are present, load them
+        if (r.web != null) {
+            var caok, caindex = 1, calist = [];
+            do {
+                caok = false;
+                if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
+                    var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
+                    calist.push(caCertificate);
+                    caok = true;
+                }
+                caindex++;
+            } while (caok == true);
+            r.web.ca = calist;
         }
 
         if (func != undefined) { func(r); }

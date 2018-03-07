@@ -11,6 +11,7 @@
 #container {
     background-color: #fff;
     width: 960px;
+    min-width: 960px;
     margin: 0 auto;
     border-top: 0;
     border-right: 1px solid #b7b7b7;
@@ -41,7 +42,7 @@
 #footer {
     clear: both;
     overflow: auto;
-    width: 960px;
+    width: 100%;
     text-align: center;
     background-color: #113962;
     padding-top: 5px;

@@ -740,7 +740,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (req.query.type == 1) {
             var filename = 'cira_setup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            var serverNameSplit = obj.certificates.CommonName.split('.');
+            var serverNameSplit = obj.certificates.AmtMpsName.split('.');
+
+            // Figure out the MPS port, use the alias if set
+            var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
+            
             if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
                 // Server name is an IPv4 address
                 var filepath = obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript');
@@ -750,13 +754,13 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                     // Change a few things in the script
                     scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                    scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.CommonName; // Set the server IPv4 address name
-                    scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.CommonName; // Set the server certificate name
-                    scriptFile.scriptBlocks[3].vars.Port.value = obj.args.mpsport; // Set the server MPS port
+                    scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.AmtMpsName; // Set the server IPv4 address name
+                    scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.AmtMpsName; // Set the server certificate name
+                    scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
                     scriptFile.scriptBlocks[3].vars.username.value = req.query.meshid; // Set the username
                     scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.CommonName + ':' + obj.args.mpsport; // Set the primary server name:port to set periodic timer
-                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.CommonName + ':' + obj.args.mpsport; // Set the secondary server name:port to set periodic timer
+                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
+                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
                     if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
 
                     // Compile the script
@@ -776,12 +780,12 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                     // Change a few things in the script
                     scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                    scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.CommonName; // Set the server DNS name
-                    scriptFile.scriptBlocks[3].vars.Port.value = obj.args.mpsport; // Set the server MPS port
+                    scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.AmtMpsName; // Set the server DNS name
+                    scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
                     scriptFile.scriptBlocks[3].vars.username.value = req.query.meshid; // Set the username
                     scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.CommonName + ':' + obj.args.mpsport; // Set the primary server name:port to set periodic timer
-                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.CommonName + ':' + obj.args.mpsport; // Set the secondary server name:port to set periodic timer
+                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
+                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
                     if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
 
                     // Compile the script
