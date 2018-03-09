@@ -356,8 +356,8 @@ function AmtStackCreateService(wsmanStack) {
     obj.IPS_HostBasedSetupService_UpgradeClientToAdmin = function (McNonce, SigningAlgorithm, DigitalSignature, callback_func) { obj.Exec("IPS_HostBasedSetupService", "UpgradeClientToAdmin", { "McNonce": McNonce, "SigningAlgorithm": SigningAlgorithm, "DigitalSignature": DigitalSignature }, callback_func); }
     obj.IPS_HostBasedSetupService_DisableClientControlMode = function (_method_dummy, callback_func) { obj.Exec("IPS_HostBasedSetupService", "DisableClientControlMode", { "_method_dummy": _method_dummy }, callback_func); }
     obj.IPS_KVMRedirectionSettingData_TerminateSession = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "TerminateSession", {}, callback_func); }
-    obj.IPS_KVMRedirectionSettingData_DataChannelRead = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelRead", {}, callback_func); }
-    obj.IPS_KVMRedirectionSettingData_DataChannelWrite = function (Data, callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelWrite", { "DataMessage": Data }, callback_func); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelRead = function (callback_func, tag) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelRead", {}, callback_func, tag); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelWrite = function (Data, callback_func, tag) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelWrite", { "DataMessage": Data }, callback_func, tag); }
     obj.IPS_OptInService_StartOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "StartOptIn", {}, callback_func); }
     obj.IPS_OptInService_CancelOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "CancelOptIn", {}, callback_func); }
     obj.IPS_OptInService_SendOptInCode = function (OptInCode, callback_func) { obj.Exec("IPS_OptInService", "SendOptInCode", { "OptInCode": OptInCode }, callback_func); }

@@ -455,15 +455,15 @@ function startLms(func) {
             setupMeiOsAdmin(func, amtLms.connected == false ? 0 : 3);
         });
         amtLms.on('notify', function (data, options, str, code) {
-            if (str != null) {
+            if (code == 'iAMT0052-3') {
+                kvmGetData(true);
+            } else if (str != null) {
                 var notify = { date: Date.now(), str: str, code: code };
                 lmsNotifications.push(notify);
                 while (lmsNotifications.length > 100) { lmsNotifications.shift(); }
                 var notifyBuf = Buffer.concat([Buffer.from('0900', 'hex'), Buffer.from(JSON.stringify(notify))]) // Add a notification
                 for (var i in lmsControlSockets) { lmsControlSockets[i].write(notifyBuf); }
-                //console.log(str);
             }
-            //else { console.log(JSON.stringify(data)); }
         });
         //console.log('LME Connecting...');
         amtLms.on('connect', function () {
@@ -539,7 +539,77 @@ function setupMeiOsAdmin(func, state) {
         if (func) { func(state); }
         //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
         //osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
+
+        tempTimer = setInterval(function () { kvmGetData(true); }, 2000);
+        kvmGetData(false);
+        kvmSetData(JSON.stringify({ action: 'restart', ver: 1 }));
     });
+}
+
+function kvmGetData(tag) {
+    osamtstack.IPS_KVMRedirectionSettingData_DataChannelRead(kvmDataGetResponse, tag);
+}
+
+function kvmDataGetResponse(stack, name, response, status, tag) {
+    if ((tag == true) && (status == 200) && (response.Body.ReturnValue == 0)) {
+        var val = null;
+        try { val = Buffer.from(response.Body.DataMessage, 'base64').toString(); } catch (e) { return }
+        if (val != null) kvmProcessData(response.Body.RealmsBitmap, response.Body.MessageId, val);
+    }
+}
+
+var webRtcDesktop = null;
+function kvmProcessData(realms, messageId, val) {
+    //console.log('kvmProcessData', val);
+    var data = null;
+    try { data = JSON.parse(val) } catch (e) { }
+    if ((data != null) && (data.action)) {
+        if (data.action == 'present') { kvmSetData(JSON.stringify({ action: 'present', ver: 1 })); }
+        if (data.action == 'offer') {
+            webRtcDesktop = {};
+            var rtc = require('ILibWebRTC');
+            webRtcDesktop.webrtc = rtc.createConnection();
+            webRtcDesktop.webrtc.on('connected', function () { });
+            webRtcDesktop.webrtc.on('disconnected', function () { webRtcCleanUp(); });
+            webRtcDesktop.webrtc.on('dataChannel', function (rtcchannel) {
+                webRtcDesktop.rtcchannel = rtcchannel;
+                var kvmmodule = require('meshDesktop');
+                webRtcDesktop.kvm = kvmmodule.getRemoteDesktopStream();
+                webRtcDesktop.kvm.pipe(webRtcDesktop.rtcchannel, { end: false });
+                webRtcDesktop.rtcchannel.pipe(webRtcDesktop.kvm, { end: false });
+                webRtcDesktop.rtcchannel.on('end', function () { webRtcCleanUp(); });
+                //webRtcDesktop.kvm.on('end', function () { console.log('WebRTC DataChannel closed2'); webRtcCleanUp(); });
+                //webRtcDesktop.rtcchannel.on('data', function (data) { console.log('WebRTC data: ' + data); });
+            });
+            kvmSetData(JSON.stringify({ action: 'answer', ver: 1, sdp: webRtcDesktop.webrtc.setOffer(data.sdp) }));
+        }
+    }
+}
+
+function webRtcCleanUp() {
+    if (webRtcDesktop == null) return;
+    if (webRtcDesktop.rtcchannel) {
+        try { webRtcDesktop.rtcchannel.close(); } catch (e) { }
+        try { webRtcDesktop.rtcchannel.removeAllListeners('data'); } catch (e) { }
+        try { webRtcDesktop.rtcchannel.removeAllListeners('end'); } catch (e) { }
+        delete webRtcDesktop.rtcchannel;
+    }
+    if (webRtcDesktop.webrtc) {
+        try { webRtcDesktop.webrtc.close(); } catch (e) { }
+        try { webRtcDesktop.webrtc.removeAllListeners('connected'); } catch (e) { }
+        try { webRtcDesktop.webrtc.removeAllListeners('disconnected'); } catch (e) { }
+        try { webRtcDesktop.webrtc.removeAllListeners('dataChannel'); } catch (e) { }
+        delete webRtcDesktop.webrtc;
+    }
+    if (webRtcDesktop.kvm) {
+        try { webRtcDesktop.kvm.end(); } catch (e) { }
+        delete webRtcDesktop.kvm;
+    }
+    webRtcDesktop = null;
+}
+
+function kvmSetData(x) {
+    osamtstack.IPS_KVMRedirectionSettingData_DataChannelWrite(Buffer.from(x).toString('base64'), function () { });
 }
 
 function startLmsWsmanResponse(stack, name, responses, status) {
@@ -590,7 +660,7 @@ function processLmsControlData(data) {
 
 function startRouter() {
     tcpserver = net.createServer(OnTcpClientConnected);
-    tcpserver.on('error', function (e) { console.log('ERRORa: ' + JSON.stringify(e)); exit(0); return; });
+    tcpserver.on('error', function (e) { console.log('ERROR: ' + JSON.stringify(e)); exit(0); return; });
     tcpserver.listen(settings.localPort, function () {
         // We started listening.
         if (settings.remoteName == null) {

@@ -802,7 +802,12 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt, setdebug.';
+                    break;
+                }
+                case 'setdebug': {
+                    if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = StdOut, 1 = This Console, * = All Consoles, 2 = WebLog, 3 = Disabled'; } // Display usage
+                    else { if (args['_'][0] == '*') { console.setDestination(1); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
                     break;
                 }
                 case 'eval': { // Eval JavaScript

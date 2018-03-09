@@ -97,45 +97,37 @@ module.exports.streamExeWithMeshPolicy = function (options) {
         // Pipe the entire source binary without ending the stream.
         options.destinationStream.sourceStream.pipe(options.destinationStream, { end: false });
     } else if (options.platform == 'win32' && options.peinfo.CertificateTableAddress != 0) {
-        // This is a signed windows binary, so we need to do some magic
-        options.mshPadding = (8 - ((options.peinfo.certificateDwLength + options.msh.length + 20) % 8)) % 8; // Compute the padding with quad-align
-
-        //console.log('old table size = ' + options.peinfo.CertificateTableSize);
-        options.peinfo.CertificateTableSize += (options.msh.length + 20 + options.mshPadding); // Add to the certificate table size
-        //console.log('new table size = ' + options.peinfo.CertificateTableSize);
-        //console.log('old certificate dwLength = ' + options.peinfo.certificateDwLength);
-        options.peinfo.certificateDwLength += (options.msh.length + 20 + options.mshPadding); // Add to the certificate size
-        //console.log('new certificate dwLength = ' + options.peinfo.certificateDwLength);
-        //console.log('values were padded with ' + options.mshPadding + ' bytes');
-
         // Read up to the certificate table size and stream that out
         options.destinationStream.sourceStream = require('fs').createReadStream(options.sourceFileName, { flags: 'r', start: 0, end: options.peinfo.CertificateTableSizePos - 1 });
+        options.destinationStream.sourceStream.mshPadding = (8 - ((options.peinfo.certificateDwLength + options.msh.length + 20) % 8)) % 8; // Compute the padding with quad-align
+        options.destinationStream.sourceStream.CertificateTableSize = (options.peinfo.CertificateTableSize + options.msh.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate table size
+        options.destinationStream.sourceStream.certificateDwLength = (options.peinfo.certificateDwLength + options.msh.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate size
         options.destinationStream.sourceStream.options = options;
+
         options.destinationStream.sourceStream.on('end', function () {
             // We sent up to the CertificateTableSize, now we need to send the updated certificate table size
-            //console.log('read first block');
             var sz = Buffer.alloc(4);
-            sz.writeUInt32LE(this.options.peinfo.CertificateTableSize, 0);
+            sz.writeUInt32LE(this.CertificateTableSize, 0);
             this.options.destinationStream.write(sz); // New cert table size
 
             // Stream everything up to the start of the certificate table entry
             var source2 = require('fs').createReadStream(options.sourceFileName, { flags: 'r', start: this.options.peinfo.CertificateTableSizePos + 4, end: this.options.peinfo.CertificateTableAddress - 1 });
             source2.options = this.options;
+            source2.mshPadding = this.mshPadding;
+            source2.certificateDwLength = this.certificateDwLength;
             source2.on('end', function () {
                 // We've sent up to the Certificate DWLength, which we need to update
-                //console.log('read second block');
                 var sz = Buffer.alloc(4);
-                sz.writeUInt32LE(this.options.peinfo.certificateDwLength, 0);
+                sz.writeUInt32LE(this.certificateDwLength, 0);
                 this.options.destinationStream.write(sz); // New certificate length
 
                 // Stream the entire binary until the end
                 var source3 = require('fs').createReadStream(options.sourceFileName, { flags: 'r', start: this.options.peinfo.CertificateTableAddress + 4 });
                 source3.options = this.options;
+                source3.mshPadding = this.mshPadding;
                 source3.on('end', function () {
                     // We've sent the entire binary... Now send: Padding + MSH + MSHLength + GUID
-                    //console.log('read third block');
-                    if (this.options.mshPadding > 0) { this.options.destinationStream.write(Buffer.alloc(this.options.mshPadding)); } // Padding
-
+                    if (this.mshPadding > 0) { this.options.destinationStream.write(Buffer.alloc(this.mshPadding)); } // Padding
                     this.options.destinationStream.write(this.options.msh); // MSH content
                     var sz = Buffer.alloc(4);
                     sz.writeUInt32BE(this.options.msh.length, 0);
@@ -148,7 +140,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
             source2.pipe(this.options.destinationStream, { end: false });
             this.options.destinationStream.sourceStream = source2;
         });
-        this.options.destinationStream.sourceStream.pipe(this.options.destinationStream, { end: false });
+        options.destinationStream.sourceStream.pipe(options.destinationStream, { end: false });
     }
 }
 

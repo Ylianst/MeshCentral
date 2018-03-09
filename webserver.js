@@ -685,14 +685,16 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: args.port, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
+            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+            res.render(obj.path.join(__dirname, 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
         } else {
             // Send back the login application
             var loginmode = req.session.loginmode;
             delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
             var features = 0;
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
-            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: obj.args.port, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer });
+            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+            res.render(obj.path.join(__dirname, 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer });
         }
     }
     
@@ -767,6 +769,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
                     var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
                     scriptFile.mescript = new Buffer(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                    scriptFile.scriptText = runscript;
 
                     // Send the script
                     res.send(new Buffer(JSON.stringify(scriptFile, null, ' ')));
@@ -792,6 +795,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
                     var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
                     scriptFile.mescript = new Buffer(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                    scriptFile.scriptText = runscript;
 
                     // Send the script
                     res.send(new Buffer(JSON.stringify(scriptFile, null, ' ')));
@@ -1434,13 +1438,14 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                     var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                     var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
                     // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
                     var xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += "/";
                     var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-                    if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
-                    if (req.query.tag != true) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+                    if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+                    if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
                     obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
                 });
@@ -1453,11 +1458,19 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             res.sendFile(scriptInfo.path);
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
-            var argentInfo = obj.parent.meshAgentBinaries[req.query.meshcmd];
+            var agentid = parseInt(req.query.meshcmd);
+            if ((agentid < 10000) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
+            var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
             res.statusCode = 200;
-            obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: new Buffer(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
+            if (argentInfo.signedMeshCmdPath != null) {
+                // If we hav a pre-signed MeshCmd, send that.
+                res.sendFile(argentInfo.signedMeshCmdPath);
+            } else {
+                // Merge JavaScript to a unsigned agent and send that.
+                obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: new Buffer(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
+            }
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
             if (domain == null) { res.sendStatus(404); return; }
@@ -1480,7 +1493,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         debugLevel: 0
                     }
                     if (user != null) { meshaction.username = user.name; }
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                     res.send(JSON.stringify(meshaction, null, ' '));
                 });
@@ -1494,7 +1508,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     debugLevel: 0
                 }
                 if (user != null) { meshaction.username = user.name; }
-                if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + obj.args.port + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                 res.send(JSON.stringify(meshaction, null, ' '));
             } else {
@@ -1550,7 +1565,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             var xdomain = (domain.dns == null) ? domain.id : '';
             if (xdomain != '') xdomain += "/";
             var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-            if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + obj.args.port + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+            if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
 
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
             res.send(meshsettings);
@@ -1643,12 +1659,12 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.args.port = port;
         if (obj.tlsServer != null) {
             if (obj.args.lanonly == true) {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on port ' + port + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             } else {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on ' + certificates.CommonName + ':' + port + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             }
         } else {
-            obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP web server running on port ' + port + '.'); });
+            obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP web server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
         }
     }
 
