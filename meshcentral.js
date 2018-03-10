@@ -872,8 +872,8 @@ function CreateMeshCentralServer(config) {
         23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node' }, // Get this one from NPM
         24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux' },
         25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true, amt: false, platform: 'linux' }, // "armv6l" and "armv7l"
-        10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32' }, // Unsigned version of the MeshAgent
-        10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32' } // Unsigned version of the MeshAgent
+        10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32' }, // Unsigned version of the Windows MeshAgent x86
+        10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32' } // Unsigned version of the Windows MeshAgent x64
     };
 
     // Update the list of available mesh agents
@@ -883,14 +883,14 @@ function CreateMeshCentralServer(config) {
             var agentpath = obj.path.join(__dirname, 'agents', obj.meshAgentsArchitectureNumbers[archid].localname);
             
             // Fetch all the agent binary information
-            obj.meshAgentBinaries[archid] = obj.common.Clone(obj.meshAgentsArchitectureNumbers[archid]);
-            obj.meshAgentBinaries[archid].path = agentpath;
-            obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?id=' + archid;
             var stats = null;
             try { stats = obj.fs.statSync(agentpath) } catch (e) { }
             if ((stats != null)) {
                 // If file exists
                 archcount++;
+                obj.meshAgentBinaries[archid] = obj.common.Clone(obj.meshAgentsArchitectureNumbers[archid]);
+                obj.meshAgentBinaries[archid].path = agentpath;
+                obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
@@ -908,6 +908,8 @@ function CreateMeshCentralServer(config) {
                 obj.exeHandler.hashExecutableFile(options);
             }
         }
+        if ((obj.meshAgentBinaries[3] == null) && (obj.meshAgentBinaries[10003] != null)) { obj.meshAgentBinaries[3] = obj.meshAgentBinaries[10003]; } // If only the unsigned windows binaries are present, use them.
+        if ((obj.meshAgentBinaries[4] == null) && (obj.meshAgentBinaries[10004] != null)) { obj.meshAgentBinaries[4] = obj.meshAgentBinaries[10004]; } // If only the unsigned windows binaries are present, use them.
     }
 
     // Generate a time limited user login token

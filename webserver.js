@@ -1459,6 +1459,17 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
             var agentid = parseInt(req.query.meshcmd);
+            // If the agentid is 3 or 4, check if we have a signed MeshCmd.exe
+            if ((agentid == 3)) { // Signed Windows MeshCmd.exe x86
+                var stats = null, meshCmdPath = obj.path.join(__dirname, 'agents', 'MeshCmd-signed.exe');
+                try { stats = obj.fs.statSync(meshCmdPath) } catch (e) { }
+                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : '') }); res.sendFile(meshCmdPath); return; }
+            } else if ((agentid == 4)) { // Signed Windows MeshCmd64.exe x64
+                var stats = null, meshCmd64Path = obj.path.join(__dirname, 'agents', 'MeshCmd64-signed.exe');
+                try { stats = obj.fs.statSync(meshCmd64Path) } catch (e) { }
+                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') }); res.sendFile(meshCmd64Path); return; }
+            }
+            // No signed agents, we are going to merge a new MeshCmd.
             if ((agentid < 10000) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
