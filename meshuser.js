@@ -1043,9 +1043,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
         // Figure out the MPS port, use the alias if set
         var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
+        var httpport = ((obj.args.aliasport != null) ? obj.args.aliasport : obj.args.port);
 
         // Build server information object
-        var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: obj.args.port, emailcheck: obj.parent.parent.mailserver != null }
+        var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: obj.parent.parent.mailserver != null }
         if (obj.args.notls != true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
 
         // Send server information
