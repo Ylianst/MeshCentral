@@ -40,6 +40,7 @@ var amtLms = null, amtMei = null, amtMeiState = null;
 var wsstack = null, amtstack = null;
 var oswsstack = null, osamtstack = null;
 var amtMeiTmpState = null;
+var SMBiosTables = null;
 
 
 // MeshCommander for Firmware (GZIP'ed, Base64)
@@ -62,15 +63,35 @@ function md5hex(str) { return require('MD5Stream').create().syncHash(str).toStri
 function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
 function parceArguments(argv) { var r = {}; for (var i in argv) { i = parseInt(i); if (argv[i].startsWith('--') == true) { var key = argv[i].substring(2).toLowerCase(), val = true; if (((i + 1) < argv.length) && (argv[i + 1].startsWith('--') == false)) { val = argv[i + 1]; } r[key] = val; } } return r; }
 
+// Convert an object to string with all functions
+function objToString(x, p, ret) {
+    if (ret == undefined) ret = '';
+    if (p == undefined) p = 0;
+    if (x == null) { return '[null]'; }
+    if (p > 8) { return '[...]'; }
+    if (x == undefined) { return '[undefined]'; }
+    if (typeof x == 'string') { if (p == 0) return x; return '"' + (x.split('\0')[0]) + '"'; }
+    if (typeof x == 'buffer') { return '[buffer]'; }
+    if (typeof x != 'object') { return x; }
+    var r = '{' + (ret ? '\r\n' : ' ');
+    for (var i in x) {
+        if (i != '_ObjectID') { r += (addPad(p + 2, ret) + i + ': ' + objToString(x[i], p + 2, ret) + (ret ? '\r\n' : ' ')); }
+    }
+    return r + addPad(p, ret) + '}';
+}
+
+// Return p number of spaces 
+function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ' '; } return r; }
+
 // Parse the incoming arguments
 function run(argv) {
     if (meshCmdVersion[0] == '*') { meshCmdVersion = ''; } else { meshCmdVersion = ' v' + meshCmdVersion; }
     var args = parceArguments(argv);
-    //console.log('MeshCentral Command' + meshCmdVersion);
+    //console.log(JSON.stringify(argv));
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'MEINFO', 'MEVERSIONS', 'MEHASHES', 'AMTSAVESTATE', 'MESCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE'];
+    var actions = ['HELP', 'ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS'];
 
     // Load the action file
     var actionfile = null;
@@ -103,10 +124,132 @@ function run(argv) {
     if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
 
     // Validate meshaction.txt
-    if (settings.action == null) { console.log('No action specified, valid actions are: ' + actions.join(', ') + '.'); exit(1); return; }
+    if (settings.action == null) {
+        console.log('MeshCentral Command (MeshCmd) ' + meshCmdVersion);
+        console.log('No action specified, use MeshCmd like this:\r\n');
+        console.log('  meshcmd [action] [arguments...]\r\n');
+        console.log('Valid MeshCentral actions:');
+        console.log('  Route           - Map a local TCP port to a remote computer.');
+        console.log('\r\nValid local actions:');
+        console.log('  SMBios          - Display System Management BIOS tables for this computer.');
+        console.log('  RawSMBios       - Display RAW System Management BIOS tables for this computer.');
+        console.log('  AmtInfo         - Show Intel AMT version and activation state.');
+        console.log('  AmtVersions     - Show all Intel ME version information.');
+        console.log('  AmtHashes       - Show all Intel AMT trusted activation hashes.');
+        console.log('  AmtLMS          - Run MicroLMS, allowing local access to Intel AMT.');
+        console.log('  AmtCCM          - Activate Intel AMT into Client Control Mode.');
+        console.log('  AmtDeactivate   - Deactivate Intel AMT if activated in Client Control mode.');
+        console.log('\r\nValid local or remote actions:');
+        console.log('  AmtUUID         - Show Intel AMT unique identifier.');
+        console.log('  AmtLoadWebApp   - Load MeshCommander in Intel AMT 11.6+ firmware.');
+        console.log('  AmtClearWebApp  - Clear everything from Intel AMT web storage.');
+        console.log('  AmtStorageState - Show contents of the Intel AMT web storage.');
+        console.log('  AmtSaveState    - Save all Intel AMT WSMAN object to file.');
+        console.log('  AmtScript       - Run .mescript on Intel AMT.');
+        console.log('\r\nHelp on a specific action using:\r\n');
+        console.log('  meshcmd help [action]');
+        exit(1); return;
+    }
+    if (settings.action == 'help') {
+        if (argv.length <= 2) {
+            actions.shift();
+            console.log('Help usage:\r\n\r\n  MeshCmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
+            exit(1); return;
+        }
+        var action = argv[2].toLowerCase();
+        if (action == 'route') {
+            console.log("The route action is used along with a MeshCentral account to map a local TCP port to a remote port on any computer on your MeshCentral account. This action requires many arguments, to avoid specifying them all it's best to download the meshaction.txt file from the web site and place it in the current folder. Example usage:\r\n\r\n  (Place meshaction.txt file in current folder)\r\n  meshcmd route --pass myAccountPassword");
+        } else if (action == 'smbios') {
+            console.log("SMBios action will display this computer's system management BIOS information. Example usage:\r\n\r\n  meshcmd smbios --out smbios.txt\r\n");
+            console.log('\r\Optional arguments:\r\n');
+            console.log('  --output [filename]    Optional filename to write the results to.');
+        } else if (action == 'rawsmbios') {
+            console.log("RawSMBios action will display this computer's system management BIOS information in raw hexdecimal form. Example usage:\r\n\r\n  meshcmd rawsmbios --out smbios.txt\r\n");
+            console.log('\r\Optional arguments:\r\n');
+            console.log('  --output [filename]    Optional filename to write the results to.');
+        } else if (action == 'amtinfo') {
+            console.log('AmtInfo action will get the version and activation state of Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtinfo');
+        } else if ((action == 'amtversion') || (action == 'amtversions')) {
+            console.log('AmtVersions will display all version information about Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtversions');
+        } else if (action == 'amthashes') {
+            console.log('Amthashes will display all trusted activations hashes for Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
+        } else if (action == 'amtlms') {
+            console.log('AmtLMS will state MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amtlms');
+        } else if (action == 'amtccm') {
+            console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided. Example usage:\r\n\r\n  meshcmd amtccm --pass mypassword');
+        } else if (action == 'amtdeactivate') {
+            console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
+        } else if (action == 'amtuuid') {
+            console.log('AmtUUID action will get the unique identifier of the local or remote Intel AMT computer. By default, the local UUID is obtained unless a host is specified. Intel AMT must be activated for this command to work. Example usage:\r\n\r\n  meshcmd amtuuid --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if ((action == 'amtloadwebapp') || (action == 'amtloadsmallwebapp') || (action == 'amtloadlargewebapp') || (action == 'amtclearwebapp') || (action == 'amtstoragestate')) {
+            console.log('AmtLoadWebApp action will load MeshCommander into Intel AMT 11.6 or higher. If the computer is in ACM mode, MeshCommander will replace the default index.htm on HTTP/16992 or HTTPS/16993. If Intel AMT is in CCM mode, MeshCommander will be installed alongside the default web page and will be accessible in the "Web Applications" section. This action works on Intel AMT 11.6 and higher only. Example usage:\r\n\r\n  meshcmd amtloadwebapp --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtclearwebstorage') {
+            console.log('AmtClearWebStorage will clear the web storage of Intel AMT, removing any loaded firmware version of MeshCommander. This command can clear the local or a remote Intel AMT computer. By default, the local computer storage is cleared unless a host is specified. Intel AMT must be activated for this command to work. This action works on Intel AMT 11.6 and higher only. Example usage:\r\n\r\n  meshcmd amtclearwebstorage --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtstoragestate') {
+            console.log('AmtStorageState will display the content of the web storage of Intel AMT including any loaded firmware version of MeshCommander. This command can read the storage state of a local or remote Intel AMT computer. By default, the local computer storage state is displayed unless a host is specified. Intel AMT must be activated for this command to work. This action works on Intel AMT 11.6 and higher only. Example usage:\r\n\r\n  meshcmd amtstoragestate --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtsavestate') {
+            console.log('AmtSaveState action will fetch all the entire state of Intel AMT and save it as a JSON file. This action will take multiple minutes to perform. The command will fetch the local computer state unless host is specified. Intel AMT must be ativated for this command to work. Example usage:\r\n\r\n  meshcmd amtsavestate --host 1.2.3.4 --user admin --pass mypassword --tls --output state.json');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --output [filename]    The output file for the Intel AMT state in JSON format.');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtscript') {
+            console.log('AmtScript will run a .mescript file on the local or remote Intel AMT. Script files can be built using the MeshCommander script editor and be used to setup or perform actions on Intel AMT. Example usage:\r\n\r\n  meshcmd amtscript --script myscript.mescript --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --script [filename]    The script file to run on Intel AMT.');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else {
+            actions.shift();
+            console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
+        }
+        exit(1); return;
+    }
     settings.action = settings.action.toLowerCase();
     debug(1, "Settings: " + JSON.stringify(settings));
-    if (settings.action == 'route') {
+    if (settings.action == 'smbios') {
+        // Display SM BIOS tables in raw form
+        SMBiosTables = require('smbios');
+        SMBiosTables.get(function (data) {
+            var r = SMBiosTables.parse(data);
+            var out = objToString(r, 0, '\r\n');
+            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+            exit(1);
+        });
+    } else if (settings.action == 'rawsmbios') {
+        // Display SM BIOS tables in raw form
+        SMBiosTables = require('smbios');
+        SMBiosTables.get(function (data) {
+            var out = '';
+            for (var i in data) { var header = false; for (var j in data[i]) { if (data[i][j].length > 0) { if (header == false) { out += ('Table type #' + i + ((SMBiosTables.smTableTypes[i] == null) ? '' : (', ' + SMBiosTables.smTableTypes[i]))) + '\r\n'; header = true; } out += ('  ' + data[i][j].toString('hex')) + '\r\n'; } } }
+            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+            exit(1);
+        });
+    } else if (settings.action == 'route') {
         // MeshCentral Router, port map local TCP port to a remote computer
         if ((settings.localPort == null) || (typeof settings.localPort != 'number') || (settings.localPort < 0) || (settings.localPort > 65535)) { console.log('No or invalid \"localPort\" specified, use --localport [localport].'); exit(1); return; }
         if ((settings.remoteNodeId == null) || (typeof settings.remoteNodeId != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); exit(1); return; }
@@ -116,8 +259,7 @@ function run(argv) {
         if ((settings.serverHttpsHash == null) || (typeof settings.serverHttpsHash != 'string') || (settings.serverHttpsHash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); exit(1); return; }
         if ((settings.remotePort == null) || (typeof settings.remotePort != 'number') || (settings.remotePort < 0) || (settings.remotePort > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
         if (settings.serverUrl != null) { startRouter(); } else { discoverMeshServer(); } // Start MeshCentral Router
-    }
-    else if ((settings.action == 'amtloadwebapp') || (settings.action == 'amtloadsmallwebapp') || (settings.action == 'amtloadlargewebapp') || (settings.action == 'amtclearwebapp') || (settings.action == 'amtstoragestate')) { // Intel AMT Web Application Actions
+    } else if ((settings.action == 'amtloadwebapp') || (settings.action == 'amtloadsmallwebapp') || (settings.action == 'amtloadlargewebapp') || (settings.action == 'amtclearwebapp') || (settings.action == 'amtstoragestate')) { // Intel AMT Web Application Actions
         // Intel AMT 11.6+ Load MeshCommander into firmware
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
@@ -136,7 +278,7 @@ function run(argv) {
             else if (settings.action == 'amtclearwebapp') { settings.webapp = null; }
             nextStepStorageUpload();
         }
-    } else if ((settings.action == 'meversion') || (settings.action == 'meversions') || (settings.action == 'mever')) {
+    } else if ((settings.action == 'amtversion') || (settings.action == 'amtversions') || (settings.action == 'amtver')) {
         // Display Intel AMT versions
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
@@ -148,7 +290,7 @@ function run(argv) {
                 exit(1); return;
             });
         });
-    } else if (settings.action == 'mehashes') {
+    } else if (settings.action == 'amthashes') {
         // Display Intel AMT list of trusted hashes
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
@@ -164,7 +306,7 @@ function run(argv) {
                 }
             });
         });
-    } else if (settings.action == 'meinfo') {
+    } else if (settings.action == 'amtinfo') {
         // Display Intel AMT version and activation state
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
@@ -201,7 +343,7 @@ function run(argv) {
     } else if (settings.action == 'amtlms') {
         // Start Intel AMT MicroLMS
         startLms(function (state) { console.log(['MicroLMS did not start. MicroLMS must run as administrator or LMS any already be active.', 'MicroLMS started.', 'MicroLMS started, MeshCommander on HTTP/16994.', 'MEI error'][state]); if (state == 0) { exit(0); } });
-    } else if (settings.action == 'mescript') {
+    } else if (settings.action == 'amtscript') {
         // Start running a MEScript
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
@@ -233,6 +375,7 @@ function run(argv) {
     }
 }
 
+
 //
 // Deactivate Intel AMT CCM
 //
@@ -249,7 +392,6 @@ function deactivateCCM() {
 //
 // Activate Intel AMT to CCM
 //
-
 
 function activeToCCM() {
     // See if MicroLMS needs to be started and setup the $$OsAdmin wsman stack

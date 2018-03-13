@@ -30,6 +30,7 @@ function createMeshCore(agent) {
     var net = require('net');
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
+    var SMBiosTables = require('smbios');
     var amtMei = null, amtLms = null, amtLmsState = 0;
     var amtMeiConnected = 0, amtMeiTmpState = null;
     var wifiScannerLib = null;
@@ -236,7 +237,7 @@ function createMeshCore(agent) {
     }
     
     // Convert an object to string with all functions
-    function objToString(x, p, ret) {
+    function objToString(x, p, pad, ret) {
         if (ret == undefined) ret = '';
         if (p == undefined) p = 0;
         if (x == null) { return '[null]'; }
@@ -246,8 +247,8 @@ function createMeshCore(agent) {
         if (typeof x == 'buffer') { return '[buffer]'; }
         if (typeof x != 'object') { return x; }
         var r = '{' + (ret ? '\r\n' : ' ');
-        for (var i in x) { r += (addPad(p + 2, ret) + i + ': ' + objToString(x[i], p + 2, ret) + (ret ? '\r\n' : ' ')); }
-        return r + addPad(p, ret) + '}';
+        for (var i in x) { if (i != '_ObjectID') { r += (addPad(p + 2, pad) + i + ': ' + objToString(x[i], p + 2, pad, ret) + (ret ? '\r\n' : ' ')); } }
+        return r + addPad(p, pad) + '}';
     }
     
     // Return p number of spaces 
@@ -795,19 +796,47 @@ function createMeshCore(agent) {
         response.data = function (data) { sendConsoleText(rstr2hex(buf2rstr(data)), this.sessionid); consoleHttpRequest = null; }
         response.close = function () { sendConsoleText('httprequest.response.close', this.sessionid); consoleHttpRequest = null; }
     };
-    
+
     // Process a mesh agent console command
     function processConsoleCommand(cmd, args, rights, sessionid) {
         try {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt, setdebug.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios.';
                     break;
                 }
                 case 'setdebug': {
                     if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = StdOut, 1 = This Console, * = All Consoles, 2 = WebLog, 3 = Disabled'; } // Display usage
                     else { if (args['_'][0] == '*') { console.setDestination(1); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
+                    break;
+                }
+                case 'smbios': {
+                    if (SMBiosTables != null) {
+                        SMBiosTables.get(function (data) {
+                            if (data == null) { sendConsoleText('Unable to get SM BIOS data.', sessionid); return; }
+                            sendConsoleText(objToString(SMBiosTables.parse(data), 0, ' ', true), sessionid);
+                        });
+                    } else { response = 'SM BIOS module not available.'; }
+                    break;
+                }
+                case 'rawsmbios': {
+                    if (SMBiosTables != null) {
+                        SMBiosTables.get(function (data) {
+                            if (data == null) { sendConsoleText('Unable to get SM BIOS data.', sessionid); return; }
+                            var out = '';
+                            for (var i in data) {
+                                var header = false;
+                                for (var j in data[i]) {
+                                    if (data[i][j].length > 0) {
+                                        if (header == false) { out += ('Table type #' + i + ((SMBiosTables.smTableTypes[i] == null) ? '' : (', ' + SMBiosTables.smTableTypes[i]))) + '\r\n'; header = true; }
+                                        out += ('  ' + data[i][j].toString('hex')) + '\r\n';
+                                    }
+                                }
+                            }
+                            sendConsoleText(out, sessionid);
+                        });
+                    } else { response = 'SM BIOS module not available.'; }
                     break;
                 }
                 case 'eval': { // Eval JavaScript
