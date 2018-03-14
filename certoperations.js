@@ -130,7 +130,7 @@ module.exports.CertificateOperations = function () {
     }
 
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
-    obj.GetMeshServerCertificate = function (directory, args, config, func) {
+    obj.GetMeshServerCertificate = function (directory, args, config, parent, func) {
         var certargs = args.cert;
         var mpscertargs = args.mpscert;
         var strongCertificate = (args.fastcert ? false : true);
@@ -304,6 +304,7 @@ module.exports.CertificateOperations = function () {
             } 
         }
         console.log('Generating certificates, may take a few minutes...');
+        parent.updateServerState('state', 'generatingcertificates');
 
         // If a certificate is missing, but web certificate is present and --cert is not used, set the names to be the same as the web certificate
         if ((certargs == null) && (r.web != null)) {

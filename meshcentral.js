@@ -196,6 +196,9 @@ function CreateMeshCentralServer(config) {
     obj.performServerCertUpdate = function () { console.log('Updating server certificates...'); process.exit(200); }
 
     obj.StartEx = function () {
+        // Write the server state
+        obj.updateServerState('state', 'starting');
+
         // Look to see if data and/or file path is specified
         if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
         if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
@@ -323,7 +326,7 @@ function CreateMeshCentralServer(config) {
     obj.StartEx2 = function () {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations()
-        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
+        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, obj, function (certs) {
             if (obj.config.letsencrypt == null) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
@@ -425,6 +428,7 @@ function CreateMeshCentralServer(config) {
                 }
 
                 obj.debug(1, 'Server started');
+                obj.updateServerState('state', 'running');
             });
         });
     }
@@ -474,6 +478,9 @@ function CreateMeshCentralServer(config) {
                 process.exit(0);
             }
         });
+
+        // Update the server state
+        obj.updateServerState('state', 'stopped');
     }
     
     // Event Dispatch
@@ -993,6 +1000,19 @@ function CreateMeshCentralServer(config) {
         else if (arguments.length == 3) { console.log(arguments[1], arguments[2]); }
         else if (arguments.length == 4) { console.log(arguments[1], arguments[2], arguments[3]); }
         else if (arguments.length == 5) { console.log(arguments[1], arguments[2], arguments[3], arguments[4]); }
+    }
+
+    // Update server state. Writes a server state file.
+    var meshServerState = {};
+    obj.updateServerState = function(name, val) {
+        if ((name != null) && (val != null)) {
+            var changed = false;
+            if ((name != null) && (meshServerState[name] != val)) { if ((val == null) && (meshServerState[name] != null)) { delete meshServerState[name]; changed = true; } else { if (meshServerState[name] != val) { meshServerState[name] = val; changed = true; } } }
+            if (changed == false) return;
+        }
+        r = 'time=' + Date.now() + '\r\n';
+        for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
+        obj.fs.writeFileSync(obj.path.join(obj.datapath, 'serverstate.txt'), r);
     }
     
     // Logging funtions
