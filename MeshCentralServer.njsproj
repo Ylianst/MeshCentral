@@ -76,6 +76,7 @@
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="webserver.js" />
+    <Compile Include="winservice.js" />
     <Content Include="agents\meshagent_arm" />
     <Content Include="agents\meshagent_pi" />
     <Content Include="agents\meshagent_pogo" />

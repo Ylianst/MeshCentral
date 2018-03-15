@@ -932,7 +932,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
         // Build server information object
         var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: obj.parent.parent.mailserver != null }
-        if (obj.args.notls != true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
+        if (obj.args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
 
         // Send server information
         ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo }));
