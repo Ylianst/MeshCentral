@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 var Q = require('queue');
-
 function amt_heci() {
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
@@ -23,52 +22,73 @@ function amt_heci() {
 
     var heci = require('heci');
 
-    this._amt = heci.create();
-    this._amt.BiosVersionLen = 65;
-    this._amt.UnicodeStringLen = 20;
+    this._ObjectID = "pthi";
+    this._rq = new Q();
+    this._setupPTHI = function _setupPTHI()
+    {
+        this._amt = heci.create();
+        this._amt.BiosVersionLen = 65;
+        this._amt.UnicodeStringLen = 20;
 
-    this._amt.rq = new Q();
-    this._amt.Parent = this;
-    this._amt.on('error', function (e) { this.Parent.emit('error', e); });
-    this._amt.on('connect', function () {
-        this.Parent.emit('connect');
-        this.on('data', function (chunk) {
-            //console.log("Received: " + chunk.length + " bytes");
-            var header = this.Parent.getCommand(chunk);
-            //console.log("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
+        this._amt.Parent = this;
+        this._amt.on('error', function _amtOnError(e) { this.Parent.emit('error', e); });
+        this._amt.on('connect', function _amtOnConnect()
+        {
+            this.on('data', function _amtOnData(chunk)
+            {
+                //console.log("Received: " + chunk.length + " bytes");
+                var header = this.Parent.getCommand(chunk);
+                //console.log("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
 
-            var user = this.rq.deQueue();
-            var params = user.optional;
-            var callback = user.func;
+                var user = this.Parent._rq.deQueue();
+                var params = user.optional;
+                var callback = user.func;
 
-            params.unshift(header);
-            callback.apply(this.Parent, params);
+                params.unshift(header);
+                callback.apply(this.Parent, params);
+
+                if(this.Parent._rq.isEmpty())
+                {
+                    // No More Requests, we can close PTHI
+                    this.Parent._amt.disconnect();
+                    this.Parent._amt = null;
+                }
+                else
+                {
+                    // Send the next request
+                    this.write(this.Parent._rq.peekQueue().send);
+                }
+            });
+
+            // Start sending requests
+            this.write(this.Parent._rq.peekQueue().send);
         });
-    });
-    this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+    };
     function trim(x) { var y = x.indexOf('\0'); if (y >= 0) { return x.substring(0, y); } else { return x; } }
-
-    this.getCommand = function (chunk) {
-        var command = chunk.length == 0 ? (this._amt.rq.peekQueue().cmd | 0x800000) : chunk.readUInt32LE(4);
+    this.getCommand = function getCommand(chunk) {
+        var command = chunk.length == 0 ? (this._rq.peekQueue().cmd | 0x800000) : chunk.readUInt32LE(4);
         var ret = { IsResponse: (command & 0x800000) == 0x800000 ? true : false, Command: (command & 0x7FFFFF), Status: chunk.length != 0 ? chunk.readUInt32LE(12) : -1, Data: chunk.length != 0 ? chunk.slice(16) : null };
         return (ret);
     };
 
-    this.sendCommand = function () {
+    this.sendCommand = function sendCommand() {
         if (arguments.length < 3 || typeof (arguments[0]) != 'number' || typeof (arguments[1]) != 'object' || typeof (arguments[2]) != 'function') { throw ('invalid parameters'); }
         var args = [];
         for (var i = 3; i < arguments.length; ++i) { args.push(arguments[i]); }
 
-        this._amt.rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args });
-
         var header = Buffer.from('010100000000000000000000', 'hex');
         header.writeUInt32LE(arguments[0] | 0x04000000, 4);
         header.writeUInt32LE(arguments[1] == null ? 0 : arguments[1].length, 8);
+        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args , send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]]))});
 
-        this._amt.write(arguments[1] == null ? header : Buffer.concat([header, arguments[1]]));
+        if(!this._amt)
+        {
+            this._setupPTHI();
+            this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+        }
     }
 
-    this.getVersion = function (callback) {
+    this.getVersion = function getVersion(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(26, null, function (header, fn, opt) {
@@ -86,7 +106,7 @@ function amt_heci() {
         }, callback, optional);
     };
 
-    this.getProvisioningState = function (callback) {
+    this.getProvisioningState = function getProvisioningState(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(17, null, function (header, fn, opt) {
@@ -101,7 +121,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getProvisioningMode = function (callback) {
+    this.getProvisioningMode = function getProvisioningMode(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(8, null, function (header, fn, opt) {
@@ -117,7 +137,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getEHBCState = function (callback) {
+    this.getEHBCState = function getEHBCState(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(132, null, function (header, fn, opt) {
@@ -129,7 +149,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getControlMode = function (callback) {
+    this.getControlMode = function getControlMode(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(107, null, function (header, fn, opt) {
@@ -144,7 +164,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getMACAddresses = function (callback) {
+    this.getMACAddresses = function getMACAddresses(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(37, null, function (header, fn, opt) {
@@ -154,7 +174,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getDnsSuffix = function (callback) {
+    this.getDnsSuffix = function getDnsSuffix(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(54, null, function (header, fn, opt) {
@@ -167,7 +187,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getHashHandles = function (callback) {
+    this.getHashHandles = function getHashHandles(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x2C, null, function (header, fn, opt) {
@@ -182,7 +202,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getCertHashEntry = function (handle, callback) {
+    this.getCertHashEntry = function getCertHashEntry(handle, callback) {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
 
@@ -208,7 +228,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     };
-    this.getCertHashEntries = function (callback) {
+    this.getCertHashEntries = function getCertHashEntries(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
 
@@ -218,7 +238,7 @@ function amt_heci() {
         }, callback, optional);
     };
 
-    this._getHashEntrySink = function (result, fn, opt, entries, handles) {
+    this._getHashEntrySink = function _getHashEntrySink(result, fn, opt, entries, handles) {
         entries.push(result);
         if (handles.length > 0) {
             this.getCertHashEntry(handles.shift(), this._getHashEntrySink, fn, opt, entries, handles);
@@ -227,15 +247,15 @@ function amt_heci() {
             fn.apply(this, opt);
         }
     }
-    this.getLocalSystemAccount = function (callback) {
+    this.getLocalSystemAccount = function getLocalSystemAccount(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt) {
-            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 34).toString()), pass: trim(header.Data.slice(34, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
+            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.unprovision = function (mode, callback) {
+    this.unprovision = function unprovision(mode, callback) {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         var data = new Buffer(4);
@@ -245,27 +265,27 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.startConfiguration = function () {
+    this.startConfiguration = function startConfiguration() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x29, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.stopConfiguration = function () {
+    this.stopConfiguration = function stopConfiguration() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x5E, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.openUserInitiatedConnection = function () {
+    this.openUserInitiatedConnection = function openUserInitiatedConnection() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x44, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.closeUserInitiatedConnection = function () {
+    this.closeUserInitiatedConnection = function closeUnserInitiatedConnected() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x45, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.getRemoteAccessConnectionStatus = function () {
+    this.getRemoteAccessConnectionStatus = function getRemoteAccessConnectionStatus() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x46, data, function (header, fn, opt) {
@@ -278,7 +298,7 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.getProtocolVersion = function (callback) {
+    this.getProtocolVersion = function getProtocolVersion(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { opt.push(arguments[i]); }
 
