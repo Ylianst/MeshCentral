@@ -682,6 +682,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 64; } // Email invites
             if (obj.args.webrtc == true) { features += 128; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 256; } // Enable ClickOnce (Default true)
+            if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button

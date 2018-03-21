@@ -75,10 +75,10 @@ function createMeshCore(agent) {
     // Try to load up the MEI module
     try {
         var amtMeiLib = require('amt-mei');
-        amtMeiConnected = 1;
         amtMei = new amtMeiLib();
         amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; sendPeriodicServerUpdate(); });
-        amtMei.on('connect', function () { amtMeiConnected = 2; sendPeriodicServerUpdate(); });
+        amtMeiConnected = 2;
+        //amtMei.on('connect', function () { amtMeiConnected = 2; sendPeriodicServerUpdate(); });
     } catch (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
     
     // Try to load up the WIFI scanner
@@ -869,11 +869,11 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'selfinfo': { // Return self information block
-                    buildSelfInfo(function (info) { sendConsoleText(objToString(info, 0, ' '), sessionid); });
+                    buildSelfInfo(function (info) { sendConsoleText(objToString(info, 0, ' ', true), sessionid); });
                     break;
                 }
                 case 'args': { // Displays parsed command arguments
-                    response = 'args ' + objToString(args, 0, ' ');
+                    response = 'args ' + objToString(args, 0, ' ', true);
                     break;
                 }
                 case 'print': { // Print a message on the mesh agent console, does nothing when running in the background
@@ -1045,7 +1045,7 @@ function createMeshCore(agent) {
                 case 'amt': { // Show Intel AMT status
                     getAmtInfo(function (state) {
                         var resp = 'Intel AMT not detected.';
-                        if (state != null) { resp = objToString(state, 0, ' '); }
+                        if (state != null) { resp = objToString(state, 0, ' ', true); }
                         sendConsoleText(resp, sessionid);
                     });
                     break;
@@ -1053,7 +1053,11 @@ function createMeshCore(agent) {
                 case 'netinfo': { // Show network interface information
                     //response = objToString(mesh.NetInfo, 0, ' ');
                     var interfaces = require('os').networkInterfaces();
-                    response = objToString(interfaces, 0, ' ');
+                    response = objToString(interfaces, 0, ' ', true);
+                    break;
+                }
+                case 'netinfo2': { // Show network interface information
+                    response = objToString(mesh.NetInfo, 0, ' ', true);
                     break;
                 }
                 case 'wakeonlan': { // Send wake-on-lan
@@ -1215,7 +1219,7 @@ function createMeshCore(agent) {
         amtMei.getVersion(function (val) { amtMeiTmpState.Versions = {}; for (var version in val.Versions) { amtMeiTmpState.Versions[val.Versions[version].Description] = val.Versions[version].Version; } });
         amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
         amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
-        amtMei.getEHBCState(function (result) { if (result.EHBC == true) { amtMeiTmpState.Flags += 1; } });
+        amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
         amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
         //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
         amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });

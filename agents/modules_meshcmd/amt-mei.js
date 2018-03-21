@@ -18,7 +18,6 @@ var Q = require('queue');
 function amt_heci() {
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
-    emitterUtils.createEvent('connect');
 
     var heci = require('heci');
 

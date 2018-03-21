@@ -91,7 +91,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER'];
+    var actions = ['HELP', 'ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG'];
 
     // Load the action file
     var actionfile = null;
@@ -142,6 +142,7 @@ function run(argv) {
         console.log('\r\nValid local or remote actions:');
         console.log('  MeshCommander   - Launch a local MeshCommander web server.');
         console.log('  AmtUUID         - Show Intel AMT unique identifier.');
+        console.log('  AmtAuditLog     - Show the Intel AMT audit log.');
         console.log('  AmtLoadWebApp   - Load MeshCommander in Intel AMT 11.6+ firmware.');
         console.log('  AmtClearWebApp  - Clear everything from Intel AMT web storage.');
         console.log('  AmtStorageState - Show contents of the Intel AMT web storage.');
@@ -230,6 +231,14 @@ function run(argv) {
             console.log('This action launched a local web server that hosts MeshCommander, a Intel AMT management console.');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --localport [port]     Local port used for the web server, 3000 is default.');
+        } else if (action == 'amtauditlog') {
+            console.log('AmtAuditLog action will fetch the local or remote audit log. If used localy, no username/password is required. Example usage:\r\n\r\n  meshcmd amtauditlog --host 1.2.3.4 --user admin --pass mypassword --tls --output audit.json');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --output [filename]    The output file for the Intel AMT state in JSON format.');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -373,12 +382,58 @@ function run(argv) {
         // Deactivate CCM
         debug(1, "Settings: " + JSON.stringify(settings));
         deactivateCCM();
-    } else if (settings.action == 'meshcommander') {
-        // Start MeshCommander
+    } else if (settings.action == 'meshcommander') { // Start MeshCommander
         startMeshCommander();
+    } else if (settings.action == 'amtauditlog') { // Read the Intel AMT audit log
+        if (settings.hostname != null) {
+            if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+            if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        } else { settings.hostname = '127.0.0.1'; }
+        readAmtAuditLog();
     } else {
         console.log('Invalid \"action\" specified.'); exit(1); return;
     }
+}
+
+
+//
+// Intel AMT Audit Log
+//
+
+function readAmtAuditLog() {
+    // See if MicroLMS needs to be started
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
+        settings.noconsole = true; startLms(readAmtAuditLogEx);
+    } else {
+        readAmtAuditLogEx(9999);
+    }
+}
+
+function readAmtAuditLogEx(x) {
+    if (x == 9999) {
+        var transport = require('amt-wsman-duk');
+        var wsman = require('amt-wsman');
+        var amt = require('amt');
+        wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+        amtstack = new amt(wsstack);
+        amtstack.GetAuditLog(readAmtAuditLogEx2);
+    } else {
+        osamtstack.GetAuditLog(readAmtAuditLogEx2);
+    }
+}
+
+function readAmtAuditLogEx2(stack, response, status) {
+    if (status != 200) {
+        console.log('Unable to get audit log, status = ' + status + '.');
+    } else {
+        var out = '';
+        for (var i in response) {
+            var name = ((response[i].Initiator != '')?(response[i].Initiator + ': '):'')
+            out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
+        }
+        if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+    }
+    exit(1);
 }
 
 
@@ -397,26 +452,17 @@ function startMeshCommander() {
     var http = require('http');
     webServer = http.createServer();
     webServer.listen(settings.localport);
+    webServer.wsList = {};
+    webServer.wsListIndex = 0;
     webServer.on('upgrade', function (req, socket, head) {
         //console.log("WebSocket for " + req.url.split('?')[0]);
         switch (req.url.split('?')[0]) {
             case '/webrelay.ashx': // MeshCommander relay channel
                 var ws = socket.upgradeWebSocket();
                 socket.ws = ws;
+                ws.wsIndex = ++webServer.wsListIndex;
+                webServer.wsList[ws.wsIndex] = ws;
                 ws.pause();
-
-                // When data is received from the web socket, forward the data into the associated TCP connection.
-                // If the TCP connection is pending, buffer up the data until it connects.
-                ws.on('data', function (data) {
-                    //console.log('Data relay --> ' + data.length + ': ' + data.toString() + '\r\n');
-                    ws.forwardclient.write(data); // Forward data to the associated TCP connection.
-                });
-
-                // If the web socket is closed, close the associated TCP connection.
-                ws.on('close', function (req) {
-                    //console.log('Closed websocket.');
-                    if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
-                });
 
                 // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
                 var webargs = parseUrlArguments(req.url);
@@ -429,35 +475,15 @@ function startMeshCommander() {
                     // If this is TCP (without TLS) set a normal TCP socket
                     var net = require('net');
                     ws.forwardclient = net.connect({ host: webargs.host, port: webargs.port })
+                    ws.forwardclient.on('connect', function () { this.pipe(this.ws); this.ws.pipe(this); });
                     ws.forwardclient.ws = ws;
-                    ws.forwardclient.on('connect', function () { this.ws.resume(); });
                 } else {
                     // If TLS is going to be used, setup a TLS socket
                     var tls = require('tls');
                     var tlsoptions = { host: webargs.host, port: webargs.port, secureProtocol: ((webargs.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), rejectUnauthorized: false };
-                    ws.forwardclient = tls.connect(tlsoptions, function () { this.ws.resume(); });
+                    ws.forwardclient = tls.connect(tlsoptions, function () { this.pipe(this.ws); this.ws.pipe(this); });
                     ws.forwardclient.ws = ws;
                 }
-
-                // When we receive data on the TCP connection, forward it back into the web socket connection.
-                ws.forwardclient.on('data', function (data) {
-                    //console.log('Data relay <-- ' + data.length + ': ' + data.toString() + '\r\n');
-                    try { this.ws.write(data); } catch (e) { }
-                });
-
-                // If the TCP connection closes, disconnect the associated web socket.
-                ws.forwardclient.on('close', function () {
-                    //console.log('TCP/TLS disconnected.');
-                    try { this.ws.end(); } catch (e) { }
-                    try { this.end(); } catch (e) { }
-                });
-
-                // If the TCP connection causes an error, disconnect the associated web socket.
-                ws.forwardclient.on('error', function (err) {
-                    //console.log('TCP/TLS disconnected with error', err);
-                    try { this.ws.end(); } catch (e) { }
-                    try { this.end(); } catch (e) { }
-                });
 
                 break;
             default:
@@ -1127,6 +1153,12 @@ function parseUrlArguments(url) {
     x = x[1].split('&');
     for (var i in x) { var j = x[i].indexOf('='); if (j > 0) { r[x[i].substring(0, j).toLowerCase()] = x[i].substring(j + 1); } }
     return r;
+}
+
+// Remove a element from a array
+function removeItemFromArray(array, element) {
+    const index = array.indexOf(element);
+    if (index !== -1) { array.splice(index, 1); }
 }
 
 // Run MeshCmd

@@ -18,24 +18,20 @@ var Q = require('queue');
 function amt_heci() {
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('error');
-    emitterUtils.createEvent('connect');
 
     var heci = require('heci');
 
     this._ObjectID = "pthi";
     this._rq = new Q();
-    this._setupPTHI = function _setupPTHI()
-    {
+    this._setupPTHI = function _setupPTHI() {
         this._amt = heci.create();
         this._amt.BiosVersionLen = 65;
         this._amt.UnicodeStringLen = 20;
 
         this._amt.Parent = this;
         this._amt.on('error', function _amtOnError(e) { this.Parent.emit('error', e); });
-        this._amt.on('connect', function _amtOnConnect()
-        {
-            this.on('data', function _amtOnData(chunk)
-            {
+        this._amt.on('connect', function _amtOnConnect() {
+            this.on('data', function _amtOnData(chunk) {
                 //console.log("Received: " + chunk.length + " bytes");
                 var header = this.Parent.getCommand(chunk);
                 //console.log("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
@@ -47,14 +43,12 @@ function amt_heci() {
                 params.unshift(header);
                 callback.apply(this.Parent, params);
 
-                if(this.Parent._rq.isEmpty())
-                {
+                if (this.Parent._rq.isEmpty()) {
                     // No More Requests, we can close PTHI
                     this.Parent._amt.disconnect();
                     this.Parent._amt = null;
                 }
-                else
-                {
+                else {
                     // Send the next request
                     this.write(this.Parent._rq.peekQueue().send);
                 }
@@ -79,10 +73,9 @@ function amt_heci() {
         var header = Buffer.from('010100000000000000000000', 'hex');
         header.writeUInt32LE(arguments[0] | 0x04000000, 4);
         header.writeUInt32LE(arguments[1] == null ? 0 : arguments[1].length, 8);
-        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args , send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]]))});
+        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
 
-        if(!this._amt)
-        {
+        if (!this._amt) {
             this._setupPTHI();
             this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
         }
@@ -94,7 +87,7 @@ function amt_heci() {
         this.sendCommand(26, null, function (header, fn, opt) {
             if (header.Status == 0) {
                 var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
-                for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen) ; ++i) {
+                for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen); ++i) {
                     val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + this._amt.UnicodeStringLen, 4 + this._amt.UnicodeStringLen + v.readUInt16LE(2 + this._amt.UnicodeStringLen)).toString() };
                     v = v.slice(4 + (2 * this._amt.UnicodeStringLen));
                 }
