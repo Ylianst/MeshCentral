@@ -254,6 +254,46 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
+    this.getLanInterfaceSettings = function getLanInterfaceSettings(index, callback)
+    {
+        var optional = [];
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        var ifx = Buffer.alloc(4);
+        ifx.writeUInt32LE(index);
+        this.sendCommand(0x48, ifx, function onGetLanInterfaceSettings(header, fn, opt)
+        {
+            if(header.Status == 0)
+            {
+                var info = {};
+                info.enabled = header.Data.readUInt32LE(0);
+                info.dhcpEnabled = header.Data.readUInt32LE(8);
+                switch(header.Data[12])
+                {
+                    case 1:
+                        info.dhcpMode = 'ACTIVE'
+                        break;
+                    case 2:
+                        info.dhcpMode = 'PASSIVE'
+                        break;
+                    default:
+                        info.dhcpMode = 'UNKNOWN';
+                        break;
+                }
+                info.mac = header.Data.slice(14).toString('hex:');
+                
+                var addr = header.Data.readUInt32LE(4);
+                info.address = ((addr >> 24) & 255) + '.' + ((addr >> 16) & 255) + '.' + ((addr >> 8) & 255) + '.' + (addr & 255);
+                opt.unshift(info);
+                fn.apply(this, opt);
+            }
+            else
+            {
+                opt.unshift(null);
+                fn.apply(this, opt);
+            }
+        }, callback, optional);
+
+    };
     this.unprovision = function unprovision(mode, callback) {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }

@@ -3067,14 +3067,14 @@
         }
 
         function applyDesktopSettings() {
-            var r = '', ops = (features & 512)?[100,80,50,40,30,20,10,5,1]:[50,40,30,20,10,5,1];
+            var r = '', ops = (features & 512)?[90,70,50,40,30,20,10,5,1]:[50,40,30,20,10,5,1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
             d7showfocus.checked = desktopsettings.showfocus;
             d7showcursor.checked = desktopsettings.showmouse;
             d7bitmapquality.value = 40; // Default value
-            d7bitmapquality.value = desktopsettings.quality;
+            if (ops.indexOf(desktopsettings.quality) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }

@@ -330,6 +330,8 @@ function run(argv) {
         amtMei.getEHBCState(function (result) { mestate.ehbc = result; });
         amtMei.getControlMode(function (result) { mestate.controlmode = result; });
         amtMei.getMACAddresses(function (result) { mestate.mac = result; });
+        amtMei.getLanInterfaceSettings(0, function (result) { mestate.net0 = result; });
+        amtMei.getLanInterfaceSettings(1, function (result) { mestate.net1 = result; });
         amtMei.getDnsSuffix(function (result) {
             mestate.dns = result;
             var str = 'Intel AMT v' + mestate.ver;
@@ -337,6 +339,9 @@ function run(argv) {
             else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
             else if (mestate.ProvisioningState.stateStr == 'POST') { if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; } }
             if (mestate.ehbc.EHBC == true) { str += ', EHBC enabled'; }
+            str += '.';
+            if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0'?'':(', ' + mestate.net0.address)); }
+            if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
             console.log(str + '.');
             exit(1);
         });
@@ -461,7 +466,7 @@ function startMeshCommander() {
                 var ws = socket.upgradeWebSocket();
                 socket.ws = ws;
                 ws.wsIndex = ++webServer.wsListIndex;
-                webServer.wsList[ws.wsIndex] = ws;
+                webServer.wsList[ws.wsIndex] = ws; // Keep a reference so the websocket and forwarder don't get disposed.
                 ws.pause();
 
                 // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
@@ -475,15 +480,19 @@ function startMeshCommander() {
                     // If this is TCP (without TLS) set a normal TCP socket
                     var net = require('net');
                     ws.forwardclient = net.connect({ host: webargs.host, port: webargs.port })
-                    ws.forwardclient.on('connect', function () { this.pipe(this.ws); this.ws.pipe(this); });
+                    ws.forwardclient.on('connect', function () { this.pipe(this.ws, { end: false }); this.ws.pipe(this, { end: false }); });
                     ws.forwardclient.ws = ws;
                 } else {
                     // If TLS is going to be used, setup a TLS socket
                     var tls = require('tls');
                     var tlsoptions = { host: webargs.host, port: webargs.port, secureProtocol: ((webargs.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), rejectUnauthorized: false };
-                    ws.forwardclient = tls.connect(tlsoptions, function () { this.pipe(this.ws); this.ws.pipe(this); });
+                    ws.forwardclient = tls.connect(tlsoptions, function () { this.pipe(this.ws, { end: false }); this.ws.pipe(this, { end: false }); });
                     ws.forwardclient.ws = ws;
                 }
+
+                // Handle pipe closure
+                ws.on('end', function () { try { this.forwardclient.end(); } catch (e) { } delete webServer.wsList[this.wsIndex]; });
+                ws.forwardclient.on('end', function () { try { this.ws.end(); } catch (e) { } });
 
                 break;
             default:
