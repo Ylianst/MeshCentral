@@ -563,15 +563,7 @@
                         <div id="d7meshkvm">
                             <h4 style="width:100%;border-bottom:1px solid gray">Mesh Agent Remote Desktop</h4>
                             <div style="margin:3px 0 3px 0">
-                                <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl">
-                                    <option value=50>50%</option>
-                                    <option value=40>40%</option>
-                                    <option selected=selected value=30>30%</option>
-                                    <option value=20>20%</option>
-                                    <option value=10>10%</option>
-                                    <option value=5>5%</option>
-                                    <option value=1>1%</option>
-                                </select>
+                                <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl"></select>
                                 <div style="height:20px">Quality</div>
                             </div>
                             <div style="margin:3px 0 3px 0">
@@ -1668,11 +1660,13 @@
             if ((servername == 'un-configured') || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
 
             if (serverinfo.https == true) {
-                Q('agins_linux_area').value = "wget -q https://" + servername + ":" + serverinfo.port + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + ":" + serverinfo.port + " '" + meshid.split('/')[2] + "'\r\n";
-                Q('agins_linux_area_un').value = "wget -q https://" + servername + ":" + serverinfo.port + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                var portStr = (serverinfo.port == 443)?'':(":" + serverinfo.port);
+                Q('agins_linux_area').value = "wget -q https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
+                Q('agins_linux_area_un').value = "wget -q https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             } else {
-                Q('agins_linux_area').value = "wget -q http://" + servername + ":" + serverinfo.port + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + ":" + serverinfo.port + " '" + meshid.split('/')[2] + "'\r\n";
-                Q('agins_linux_area_un').value = "wget -q http://" + servername + ":" + serverinfo.port + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                var portStr = (serverinfo.port == 80)?'':(":" + serverinfo.port);
+                Q('agins_linux_area').value = "wget -q http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
+                Q('agins_linux_area_un').value = "wget -q http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             }
             Q('aginsSelect').focus();
         }
@@ -3109,10 +3103,14 @@
         }
 
         function applyDesktopSettings() {
+            var r = '', ops = (features & 512)?[90,70,50,40,30,20,10,5,1]:[50,40,30,20,10,5,1];
+            for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
+            QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
             d7showfocus.checked = desktopsettings.showfocus;
             d7showcursor.checked = desktopsettings.showmouse;
-            d7bitmapquality.value = desktopsettings.quality;
+            d7bitmapquality.value = 40; // Default value
+            if (ops.indexOf(desktopsettings.quality) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }

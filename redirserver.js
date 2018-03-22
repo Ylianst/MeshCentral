@@ -95,6 +95,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         obj.tcpServer = obj.app.listen(port, function () {
             obj.port = port;
             console.log('MeshCentral HTTP redirection web server running on port ' + port + '.');
+            obj.parent.updateServerState('redirect-port', port);
             func(obj.port);
         }).on('error', function (err) {
             if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }

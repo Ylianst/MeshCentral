@@ -633,7 +633,7 @@ function AmtStackCreateService(wsmanStack) {
         2003: 'Security Audit Log Enabled',
         2004: 'Security Audit Log Exported',
         2005: 'Security Audit Log Recovered',
-        2100: 'Intel&reg; ME Time Set',
+        2100: 'Intel(R) ME Time Set',
         2200: 'TCPIP Parameters Set',
         2201: 'Host Name Set',
         2202: 'Domain Name Set',
@@ -742,12 +742,12 @@ function AmtStackCreateService(wsmanStack) {
                 }
                 if (x['InitiatorType'] == 2) {
                     // Local
-                    x['Initiator'] = '<i>Local</i>';
+                    x['Initiator'] = 'Local';
                     ptr = 5;
                 }
                 if (x['InitiatorType'] == 3) {
                     // KVM Default Port
-                    x['Initiator'] = '<i>KVM Default Port</i>';
+                    x['Initiator'] = 'KVM Default Port';
                     ptr = 5;
                 }
                 

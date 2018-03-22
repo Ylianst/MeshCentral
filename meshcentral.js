@@ -9,7 +9,7 @@
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
 
-function CreateMeshCentralServer(config) {
+function CreateMeshCentralServer(config, args) {
     var obj = {};
     obj.db;
     obj.webserver;
@@ -27,7 +27,7 @@ function CreateMeshCentralServer(config) {
     obj.crypto = require('crypto');
     obj.exeHandler = require('./exeHandler.js');
     obj.platform = require('os').platform();
-    obj.args = require('minimist')(process.argv.slice(2));
+    obj.args = args;
     obj.common = require('./common.js');
     obj.certificates = null;
     obj.connectivityByNode = {};      // This object keeps a list of all connected CIRA and agents, by nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
@@ -108,7 +108,7 @@ function CreateMeshCentralServer(config) {
         if ((obj.service != null) && ((obj.args.install == true) || (obj.args.uninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
             var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
             for (var i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
-            var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'meshcentral.js'), env: env, wait: 2, grow: .5 });
+            var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: .5 });
             svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
             svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
@@ -196,6 +196,12 @@ function CreateMeshCentralServer(config) {
     obj.performServerCertUpdate = function () { console.log('Updating server certificates...'); process.exit(200); }
 
     obj.StartEx = function () {
+        //var wincmd = require('node-windows');
+        //wincmd.list(function (svc) { console.log(svc); }, true);
+
+        // Write the server state
+        obj.updateServerState('state', 'starting');
+
         // Look to see if data and/or file path is specified
         if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
         if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
@@ -323,7 +329,7 @@ function CreateMeshCentralServer(config) {
     obj.StartEx2 = function () {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations()
-        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, function (certs) {
+        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, obj, function (certs) {
             if (obj.config.letsencrypt == null) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
@@ -425,6 +431,8 @@ function CreateMeshCentralServer(config) {
                 }
 
                 obj.debug(1, 'Server started');
+                if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
+                obj.updateServerState('state', 'running');
             });
         });
     }
@@ -474,6 +482,9 @@ function CreateMeshCentralServer(config) {
                 process.exit(0);
             }
         });
+
+        // Update the server state
+        obj.updateServerState('state', 'stopped');
     }
     
     // Event Dispatch
@@ -994,6 +1005,19 @@ function CreateMeshCentralServer(config) {
         else if (arguments.length == 4) { console.log(arguments[1], arguments[2], arguments[3]); }
         else if (arguments.length == 5) { console.log(arguments[1], arguments[2], arguments[3], arguments[4]); }
     }
+
+    // Update server state. Writes a server state file.
+    var meshServerState = {};
+    obj.updateServerState = function(name, val) {
+        if ((name != null) && (val != null)) {
+            var changed = false;
+            if ((name != null) && (meshServerState[name] != val)) { if ((val == null) && (meshServerState[name] != null)) { delete meshServerState[name]; changed = true; } else { if (meshServerState[name] != val) { meshServerState[name] = val; changed = true; } } }
+            if (changed == false) return;
+        }
+        r = 'time=' + Date.now() + '\r\n';
+        for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
+        obj.fs.writeFileSync(obj.path.join(obj.datapath, 'serverstate.txt'), r);
+    }
     
     // Logging funtions
     function logException(e) { e += ''; logErrorEvent(e); }
@@ -1090,18 +1114,26 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 
 // Load the really basic modules
 var meshserver = null;
-InstallModules(['minimist'], function () {
-    // Get the server configuration
-    var config = getConfig();
-    if (config == null) { process.exit(); }
+function mainStart(args) {
+    InstallModules(['minimist'], function () {
+        // Get the server configuration
+        var config = getConfig();
+        if (config == null) { process.exit(); }
 
-    // Build the list of required modules
-    var modules = ['ws', 'nedb', 'https', 'unzip', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
-    if (require('os').platform() == 'win32') { modules.push('node-sspi'); modules.push('node-windows'); } // Add Windows modules
-    if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
-    if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
-    if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
+        // Build the list of required modules
+        var modules = ['ws', 'nedb', 'https', 'unzip', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+        if (require('os').platform() == 'win32') { modules.push('node-sspi'); modules.push('node-windows'); } // Add Windows modules
+        if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
+        if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
-    // Install any missing modules and launch the server
-    InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config); meshserver.Start(); });
-});
+        // Install any missing modules and launch the server
+        InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
+    });
+}
+
+if (require.main === module) {
+    mainStart(require('minimist')(process.argv.slice(2))); // Called directly, launch normally.
+} else {
+    module.exports.mainStart = mainStart; // Required as a module, useful for winservice.js
+}
