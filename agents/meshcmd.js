@@ -332,6 +332,7 @@ function run(argv) {
         amtMei.getMACAddresses(function (result) { mestate.mac = result; });
         amtMei.getLanInterfaceSettings(0, function (result) { mestate.net0 = result; });
         amtMei.getLanInterfaceSettings(1, function (result) { mestate.net1 = result; });
+        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
         amtMei.getDnsSuffix(function (result) {
             mestate.dns = result;
             var str = 'Intel AMT v' + mestate.ver;
@@ -341,7 +342,7 @@ function run(argv) {
             if (mestate.ehbc.EHBC == true) { str += ', EHBC enabled'; }
             str += '.';
             if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0'?'':(', ' + mestate.net0.address)); }
-            if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
+            if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
             console.log(str + '.');
             exit(1);
         });
@@ -369,9 +370,10 @@ function run(argv) {
         startMeScript();
     } else if (settings.action == 'amtuuid') {
         // Start running 
-        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
-        if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
-        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if (settings.hostname != null) {
+            if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+            if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        }
         settings.protocol = 'http:';
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
@@ -573,8 +575,14 @@ function activeToCCMEx3(stack, name, responses, status) {
 
 // Called to get the UUID of Intel AMT, start by setting up MicroLMS if we are doing the operation on the local computer
 function getAmtUuid() {
-    // See if MicroLMS needs to be started
-    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); } else { getAmtUuidEx() };
+    if (settings.hostname == null) {
+        var amtMeiModule = require('amt-mei');
+        var amtMei = new amtMeiModule();
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.getUuid(function (result) { if ((result == null) || (result.uuid == null)) { console.log('Failed.'); } else { console.log(result.uuid); } exit(1); });
+    } else {
+        if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(getAmtUuidEx); return; } else { getAmtUuidEx(); }
+    }
 }
 
 // Fetch the computer's UUID by fetching the CIM_ComputerSystemPackage WSMAN object.
@@ -677,10 +685,22 @@ function saveEntireAmtStateDone() {
 
 // Get Intel AMT information using MEI
 // TODO: If this call is called many time at once, it's going to cause issues.
+var getAmtInfoFetching = null;
+var getAmtInfoFetchingTimer = null;
 function getAmtInfo(func, tag) {
-    //console.log('getAmtInfo1');
     if (amtMei == null) { if (func != null) { func(null, tag); } return; }
+    if (getAmtInfoFetching != null) { getAmtInfoFetching.push({ f: func, t: tag }); return; }
+    getAmtInfoFetching = [{ f: func, t: tag }];
     amtMeiTmpState = { Flags: 0, TrustedHashes: [] }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+    getAmtInfoFetchingTimer = setTimeout(function () {
+        // MEI failed to respond, break out and reset everthing.
+        for (var i in getAmtInfoFetching) { if (getAmtInfoFetching[i].f != null) { getAmtInfoFetching[i].f(amtMeiTmpState, getAmtInfoFetching[i].t); } }
+        getAmtInfoFetching = null;
+        getAmtInfoFetchingTimer = null;
+        var amtMeiModule = require('amt-mei');
+        amtMei = new amtMeiModule();
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+    }, 3000);
     amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
     amtMei.getVersion(function (val) {
         amtMeiTmpState.Versions = {};
@@ -699,9 +719,10 @@ function getAmtInfo(func, tag) {
                         amtMeiTmpState.TrustedHashes.push({ Active: result.isActive, Default: result.isDefault, HashAlgorithm: result.hashAlgorithm, Name: result.name, Hash: result.certificateHash });
                         if (--exitOnCount == 0) {
                             amtMeiTmpState.Notifications = lmsNotifications; amtMeiState = amtMeiTmpState;
-                            //console.log('getAmtInfo2', JSON.stringify(amtMeiState));
-                            if (func != null) { func(amtMeiTmpState, tag); }
-                            amtMeiTmpState = null;
+                            for (var i in getAmtInfoFetching) { if (getAmtInfoFetching[i].f != null) { getAmtInfoFetching[i].f(amtMeiTmpState, getAmtInfoFetching[i].t); } }
+                            getAmtInfoFetching = null;
+                            clearTimeout(getAmtInfoFetchingTimer);
+                            getAmtInfoFetchingTimer = null;
                         }
                     });
                 }

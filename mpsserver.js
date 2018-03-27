@@ -227,44 +227,75 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     obj.db.GetAllType('mesh', function (err, docs) {
                         var mesh = null;
                         for (var i in docs) { if (docs[i]._id.indexOf(meshIdStart) > 0) { mesh = docs[i]; break; } }
-                        if (mesh == null) { Debug(1, 'MPS:Mesh not found', username, password);SendUserAuthFail(socket); return -1; }
+                        if (mesh == null) { Debug(1, 'MPS:Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
 
-                        // Intel AMT GUID (socket.tag.SystemId) will be used at NodeID
-                        var systemid = socket.tag.SystemId.split('-').join('');
-                        var nodeid = new Buffer(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                        socket.tag.name = '';
-                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
-                        socket.tag.meshid = mesh._id;
+                        // If this is a agent-less mesh, use the device guid 3 times as ID.
+                        if (mesh.mtype == 1) {
+                            // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
+                            var systemid = socket.tag.SystemId.split('-').join('');
+                            var nodeid = new Buffer(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            socket.tag.name = '';
+                            socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
+                            socket.tag.meshid = mesh._id;
+                            socket.tag.connectTime = Date.now();
 
-                        obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-                            if (nodes.length == 0) {
-                                if (mesh.mtype == 1) {
-                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0 } };
-                                    obj.db.Set(device);
+                            obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                                if (nodes.length == 0) {
+                                    if (mesh.mtype == 1) {
+                                        // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0 } };
+                                        obj.db.Set(device);
 
-                                    // Event the new node
-                                    var device2 = common.Clone(device);
-                                    if (device2.intelamt.pass != undefined) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                    var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain })
+                                        // Event the new node
+                                        var device2 = common.Clone(device);
+                                        if (device2.intelamt.pass != undefined) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                        var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                        obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain })
+                                    } else {
+                                        // New CIRA connection for unknown node, disconnect.
+                                        console.log('CIRA connection for unknown node with incorrect mesh type. meshid: ' + socket.tag.meshid);
+                                        socket.end();
+                                        return;
+                                    }
                                 } else {
+                                    // Node is already present
+                                    var node = nodes[0];
+                                    if (node.intelamt != undefined) { socket.tag.host = node.intelamt.host; }
+                                }
+
+                                // Add the connection to the MPS connection list
+                                obj.ciraConnections[socket.tag.nodeid] = socket;
+                                obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                            });
+                        } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
+                            // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
+                            obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) {
+                                if (nodes.length == 0) {
                                     // New CIRA connection for unknown node, disconnect.
-                                    console.log('CIRA connection for unknown node with incorrect mesh type. meshid: ' + socket.tag.meshid);
+                                    console.log('CIRA connection for unknown node. meshid: ' + mesh._id + ', uuid: ' + systemid);
                                     socket.end();
                                     return;
                                 }
-                            } else {
-                                // Node is already present
+
+                                // Node is present
                                 var node = nodes[0];
                                 if (node.intelamt != undefined) { socket.tag.host = node.intelamt.host; }
-                            }
+                                socket.tag.nodeid = node._id;
+                                socket.tag.meshid = mesh._id;
+                                socket.tag.connectTime = Date.now();
 
-                            // Add the connection to the MPS connection list
-                            obj.ciraConnections[socket.tag.nodeid] = socket;
-                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
-                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
-                        });
+                                // Add the connection to the MPS connection list
+                                obj.ciraConnections[socket.tag.nodeid] = socket;
+                                obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                            });
+                        } else { // Unknown mesh type
+                            // New CIRA connection for unknown node, disconnect.
+                            console.log('CIRA connection to a unknown mesh type. meshid: ' + socket.tag.meshid);
+                            socket.end();
+                            return;
+                        }
                     });
                     return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
                 }

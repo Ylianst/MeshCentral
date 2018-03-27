@@ -167,7 +167,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'files':
                     {
                         // Send the full list of server files to the browser app
-                        if ((user.siteadmin & 8) != 0) { updateUserFiles(user, ws, domain); }
+                        if ((user != null) && (user.siteadmin != null) && (user.siteadmin & 8) != 0) { updateUserFiles(user, ws, domain); }
                         break;
                     }
                 case 'fileoperation':
@@ -205,7 +205,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 if (agent != null) {
                                     // Check if we have permission to send a message to that node
                                     var rights = user.links[agent.dbMeshKey];
-                                    if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                                    if ((rights != null) && ((rights.rights & 8) != 0)) { // 8 is remote control permission
                                         command.sessionid = ws.sessionId;   // Set the session id, required for responses.
                                         command.rights = rights.rights;     // Add user rights flags to the message
                                         delete command.nodeid;              // Remove the nodeid since it's implyed.
@@ -217,7 +217,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if (routing != null) {
                                         // Check if we have permission to send a message to that node
                                         var rights = user.links[routing.meshid];
-                                        if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                                        if ((rights != null) && ((rights.rights & 8) != 0)) { // 8 is remote control permission
                                             command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
                                             command.rights = rights.rights;         // Add user rights flags to the message
                                             obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);

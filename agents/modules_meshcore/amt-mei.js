@@ -23,15 +23,18 @@ function amt_heci() {
 
     this._ObjectID = "pthi";
     this._rq = new Q();
-    this._setupPTHI = function _setupPTHI() {
+    this._setupPTHI = function _setupPTHI()
+    {
         this._amt = heci.create();
         this._amt.BiosVersionLen = 65;
         this._amt.UnicodeStringLen = 20;
 
         this._amt.Parent = this;
         this._amt.on('error', function _amtOnError(e) { this.Parent.emit('error', e); });
-        this._amt.on('connect', function _amtOnConnect() {
-            this.on('data', function _amtOnData(chunk) {
+        this._amt.on('connect', function _amtOnConnect()
+        {
+            this.on('data', function _amtOnData(chunk)
+            {
                 //console.log("Received: " + chunk.length + " bytes");
                 var header = this.Parent.getCommand(chunk);
                 //console.log("CMD = " + header.Command + " (Status: " + header.Status + ") Response = " + header.IsResponse);
@@ -43,12 +46,14 @@ function amt_heci() {
                 params.unshift(header);
                 callback.apply(this.Parent, params);
 
-                if (this.Parent._rq.isEmpty()) {
+                if(this.Parent._rq.isEmpty())
+                {
                     // No More Requests, we can close PTHI
                     this.Parent._amt.disconnect();
                     this.Parent._amt = null;
                 }
-                else {
+                else
+                {
                     // Send the next request
                     this.write(this.Parent._rq.peekQueue().send);
                 }
@@ -73,9 +78,10 @@ function amt_heci() {
         var header = Buffer.from('010100000000000000000000', 'hex');
         header.writeUInt32LE(arguments[0] | 0x04000000, 4);
         header.writeUInt32LE(arguments[1] == null ? 0 : arguments[1].length, 8);
-        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args, send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]])) });
+        this._rq.enQueue({ cmd: arguments[0], func: arguments[2], optional: args , send: (arguments[1] == null ? header : Buffer.concat([header, arguments[1]]))});
 
-        if (!this._amt) {
+        if(!this._amt)
+        {
             this._setupPTHI();
             this._amt.connect(heci.GUIDS.AMT, { noPipeline: 1 });
         }
@@ -87,11 +93,39 @@ function amt_heci() {
         this.sendCommand(26, null, function (header, fn, opt) {
             if (header.Status == 0) {
                 var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
-                for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen); ++i) {
+                for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen) ; ++i) {
                     val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + this._amt.UnicodeStringLen, 4 + this._amt.UnicodeStringLen + v.readUInt16LE(2 + this._amt.UnicodeStringLen)).toString() };
                     v = v.slice(4 + (2 * this._amt.UnicodeStringLen));
                 }
                 opt.unshift(val);
+            } else {
+                opt.unshift(null);
+            }
+            fn.apply(this, opt);
+        }, callback, optional);
+    };
+
+    // Fill the left with zeros until the string is of a given length
+    function zeroLeftPad(str, len) {
+        if ((len == null) && (typeof (len) != 'number')) { return null; }
+        if (str == null) str = ''; // If null, this is to generate zero leftpad string
+        var zlp = '';
+        for (var i = 0; i < len - str.length; i++) { zlp += '0'; }
+        return zlp + str;
+    }
+
+    this.getUuid = function getUuid(callback) {
+        var optional = [];
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x5c, null, function (header, fn, opt) {
+            if (header.Status == 0) {
+                var result = {};
+                result.uuid = [zeroLeftPad(header.Data.readUInt32LE(0).toString(16), 8),
+                    zeroLeftPad(header.Data.readUInt16LE(4).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16LE(6).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16BE(8).toString(16), 4),
+                    zeroLeftPad(header.Data.slice(10).toString('hex').toLowerCase(), 12)].join('-');
+                opt.unshift(result);
             } else {
                 opt.unshift(null);
             }
@@ -248,6 +282,46 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
+    this.getLanInterfaceSettings = function getLanInterfaceSettings(index, callback)
+    {
+        var optional = [];
+        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        var ifx = Buffer.alloc(4);
+        ifx.writeUInt32LE(index);
+        this.sendCommand(0x48, ifx, function onGetLanInterfaceSettings(header, fn, opt)
+        {
+            if(header.Status == 0)
+            {
+                var info = {};
+                info.enabled = header.Data.readUInt32LE(0);
+                info.dhcpEnabled = header.Data.readUInt32LE(8);
+                switch(header.Data[12])
+                {
+                    case 1:
+                        info.dhcpMode = 'ACTIVE'
+                        break;
+                    case 2:
+                        info.dhcpMode = 'PASSIVE'
+                        break;
+                    default:
+                        info.dhcpMode = 'UNKNOWN';
+                        break;
+                }
+                info.mac = header.Data.slice(14).toString('hex:');
+                
+                var addr = header.Data.readUInt32LE(4);
+                info.address = ((addr >> 24) & 255) + '.' + ((addr >> 16) & 255) + '.' + ((addr >> 8) & 255) + '.' + (addr & 255);
+                opt.unshift(info);
+                fn.apply(this, opt);
+            }
+            else
+            {
+                opt.unshift(null);
+                fn.apply(this, opt);
+            }
+        }, callback, optional);
+
+    };
     this.unprovision = function unprovision(mode, callback) {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }

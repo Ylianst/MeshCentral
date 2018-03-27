@@ -105,6 +105,34 @@ function amt_heci() {
         }, callback, optional);
     };
 
+    // Fill the left with zeros until the string is of a given length
+    function zeroLeftPad(str, len) {
+        if ((len == null) && (typeof (len) != 'number')) { return null; }
+        if (str == null) str = ''; // If null, this is to generate zero leftpad string
+        var zlp = '';
+        for (var i = 0; i < len - str.length; i++) { zlp += '0'; }
+        return zlp + str;
+    }
+
+    this.getUuid = function getUuid(callback) {
+        var optional = [];
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x5c, null, function (header, fn, opt) {
+            if (header.Status == 0) {
+                var result = {};
+                result.uuid = [zeroLeftPad(header.Data.readUInt32LE(0).toString(16), 8),
+                    zeroLeftPad(header.Data.readUInt16LE(4).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16LE(6).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16BE(8).toString(16), 4),
+                    zeroLeftPad(header.Data.slice(10).toString('hex').toLowerCase(), 12)].join('-');
+                opt.unshift(result);
+            } else {
+                opt.unshift(null);
+            }
+            fn.apply(this, opt);
+        }, callback, optional);
+    };
+
     this.getProvisioningState = function getProvisioningState(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }

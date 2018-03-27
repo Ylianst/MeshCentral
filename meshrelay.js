@@ -69,7 +69,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
             obj.parent.authenticate(req.query.user, req.query.pass, obj.domain, function (err, userid, passhint) {
                 if (userid != null) {
                     obj.authenticated = true;
-                    // Check is we have agent routing instructions, process this here.
+                    // Check if we have agent routing instructions, process this here.
                     if ((req.query.nodeid != null) && (req.query.tcpport != null)) {
                         if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                         var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
