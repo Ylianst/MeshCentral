@@ -8,6 +8,7 @@
 var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     var obj = {};
     obj.canvasid = divid;
+    obj.CanvasId = Q(divid);
     obj.scrolldiv = scrolldiv;
     obj.canvas = Q(divid).getContext("2d");
     obj.protocol = 2; // KVM

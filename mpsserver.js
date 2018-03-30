@@ -226,7 +226,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var meshIdStart = '/' + username;
                     obj.db.GetAllType('mesh', function (err, docs) {
                         var mesh = null;
-                        for (var i in docs) { if (docs[i]._id.indexOf(meshIdStart) > 0) { mesh = docs[i]; break; } }
+                        for (var i in docs) { if (docs[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = docs[i]; break; } }
                         if (mesh == null) { Debug(1, 'MPS:Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
 
                         // If this is a agent-less mesh, use the device guid 3 times as ID.
