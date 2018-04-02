@@ -116,10 +116,10 @@
                             <input type=checkbox id=HostnameCheckBox onclick=onHostnameCheckBox() /><span title="Show device hostnames">Hostname</span>
                         </div>
                         <div id=kvmListToolbar class=style14 style=height:100%;float:left>
-                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction();" value="Connect All" />&nbsp;
-                            <input type="button" onclick="disconnectAllKvmFunction();" value="Disconnect All" />&nbsp;
+                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                             <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" />AutoConnect&nbsp;
-                            <input type="button" onclick="showMultiDesktopSettings();" value="Settings" />&nbsp;
+                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                         </div>
                         <div id=devMapToolbar class=style14 style=height:100%;float:left>
                             &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
@@ -367,6 +367,7 @@
                                 <div>
                                     &nbsp;
                                     <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
+                                    <span title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span>&nbsp;
                                 </div>
                             </td>
                         </tr>
@@ -659,6 +660,7 @@
         var debugLevel = {{{debuglevel}}};
         var features = {{{features}}};
         var multiDesktop = {};
+        var multiDesktopFilter = null;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
         var debugmode = false;
@@ -721,6 +723,7 @@
             showHostnames = (getstore("showHostnames", 0) == 1);
             Q('HostnameCheckBox').checked = showHostnames;
             Q('viewselect').value = getstore("deviceView", 1);
+            Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
             // Display the page devices
             onSortSelectChange();
@@ -1288,7 +1291,7 @@
         }
 
         function ondockeypress(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeys(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeys(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
             if (xxdialogMode || xxcurrentView != 1) return;
@@ -1324,7 +1327,7 @@
         }
 
         function ondockeydown(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) { return desktop.m.handleKeyDown(e); }
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
@@ -1342,7 +1345,7 @@
         }
 
         function ondockeyup(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeyUp(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
@@ -1354,6 +1357,7 @@
         var deviceHeaderId = 0;
         var deviceHeaderCount;
         var deviceHeaders = {};
+        var oldviewmode = 0;
         function updateDevices() {
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value;
             QV('xdevices', view < 4);
@@ -1382,6 +1386,8 @@
                 // Save the list of currently checked nodeid's
                 var checkedNodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
                 for (var i in elements) { if (elements[i].checked) { checkedNodeids.push(elements[i].value); } }
+                if ((oldviewmode < 3) && (view == 3)) { multiDesktopFilter = checkedNodeids; }
+                else if ((oldviewmode == 3) && (view < 3)) { checkedNodeids = multiDesktopFilter; }
 
                 // Go thru the list of nodes and display them
                 for (var i in nodes) {
@@ -1439,12 +1445,14 @@
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                         r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\')><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
                     } else if ((view == 3) && (nodes[i].conn & 1) && ((meshrights & 8) != 0)) {
-                        r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11)>';
-                        //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
-                        r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                        r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\')></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
-                        r += '</div>';
-                        kvmDivs.push(nodes[i]._id);
+                        if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0)) {
+                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11)>';
+                            //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
+                            r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
+                            r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\')></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
+                            r += '</div>';
+                            kvmDivs.push(nodes[i]._id);
+                        }
                     }
 
                     deviceHeaderTotal++;
@@ -1553,8 +1561,8 @@
                     disconnectAllKvmFunction();
                     Q('autoConnectDesktopCheckbox').checked = false;
                 }
-                
             }
+            oldviewmode = view;
         }
 
         function toggleKvmDevice(nodeid) {
@@ -1588,14 +1596,15 @@
         }
 
         function connectMultiDesktop(node, contype) {
-            var nodeid = node._id;
+            var nodeid = node._id, shortid = nodeid.split('/')[2];
             var desk = multiDesktop[nodeid];
             if (desk == null) {
+                if (Q('kvmid_' + shortid) == null) return; // Check if this device is being displayed, if not, exit now.
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
                     if ((node.intelamt.user == null) || (node.intelamt.user == '')) { return; }
-                    desk = CreateAmtRedirect(CreateAmtRemoteDesktop('kvmid_' + nodeid.split('/')[2]));
-                    desk.shortid = nodeid.split('/')[2];
+                    desk = CreateAmtRedirect(CreateAmtRemoteDesktop('kvmid_' + shortid));
+                    desk.shortid = shortid;
                     //desk.debugmode = debugmode;
                     desk.onStateChanged = onMultiDesktopStateChange;
                     desk.m.bpp = 1;
@@ -1607,8 +1616,8 @@
                     multiDesktop[nodeid] = desk;
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
-                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + nodeid.split('/')[2]), serverPublicNamePort);
-                    desk.shortid = nodeid.split('/')[2];
+                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort);
+                    desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
                     desk.m.CompressionLevel = multidesktopsettings.quality;
@@ -3333,6 +3342,9 @@
             desktop.m.sendcad();
         }
 
+        // Toggle mouse and keyboard input
+        function toggleKvmControl() { putstore('DeskControl', (Q("DeskControl").checked?1:0)); }
+
         // Save the desktop image to file
         function deskSaveImage() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
@@ -3354,10 +3366,10 @@
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != null) desktop.m.mousedown(e) }
-        function dmouseup(e) { if (!xxdialogMode && desktop != null) desktop.m.mouseup(e) }
-        function dmousemove(e) { if (!xxdialogMode && desktop != null) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousedown(e) }
+        function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mouseup(e) }
+        function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousemove(e) }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
 
         //
