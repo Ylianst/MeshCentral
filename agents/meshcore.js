@@ -700,6 +700,22 @@ function createMeshCore(agent) {
                         if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                         break;
                     }
+                    case 'copy': {
+                        // Copy a bunch of files from scpath to dspath
+                        for (var i in cmd.names) {
+                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                        }
+                        break;
+                    }
+                    case 'move': {
+                        // Move a bunch of files from scpath to dspath
+                        for (var i in cmd.names) {
+                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                        }
+                        break;
+                    }
                 }
             }
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
