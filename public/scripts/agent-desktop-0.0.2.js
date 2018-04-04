@@ -159,7 +159,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessScreenMsg = function (width, height) {
-        //obj.Debug("ProcessScreenMsg: " + width + " x " + height);
+        //obj.Debug("ScreenSize: " + width + " x " + height);
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;

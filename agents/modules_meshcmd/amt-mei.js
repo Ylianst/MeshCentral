@@ -92,12 +92,41 @@ function amt_heci() {
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(26, null, function (header, fn, opt) {
             if (header.Status == 0) {
-                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
+                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen).toString(), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
                 for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen) ; ++i) {
                     val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + this._amt.UnicodeStringLen, 4 + this._amt.UnicodeStringLen + v.readUInt16LE(2 + this._amt.UnicodeStringLen)).toString() };
                     v = v.slice(4 + (2 * this._amt.UnicodeStringLen));
                 }
+                if (val.BiosVersion.indexOf('\0') > 0) { val.BiosVersion = val.BiosVersion.substring(0, val.BiosVersion.indexOf('\0')); }
                 opt.unshift(val);
+            } else {
+                opt.unshift(null);
+            }
+            fn.apply(this, opt);
+        }, callback, optional);
+    };
+
+    // Fill the left with zeros until the string is of a given length
+    function zeroLeftPad(str, len) {
+        if ((len == null) && (typeof (len) != 'number')) { return null; }
+        if (str == null) str = ''; // If null, this is to generate zero leftpad string
+        var zlp = '';
+        for (var i = 0; i < len - str.length; i++) { zlp += '0'; }
+        return zlp + str;
+    }
+
+    this.getUuid = function getUuid(callback) {
+        var optional = [];
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x5c, null, function (header, fn, opt) {
+            if (header.Status == 0) {
+                var result = {};
+                result.uuid = [zeroLeftPad(header.Data.readUInt32LE(0).toString(16), 8),
+                    zeroLeftPad(header.Data.readUInt16LE(4).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16LE(6).toString(16), 4),
+                    zeroLeftPad(header.Data.readUInt16BE(8).toString(16), 4),
+                    zeroLeftPad(header.Data.slice(10).toString('hex').toLowerCase(), 12)].join('-');
+                opt.unshift(result);
             } else {
                 opt.unshift(null);
             }

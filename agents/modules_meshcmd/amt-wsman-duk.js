@@ -21,19 +21,32 @@ limitations under the License.
 */
 
 // Construct a WSMAN communication object
-function CreateWsmanComm(host, port, user, pass, tls, extra) {
+function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
+{
     var obj = {};
     obj.PendingAjax = [];               // List of pending AJAX calls. When one frees up, another will start.
     obj.ActiveAjaxCount = 0;            // Number of currently active AJAX calls
     obj.MaxActiveAjaxCount = 1;         // Maximum number of activate AJAX calls at the same time.
     obj.FailAllError = 0;               // Set this to non-zero to fail all AJAX calls with that error status, 999 causes responses to be silent.
-    obj.host = host;
-    obj.port = port;
-    obj.user = user;
-    obj.pass = pass;
-    obj.tls = tls;
     obj.digest = null;
     obj.RequestCount = 0;
+
+    if (arguments.length == 1 && typeof(arguments[0] == 'object'))
+    {
+        obj.host = arguments[0].host;
+        obj.port = arguments[0].port;
+        obj.authToken = arguments[0].authToken;
+        obj.tls = arguments[0].tls;
+    }
+    else
+    {
+        obj.host = arguments[0];
+        obj.port = arguments[1];
+        obj.user = arguments[2];
+        obj.pass = arguments[3];
+        obj.tls = arguments[4];
+    }
+
 
     // Private method
     //   pri = priority, if set to 1, the call is high priority and put on top of the stack.
@@ -62,7 +75,18 @@ function CreateWsmanComm(host, port, user, pass, tls, extra) {
         //console.log("SEND: " + postdata); // DEBUG
 
         // We are in a DukTape environement
-        if (obj.digest == null) { obj.digest = require('http-digest').create(obj.user, obj.pass); obj.digest.http = require('http'); }
+        if (obj.digest == null)
+        {
+            if (obj.authToken)
+            {
+                obj.digest = require('http-digest').create({ authToken: obj.authToken });
+            }
+            else
+            {
+                obj.digest = require('http-digest').create(obj.user, obj.pass);
+            }
+            obj.digest.http = require('http');
+        }
         var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { console.log('checkServerIdentity', JSON.stringify(cert)); } };
         var req = obj.digest.request(request);
         //console.log('Request ' + (obj.RequestCount++));

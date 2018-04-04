@@ -700,6 +700,22 @@ function createMeshCore(agent) {
                         if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                         break;
                     }
+                    case 'copy': {
+                        // Copy a bunch of files from scpath to dspath
+                        for (var i in cmd.names) {
+                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                        }
+                        break;
+                    }
+                    case 'move': {
+                        // Move a bunch of files from scpath to dspath
+                        for (var i in cmd.names) {
+                            var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                        }
+                        break;
+                    }
                 }
             }
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
@@ -1178,6 +1194,7 @@ function createMeshCore(agent) {
                 if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; p = true; }
                 if (meinfo.flags) { intelamt.flags = meinfo.Flags; p = true; }
                 if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; p = true; }
+                if (meinfo.UUID) { intelamt.uuid = meinfo.UUID; p = true; }
                 if (p == true) { r.intelamt = intelamt }
             }
             func(r);
@@ -1221,6 +1238,7 @@ function createMeshCore(agent) {
         amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
         amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
         amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
+        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
         //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
         amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
     }

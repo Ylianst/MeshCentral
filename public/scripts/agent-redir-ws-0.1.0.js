@@ -70,7 +70,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         }
     }
 
-    function sendCtrlMsg(x) { if (obj.ctrlMsgAllowed == true) { try { obj.socket.send(x); } catch (e) { } } }
+    function sendCtrlMsg(x) { if (obj.ctrlMsgAllowed == true) { try { obj.socket.send(x); } catch (ex) { } } }
 
     function performWebRtcSwitch() {
         if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
@@ -94,7 +94,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         //console.log('Recv', e.data, obj.State);
         if (obj.State < 3) {
             if (e.data == 'c') {
-                obj.socket.send(obj.protocol);
+                try { obj.socket.send(obj.protocol); } catch (ex) { }
                 obj.xxStateChange(3);
 
                 if (obj.attemptWebRTC == true) {
@@ -109,7 +109,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                         obj.webchannel.onclose = function (event) { /*console.log('WebRTC close');*/ if (obj.webRtcActive) { obj.Stop(); } }
                         obj.webrtc.onicecandidate = function (e) {
                             if (e.candidate == null) {
-                                obj.socket.send(JSON.stringify(obj.webrtcoffer)); // End of candidates, send the offer
+                                try { obj.socket.send(JSON.stringify(obj.webrtcoffer)); } catch (ex) { } // End of candidates, send the offer
                             } else {
                                 obj.webrtcoffer.sdp += ("a=" + e.candidate.candidate + "\r\n"); // New candidate, add it to the SDP
                             }
@@ -177,23 +177,25 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.send = function (x) {
         //obj.debug("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
         //console.log("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + ((typeof x == 'string')?x:rstr2hex(x)));
-        if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
-            if (typeof x == 'string') {
-                if (obj.debugmode == 1) {
-                    var b = new Uint8Array(x.length), c = [];
-                    for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); c.push(x.charCodeAt(i)); }
-                    if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
-                    //console.log('Send', c);
+        try {
+            if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
+                if (typeof x == 'string') {
+                    if (obj.debugmode == 1) {
+                        var b = new Uint8Array(x.length), c = [];
+                        for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); c.push(x.charCodeAt(i)); }
+                        if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
+                        //console.log('Send', c);
+                    } else {
+                        var b = new Uint8Array(x.length);
+                        for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
+                        if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
+                    }
                 } else {
-                    var b = new Uint8Array(x.length);
-                    for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
-                    if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(b.buffer); }
+                    //if (obj.debugmode == 1) { console.log('Send', x); }
+                    if (obj.webRtcActive == true) { obj.webchannel.send(x); } else { obj.socket.send(x); }
                 }
-            } else {
-                //if (obj.debugmode == 1) { console.log('Send', x); }
-                if (obj.webRtcActive == true) { obj.webchannel.send(x); } else { obj.socket.send(x); }
             }
-        }
+        } catch (ex) { }
     }
 
     obj.xxOnSocketClosed = function () {

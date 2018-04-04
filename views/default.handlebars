@@ -115,6 +115,12 @@
                             <input id=SearchInput type=text style=width:120px placeholder=Search onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <input type=checkbox id=HostnameCheckBox onclick=onHostnameCheckBox() /><span title="Show device hostnames">Hostname</span>
                         </div>
+                        <div id=kvmListToolbar class=style14 style=height:100%;float:left>
+                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                            <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" />AutoConnect&nbsp;
+                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                        </div>
                         <div id=devMapToolbar class=style14 style=height:100%;float:left>
                             &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
                             <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
@@ -128,7 +134,8 @@
                                 <select id=viewselect onchange=onDeviceViewChange()>
                                     <option value=1>Columns</option>
                                     <option value=2>List</option>
-                                    <option id=viewselectmapoption value=3>Map</option>
+                                    <option value=3>Desktops</option>
+                                    <option id=viewselectmapoption value=4>Map</option>
                                 </select>
                             </div>
                             <div style=float:right id=devListToolbarSort>
@@ -137,6 +144,15 @@
                                     <option>Mesh</option>
                                     <option>Power</option>
                                     <option>Device</option>
+                                </select>
+                                &nbsp;
+                            </div>
+                            <div style=float:right id=devListToolbarSize>
+                                Size
+                                <select id=sizeselect onchange=onDeviceViewChange()>
+                                    <option value=0>Small</option>
+                                    <option value=1>Medium</option>
+                                    <option value=2>Large</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -233,12 +249,15 @@
                             <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
                                 <div id="p5rightOfButtons" style="float:right;margin-top:3px"></div>
                                 <div>
-                                    <input type="button" id="p5FolderUp" disabled="disabled" onclick="p5folderup();" value="Up" />&nbsp;
-                                    <input type="button" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile();" value="Select All" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5RenameFileButton" disabled="disabled" value="Rename" onclick="p5renamefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5NewFolderButton" disabled="disabled" value="New Folder" onclick="p5createfolder();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5UploadButton" disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5FolderUp disabled="disabled" onclick="p5folderup();" value="Up" />&nbsp;
+                                    <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
                                 </div>
                             </td>
                         </tr>
@@ -272,7 +291,7 @@
                         <span id="p5files"></span>
                     </div>
                     <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                        <tr><td class=style6 style="text-align:left">&nbsp;<span id="bottomstatus"></span></td></tr>
+                        <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td></tr>
                     </table>
                 </div>
                 <div id=p10 style=display:none>
@@ -338,7 +357,9 @@
                         <tr id=deskarea3>
                             <td id=deskarea3x style="background:black;text-align:center;height:400px;position:relative">
                                 <div id="DeskFocus" style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></div>
-                                <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>
+                                <div id="DeskParent">
+                                    <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>
+                                </div>
                             </td>
                         </tr>
                         <tr id=deskarea4>
@@ -349,6 +370,7 @@
                                 <div>
                                     &nbsp;
                                     <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
+                                    <span title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span>&nbsp;
                                 </div>
                             </td>
                         </tr>
@@ -434,6 +456,9 @@
                                     <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />&nbsp;
                                     <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />&nbsp;
                                     <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
                                     <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />&nbsp;
                                 </div>
                             </td>
@@ -460,7 +485,7 @@
                         <span id="p13files"></span>
                     </div>
                     <table id="p13toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                        <tr><td class=style6 style="text-align:left">&nbsp;<span id="bottomstatus"></span></td></tr>
+                        <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p13bottomstatus"></span></td></tr>
                     </table>
                 </div>
                 <div id=p14 style=display:none>
@@ -635,10 +660,13 @@
         var nodeShortIdent = 0;
         var desktop;
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024 };
+        var multidesktopsettings = { quality: 30, scaling: 128 };
         var terminal;
         var files;
         var debugLevel = {{{debuglevel}}};
         var features = {{{features}}};
+        var multiDesktop = {};
+        var multiDesktopFilter = null;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
         var debugmode = false;
@@ -695,11 +723,13 @@
             meshserver.Start();
 
             // Setup page controls
-            document.getElementById("sortselect").selectedIndex = sort = getstore("sort", 0);
+            Q('sortselect').selectedIndex = sort = getstore("sort", 0);
+            Q('sizeselect').selectedIndex = getstore("viewsize", 1);
             Q('SearchInput').value = getstore("search", "");
             showHostnames = (getstore("showHostnames", 0) == 1);
             Q('HostnameCheckBox').checked = showHostnames;
             Q('viewselect').value = getstore("deviceView", 1);
+            Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
             // Display the page devices
             onSortSelectChange();
@@ -723,8 +753,10 @@
             setInterval(updateDeviceTimeline, 120000); // Check every 2 minutes
 
             // Load desktop settings
-            t = localStorage.getItem('desktopsettings');
+            var t = localStorage.getItem('desktopsettings');
             if (t != null) { desktopsettings = JSON.parse(t); }
+            t = localStorage.getItem('multidesktopsettings');
+            if (t != null) { multidesktopsettings = JSON.parse(t); }
             applyDesktopSettings();
 
             // Mouse Scroll on desktop
@@ -1260,11 +1292,12 @@
 
         function onDeviceViewChange() {
             putstore("deviceView", Q('viewselect').value);
+            putstore("viewsize", Q('sizeselect').value);
             updateDevices();
         }
 
         function ondockeypress(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeys(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeys(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
             if (xxdialogMode || xxcurrentView != 1) return;
@@ -1300,7 +1333,7 @@
         }
 
         function ondockeydown(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) { return desktop.m.handleKeyDown(e); }
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
@@ -1318,7 +1351,7 @@
         }
 
         function ondockeyup(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop) return desktop.m.handleKeyUp(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
@@ -1330,45 +1363,52 @@
         var deviceHeaderId = 0;
         var deviceHeaderCount;
         var deviceHeaders = {};
+        var oldviewmode = 0;
         function updateDevices() {
-            var r = "", c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value;
-            QV('xdevices', view < 3);
-            QV('xdevicesmap', view == 3);
+            var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value;
+            QV('xdevices', view < 4);
+            QV('xdevicesmap', view == 4);
             QV('devListToolbar', view < 3);
-            QV('devMapToolbar', view == 3);
-            QV('devListToolbarSort', view < 3);
+            QV('kvmListToolbar', view == 3);
+            QV('devMapToolbar', view == 4);
+            QV('devListToolbarSort', view < 4);
+            QV('devListToolbarSize', view == 3);
             QV('NoMeshesPanel', meshcount == 0);
             QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
             QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0));
             if ((meshcount == 0) || (nodes.length == 0)) { view = 1; }
-            if (view == 3) {
+            if (view == 4) {
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
                 // TODO
             } else {
-                // 3 wide or list view
+                // 3 wide, list view or desktop view
                 deviceHeaderId = 0;
                 deviceHeaderCount = {};
                 deviceHeaderTotal = 0;
                 deviceHeaders = {};
                 deviceHeadersTitles = {};
+                var kvmDivs = [];
 
                 // Save the list of currently checked nodeid's
                 var checkedNodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
                 for (var i in elements) { if (elements[i].checked) { checkedNodeids.push(elements[i].value); } }
+                if ((oldviewmode < 3) && (view == 3)) { multiDesktopFilter = checkedNodeids; }
+                else if ((oldviewmode == 3) && (view < 3)) { checkedNodeids = multiDesktopFilter; }
 
                 // Go thru the list of nodes and display them
                 for (var i in nodes) {
                     if (nodes[i].v == false) continue;
                     var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
                     if (meshlinks == null) continue;
+                    var meshrights = meshlinks.rights;
+                    if ((view == 3) && (mesh2.mtype == 1)) continue;
                     if (sort == 0) {
                         // Mesh header
                         if (nodes[i].meshid != current) {
                             deviceHeaderSet();
                             var extra = '';
                             if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
-                            var meshrights = meshlinks.rights;
-                            if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } r += '</tr></table>'; }
+                            if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += getMeshActions(mesh2, meshrights);
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
@@ -1380,7 +1420,7 @@
                         // Power header
                         if (nodes[i].pwr !== current) {
                             deviceHeaderSet();
-                            if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } r += '</tr></table>'; }
+                            if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
                             current = nodes[i].pwr;
                             c = 0;
@@ -1404,12 +1444,21 @@
                     if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
                         r += '<div id=devs style=display:inline-block;width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
-                    } else {
+                    } else if (view == 2) {
                         r += '<tr><td><div id=devs class=bar18 style=height:18px;width:100%;font-size:medium>';
                         r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
                         r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                         r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\')><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
+                    } else if ((view == 3) && (nodes[i].conn & 1) && ((meshrights & 8) != 0)) {
+                        if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0)) {
+                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11)>';
+                            //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
+                            r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
+                            r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\')></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
+                            r += '</div>';
+                            kvmDivs.push(nodes[i]._id);
+                        }
                     }
 
                     deviceHeaderTotal++;
@@ -1419,13 +1468,13 @@
                 if ((view == 1) && (c == 2)) r += '<td><div style=width:301px></div></td>'; // Adds device padding
 
                 // Display all empty meshes, we need to do this because users can add devices to these at any time.
-                if (sort == 0 && Q('SearchInput').value == '') {
+                if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
                     for (var i in meshes) {
                         var mesh = meshes[i], meshlink = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
                         if (meshlink != null) {
                             var meshrights = meshlink.rights;
                             if (displayedMeshes[mesh._id] == null) {
-                                if (current != '') { r += '</tr></table>'; }
+                                if ((current != '') && (r != '')) { r += '</tr></table>'; }
                                 r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span style=float:right>';
                                 r += getMeshActions(mesh, meshrights);
                                 r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></td></tr><tr>';
@@ -1462,16 +1511,143 @@
                 for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
                 for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
                 p1updateInfo();
+
+                // Take care of KVM surfaces in desktop view mode
+                if (view == 3) {
+                    var vsize = [{x:180,y:101}, {x:302,y:169}, {x:454,y:255}][Q('sizeselect').selectedIndex];
+                    for (var i in multiDesktop) { multiDesktop[i].xxdelete = true; }
+                    for (var i in kvmDivs) {
+                        var id = kvmDivs[i], shortid = id.split('/')[2], desk = multiDesktop[id];
+                        if (desk != null) {
+                            // This device already has a canvas, use it.
+                            desk.m.CanvasId.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
+                            Q('xkvmid_' + shortid).appendChild(desk.m.CanvasId);
+                            delete desk.xxdelete;
+                            QH('skvmid_' + shortid, ['Disconnected', 'Connecting...', 'Setup...', '', ''][((desk.m.State == null)?desk.m.state:desk.m.State)]);
+                        } else {
+                            var node = getNodeFromId(id);
+                            if ((desktopNode == node) && (desktop != null)) { // Check if the main desktop is this device, if it is, use that.
+                                // This device already has a canvas, use it.
+                                var c = desktop.m.CanvasId;
+                                c.setAttribute('id', 'kvmid_' + shortid);
+                                c.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
+                                c.setAttribute('onclick', 'toggleKvmDevice(\'' + id + '\')');
+                                c.removeAttribute('onmousedown');
+                                c.removeAttribute('onmouseup');
+                                c.removeAttribute('onmousemove');
+                                Q('xkvmid_' + shortid).appendChild(c);
+                                QH('skvmid_' + shortid, ['Disconnected', 'Connecting...', 'Setup...', '', ''][((desktop.m.State == null)?desktop.m.state:desktop.m.State)]);
+                                if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling); }
+                                desktop.shortid = shortid;
+                                desktop.onStateChanged = onMultiDesktopStateChange;
+                                multiDesktop[id] = desktop;
+                                desktop = desktopNode = currentNode = null;
+                                // Setup a replacement desktop
+                                QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>');
+                            } else {
+                                // This is a new device, create a canvas for it.
+                                var c = document.createElement('canvas');
+                                c.setAttribute('id', 'kvmid_' + shortid);
+                                c.setAttribute('width', 640);
+                                c.setAttribute('height', 200);
+                                c.setAttribute('oncontextmenu', 'return false');
+                                c.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
+                                c.setAttribute('onclick', 'toggleKvmDevice(\'' + id + '\')');
+                                Q('xkvmid_' + shortid).appendChild(c);
+                                // Check if we need to auto-connect
+                                if (Q('autoConnectDesktopCheckbox').checked == true) { setTimeout(function() { connectMultiDesktop(node, 1); }, 100); }
+                            }
+                        }
+                    }
+                    for (var i in multiDesktop) {
+                        // If a device is no longer viewed, disconnect it.
+                        if (multiDesktop[i].xxdelete == true) { multiDesktop[i].Stop(); delete multiDesktop[i]; }
+                    }
+                } else {
+                    disconnectAllKvmFunction();
+                    Q('autoConnectDesktopCheckbox').checked = false;
+                }
+            }
+            oldviewmode = view;
+        }
+
+        function toggleKvmDevice(nodeid) {
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            if ((meshrights & 8) != 0) { // Requires remote control rights
+                //var conn = 0;
+                //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
+                if (node.conn & 1) { connectMultiDesktop(node, 1); }
+            }
+        }
+
+        function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
+        function connectAllKvmFunction() { for (var i in nodes) { if (multiDesktop[nodes[i]._id] == null) { toggleKvmDevice(nodes[i]._id); } } }
+        function disconnectAllKvmFunction() { for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
+        function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ['Disconnected', 'Connecting...', 'Setup...', '', ''][state]); } catch (ex) {} }
+
+        function showMultiDesktopSettings() {
+            QV('d7amtkvm', false);
+            QV('d7meshkvm', true);
+            d7bitmapquality.value = multidesktopsettings.quality;
+            d7bitmapscaling.value = multidesktopsettings.scaling;
+            setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
+        }
+
+        function showMultiDesktopSettingsChanged() {
+            multidesktopsettings.quality = d7bitmapquality.value;
+            multidesktopsettings.scaling = d7bitmapscaling.value;
+            localStorage.setItem('multidesktopsettings', JSON.stringify(multidesktopsettings));
+            // Make changes to all current connections
+            for (var i in multiDesktop) { multiDesktop[i].m.SendCompressionLevel(1,multidesktopsettings.quality,multidesktopsettings.scaling); }
+        }
+
+        function connectMultiDesktop(node, contype) {
+            var nodeid = node._id, shortid = nodeid.split('/')[2];
+            var desk = multiDesktop[nodeid];
+            if (desk == null) {
+                if (Q('kvmid_' + shortid) == null) return; // Check if this device is being displayed, if not, exit now.
+                if (contype == 2) {
+                    // Setup the Intel AMT remote desktop
+                    if ((node.intelamt.user == null) || (node.intelamt.user == '')) { return; }
+                    desk = CreateAmtRedirect(CreateAmtRemoteDesktop('kvmid_' + shortid));
+                    desk.shortid = shortid;
+                    //desk.debugmode = debugmode;
+                    desk.onStateChanged = onMultiDesktopStateChange;
+                    desk.m.bpp = 1;
+                    desk.m.useZRLE = true;
+                    desk.m.showmouse = true;
+                    //desk.m.onScreenSizeChange = deskAdjust;
+                    desk.Start(nodeid, 16994, '*', '*', 0);
+                    desk.contype = 2;
+                    multiDesktop[nodeid] = desk;
+                } else if (contype == 1) {
+                    // Setup the Mesh Agent remote desktop
+                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort);
+                    desk.shortid = shortid;
+                    desk.attemptWebRTC = attemptWebRTC;
+                    desk.onStateChanged = onMultiDesktopStateChange;
+                    desk.m.CompressionLevel = multidesktopsettings.quality;
+                    desk.m.ScalingLevel = multidesktopsettings.scaling;
+                    //desk.m.onDisplayinfo = deskDisplayInfo;
+                    //desk.m.onScreenSizeChange = deskAdjust;
+                    desk.Start(nodeid);
+                    desk.contype = 1;
+                    multiDesktop[nodeid] = desk;
+                }
+            } else {
+                // Disconnect and clean up the remote desktop
+                desk.Stop();
+                delete multiDesktop[nodeid];
             }
         }
 
         function getMeshActions(mesh, meshrights) {
             if ((meshrights & 4) == 0) return '';
             var r = '';
+            if ((features & 2) == 0) { // If not LAN-Only
+                r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
+            }
             if (mesh.mtype == 1) {
-                if ((features & 2) == 0) { // If not LAN-Only
-                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
-                }
                 if ((features & 1) == 0) { // If not WAN-Only
                     r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the local network." onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
                     r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer by scanning the local network." onclick=addAmtScanToMesh(\"' + mesh._id + '\")>Scan Network</a>';
@@ -1546,8 +1722,9 @@
         function addCiraDeviceToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid];
-            var meshidx = meshid.substring(5);
-            if (meshidx[0] == '/') meshidx = meshidx.substring(1);
+
+            // Replace non alphabetic characters (@ and $) with 'X' because MPS username cannot accept it.
+            var meshidx = meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X');
 
             var y = '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>MeshCommander Script</option><option value=1>Manual Username/Password</option>';
             if ((features & 16) == 0) { y += '<option value=2>Manual Certificate</option></select>'; } // Only display this option if Intel AMT CIRA with Mutual-Auth is allowed.
@@ -1601,8 +1778,6 @@
         function inviteAgentToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid];
-            var meshidx = meshid.substring(5);
-            if (meshidx[0] == '/') meshidx = meshidx.substring(1);
             var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
             x += addHtmlValue('E-Mail', '<input id=agentInviteEmail style=width:240px onkeyup=validateAgentInvite()></input>');
             setDialogMode(2, "Invite Mesh Agent", 3, performAgentInvite, x, meshid);
@@ -1619,7 +1794,8 @@
 
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
-            var mesh = meshes[meshid];
+
+            var mesh = meshes[meshid], x = '';
             var meshidx = meshid.substring(5);
             if (meshidx[0] == '/') meshidx = meshidx.substring(1);
             var x = "";
@@ -1866,11 +2042,7 @@
             if (action == 3) gotoDevice(nodeid, 11); // Terminal
             if (action == 4) gotoDevice(nodeid, 13); // Files
             if (action == 5) gotoDevice(nodeid, 15); // Console
-            //if (action == 6) {
-            //var nodes = "";
-            //$(":checkbox").each(function () { if ($(this).is(':checked')) { nodes += ($(this).val() + ";"); } });
-            //window.location = "multidesktop.aspx?node=" + nodes + "&auto=1";
-            //}
+            if (action == 6) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
         }
 
         function cmmeshaction(action) {
@@ -2495,8 +2667,7 @@
         }
 
         function getNodeRights(nodeid) {
-            var node = getNodeFromId(nodeid);
-            var mesh = meshes[node.meshid];
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
             return mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
         }
 
@@ -2507,6 +2678,7 @@
         var powerTimeline = null;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
+            //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
             var mesh = meshes[node.meshid];
             var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
@@ -2616,7 +2788,7 @@
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
 
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
@@ -2643,7 +2815,6 @@
                 Q('MainComputerImage').className = ((!node.conn) || (node.conn == 0)?'gray':'');
 
                 // Setup/Refresh the desktop tab
-                setupDesktop();
                 setupTerminal();
                 setupFiles();
                 var consoleRights = ((meshrights & 16) != 0);
@@ -2652,11 +2823,11 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', (mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0));
-                QV('MainDevTerminal', (mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0));
-                QV('MainDevFiles', (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0)));
-                QV('MainDevAmt', node.intelamt != null);
-                QV('MainDevConsole', consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0)));
+                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0)) && (meshrights & 8));
+                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0)) && (meshrights & 8));
+                QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8));
+                QV('MainDevAmt', (node.intelamt != null) && (meshrights & 8));
+                QV('MainDevConsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0) && (userinfo.siteadmin == 0xFFFFFFFF));
                 QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
 
@@ -2676,6 +2847,7 @@
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
             }
+            setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
             go(panel);
         }
@@ -2953,7 +3125,7 @@
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc'];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=32 onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=64 onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
@@ -2981,7 +3153,34 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); delete desktop; desktop = null; }
+            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); delete desktop; desktopNode = null; desktop = null; }
+
+            // If the device desktop is already connected in multi-desktop, use that.
+            if ((desktopNode != currentNode) || (desktop == null)) {
+                var xdesk = multiDesktop[currentNode._id];
+                if (xdesk != null) {
+                    // This device already has a canvas, use it.
+                    QH('DeskParent', '');
+                    var c = xdesk.m.CanvasId;
+                    c.setAttribute('id', 'Desk');
+                    c.setAttribute('style', 'width:100%;-ms-touch-action:none;margin-left:0px');
+                    c.setAttribute('onmousedown', 'dmousedown(event)');
+                    c.setAttribute('onmouseup', 'dmouseup(event)');
+                    c.setAttribute('onmousemove', 'dmousemove(event)');
+                    c.removeAttribute('onclick');
+                    Q('DeskParent').appendChild(c);
+                    desktop = xdesk;
+                    if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling); }
+                    desktop.onStateChanged = onDesktopStateChange;
+                    desktopNode = currentNode;
+                    onDesktopStateChange(desktop, desktop.State);
+                    delete multiDesktop[currentNode._id];
+                } else {
+                    // Device is not already connected, just setup a blank canvas
+                    QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>');
+                    desktopNode = currentNode;
+                }
+            }
             desktopNode = currentNode;
             updateDesktopButtons();
 
@@ -2991,22 +3190,22 @@
 
         // Show and enable the right buttons
         function updateDesktopButtons() {
-            var mesh = meshes[desktopNode.meshid];
+            var mesh = meshes[currentNode.meshid];
             var deskState = ((desktop != null) && (desktop.state != 0));
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState == true));
             QV('connectbutton1span', (deskState == false) && (mesh.mtype == 2));
-            QV('connectbutton1hspan', (deskState == false) && (desktopNode.intelamt != null && ((desktopNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton1hspan', (deskState == false) && (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Show the right settings
-            QV('d7amtkvm', (desktopNode.intelamt != null && ((desktopNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == false) || (desktop.contype == 2)));
+            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == false) || (desktop.contype == 2)));
             QV('d7meshkvm', (mesh.mtype == 2) && ((deskState == false) || (desktop.contype == 1)));
 
             // Enable buttons
-            var online = ((desktopNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
+            var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
             QE('connectbutton1', online);
-            var hwonline = ((desktopNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
+            var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
         }
 
@@ -3016,6 +3215,7 @@
 
         function connectDesktop(e, contype) {
             if (desktop == null) {
+                desktopNode = currentNode;
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
                     if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
@@ -3046,7 +3246,7 @@
                 // Disconnect and clean up the remote desktop
                 desktop.Stop();
                 delete desktop;
-                desktop = null;
+                desktopNode = desktop = null;
             }
         }
 
@@ -3065,7 +3265,7 @@
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
                     delete desktop;
-                    desktop = null;
+                    desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('termdisplays', false);
                     deskFocusBtn.value = 'All Focus';
@@ -3080,6 +3280,8 @@
         }
 
         function showDesktopSettings() {
+            applyDesktopSettings();
+            updateDesktopButtons();
             setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
         }
 
@@ -3110,7 +3312,7 @@
             d7showfocus.checked = desktopsettings.showfocus;
             d7showcursor.checked = desktopsettings.showmouse;
             d7bitmapquality.value = 40; // Default value
-            if (ops.indexOf(desktopsettings.quality) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
+            if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
@@ -3182,6 +3384,9 @@
             desktop.m.sendcad();
         }
 
+        // Toggle mouse and keyboard input
+        function toggleKvmControl() { putstore('DeskControl', (Q("DeskControl").checked?1:0)); }
+
         // Save the desktop image to file
         function deskSaveImage() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
@@ -3203,10 +3408,10 @@
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != null) desktop.m.mousedown(e) }
-        function dmouseup(e) { if (!xxdialogMode && desktop != null) desktop.m.mouseup(e) }
-        function dmousemove(e) { if (!xxdialogMode && desktop != null) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousedown(e) }
+        function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mouseup(e) }
+        function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousemove(e) }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
 
         //
@@ -3407,6 +3612,10 @@
                 delete files;
                 files = null;
             }
+            p13clipboard = p13clipboardFolder = null;
+            p13clipboardCut = 0;
+            p13updateClipview();
+            p13oldlinkpath = null;
         }
 
         var p13filetree = null;
@@ -3446,15 +3655,11 @@
             return checkedNames;
         }
 
+        //var p13oldlinkpath = null;
         function p13updateFiles(checkedNames) {
             var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>Root</a>', fullPath = 'Root';
 
-            // Save all existing checked boxes
-            var checkedBoxes = [], checkboxes = document.getElementsByName('fd');
-            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { checkedBoxes.push(checkboxes[i].value) }; } // Save all existing checked boxes
-
             // Work on parsing the file path
-            var oldlinkpath = p13filetreelocation.join('/');
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
             for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
@@ -3483,11 +3688,11 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '', title = '';
-                    h = "<div class=filelist file=999><input style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p13folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                    h = "<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p13folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
                     if (f.s > 0) { link = "<a target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile('" + encodeURIComponent(newlinkpath + '/' + name) + "','" + encodeURIComponent(name) + "'," + f.s + ")\">" + shortname + "</a>"; }
-                    h = "<div class=filelist file=3><input style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                    h = "<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -3499,17 +3704,7 @@
             QE('p13FolderUp', p13filetreelocation.length != 0);
 
             // Re-check all boxes if needed using names
-            if (checkedNames != null) {
-                checkedBoxes = [];
-                checkboxes = document.getElementsByName('fd');
-                for (var i in filetreexx) { if (checkedNames.indexOf(filetreexx[i].n) >= 0) { checkedBoxes.push(filetreexx[i].nx); } }
-            }
-
-            // Re-check all boxes if needed using ID's
-            if (oldlinkpath == newlinkpath) {
-                checkboxes = document.getElementsByName('fd');
-                for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = (checkedBoxes.indexOf(checkboxes[i].value) >= 0); }
-            }
+            if (checkedNames != null) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkedNames.indexOf(p13filetree.dir[checkboxes[i].value].n) >= 0) { checkboxes[i].checked = true; } } }
 
             // Update the actions buttons
             p13setActions();
@@ -3551,8 +3746,11 @@
                 QE('p13SelectAllButton', false);
                 Q('p13SelectAllButton').value = 'Select All';
                 QE('p13RefreshButton', false);
+                QE('p13CutButton', false);
+                QE('p13CopyButton', false);
+                QE('p13PasteButton', false);
             } else {
-                var cc = p13getFileSelCount(), tc = p13getFileCount();
+                var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
                 var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -3561,10 +3759,13 @@
                 QE('p13SelectAllButton', tc > 0);
                 Q('p13SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
                 QE('p13RefreshButton', true);
+                QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13PasteButton', ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
         }
 
-        function p13getFileSelCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) cc++; } return cc; }
+        function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
@@ -3573,9 +3774,16 @@
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.send(JSON.stringify({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles })); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.send(JSON.stringify(t)); p13folderup(999); }
-        function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
+        function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+
+        var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
+        function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
+        function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0?'copy':'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
+        function p13pasteFileEx() { files.send(JSON.stringify({ action: (p13clipboardCut == 0?'copy':'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard })); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
+        function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' for ' + (p13clipboardCut == 0?'copy':'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
+        function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); }
 
         function p13fileDragDrop(e) {
             haltEvent(e);
@@ -4077,8 +4285,12 @@
                 c++;
                 count++;
 
-                // Mesh
-                var rights = 'Administrator'; // TODO
+                // Mesh rights
+                var meshrights = meshes[i].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+                var rights = 'Partial Rights';
+                if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
+
+                // Print the mesh information
                 r += '<div style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
 
@@ -4284,6 +4496,7 @@
                 if ((meshrights & 64) != 0) r += ', Wake Devices';
             }
             r = r.substring(2);
+            if (r == '') { r = 'No Rights'; }
             var x = addHtmlValue('User Name', userid.split('/')[2]);
             x += addHtmlValue('Permissions', r);
             var buttons = 1;
@@ -4366,13 +4579,13 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = (f.t == 1)?p5getQuotabar(f):'', title = '';
-                    h = "<div class=filelist file=999><input style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                    h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
                     if (f.s > 0) { link = "<a target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
-                    h = "<div class=filelist file=3><input style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                    h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -4401,7 +4614,7 @@
             while (f.t > 1) { f = f.parent; }
             if ((f.t != 1) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
-            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:200px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
@@ -4423,16 +4636,19 @@
         }
 
         function p5setActions() {
-            var cc = getFileSelCount(), tc = getFileCount();
+            var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
             QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
-            QE('p5SelectAllButton', tc > 0)
+            QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
+            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CopyButton', (sfc > 0) && (cc == sfc));
+            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0));
         }
 
-        function getFileSelCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) cc++; } return cc; }
+        function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
@@ -4450,6 +4666,13 @@
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+
+        var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
+        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0?'copy':'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' for ' + (p5clipboardCut == 0?'copy':'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
 
         function p5fileDragDrop(e) {
             haltEvent(e);
@@ -4957,6 +5180,7 @@
             QS('MainDevConsole').backgroundColor = ((x == 15) ? "#003366" : "#808080");
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QS('MeshGeneral').backgroundColor = ((x == 20) ? "#003366" : "#808080");
+            if (x == 1) updateDevices();
         }
 
         // Generic methods
