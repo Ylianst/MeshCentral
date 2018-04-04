@@ -26,6 +26,7 @@ limitations under the License.
  */
 function AmtStackCreateService(wsmanStack) {
     var obj = new Object();
+    obj._ObjectID = 'AMT'
     obj.wsman = wsmanStack;
     obj.pfx = ["http://intel.com/wbem/wscim/1/amt-schema/1/", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/", "http://intel.com/wbem/wscim/1/ips-schema/1/"];
     obj.PendingEnums = [];
@@ -52,31 +53,31 @@ function AmtStackCreateService(wsmanStack) {
     }
 
     // Perform a WSMAN "SUBSCRIBE" operation.
-    obj.Subscribe = function (name, delivery, url, callback, tag, pri, selectors, opaque, user, pass) { obj.wsman.ExecSubscribe(obj.CompleteName(name), delivery, url, function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri, selectors, opaque, user, pass); _up(); }
+    obj.Subscribe = function Subscribe(name, delivery, url, callback, tag, pri, selectors, opaque, user, pass) { obj.wsman.ExecSubscribe(obj.CompleteName(name), delivery, url, function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri, selectors, opaque, user, pass); _up(); }
 
     // Perform a WSMAN "UNSUBSCRIBE" operation.
-    obj.UnSubscribe = function (name, callback, tag, pri, selectors) { obj.wsman.ExecUnSubscribe(obj.CompleteName(name), function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri, selectors); _up(); }
+    obj.UnSubscribe = function UnSubscribe(name, callback, tag, pri, selectors) { obj.wsman.ExecUnSubscribe(obj.CompleteName(name), function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri, selectors); _up(); }
 
     // Perform a WSMAN "GET" operation.
-    obj.Get = function (name, callback, tag, pri) { obj.wsman.ExecGet(obj.CompleteName(name), function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri); _up(); }
+    obj.Get = function Get(name, callback, tag, pri) { obj.wsman.ExecGet(obj.CompleteName(name), function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri); _up(); }
 
     // Perform a WSMAN "PUT" operation.
-    obj.Put = function (name, putobj, callback, tag, pri, selectors) { obj.wsman.ExecPut(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri, selectors); _up(); }
+    obj.Put = function Put(name, putobj, callback, tag, pri, selectors) { obj.wsman.ExecPut(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri, selectors); _up(); }
 	
     // Perform a WSMAN "CREATE" operation.
-    obj.Create = function (name, putobj, callback, tag, pri) { obj.wsman.ExecCreate(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri); _up(); }
+    obj.Create = function Create(name, putobj, callback, tag, pri) { obj.wsman.ExecCreate(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri); _up(); }
 
     // Perform a WSMAN "DELETE" operation.
-    obj.Delete = function (name, putobj, callback, tag, pri) { obj.wsman.ExecDelete(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback(obj, name, response, xstatus, tag); }, 0, pri); _up(); }
+    obj.Delete = function Delete(name, putobj, callback, tag, pri) { obj.wsman.ExecDelete(obj.CompleteName(name), putobj, function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, response, xstatus, tag); }, 0, pri); _up(); }
 
     // Perform a WSMAN method call operation.
-    obj.Exec = function (name, method, args, callback, tag, pri, selectors) { obj.wsman.ExecMethod(obj.CompleteName(name), method, args, function (ws, resuri, response, xstatus) { _up(); callback(obj, name, obj.CompleteExecResponse(response), xstatus, tag); }, 0, pri, selectors); _up(); }
+    obj.Exec = function Exec(name, method, args, callback, tag, pri, selectors) { obj.wsman.ExecMethod(obj.CompleteName(name), method, args, function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, obj.CompleteExecResponse(response), xstatus, tag); }, 0, pri, selectors); _up(); }
 	
     // Perform a WSMAN method call operation.
-    obj.ExecWithXml = function (name, method, args, callback, tag, pri, selectors) { obj.wsman.ExecMethodXml(obj.CompleteName(name), method, execArgumentsToXml(args), function (ws, resuri, response, xstatus) { _up(); callback(obj, name, obj.CompleteExecResponse(response), xstatus, tag); }, 0, pri, selectors); _up(); }
+    obj.ExecWithXml = function ExecWithXml(name, method, args, callback, tag, pri, selectors) { obj.wsman.ExecMethodXml(obj.CompleteName(name), method, execArgumentsToXml(args), function (ws, resuri, response, xstatus) { _up(); callback.call(obj, obj, name, obj.CompleteExecResponse(response), xstatus, tag); }, 0, pri, selectors); _up(); }
 	
     // Perform a WSMAN "ENUMERATE" operation.
-    obj.Enum = function (name, callback, tag, pri) {
+    obj.Enum = function Enum(name, callback, tag, pri) {
         if (obj.ActiveEnumsCount < obj.MaxActiveEnumsCount) {
             obj.ActiveEnumsCount++; obj.wsman.ExecEnum(obj.CompleteName(name), function (ws, resuri, response, xstatus, tag0) { _up(); _EnumStartSink(name, response, callback, resuri, xstatus, tag0); }, tag, pri);
         } else {
@@ -87,16 +88,16 @@ function AmtStackCreateService(wsmanStack) {
 
     // Private method
     function _EnumStartSink(name, response, callback, resuri, status, tag, pri) {
-        if (status != 200) { callback(obj, name, null, status, tag); _EnumDoNext(1); return; }
-        if (response == null || response.Header["Method"] != "EnumerateResponse" || !response.Body["EnumerationContext"]) { callback(obj, name, null, 603, tag); _EnumDoNext(1); return; }
+        if (status != 200) { callback.call(obj, obj, name, null, status, tag); _EnumDoNext(1); return; }
+        if (response == null || response.Header["Method"] != "EnumerateResponse" || !response.Body["EnumerationContext"]) { callback.call(obj, obj, name, null, 603, tag); _EnumDoNext(1); return; }
         var enumctx = response.Body["EnumerationContext"];
         obj.wsman.ExecPull(resuri, enumctx, function (ws, resuri, response, xstatus) { _EnumContinueSink(name, response, callback, resuri, [], xstatus, tag, pri); });
     }
 
     // Private method
     function _EnumContinueSink(name, response, callback, resuri, items, status, tag, pri) {
-        if (status != 200) { callback(obj, name, null, status, tag); _EnumDoNext(1); return; }
-        if (response == null || response.Header["Method"] != "PullResponse") { callback(obj, name, null, 604, tag); _EnumDoNext(1); return; }
+        if (status != 200) { callback.call(obj, obj, name, null, status, tag); _EnumDoNext(1); return; }
+        if (response == null || response.Header["Method"] != "PullResponse") { callback.call(obj, obj, name, null, 604, tag); _EnumDoNext(1); return; }
         for (var i in response.Body["Items"]) {
             if (response.Body["Items"][i] instanceof Array) {
                 for (var j in response.Body["Items"][i]) { items.push(response.Body["Items"][i][j]); }
@@ -109,7 +110,7 @@ function AmtStackCreateService(wsmanStack) {
             obj.wsman.ExecPull(resuri, enumctx, function (ws, resuri, response, xstatus) { _EnumContinueSink(name, response, callback, resuri, items, xstatus, tag, 1); });
         } else {
             _EnumDoNext(1);
-            callback(obj, name, items, status, tag);
+            callback.call(obj, obj, name, items, status, tag);
             _up();
         }
     }
@@ -140,7 +141,7 @@ function AmtStackCreateService(wsmanStack) {
         // Perform a GET/ENUM action
         f(n, function (stack, name, responses, status, tag0) {
             tag0[2][name] = { response: (responses==null?null:responses.Body), responses: responses, status: status };
-            if (tag0[1].length == 0 || status == 401 || (continueOnError != true && status != 200 && status != 400)) { obj.PendingBatchOperations -= (names.length * 2); _up(); callback(obj, batchname, tag0[2], status, tag); }
+            if (tag0[1].length == 0 || status == 401 || (continueOnError != true && status != 200 && status != 400)) { obj.PendingBatchOperations -= (names.length * 2); _up(); callback.call(obj, obj, batchname, tag0[2], status, tag); }
             else { _up(); _BatchNextEnum(batchname, names, callback, tag, tag0[2], pri); }
         }, [batchname, names, results], pri);
         _up();
@@ -154,7 +155,7 @@ function AmtStackCreateService(wsmanStack) {
     // Private method
     function _FetchNext(batch) {
         if (batch.names.length <= batch.current) {
-            batch.callback(obj, batch.name, batch.responses, 200, batch.tag);
+            batch.callback.call(obj, obj, batch.name, batch.responses, 200, batch.tag);
         } else {
             obj.wsman.ExecGet(obj.CompleteName(batch.names[batch.current]), function (ws, resuri, response, xstatus) { _Fetched(batch, response, xstatus); }, batch.pri);
             batch.current++;
@@ -165,7 +166,7 @@ function AmtStackCreateService(wsmanStack) {
     // Private method
     function _Fetched(batch, response, status) {
         if (response == null || status != 200) {
-            batch.callback(obj, batch.name, null, status, batch.tag);
+            batch.callback.call(obj, obj, batch.name, null, status, batch.tag);
         } else {
             batch.responses[response.Header["Method"]] = response;
             _FetchNext(batch);
@@ -209,6 +210,16 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_AgentPresenceWatchdogVA_AssertShutdown = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdogVA", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func); }
     obj.AMT_AgentPresenceWatchdogVA_AddAction = function (OldState, NewState, EventOnTransition, ActionSd, ActionEac, callback_func) { obj.Exec("AMT_AgentPresenceWatchdogVA", "AddAction", { "OldState": OldState, "NewState": NewState, "EventOnTransition": EventOnTransition, "ActionSd": ActionSd, "ActionEac": ActionEac }, callback_func); }
     obj.AMT_AgentPresenceWatchdogVA_DeleteAllActions = function (_method_dummy, callback_func) { obj.Exec("AMT_AgentPresenceWatchdogVA", "DeleteAllActions", { "_method_dummy": _method_dummy }, callback_func); }
+    obj.AMT_AlarmClockService_AddAlarm = function AlarmClockService_AddAlarm(alarmInstance, callback_func)
+    {
+        var id = alarmInstance.InstanceID;
+        var nm = alarmInstance.ElementName;
+        var start = alarmInstance.StartTime.Datetime;
+        var interval = alarmInstance.Interval ? alarmInstance.Interval.Datetime : undefined;
+        var doc = alarmInstance.DeleteOnCompletion;
+        var tpl = "<d:AlarmTemplate xmlns:d=\"http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AlarmClockService\" xmlns:s=\"http://intel.com/wbem/wscim/1/ips-schema/1/IPS_AlarmClockOccurrence\"><s:InstanceID>" + id + "</s:InstanceID><s:ElementName>" + nm + "</s:ElementName><s:StartTime><p:Datetime xmlns:p=\"http://schemas.dmtf.org/wbem/wscim/1/common\">" + start + "</p:Datetime></s:StartTime>" + ((interval!=undefined)?("<s:Interval><p:Interval xmlns:p=\"http://schemas.dmtf.org/wbem/wscim/1/common\">" + interval + "</p:Interval></s:Interval>"):"") + "<s:DeleteOnCompletion>" + doc + "</s:DeleteOnCompletion></d:AlarmTemplate>"
+        obj.wsman.ExecMethodXml(obj.CompleteName("AMT_AlarmClockService"), "AddAlarm", tpl, callback_func);
+    };
     obj.AMT_AuditLog_ClearLog = function (callback_func) { obj.Exec("AMT_AuditLog", "ClearLog", {}, callback_func); }
     obj.AMT_AuditLog_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("AMT_AuditLog", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
     obj.AMT_AuditLog_ReadRecords = function (StartIndex, callback_func, tag) { obj.Exec("AMT_AuditLog", "ReadRecords", { "StartIndex": StartIndex }, callback_func, tag); }
@@ -279,7 +290,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch = function (callback_func, tag) { obj.Exec("AMT_TimeSynchronizationService", "GetLowAccuracyTimeSynch", {}, callback_func, tag); }
     obj.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch = function (Ta0, Tm1, Tm2, callback_func, tag) { obj.Exec("AMT_TimeSynchronizationService", "SetHighAccuracyTimeSynch", { "Ta0": Ta0, "Tm1": Tm1, "Tm2": Tm2 }, callback_func, tag); }
     obj.AMT_UserInitiatedConnectionService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("AMT_UserInitiatedConnectionService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
-    obj.AMT_WebUIService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("AMT_WebUIService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
+    obj.AMT_WebUIService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func, tag) { obj.Exec("AMT_WebUIService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func, tag); }
     obj.AMT_WiFiPortConfigurationService_AddWiFiSettings = function (WiFiEndpoint, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) { obj.ExecWithXml("AMT_WiFiPortConfigurationService", "AddWiFiSettings", { "WiFiEndpoint": WiFiEndpoint, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func); }
     obj.AMT_WiFiPortConfigurationService_UpdateWiFiSettings = function (WiFiEndpointSettings, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) { obj.ExecWithXml("AMT_WiFiPortConfigurationService", "UpdateWiFiSettings", { "WiFiEndpointSettings": WiFiEndpointSettings, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func); }
     obj.AMT_WiFiPortConfigurationService_DeleteAllITProfiles = function (_method_dummy, callback_func) { obj.Exec("AMT_WiFiPortConfigurationService", "DeleteAllITProfiles", { "_method_dummy": _method_dummy }, callback_func); }
@@ -356,8 +367,8 @@ function AmtStackCreateService(wsmanStack) {
     obj.IPS_HostBasedSetupService_UpgradeClientToAdmin = function (McNonce, SigningAlgorithm, DigitalSignature, callback_func) { obj.Exec("IPS_HostBasedSetupService", "UpgradeClientToAdmin", { "McNonce": McNonce, "SigningAlgorithm": SigningAlgorithm, "DigitalSignature": DigitalSignature }, callback_func); }
     obj.IPS_HostBasedSetupService_DisableClientControlMode = function (_method_dummy, callback_func) { obj.Exec("IPS_HostBasedSetupService", "DisableClientControlMode", { "_method_dummy": _method_dummy }, callback_func); }
     obj.IPS_KVMRedirectionSettingData_TerminateSession = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "TerminateSession", {}, callback_func); }
-    obj.IPS_KVMRedirectionSettingData_DataChannelRead = function (callback_func, tag) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelRead", {}, callback_func, tag); }
-    obj.IPS_KVMRedirectionSettingData_DataChannelWrite = function (Data, callback_func, tag) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelWrite", { "DataMessage": Data }, callback_func, tag); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelRead = function (callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelRead", {}, callback_func); }
+    obj.IPS_KVMRedirectionSettingData_DataChannelWrite = function (Data, callback_func) { obj.Exec("IPS_KVMRedirectionSettingData", "DataChannelWrite", { "DataMessage": Data }, callback_func); }
     obj.IPS_OptInService_StartOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "StartOptIn", {}, callback_func); }
     obj.IPS_OptInService_CancelOptIn = function (callback_func) { obj.Exec("IPS_OptInService", "CancelOptIn", {}, callback_func); }
     obj.IPS_OptInService_SendOptInCode = function (OptInCode, callback_func) { obj.Exec("IPS_OptInService", "SendOptInCode", { "OptInCode": OptInCode }, callback_func); }

@@ -249,12 +249,15 @@
                             <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
                                 <div id="p5rightOfButtons" style="float:right;margin-top:3px"></div>
                                 <div>
-                                    <input type="button" id="p5FolderUp" disabled="disabled" onclick="p5folderup();" value="Up" />&nbsp;
-                                    <input type="button" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile();" value="Select All" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5RenameFileButton" disabled="disabled" value="Rename" onclick="p5renamefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5NewFolderButton" disabled="disabled" value="New Folder" onclick="p5createfolder();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
-                                    <input type="button" id="p5UploadButton" disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5FolderUp disabled="disabled" onclick="p5folderup();" value="Up" />&nbsp;
+                                    <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false;" onkeydown="return false;" />&nbsp;
+                                    <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false" />&nbsp;
+                                    <input type=button id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false" />&nbsp;
                                 </div>
                             </td>
                         </tr>
@@ -288,7 +291,7 @@
                         <span id="p5files"></span>
                     </div>
                     <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                        <tr><td class=style6 style="text-align:left">&nbsp;<span id="p5bottomstatus"></span></td></tr>
+                        <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td></tr>
                     </table>
                 </div>
                 <div id=p10 style=display:none>
@@ -4535,13 +4538,13 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = (f.t == 1)?p5getQuotabar(f):'', title = '';
-                    h = "<div class=filelist file=999><input style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                    h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
                     if (f.s > 0) { link = "<a target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
-                    h = "<div class=filelist file=3><input style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                    h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -4570,7 +4573,7 @@
             while (f.t > 1) { f = f.parent; }
             if ((f.t != 1) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
-            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:200px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
@@ -4592,16 +4595,19 @@
         }
 
         function p5setActions() {
-            var cc = getFileSelCount(), tc = getFileCount();
+            var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
             QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
-            QE('p5SelectAllButton', tc > 0)
+            QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
+            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CopyButton', (sfc > 0) && (cc == sfc));
+            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0));
         }
 
-        function getFileSelCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) cc++; } return cc; }
+        function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
@@ -4619,6 +4625,13 @@
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+
+        var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
+        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0?'copy':'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' for ' + (p5clipboardCut == 0?'copy':'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
 
         function p5fileDragDrop(e) {
             haltEvent(e);

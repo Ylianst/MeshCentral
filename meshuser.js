@@ -11,11 +11,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     var obj = {};
     obj.db = db;
     obj.ws = ws;
-    obj.fs = parent.fs;
     obj.args = args;
     obj.parent = parent;
     obj.domain = domain;
     obj.common = parent.common;
+    obj.fs = require('fs');
+    obj.path = require('path');
 
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
@@ -25,6 +26,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
     }
+
+    // Convert a mesh path array into a real path on the server side
+    function meshPathToRealPath(meshpath) {
+        var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
+        if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
+        var path = obj.parent.path.join(obj.parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
+        for (var i = 1; i < meshpath.length; i++) { if (obj.common.IsFilenameValid(meshpath[i]) == false) { path = null; break; } path += ("/" + meshpath[i]); }
+        return path;
+    }
+
+    // 
+    function copyFile(src, dest, func, tag) {
+		//var ss = obj.fs.createReadStream(src, { flags: 'rb' });
+        //var ds = obj.fs.createWriteStream(dest, { flags: 'wb' });
+        var ss = obj.fs.createReadStream(src);
+        var ds = obj.fs.createWriteStream(dest);
+        ss.fs = obj.fs;
+		ss.pipe(ds);
+        ds.ss = ss;
+        /*
+		if (!this._copyStreams) { this._copyStreams = {}; this._copyStreamID = 0; }
+		ss.id = this._copyStreamID++;
+		this._copyStreams[ss.id] = ss;
+        */
+		if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
+		else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
+        ds.on('close', function() { /*delete this.ss.fs._copyStreams[this.ss.id];*/ func(tag); });
+	};
 
     try {
         // Check if the user is logged in
@@ -176,18 +205,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((user.siteadmin & 8) != 0) {
                             // Perform a file operation (Create Folder, Delete Folder, Delete File...)
                             if ((command.path != null) && (typeof command.path == 'object') && command.path.length > 0) {
-                                var rootfolder = command.path[0];
-                                var rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
-                                if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-                                var path = obj.parent.path.join(obj.parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
-                                for (var i = 1; i < command.path.length; i++) { if (obj.common.IsFilenameValid(command.path[i]) == false) { path = null; break; } path += ("/" + command.path[i]); }
+                                var sendUpdate = true;
+                                var path = meshPathToRealPath(command.path); // TODO: Check mesh rights!!!!!
                                 if (path == null) break;
 
                                 if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) { try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { } } // Create a new folder
                                 else if (command.fileop == 'delete') { for (var i in command.delfiles) { if (obj.common.IsFilenameValid(command.delfiles[i]) == true) { var fullpath = path + "/" + command.delfiles[i]; try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } } } } } // Delete
                                 else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
+                                else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
+                                    var scpath = meshPathToRealPath(command.scpath); // TODO: Check mesh rights!!!!!
+                                    if (scpath == null) break;
+                                    // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
+                                    for (var i in command.names) {
+                                        var s = obj.path.join(scpath, command.names[i]), d = obj.path.join(path, command.names[i]);
+                                        sendUpdate = false;
+                                        copyFile(s, d, function (op) { if (op != null) { obj.fs.unlink(op, function () { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                    }
+                                }
 
-                                obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles') // Fire an event causing this user to update this files
+                                if (sendUpdate == true) { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
                             }
                         }
                         break;
