@@ -20,7 +20,7 @@ module.exports.IntToStrX = function(v) { return String.fromCharCode(v & 0xFF, (v
 module.exports.MakeToArray = function(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
 module.exports.SplitArray = function(v) { return v.split(','); }
 module.exports.Clone = function(v) { return JSON.parse(JSON.stringify(v)); }
-module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
 
 // Move an element from one position in an array to a new position
 module.exports.ArrayElementMove = function(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]); };
@@ -126,3 +126,9 @@ module.exports.objKeysToLower = function (obj) {
     } 
     return obj;
 }
+
+// Validation methods
+module.exports.validateString = function(str, minlen, maxlen) { return ((str != null) && (typeof str == 'string') && ((minlen == null) || (str.length >= minlen)) && ((maxlen == null) || (str.length <= maxlen))); }
+module.exports.validateInt = function(int, minval, maxval) { return ((int != null) && (typeof int == 'number') && ((minval == null) || (int >= minval)) && ((maxval == null) || (int <= maxval))); }
+module.exports.validateArray = function(array, minlen, maxlen) { return ((array != null) && Array.isArray(array) && ((minlen == null) || (array.length >= minlen)) && ((maxlen == null) || (array.length <= maxlen))); }
+module.exports.validateObject = function(obj) { return ((obj != null) && (typeof obj == 'object')); }

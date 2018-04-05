@@ -4197,7 +4197,7 @@
         function account_createMesh() {
             if (xxdialogMode) return;
             var x = "Create a new mesh computer group using the options below.<br /><br />";
-            x += addHtmlValue('Mesh Name', '<input id=dp2meshname style=width:230px maxlength=32 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
+            x += addHtmlValue('Mesh Name', '<input id=dp2meshname style=width:230px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
             x += addHtmlValue('Mesh Type', '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Mesh Agent Policy</option><option value=1>Intel&reg; AMT Agent-less Policy</option></select></div>');
             x += addHtmlValue('Description', '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "Create Mesh", 3, account_createMeshEx, x);
@@ -4747,15 +4747,24 @@
         function updateUsers() {
             QV('MainMenuMyUsers', (users != null) && ((features & 4) == 0));
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
+
+            // Sort the list of user id's
+            var sortedUserIds = [];
+            for (var i in users) { sortedUserIds.push(i); }
+            sortedUserIds.sort();
+
+            // Display the users using the sorted list
             var x = '<table style=width:100% cellpadding=0 cellspacing=0>';
-            for (var i in users) {
-                var user = users[i], icon = 'm2', msg = '';
+            for (var i in sortedUserIds) {
+                var user = users[sortedUserIds[i]], icon = 'm2', msg = '', self = (user.name != userinfo.name);
                 if (wssessions != null && wssessions[user._id]) {
+                    if (self) { msg += "<a onclick=showUserAlertDialog(event,\"" + user._id + "\")>"; }
                     var sessions = wssessions[user._id];
-                    if (sessions == 1) { msg = '1 active session'; } else { msg = sessions + ' active sessions'; }
+                    if (sessions == 1) { msg += '1 active session'; } else { msg += sessions + ' active sessions'; }
+                    if (self) { msg += "</a>"; }
                 }
                 if (msg != '') msg += ', ';
-                if (user.name != userinfo.name) { msg += "<a onclick=showUserAdminDialog(event,\"" + user._id + "\")>"; }
+                if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + user._id + "\")>"; }
                 if ((user.siteadmin == null) || (user.siteadmin == 0)) {
                     msg += "User";
                 } else if (user.siteadmin == 8) {
@@ -4766,7 +4775,7 @@
                     msg += "Partial Admin";
                 }
                 if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
-                if (user.name != userinfo.name) { msg += "</a>"; }
+                if (self) { msg += "</a>"; }
                 var username = EscapeHtml(user.name);
                 if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':''); }
                 x += '<tr><td style=cursor:pointer onclick=showUserInfoDialog(\"' + user._id + '\")>';
@@ -4778,6 +4787,16 @@
             x += '</table>';
             QH('p3users', x);
         }
+
+        function showUserAlertDialog(e, userid) {
+            if (xxdialogMode) return;
+            haltEvent(e);
+            setDialogMode(2, "Notify " + EscapeHtml(users[userid].name), 3, showUserAlertDialogEx, 'Send a text notification to this user.<textarea id=d2notifyText maxlength=2048 style="width:100%;height:184px;resize:none"></textarea>', userid);
+            Q('d2notifyText').focus();
+            return false;
+        }
+
+        function showUserAlertDialogEx(button, userid) { meshserver.send({ action: 'notifyuser', userid: userid, msg: Q('d2notifyText').value }); }
 
         function doemail(e, addr) {
             if (xxdialogMode) return;
@@ -4807,10 +4826,10 @@
         function showCreateNewAccountDialog() {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue('Name', '<input id=p4name style=width:230px maxlength=32 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Email', '<input id=p4email style=width:230px maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Name', '<input id=p4name style=width:230px maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Email', '<input id=p4email style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
             showCreateNewAccountDialogValidate();
             Q('p4name').focus();
