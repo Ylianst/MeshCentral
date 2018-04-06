@@ -604,6 +604,15 @@
                                 </select>
                                 <div style="height:20px">Scaling</div>
                             </div>
+                            <div style="margin:3px 0 3px 0">
+                                <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
+                                    <option selected=selected value=50>Fast</option>
+                                    <option value=100>Medium</option>
+                                    <option value=400>Slow</option>
+                                    <option value=1000>Very slow</option>
+                                </select>
+                                <div style="height:20px">Frame rate</div>
+                            </div>
                         </div>
                         <div id="d7amtkvm">
                             <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
@@ -659,8 +668,8 @@
         var wssessions = null;
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024 };
-        var multidesktopsettings = { quality: 30, scaling: 128 };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50 };
+        var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
         var terminal;
         var files;
         var debugLevel = {{{debuglevel}}};
@@ -1222,10 +1231,10 @@
                         case 'wssessioncount': {
                             // Update the active web socket session count for a user
                             if (wssessions != null) {
-                                if (message.event.count == 0 && wssessions['user/{{{domain}}}/' + message.event.username]) {
-                                    delete wssessions['user/{{{domain}}}/' + message.event.username];
+                                if (message.event.count == 0 && wssessions['user/{{{domain}}}/' + message.event.username.toLowerCase()]) {
+                                    delete wssessions['user/{{{domain}}}/' + message.event.username.toLowerCase()];
                                 } else {
-                                    wssessions['user/{{{domain}}}/' + message.event.username] = message.event.count;
+                                    wssessions['user/{{{domain}}}/' + message.event.username.toLowerCase()] = message.event.count;
                                 }
                                 updateUsers();
                             }
@@ -1238,7 +1247,7 @@
                         }
                         case 'login': {
                             // Update the last login time
-                            if (users != null && users['user/{{{domain}}}/' + message.event.username]) { users['user/{{{domain}}}/' + message.event.username].login = message.event.time; }
+                            if (users != null && users['user/{{{domain}}}/' + message.event.username.toLowerCase()]) { users['user/{{{domain}}}/' + message.event.username.toLowerCase()].login = message.event.time; }
                             break;
                         }
                         case 'scanamtdevice': {
@@ -1537,7 +1546,7 @@
                                 c.removeAttribute('onmousemove');
                                 Q('xkvmid_' + shortid).appendChild(c);
                                 QH('skvmid_' + shortid, ['Disconnected', 'Connecting...', 'Setup...', '', ''][((desktop.m.State == null)?desktop.m.state:desktop.m.State)]);
-                                if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling); }
+                                if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
                                 desktop.shortid = shortid;
                                 desktop.onStateChanged = onMultiDesktopStateChange;
                                 multiDesktop[id] = desktop;
@@ -1590,15 +1599,17 @@
             QV('d7meshkvm', true);
             d7bitmapquality.value = multidesktopsettings.quality;
             d7bitmapscaling.value = multidesktopsettings.scaling;
+            if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 1000; }
             setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
         }
 
         function showMultiDesktopSettingsChanged() {
             multidesktopsettings.quality = d7bitmapquality.value;
             multidesktopsettings.scaling = d7bitmapscaling.value;
+            multidesktopsettings.framerate = d7framelimiter.value;
             localStorage.setItem('multidesktopsettings', JSON.stringify(multidesktopsettings));
             // Make changes to all current connections
-            for (var i in multiDesktop) { multiDesktop[i].m.SendCompressionLevel(1,multidesktopsettings.quality,multidesktopsettings.scaling); }
+            for (var i in multiDesktop) { multiDesktop[i].m.SendCompressionLevel(1, multidesktopsettings.quality, multidesktopsettings.scaling, multidesktopsettings.framerate); }
         }
 
         function connectMultiDesktop(node, contype) {
@@ -1628,6 +1639,7 @@
                     desk.onStateChanged = onMultiDesktopStateChange;
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
+                    desk.m.FrameRateTimer = multidesktopsettings.framerate;
                     //desk.m.onDisplayinfo = deskDisplayInfo;
                     //desk.m.onScreenSizeChange = deskAdjust;
                     desk.Start(nodeid);
@@ -2214,6 +2226,10 @@
             if (existingfeature) { xxmap.markersSource.addFeature(existingfeature); } // Add that existing feature
             else { // Add new feature for this node
                 if (!lat && !lon) { var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1]; }
+                
+                // Fix the longiture and send an event to patch the db to correct coordinate format. It will cause second unnecessary updateFeature on this node to the map.
+                if (lon > 180) {  lon = 180 - lon;  meshserver.send({ action: 'changedevice', nodeid: node._id, userloc: [ lat, lon ] }); }
+
                 if ((lat < 90) && (lat > -90) && (lon < 180) && (lon > -180)) { // Check valid lat/lon
                     var feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.transform([lon, lat], 'EPSG:4326','EPSG:3857')), name: node.name, status: node.conn, lat: lat, lon: lon });
                     feature.setId(node._id); // Set id for the device as nodeid
@@ -2274,6 +2290,7 @@
                     removeInteraction(featid);
                     var coord = ft.getGeometry().getCoordinates();
                     var v = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
+                    if (v[0] > 180) { v[0] = 180 - v[0]; }
                     var vx = [ v[1], v[0] ]; // Flip the coordinates around, lat/long
                     meshserver.send({ action: 'changedevice', nodeid: featid, userloc: vx }); // Send them to server to save changes
                 }
@@ -3130,7 +3147,7 @@
                     c.removeAttribute('onclick');
                     Q('DeskParent').appendChild(c);
                     desktop = xdesk;
-                    if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling); }
+                    if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
@@ -3197,6 +3214,7 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
+                    desktop.m.FrameRateTimer = desktopsettings.framerate;
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
@@ -3251,11 +3269,12 @@
             desktopsettings.showmouse = d7showcursor.checked;
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
+            desktopsettings.framerate = d7framelimiter.value;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
-                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling); }
+                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                 }
                 if (desktop.contype == 2) {
                     if (desktopsettings.showfocus == false) { desktop.m.focusmode = 0; deskFocusBtn.value = 'All Focus'; }
@@ -3274,6 +3293,7 @@
             d7bitmapquality.value = 40; // Default value
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
+            if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
 
