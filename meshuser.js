@@ -651,9 +651,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                         if (obj.common.validateString(command.devicename, 1, 256) == false) break; // Check device name
                         if (obj.common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
-                        if (obj.common.validateString(command.amtusername, 1, 16) == false) break; // Check username
-                        if (obj.common.validateString(command.amtpassword, 1, 16) == false) break; // Check password
-                        if (obj.common.validateInt(command.amttls, 0, 1) == false) break; // Check TLS flag
+                        if (obj.common.validateString(command.amtusername, 0, 16) == false) break; // Check username
+                        if (obj.common.validateString(command.amtpassword, 0, 16) == false) break; // Check password
+                        if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
+                        if ((command.amttls != 1) && (command.amttls != 0)) break;
 
                         // Get the mesh
                         var mesh = obj.parent.meshes[command.meshid];
@@ -667,7 +668,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             obj.parent.crypto.randomBytes(48, function (err, buf) {
                                 // create the new node
                                 var nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
-                                var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: parseInt(command.amttls) } };
+                                var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
                                 obj.db.Set(device);
 
                                 // Event the new node

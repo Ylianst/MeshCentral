@@ -30,6 +30,7 @@ function createMeshCore(agent) {
     var net = require('net');
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
+    var processManager = require('process-manager');
     var SMBiosTables = require('smbios');
     var amtMei = null, amtLms = null, amtLmsState = 0;
     var amtMeiConnected = 0, amtMeiTmpState = null;
@@ -327,39 +328,55 @@ function createMeshCore(agent) {
             // If this is a console command, parse it and call the console handler
             switch (data.action) {
                 case 'msg': {
-                    if (data.type == 'console') { // Process a console command
-                        if (data.value && data.sessionid) {
-                            var args = splitArgs(data.value);
-                            processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
+                    switch (data.type) {
+                        case 'console': { // Process a console command
+                            if (data.value && data.sessionid) {
+                                var args = splitArgs(data.value);
+                                processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
+                            }
+                            break;
+                        }
+                        case 'tunnel': {
+                            if (data.value != null) { // Process a new tunnel connection request
+                                // Create a new tunnel object
+                                var xurl = getServerTargetUrlEx(data.value);
+                                if (xurl != null) {
+                                    var woptions = http.parseUri(xurl);
+                                    woptions.rejectUnauthorized = 0;
+                                    //sendConsoleText(JSON.stringify(woptions));
+                                    var tunnel = http.request(woptions);
+                                    tunnel.upgrade = onTunnelUpgrade;
+                                    tunnel.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
+                                    tunnel.sessionid = data.sessionid;
+                                    tunnel.rights = data.rights;
+                                    tunnel.state = 0;
+                                    tunnel.url = xurl;
+                                    tunnel.protocol = 0;
+                                    tunnel.tcpaddr = data.tcpaddr;
+                                    tunnel.tcpport = data.tcpport;
+                                    tunnel.end();
+                                    // Put the tunnel in the tunnels list
+                                    var index = nextTunnelIndex++;;
+                                    tunnel.index = index;
+                                    tunnels[index] = tunnel;
+
+                                    sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                                }
+                            }
+                            break;
+                        }
+                        case 'ps': {
+                            if (data.sessionid) {
+                                processManager.getProcesses(function (plist) { mesh.SendCommand({ "action": "msg", "type": "ps", "value": JSON.stringify(plist), "sessionid": data.sessionid }); });
+                            }
+                            break;
+                        }
+                        case 'pskill': {
+                            sendConsoleText(JSON.stringify(data));
+                            try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
+                            break;
                         }
                     }
-                    else if ((data.type == 'tunnel') && (data.value != null)) { // Process a new tunnel connection request
-                        // Create a new tunnel object
-                        var xurl = getServerTargetUrlEx(data.value);
-                        if (xurl != null) {
-                            var woptions = http.parseUri(xurl);
-                            woptions.rejectUnauthorized = 0;
-                            //sendConsoleText(JSON.stringify(woptions));
-                            var tunnel = http.request(woptions);
-                            tunnel.upgrade = onTunnelUpgrade;
-                            tunnel.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
-                            tunnel.sessionid = data.sessionid;
-                            tunnel.rights = data.rights;
-                            tunnel.state = 0;
-                            tunnel.url = xurl;
-                            tunnel.protocol = 0;
-                            tunnel.tcpaddr = data.tcpaddr;
-                            tunnel.tcpport = data.tcpport;
-                            tunnel.end();
-                            // Put the tunnel in the tunnels list
-                            var index = nextTunnelIndex++;;
-                            tunnel.index = index;
-                            tunnels[index] = tunnel;
-                            
-                            sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
-                        }
-                    }
-                    break;
                 }
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
@@ -819,12 +836,29 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios.';
                     break;
                 }
                 case 'setdebug': {
                     if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = StdOut, 1 = This Console, * = All Consoles, 2 = WebLog, 3 = Disabled'; } // Display usage
                     else { if (args['_'][0] == '*') { console.setDestination(1); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
+                    break;
+                }
+                case 'ps': {
+                    processManager.getProcesses(function (plist) {
+                        var x = '';
+                        for (var i in plist) { x += i + ', ' + plist[i].cmd + ((plist[i].user) ? (', ' + plist[i].user):'') + '\r\n'; }
+                        sendConsoleText(x, sessionid);
+                    });
+                    break;
+                }
+                case 'kill': {
+                    if ((args['_'].length < 1)) {
+                        response = 'Proper usage: kill [pid]'; // Display correct command usage
+                    } else {
+                        process.kill(parseInt(args['_'][0]));
+                        response = 'Killed process ' + args['_'][0] + '.';
+                    }
                     break;
                 }
                 case 'smbios': {
