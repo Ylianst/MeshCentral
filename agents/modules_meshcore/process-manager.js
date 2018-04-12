@@ -1,0 +1,96 @@
+/*
+Copyright 2018 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+var GM = require('_GenericMarshal');
+
+function processManager() {
+    this._ObjectID = 'processManager';
+    switch (process.platform) {
+        case 'win32':
+            this._kernel32 = GM.CreateNativeProxy('kernel32.dll');
+            this._kernel32.CreateMethod('GetLastError');
+            this._kernel32.CreateMethod('CreateToolhelp32Snapshot');
+            this._kernel32.CreateMethod('Process32First');
+            this._kernel32.CreateMethod('Process32Next');
+            break;
+        case 'linux':
+            this._childProcess = require('child_process');
+            break;
+        default:
+            throw (process.platform + ' not supported');
+    }
+    this.getProcesses = function getProcesses(callback) {
+        switch (process.platform) {
+            case 'win32':
+                var h = this._kernel32.CreateToolhelp32Snapshot(2, 0), info = GM.CreateVariable(304), retVal = {};
+                info.toBuffer().writeUInt32LE(304, 0);
+                var nextProcess = this._kernel32.Process32First(h, info);
+                while (nextProcess.Val) {
+                    retVal[info.Deref(8, 4).toBuffer().readUInt32LE(0)] = { cmd: info.Deref(GM.PointerSize == 4 ? 36 : 44, 260).String };
+                    nextProcess = this._kernel32.Process32Next(h, info);
+                }
+                if (callback) { callback.apply(this, [retVal]); }
+                break;
+            case 'linux':
+                if (!this._psp) { this._psp = {}; }
+                var p = this._childProcess.execFile("/bin/ps", ["ps", "-uxa"], { type: this._childProcess.SpawnTypes.TERM });
+                this._psp[p.pid] = p;
+                p.Parent = this;
+                p.ps = '';
+                p.callback = callback;
+                p.args = [];
+                for (var i = 1; i < arguments.length; ++i) { p.args.push(arguments[i]); }
+                p.on('exit', function onGetProcesses() {
+                    delete this.Parent._psp[this.pid];
+                    var retVal = {}, lines = this.ps.split('\x0D\x0A'), key = {}, keyi = 0;
+                    for (var i in lines) {
+                        var tokens = lines[i].split(' '), tokenList = [];
+                        for (var x in tokens) {
+                            if (i == 0 && tokens[x]) { key[tokens[x]] = keyi++; }
+                            if (i > 0 && tokens[x]) { tokenList.push(tokens[x]); }
+                        }
+                        if ((i > 0) && (tokenList[key.PID])) {
+                            retVal[tokenList[key.PID]] = { user: tokenList[key.USER], cmd: tokenList[key.COMMAND] };
+                        }
+                    }
+                    if (this.callback) {
+                        this.args.unshift(retVal);
+                        this.callback.apply(this.parent, this.args);
+                    }
+                });
+                p.stdout.on('data', function (chunk) { this.parent.ps += chunk.toString(); });
+                break;
+            default:
+                throw ('Enumerating processes on ' + process.platform + ' not supported');
+        }
+    };
+    this.getProcessInfo = function getProcessInfo(pid) {
+        switch (process.platform) {
+            case 'linux':
+                var status = require('fs').readFileSync('/proc/' + pid + '/status'), lines = status.toString().split('\n'), info = {};
+                for (var i in lines) {
+                    var tokens = lines[i].split(':');
+                    if (tokens.length > 1) { tokens[1] = tokens[1].trim(); }
+                    info[tokens[0]] = tokens[1];
+                }
+                return info;
+            default:
+                throw ('getProcessInfo() not supported for ' + process.platform);
+        }
+    };
+}
+
+module.exports = new processManager();

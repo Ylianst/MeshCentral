@@ -84,15 +84,14 @@ function objToString(x, p, ret) {
 function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ' '; } return r; }
 
 // Parse the incoming arguments
-function run(argv)
-{
+function run(argv) {
     if (meshCmdVersion[0] == '*') { meshCmdVersion = ''; } else { meshCmdVersion = ' v' + meshCmdVersion; }
     var args = parceArguments(argv);
     //console.log(JSON.stringify(argv));
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'AMTLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG'];
 
     // Load the action file
     var actionfile = null;
@@ -134,10 +133,10 @@ function run(argv)
         console.log('\r\nValid local actions:');
         console.log('  SMBios          - Display System Management BIOS tables for this computer.');
         console.log('  RawSMBios       - Display RAW System Management BIOS tables for this computer.');
+        console.log('  MicroLMS        - Run MicroLMS, allowing local access to Intel AMT.');
         console.log('  AmtInfo         - Show Intel AMT version and activation state.');
         console.log('  AmtVersions     - Show all Intel ME version information.');
         console.log('  AmtHashes       - Show all Intel AMT trusted activation hashes.');
-        console.log('  AmtLMS          - Run MicroLMS, allowing local access to Intel AMT.');
         console.log('  AmtCCM          - Activate Intel AMT into Client Control Mode.');
         console.log('  AmtDeactivate   - Deactivate Intel AMT if activated in Client Control mode.');
         console.log('\r\nValid local or remote actions:');
@@ -176,10 +175,12 @@ function run(argv)
             console.log('AmtVersions will display all version information about Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtversions');
         } else if (action == 'amthashes') {
             console.log('Amthashes will display all trusted activations hashes for Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amthashes');
-        } else if (action == 'amtlms') {
-            console.log('AmtLMS will state MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd amtlms');
+        } else if ((action == 'microlms') || (action == 'lms') || (action == 'amtlms')) {
+            console.log('Starts MicroLMS on this computer, allowing local access to Intel AMT on TCP ports 16992 and 16993 when applicable. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. These certificates hashes are used by Intel AMT when performing activation into ACM mode. Example usage:\r\n\r\n  meshcmd microlms');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --noconsole            MeshCommander for LMS will no be available on port 16994.');
+            console.log('\r\nRun as a background service:\r\n');
+            console.log('  microlms install/uninstall/start/stop.');
         } else if (action == 'amtccm') {
             console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided. Example usage:\r\n\r\n  meshcmd amtccm --pass mypassword');
         } else if (action == 'amtdeactivate') {
@@ -232,6 +233,8 @@ function run(argv)
             console.log('This action launched a local web server that hosts MeshCommander, a Intel AMT management console.');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --localport [port]     Local port used for the web server, 3000 is default.');
+            console.log('\r\nRun as a background service:\r\n');
+            console.log('  meshcommander install/uninstall/start/stop.');
         } else if (action == 'amtauditlog') {
             console.log('AmtAuditLog action will fetch the local or remote audit log. If used localy, no username/password is required. Example usage:\r\n\r\n  meshcmd amtauditlog --host 1.2.3.4 --user admin --pass mypassword --tls --output audit.json');
             console.log('\r\nPossible arguments:\r\n');
@@ -342,7 +345,7 @@ function run(argv)
             else if (mestate.ProvisioningState.stateStr == 'POST') { if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; } }
             if (mestate.ehbc.EHBC == true) { str += ', EHBC enabled'; }
             str += '.';
-            if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0'?'':(', ' + mestate.net0.address)); }
+            if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
             if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
             console.log(str + '.');
             exit(1);
@@ -357,10 +360,10 @@ function run(argv)
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
         saveEntireAmtState();
-    } else if (settings.action == 'amtlms') {
+    } else if ((settings.action == 'microlms') || (settings.action == 'amtlms') || (settings.action == 'lms')) {
         // Start Intel AMT MicroLMS
         startLms(function (state) {
-            console.log(['MicroLMS did not start. MicroLMS must run as administrator or LMS any already be active.', 'MicroLMS started.', 'MicroLMS started, MeshCommander on HTTP/16994.', 'MEI error'][state]); console.log('Press ctrl-c to exit.'); if (state == 0) { exit(0); }
+            console.log(['MicroLMS did not start. Must run as administrator or LMS already active.', 'MicroLMS started.', 'MicroLMS started, MeshCommander on HTTP/16994.', 'MEI error'][state]); console.log('Press ctrl-c to exit.'); if (state == 0) { exit(0); }
         });
     } else if (settings.action == 'amtscript') {
         // Start running a MEScript
@@ -436,7 +439,7 @@ function readAmtAuditLogEx2(stack, response, status) {
     } else {
         var out = '';
         for (var i in response) {
-            var name = ((response[i].Initiator != '')?(response[i].Initiator + ': '):'')
+            var name = ((response[i].Initiator != '') ? (response[i].Initiator + ': ') : '')
             out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
         }
         if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
@@ -559,7 +562,7 @@ function activeToCCMEx(state) {
 function activeToCCMEx2(stack, name, responses, status) {
     if (status != 200) { console.log('Failed to fetch activation status, status ' + status); exit(1); }
     else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { console.log('Client control mode activation not allowed'); exit(1); }
-    else { osamtstack.IPS_HostBasedSetupService_Setup(2, md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + settings.password).substring(0,32), null, null, null, null, activeToCCMEx3); }
+    else { osamtstack.IPS_HostBasedSetupService_Setup(2, md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + settings.password).substring(0, 32), null, null, null, null, activeToCCMEx3); }
 }
 
 function activeToCCMEx3(stack, name, responses, status) {
@@ -624,7 +627,7 @@ function startMeScriptEx() {
         try { scriptData = fs.readFileSync(settings.script); } catch (e) { console.log('Unable to read script file (1): ' + settings.script + '.'); exit(1); return; }
     } else {
         scriptData = settings.scriptJSON;
-    }    
+    }
     if (scriptData == null) { console.log('Unable to read script file (2): ' + settings.script + '.'); exit(1); return; }
     try { scriptData = JSON.parse(scriptData); } catch (e) { console.log('Unable to read script file (3): ' + settings.script + '.'); exit(1); return; }
     if (scriptData.mescript == null) { console.log('Unable to read script file (4): ' + settings.script + '.'); exit(1); return; }
@@ -634,7 +637,7 @@ function startMeScriptEx() {
     var script = scriptModule.setup(scriptData, {})
     script.amtstack = amtstack;
     script.start();
-    script.onCompleted = function () { exit(1);}
+    script.onCompleted = function () { exit(1); }
 }
 
 
@@ -651,7 +654,7 @@ function saveEntireAmtState() {
     var transport = require('amt-wsman-duk');
     var wsman = require('amt-wsman');
     var amt = require('amt');
-    wsstack = new wsman(transport, settings.hostname, settings.tls?16993:16992, settings.username, settings.password, settings.tls);
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
     amtstack = new amt(wsstack);
     amtstack.onProcessChanged = onWsmanProcessChanged;
     //var AllWsman = "AMT_GeneralSystemDefenseCapabilities".split(',');
@@ -769,7 +772,6 @@ function startLms(func) {
     amtLms = new lme_heci({ debug: settings.lmsdebug });
     amtLms.on('error', function (e) {
         console.log('LME connection failed', e);
-        
         setupMeiOsAdmin(func, amtLms.connected == false ? 0 : 3);
     });
     amtLms.on('notify', function (data, options, str, code) {
@@ -843,7 +845,7 @@ function startLms(func) {
             tempTimer = setTimeout(function () { delete tempTimer; setupMeiOsAdmin(func, 1); }, 100);
             //console.logReferenceCount(tempTimer);
         }
-            
+
     });
 }
 
@@ -957,7 +959,7 @@ function processLmsControlData(data) {
         case 2: // Intel AMT MEI Unprovision (CMD = 2)
             { if (data.length < 6) break; amtMei.unprovision(data.readUInt32LE(2), function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(2, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 3: // Intel AMT MEI GetLocalSystemAccount (CMD = 3)
-            { amtMei.getLocalSystemAccount(function (account, socket) {socket.write(Buffer.concat([Buffer.from('030000000000', 'hex'), account.raw])); }, this); break; }
+            { amtMei.getLocalSystemAccount(function (account, socket) { socket.write(Buffer.concat([Buffer.from('030000000000', 'hex'), account.raw])); }, this); break; }
         case 4: // Instruct Intel AMT to start remote configuration (CMD = 4)
             { amtMei.startConfiguration(function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 5: // Instruct Intel AMT to stop remote configuration (CMD = 5)
@@ -1150,7 +1152,7 @@ function getAmtStorage(func, noretry) {
 // Fetch the Intel AMT storage document
 function pushToStorage(name, linkname, data, func, ptr) {
     if (ptr == null) { ptr = 0; }
-    var req = digest.request({ protocol: settings.protocol, method: "PUT", host: settings.hostname, path: ("/amt-storage/" + name + ((ptr != 0) ? '?append=' : '')), port: settings.localport } );
+    var req = digest.request({ protocol: settings.protocol, method: "PUT", host: settings.hostname, path: ("/amt-storage/" + name + ((ptr != 0) ? '?append=' : '')), port: settings.localport });
     req.on('error', function (e) { console.log("Error occured: " + JSON.stringify(e)); if (func != null) { func(null); } });
     req.on('response', function (response) {
         debug(1, 'Chunk Done', data.length, ptr);
@@ -1178,7 +1180,7 @@ function verifyStorage(name, data, func) {
 
 // Fetch the Intel AMT storage document
 function deleteStorage(name, func, noretry) {
-    var req = digest.request({ protocol: settings.protocol, method: "DELETE", host: settings.hostname, path: "/amt-storage/" + name, port: settings.localport } );
+    var req = digest.request({ protocol: settings.protocol, method: "DELETE", host: settings.hostname, path: "/amt-storage/" + name, port: settings.localport });
     req.on('error', function (e) { if ((e == 'Error: Socket was unexpectedly closed') && (noretry != true)) { deleteStorage(name, func, true); } else { if (func != null) { if (e.statusCode) { func(e.statusCode); } else { func(null); } } } });
     req.on('response', function (response) { if (func != null) { func(response.statusCode); } });
     req.end();
@@ -1203,69 +1205,39 @@ function removeItemFromArray(array, element) {
 var serviceName = null;
 var serviceOpSpecified = 0;
 
-for (var i in process.argv)
-{
-    if(process.argv[i].toLowerCase() == 'amtlms')
-    {
-        serviceName = 'MeshCmd_Lms';
-        break;
-    }
-    if(process.argv[i].toLowerCase() == 'meshcommander')
-    {
-        serviceName = 'MeshCmd_Commander';
-        break;
-    }
+for (var i in process.argv) {
+    if ((process.argv[i].toLowerCase() == 'microlms') || (process.argv[i].toLowerCase() == 'amtlms') || (process.argv[i].toLowerCase() == 'lms')) { serviceName = 'MicroLMS'; break; }
+    if ((process.argv[i].toLowerCase() == 'meshcommander') || (process.argv[i].toLowerCase() == 'commander')) { serviceName = 'MeshCommander'; break; }
 }
 
-if (serviceName == null)
-{
-    for (var i in process.argv)
-    {
-        if (process.argv[i] == '-install' || process.argv[i] == '-uninstall')
-        {
-            console.log('In order to Install/Uninstall, a service type must be specified');
+if (serviceName == null) {
+    for (var i in process.argv) {
+        if ((process.argv[i].toLowerCase() == 'install') || (process.argv[i].toLowerCase() == 'uninstall')) {
+            console.log('In order to install/uninstall, a service type must be specified.');
             process.exit();
         }
     }
-    if(process.execPath.includes('MeshCmd_Lms'))
-    {
-        serviceName = 'MeshCmd_Lms';
-    }
-    else if(process.execPath.includes('MeshCmd_Commander'))
-    {
-        serviceName = 'MeshCmd_Commander';
-    }
-    else
-    {
-        serviceName = 'not_a_service';
-    }
+    if (process.execPath.includes('MicroLMS')) { serviceName = 'MicroLMS'; }
+    else if (process.execPath.includes('MeshCommander')) { serviceName = 'MeshCommander'; }
+    else { serviceName = 'not_a_service'; }
 }
 
 var serviceHost = require('serviceHost');
 var meshcmdService = new serviceHost({ name: serviceName, startType: 'AUTO_START' });
-meshcmdService.on('serviceStart', function onStart()
-{
-    console.setDestination(console.Destinations.LOGFILE);
-    if (process.execPath.includes('MeshCmd_Lms'))
-    {
-        run([process.execPath, 'AmtLms']);
-    }
-    else if(process.execPath.includes('MeshCmd_Commander'))
-    {
-        run([process.execPath, 'MeshCommander']);
-    }
-    else
-    {
-        console.log('Aborting Service Start, because unknown binary: ' + process.execPath);
-        process.exit(1);
-    }
-});
-meshcmdService.on('serviceStop', function onStop() { console.log('LMS Stopping'); process.exit(); });
-meshcmdService.on('normalStart', function onNormalStart()
-{
-    try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); }
+
+// Called when the background service is started.
+meshcmdService.on('serviceStart', function onStart() {
+    console.setDestination(console.Destinations.DISABLED); // Disable console.log().
+    if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } // 
+    else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); }
+    else { console.log('Aborting Service Start, because unknown binary: ' + process.execPath); process.exit(1); }
 });
 
+// Called when the background service is stopping
+meshcmdService.on('serviceStop', function onStop() { console.log('Stopping service'); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
+
+// Called when the executable is not running as a service, run normally.
+meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } });
 meshcmdService.run();
 
 

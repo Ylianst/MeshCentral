@@ -514,3 +514,11 @@ a {
 .notification:hover {
     background-color: #EFE8B6;
 }
+
+.deskToolsBar {
+    padding:3px;
+}
+
+.deskToolsBar:hover {
+    background-color: #EFE8B6;
+}
