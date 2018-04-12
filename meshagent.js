@@ -48,6 +48,21 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Other clean up may be needed here
         if (obj.unauth) { delete obj.unauth; }
         if (obj.agentUpdate != null) { obj.fs.close(obj.agentUpdate.fd); obj.agentUpdate = null; }
+        if (obj.agentInfo.capabilities & 0x20) { // This is a temporary agent, remote it
+            // Delete this node including network interface information and events
+            obj.db.Remove(obj.dbNodeKey);
+            obj.db.Remove('if' + obj.dbNodeKey);
+
+            // Event node deletion
+            obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: obj.domain.id, nolog: 1 })
+
+            // Disconnect all connections if needed
+            var state = obj.parent.parent.GetConnectivityState(obj.dbNodeKey);
+            if ((state != null) && (state.connectivity != null)) {
+                if ((state.connectivity & 1) != 0) { obj.parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
+                if ((state.connectivity & 2) != 0) { obj.parent.parent.mpsserver.close(obj.parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
+            }
+        }
     }
 
     // When data is received from the mesh agent web socket
@@ -430,6 +445,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
                                     delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
                                     for (var i in sessions) { sessions[i].send(JSON.stringify(command)); }
+                                }
+
+                                if (obj.parent.parent.multiServer != null) {
+                                    // TODO: Add multi-server support
                                 }
                             }
                         } else { // Route this command to the mesh

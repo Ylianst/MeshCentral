@@ -377,6 +377,7 @@ function createMeshCore(agent) {
                             break;
                         }
                     }
+                    break;
                 }
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
@@ -1308,6 +1309,7 @@ function createMeshCore(agent) {
             amtLms = new lme_heci();
             amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
             amtLms.on('connect', function () { amtLmsState = 2; });
+            //amtLms.on('bind', function (map) { });
             amtLms.on('notify', function (data, options, str) {
                 if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
                 handleAmtNotification(data);
@@ -1343,7 +1345,7 @@ function createMeshCore(agent) {
     return obj;
 }
 
-var xexports = null;
+var xexports = null, mainMeshCore = null;
 try { xexports = module.exports; } catch (e) { }
 
 if (xexports != null) {
@@ -1351,5 +1353,6 @@ if (xexports != null) {
     module.exports.createMeshCore = createMeshCore;
 } else {
     // If we are not running in NodeJS, launch the core
-    createMeshCore().start(null);
+    mainMeshCore = createMeshCore();
+    mainMeshCore.start(null);
 }

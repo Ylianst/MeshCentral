@@ -746,22 +746,24 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Read meshcore.js and all .js files in the modules folder.
-        var moduleAdditions = 'var addedModules = [];', moduleAdditionsNoMei = 'var addedModules = [];', modulesDir = null;
-        var meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString();
-        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules_meshcore')); } catch (e) { }
-        if (modulesDir != null) {
-            for (var i in modulesDir) {
-                if (modulesDir[i].toLowerCase().endsWith('.js')) {
-                    // Merge this module
-                    var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
-                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules_meshcore', modulesDir[i])).toString('base64');
-                    moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
-                    if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci') && (moduleName != 'amt-0.2.0.js') && (moduleName != 'amt-script-0.2.0.js') && (moduleName != 'amt-wsman-0.2.0.js') && (moduleName != 'amt-wsman-duk-0.2.0.js')) {
-                        moduleAdditionsNoMei += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+        var moduleAdditions = 'var addedModules = [];', moduleAdditionsNoMei = 'var addedModules = [];', meshCore = null, modulesDir = null;
+        try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString(); } catch (e) { }
+        if (meshCore != null) {
+            try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules_meshcore')); } catch (e) { }
+            if (modulesDir != null) {
+                for (var i in modulesDir) {
+                    if (modulesDir[i].toLowerCase().endsWith('.js')) {
+                        // Merge this module
+                        var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
+                        var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules_meshcore', modulesDir[i])).toString('base64');
+                        moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                        if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci') && (moduleName != 'amt-0.2.0.js') && (moduleName != 'amt-script-0.2.0.js') && (moduleName != 'amt-wsman-0.2.0.js') && (moduleName != 'amt-wsman-duk-0.2.0.js')) {
+                            moduleAdditionsNoMei += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                        }
                     }
                 }
             }
-        }
+        } else { meshCore = ''; } // No meshcore.js
 
         // Set the new default meshcore.js with and without MEI support
         obj.defaultMeshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore;

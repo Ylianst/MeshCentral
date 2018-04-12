@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;             // Our next channel identifier
 var lme_port_offset = 0;    // Debug: Set this to "-100" to bind to 16892 & 16893 and IN_ADDRANY. This is for LMS debugging.
@@ -37,7 +38,6 @@ var APF_CHANNEL_DATA = 94;
 var APF_CHANNEL_CLOSE = 97;
 var APF_PROTOCOLVERSION = 192;
 
-
 function lme_object() {
     this.ourId = ++lme_id;
     this.amtId = -1;
@@ -52,7 +52,7 @@ function stream_bufferedWrite() {
     var emitterUtils = require('events').inherits(this);
     this.buffer = [];
     this._readCheckImmediate = undefined;
-    
+    this._ObjectID = "bufferedWriteStream";
     // Writable Events
     emitterUtils.createEvent('close');
     emitterUtils.createEvent('drain');
@@ -115,17 +115,19 @@ function lme_heci(options) {
     emitterUtils.createEvent('error');
     emitterUtils.createEvent('connect');
     emitterUtils.createEvent('notify');
+    emitterUtils.createEvent('bind');
     
     if ((options != null) && (options.debug == true)) { lme_port_offset = -100; } // LMS debug mode
 
     var heci = require('heci');
     this.INITIAL_RXWINDOW_SIZE = 4096;
     
+    this._ObjectID = "lme";
     this._LME = heci.create();
+    this._LME._binded = {};
     this._LME.LMS = this;
     this._LME.on('error', function (e) { this.LMS.emit('error', e); });
     this._LME.on('connect', function () {
-        this.LMS.emit('connect');
         this.on('data', function (chunk) {
             // this = HECI
             var cmd = chunk.readUInt8(0);
@@ -166,7 +168,8 @@ function lme_heci(options) {
                                     if (channel.localPort == port) { this.sockets[i].end(); delete this.sockets[i]; } // Close this socket
                                 }
                             }
-                            if (this[name][port] == null) { // Bind a new server socket if not already present
+                            if (this[name][port] == null)
+                            { // Bind a new server socket if not already present
                                 this[name][port] = require('net').createServer();
                                 this[name][port].HECI = this;
                                 if (lme_port_offset == 0) {
@@ -178,6 +181,8 @@ function lme_heci(options) {
                                     //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
                                     this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);
                                 });
+                                this._binded[port] = true;
+                                this.LMS.emit('bind', this._binded);
                             }
                             var outBuffer = Buffer.alloc(5);
                             outBuffer.writeUInt8(81, 0);
@@ -374,20 +379,21 @@ function lme_heci(options) {
                     buffer.writeUInt32BE(0xFFFFFFFF, 13);       // Reserved
                     this.write(buffer);
 
-                    /*
-                    var buffer = Buffer.alloc(17);
-                    buffer.writeUInt8(APF_CHANNEL_OPEN_FAILURE, 0);
-                    buffer.writeUInt32BE(channelSender, 1);     // Intel AMT sender channel
-                    buffer.writeUInt32BE(2, 5);                 // Reason code
-                    buffer.writeUInt32BE(0, 9);                 // Reserved
-                    buffer.writeUInt32BE(0, 13);                // Reserved
-                    this.write(buffer);
-                    console.log('Sent APF_CHANNEL_OPEN_FAILURE', channelSender);
-                    */
+                    //var buffer = Buffer.alloc(17);
+                    //buffer.writeUInt8(APF_CHANNEL_OPEN_FAILURE, 0);
+                    //buffer.writeUInt32BE(channelSender, 1);     // Intel AMT sender channel
+                    //buffer.writeUInt32BE(2, 5);                 // Reason code
+                    //buffer.writeUInt32BE(0, 9);                 // Reserved
+                    //buffer.writeUInt32BE(0, 13);                // Reserved
+                    //this.write(buffer);
+                    //console.log('Sent APF_CHANNEL_OPEN_FAILURE', channelSender);
 
                     break;
             }
         });
+        this.LMS.emit('connect');
+        this.resume();
+
     });
     
     this.bindDuplexStream = function (duplexStream, remoteFamily, localPort) {
