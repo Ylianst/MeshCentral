@@ -48,7 +48,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Other clean up may be needed here
         if (obj.unauth) { delete obj.unauth; }
         if (obj.agentUpdate != null) { obj.fs.close(obj.agentUpdate.fd); obj.agentUpdate = null; }
-        if (obj.agentInfo.capabilities & 0x20) { // This is a temporary agent, remote it
+        if ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) { // This is a temporary agent, remote it
             // Delete this node including network interface information and events
             obj.db.Remove(obj.dbNodeKey); // Remove node with that id
             obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
