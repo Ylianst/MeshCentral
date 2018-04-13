@@ -95,6 +95,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     agreeTos: true,
                     rsaKeySize: rsaKeySize,
                     challengeType: 'http-01'
+                    //renewWithin: 15 * 24 * 60 * 60 * 1000 // 15 days
+                    //renewWithin: 81 * 24 * 60 * 60 * 1000, // 81 days
+                    //renewBy: 80 * 24 * 60 * 60 * 1000 // 80 days
                 }).then(function (xresults) {
                     obj.parent.performServerCertUpdate(); // Reset the server, TODO: Reset all peers
                 }, function (err) {

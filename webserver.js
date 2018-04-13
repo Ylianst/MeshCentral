@@ -80,6 +80,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     const MESHRIGHT_AGENTCONSOLE = 16;
     const MESHRIGHT_SERVERFILES = 32;
     const MESHRIGHT_WAKEDEVICE = 64;
+    const MESHRIGHT_SETNOTES = 128;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;

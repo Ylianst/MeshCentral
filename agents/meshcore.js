@@ -817,7 +817,9 @@ function createMeshCore(agent) {
                 this.websocket.rtcchannel.on('end', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');*/ });
                 this.websocket.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate we are ready for WebRTC switch-over.
             });
-            ws.write({ type: 'answer', ctrlChannel: '102938', sdp: ws.webrtc.setOffer(obj.sdp) });
+            var sdp = null;
+            try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
+            if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
         }
     }
 

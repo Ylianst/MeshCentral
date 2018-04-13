@@ -1051,6 +1051,20 @@
                     }
                     break;
                 }
+                case 'getNotes':{
+                    var n = Q('d2devNotes');
+                    if (n && (message.nodeid == n.attributes['nodeid'].value)) {
+                        if (message.notes) { QH('d2devNotes', decodeURIComponent(message.notes)); } else { QH('d2devNotes', ''); }
+                        var ro = n.attributes['ro'].value == 'true';
+                        if (ro == false) { // If we have permissions, set read/write on this note.
+                            n.removeAttribute('readonly');
+                            QE('idx_dlgOkButton', true);
+                            QV('idx_dlgOkButton', true);
+                            focusTextBox('d2devNotes');
+                        }
+                    }
+                    break;
+                }
                 case 'event': {
                     if (!message.event.nolog) {
                         events.unshift(message.event);
@@ -2761,9 +2775,10 @@
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
 
-                x += '</table>';
+                x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<br /><input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
+                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
+                x += '<input type=button value=Notes title="View notes about this device" onclick=deviceNotesFunction(' + ((meshrights & 128) == 0) + ',"' + node._id + '") />';
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -2843,6 +2858,14 @@
             if (!panel) panel = 10;
             go(panel);
         }
+
+        function deviceNotesFunction(readonly, nodeid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Device Notes", 2, deviceNotesFunctionEx, '<textarea id=d2devNotes ro=' + readonly + ' nodeid=' + nodeid + ' readonly style=width:100%;height:200px;resize:none;overflow-y:scroll></textarea>', nodeid);
+            meshserver.send({ action: 'getNotes', nodeid: nodeid });
+        }
+
+        function deviceNotesFunctionEx(buttons, tag) { meshserver.send({ action: 'setNotes', nodeid: tag, notes: encodeURIComponent(Q('d2devNotes').value) }); }
 
         function deviceActionFunction() {
             var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
@@ -4485,6 +4508,7 @@
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Notes<br>';
             x += '</div>';
             setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -4502,6 +4526,7 @@
             QE('p20meshagentconsole', !Q('p20fulladmin').checked);
             QE('p20meshserverfiles', !Q('p20fulladmin').checked);
             QE('p20wakedevices', !Q('p20fulladmin').checked);
+            QE('p20editnotes', !Q('p20fulladmin').checked);
         }
 
         function p20showAddMeshUserDialogEx() {
@@ -4514,6 +4539,7 @@
                 if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
                 if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
                 if (Q('p20wakedevices').checked == true) meshadmin += 64;
+                if (Q('p20editnotes').checked == true) meshadmin += 128;
             }
             meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
         }
@@ -4524,13 +4550,14 @@
             var meshrights = currentMesh.links[userid].rights;
             var r = '';
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
-                if ((meshrights &  1) != 0) r += ', Edit Mesh';
-                if ((meshrights &  2) != 0) r += ', Manage Mesh Users';
-                if ((meshrights &  4) != 0) r += ', Manage Mesh Computers';
-                if ((meshrights &  8) != 0) r += ', Remote Control';
-                if ((meshrights & 16) != 0) r += ', Agent Console';
-                if ((meshrights & 32) != 0) r += ', Server Files';
-                if ((meshrights & 64) != 0) r += ', Wake Devices';
+                if ((meshrights &   1) != 0) r += ', Edit Mesh';
+                if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
+                if ((meshrights &   4) != 0) r += ', Manage Mesh Computers';
+                if ((meshrights &   8) != 0) r += ', Remote Control';
+                if ((meshrights &  16) != 0) r += ', Agent Console';
+                if ((meshrights &  32) != 0) r += ', Server Files';
+                if ((meshrights &  64) != 0) r += ', Wake Devices';
+                if ((meshrights & 128) != 0) r += ', Edit Notes';
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
