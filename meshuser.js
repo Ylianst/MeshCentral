@@ -91,7 +91,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         obj.ws.HandleEvent = function (source, event) {
             if (!event.domain || event.domain == obj.domain.id) {
                 try {
-                    if (event == 'close') { obj.req.session.destroy(); obj.ws.close(); }
+                    if (event == 'close') { req.session.destroy(); obj.close(); }
                     else if (event == 'resubscribe') { user.subscriptions = obj.parent.subscribe(user._id, ws); }
                     else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                     else { ws.send(JSON.stringify({ action: 'event', event: event })); }
@@ -280,10 +280,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
+                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); } catch (ex) { } });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(user.subscriptions, domain.id, command.limit, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
+                            obj.db.GetEventsWithLimit(user.subscriptions, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); } catch (ex) { } });
                         }
                         break;
                     }
@@ -451,6 +451,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     delete userinfo.subscriptions;
                                     delete userinfo.passtype;
                                     obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
+                                }
+                                if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
+                                    obj.parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                                 }
                             }
                         }

@@ -88,6 +88,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     const SITERIGHT_SERVERRESTORE = 4;
     const SITERIGHT_FILEACCESS = 8;
     const SITERIGHT_SERVERUPDATE = 16;
+    const SITERIGHT_LOCKED = 32;
 
     // Setup SSPI authentication if needed
     if ((obj.parent.platform == 'win32') && (obj.args.nousers != true) && (obj.parent.config != null) && (obj.parent.config.domains != null)) {
@@ -207,6 +208,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     if (hash == user.hash) {
                         // Update the password to the stronger format.
                         require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
                     fn(new Error('invalid password'), null, user.passhint);
@@ -215,7 +217,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 // Default strong password hashing (pbkdf2 SHA384)
                 require('./pass').hash(pass, user.salt, function (err, hash) {
                     if (err) return fn(err);
-                    if (hash == user.hash) return fn(null, user._id);
+                    if (hash == user.hash) {
+                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                        return fn(null, user._id);
+                    }
                     fn(new Error('invalid password'), null, user.passhint);
                 });
             }
@@ -330,7 +335,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id })
             } else {
                 delete req.session.loginmode;
-                req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>';
+                if (err == 'locked') { req.session.error = '<b style=color:#8C001A>Account locked.</b>'; } else { req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>'; }
                 if ((passhint != null) && (passhint.length > 0)) {
                     req.session.passhint = passhint;
                 } else {

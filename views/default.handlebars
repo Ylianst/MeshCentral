@@ -3457,7 +3457,7 @@
         function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousedown(e) }
         function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mouseup(e) }
         function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
@@ -4856,8 +4856,9 @@
                     if (self) { msg += "</a>"; }
                 }
                 if (msg != '') msg += ', ';
-                if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + user._id + "\")>"; }
-                if ((user.siteadmin == null) || (user.siteadmin == 0)) {
+                if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
+                if ((user.siteadmin != null) && (user.siteadmin == 32)) { msg += "Locked, "; }
+                if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) {
                     msg += "User";
                 } else if (user.siteadmin == 8) {
                     msg += "User with server files";
@@ -4938,6 +4939,7 @@
         function showUserAdminDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
+            userid = decodeURIComponent(userid);
             var x = '<div>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>Server Files, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 style=width:80px;text-align:right id=ua_fileaccessquota>k max, blank for default<br><hr/>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>Full Administrator<br>';
@@ -4945,9 +4947,10 @@
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>Server Restore<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>Server Updates<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>Manage Users<br>';
+            x += '<hr/><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>Lock Account<br>';
             x += '</div>';
-            var user = users[userid];
-            setDialogMode(2, "Site Permissions", 3, showUserAdminDialogEx, x, user);
+            var user = users[userid.toLowerCase()];
+            setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
                 Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));     // Server Backup
@@ -4955,6 +4958,7 @@
                 Q('ua_serverrestore').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 4) != 0));    // Server Restore
                 Q('ua_fileaccess').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 8) != 0));       // Server Files
                 Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));    // Server Update
+                Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));   // Account locked
             }
             QE('ua_fulladmin', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverbackup', userinfo.siteadmin == 0xFFFFFFFF);
@@ -4974,7 +4978,7 @@
                 QE('ua_serverrestore', !Q('ua_fulladmin').checked);
                 QE('ua_fileaccess', !Q('ua_fulladmin').checked);
                 QE('ua_serverupdate', !Q('ua_fulladmin').checked);
-                QE('ua_fileaccessquota', Q('ua_fileaccess').checked || Q('ua_fulladmin').checked);
+                QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
             }
         }
 
@@ -4986,6 +4990,7 @@
                 if (Q('ua_serverrestore').checked == true) siteadmin += 4;
                 if (Q('ua_fileaccess').checked == true) siteadmin += 8;
                 if (Q('ua_serverupdate').checked == true) siteadmin += 16;
+                if (Q('ua_lockedaccount').checked == true) siteadmin += 32;
             }
             var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
