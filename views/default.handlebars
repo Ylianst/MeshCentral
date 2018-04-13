@@ -351,18 +351,18 @@
                         </tr>
                         <tr id=deskarea2>
                             <td>
-                                <div style="background-color:gray"><div id="progressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                                <div style=background-color:gray><div id=progressbar style=height:2px;width:0%;background-color:red></div></div>
                             </td>
                         </tr>
                         <tr id=deskarea3>
-                            <td id=deskarea3x style="background:black;text-align:center;height:400px;position:relative">
-                                <div id="DeskFocus" style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></div>
-                                <div id="DeskParent">
-                                    <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>
+                            <td id=deskarea3x style=background:black;text-align:center;height:400px;position:relative>
+                                <div id=DeskFocus style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
+                                <div id=DeskParent>
+                                    <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                                 </div>
-                                <div id="DeskTools" style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
-                                    <a id="DeskToolsRefreshButton" style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
-                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
+                                <div id=DeskTools style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
+                                    <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
+                                    <div id=DeskToolsBar style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
                                         <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer title="Sort by process id" onclick=sortProcess(0)>PID</a><a style=cursor:pointer title="Sort by name" onclick=sortProcess(1)>Name</a></div>
                                         <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
@@ -371,10 +371,10 @@
                             </td>
                         </tr>
                         <tr id=deskarea4>
-                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                                <div style="float:right;text-align:right">
-                                    <select id="termdisplays" style="display:none" onchange="deskSetDisplay(event)" onclick="deskGetDisplayNumbers(event)"></select>&nbsp;
-                                    <input id="DeskToolsButton" type="button" value="Tools" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
+                            <td style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
+                                <div style=float:right;text-align:right>
+                                    <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
+                                    <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                                 </div>
                                 <div>
                                     &nbsp;
@@ -776,22 +776,6 @@
             t = localStorage.getItem('multidesktopsettings');
             if (t != null) { multidesktopsettings = JSON.parse(t); }
             applyDesktopSettings();
-
-            // Mouse Scroll on desktop
-            if (navigator.userAgent.match(/mozilla/i)) {
-                Q('Desk').addEventListener('DOMMouseScroll', function (e) {
-                    return dmousewheel(e);
-                    //if (loginState == 3) { SendMouseMsg(KeyAction.SCROLL, e); return false; }
-                    //return true;
-                });
-            }
-            else {
-                Q('Desk').addEventListener('mousewheel', function (e) {
-                    return dmousewheel(e);
-                    //if (loginState == 3) { SendMouseMsg(KeyAction.SCROLL, e); return false; }
-                    //return true;
-                });
-            }
 
             // Terminal special keys
             var x = '';
@@ -2861,7 +2845,7 @@
 
         function deviceNotesFunction(readonly, nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Notes", 2, deviceNotesFunctionEx, '<textarea id=d2devNotes ro=' + readonly + ' nodeid=' + nodeid + ' readonly style=width:100%;height:200px;resize:none;overflow-y:scroll></textarea>', nodeid);
+            setDialogMode(2, "Device Notes", 2, deviceNotesFunctionEx, '<textarea id=d2devNotes ro=' + readonly + ' nodeid=' + nodeid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>', nodeid);
             meshserver.send({ action: 'getNotes', nodeid: nodeid });
         }
 
@@ -3192,9 +3176,12 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>');
+                    QH('DeskParent', '<canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                     desktopNode = currentNode;
                 }
+                // Setup the mouse wheel
+                Q('Desk').addEventListener('DOMMouseScroll', function (e) { return dmousewheel(e); });
+                Q('Desk').addEventListener('mousewheel', function (e) { return dmousewheel(e); });
             }
             desktopNode = currentNode;
             updateDesktopButtons();
