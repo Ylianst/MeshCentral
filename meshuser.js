@@ -278,12 +278,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     }
                 case 'events':
                     {
+                        // Setup the event filter
+                        var filter = user.subscriptions;
+                        if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
+                            // TODO: Add the meshes command.user has access to
+                            filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
+                        }
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(user.subscriptions, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
                         }
                         break;
                     }
@@ -459,11 +465,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'changeuserpass':
+                    {
+                        // Change a user's password
+                        if (user.siteadmin != 0xFFFFFFFF) break;
+                        if (obj.common.validateString(command.user, 1, 256) == false) break;
+                        if (obj.common.validateString(command.pass, 1, 256) == false) break;
+                        var chguserid = 'user/' + domain.id + '/' + command.user.toLowerCase(), chguser = obj.parent.users[chguserid];
+                        if (chguser && chguser.salt) {
+                            // Compute the password hash & save it
+                            require('./pass').hash(command.pass, chguser.salt, function (err, hash) { if (!err) { chguser.hash = hash; obj.db.SetUser(chguser); } });
+                        }
+                        break;
+                    }
                 case 'notifyuser':
                     {
                         // Send a notification message to a user
                         if ((user.siteadmin & 2) == 0) break;
-                        if (obj.common.validateString(command.userid, 1, 64) == false) break; // Meshname is between 1 and 64 characters
+                        if (obj.common.validateString(command.userid, 1, 2048) == false) break;
                         if (obj.common.validateString(command.msg, 1, 4096) == false) break;
 
                         // Create the notification message

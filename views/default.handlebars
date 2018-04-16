@@ -75,8 +75,8 @@
                                 <td class=style3 style="text-align:right;height:24px"><span title="Toggle full width" style="cursor:pointer;opacity:0.2" onclick="toggleFullScreen(1)">&harr;</span>&nbsp;</td>
                             </tr>
                         </table>
-                        <div id="MainSubMenuSpan" style=display:none>
-                            <table id="MainSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
+                        <div id=MainSubMenuSpan style=display:none>
+                            <table id=MainSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
                                     <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
                                     <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
@@ -88,10 +88,19 @@
                                 </tr>
                             </table>
                         </div>
-                        <div id="MeshSubMenuSpan" style=display:none>
-                            <table id="MeshSubMenu" style="width: 100%; height: 22px;" cellpadding=0 cellspacing=0 class=style1>
+                        <div id=MeshSubMenuSpan style=display:none>
+                            <table id=MeshSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
                                     <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
+                                    <td class=style3 style=height:24px>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id=UserSubMenuSpan style=display:none>
+                            <table id=UserSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                <tr>
+                                    <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(30)>General</td>
+                                    <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(31)>Events</td>
                                     <td class=style3 style=height:24px>&nbsp;</td>
                                 </tr>
                             </table>
@@ -542,6 +551,47 @@
                     <h1><span id=p20meshName></span> - General</h1>
                     <p id=p20info></p>
                 </div>
+                <div id=p30 style=display:none>
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id="p30title">
+                                    <h1><span id=p30userName></span> - General</h1>
+                                </div>
+                                <div id=p30html></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px>
+                                <img id=MainUserImage src="images/user-200.png" style=border-width:0px;height:200px;width:200px>
+                                <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
+                            </td>
+                        </tr>
+                    </table><br>
+                    <div id=p30html2></div>
+                    <div id=p30html3></div>
+                </div>
+                <div id=p31 style=display:none>
+                    <h1><span id=p31userName></span> - Events</h1>
+                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
+                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
+                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
+                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style=display:none value="Delete All..." />&nbsp;</div>-->
+                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshUsersEvents() />&nbsp;</div>
+                        <div class="auto-style1" style="height:100%;float:right">
+                            Show
+                            <select id=p31limitdropdown onchange=refreshUsersEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                            </select>
+                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
+                            <div class="h2" style="height:100%;float:right;">&nbsp;</div>
+                        </div>
+                    </div>
+                    <div id=p31events style="max-height:600px;overflow-y:scroll"></div>
+                </div>
                 <br id="column_l_bottomgap" />
             </div>
             <div id=footer class=noselect>
@@ -865,7 +915,7 @@
             QV('p2ServerActionsRestore', siteRights & 4);
             QV('p2ServerActionsVersion', siteRights & 16);
             QV('MainMenuMyFiles', siteRights & 8);
-            if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { go(1); }
+            if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
             // Update user management state
@@ -879,7 +929,7 @@
                 users = null;
                 wssessions = null;
                 updateUsers();
-                if (xxcurrentView == 4) go(1);
+                if (xxcurrentView == 4 || ((xxcurrentView >= 30) && (xxcurrentView < 40))) { setDialogMode(0); go(1); currentUser = null; }
             }
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
             QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
@@ -942,7 +992,7 @@
                     onSearchInputChanged();
                     updateDevices();
                     refreshMap(false, true);
-                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { go(1); } }
+                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { setDialogMode(0); go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',{{viewmode}});}
                     break;
                 }
@@ -1023,8 +1073,13 @@
                     break;
                 }
                 case 'events': {
-                    events = message.events;
-                    events_update();
+                    if ((message.user != null) && (message.user == currentUser.name)) {
+                        currentUserEvents = message.events;
+                        userEvents_update();
+                    } else {
+                        events = message.events;
+                        events_update();
+                    }
                     break;
                 }
                 case 'getcookie': {
@@ -1114,7 +1169,7 @@
                                     nodes = newnodes;
 
                                     // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) go(1);
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
                                 }
                             }
                             updateMeshes();
@@ -1140,9 +1195,9 @@
                             updateDevices();
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
-                            if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) go(2);
+                            if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) go(1);
+                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
 
                             break;
                         }
@@ -1168,7 +1223,7 @@
                             if (index != -1) {
                                 var node = nodes[index];
                                 if (currentNode == node) {
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20) { go(1); }
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); }
                                     delete currentNode; // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
                                 nodes.splice(index, 1);
@@ -4850,14 +4905,14 @@
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], icon = 'm2', msg = '', self = (user.name != userinfo.name);
                 if (wssessions != null && wssessions[user._id]) {
-                    if (self) { msg += "<a onclick=showUserAlertDialog(event,\"" + user._id + "\")>"; }
+                    if (self) { msg += "<a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
                     var sessions = wssessions[user._id];
                     if (sessions == 1) { msg += '1 active session'; } else { msg += sessions + ' active sessions'; }
                     if (self) { msg += "</a>"; }
                 }
                 if (msg != '') msg += ', ';
                 if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
-                if ((user.siteadmin != null) && (user.siteadmin == 32)) { msg += "Locked, "; }
+                if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { msg += "Locked, "; }
                 if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) {
                     msg += "User";
                 } else if (user.siteadmin == 8) {
@@ -4871,7 +4926,7 @@
                 if (self) { msg += "</a>"; }
                 var username = EscapeHtml(user.name);
                 if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + (((serverinfo.emailcheck == true) && (user.emailVerified != true))?' (unverified)':''); }
-                x += '<tr><td style=cursor:pointer onclick=showUserInfoDialog(\"' + user._id + '\")>';
+                x += '<tr><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
                 x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
                 x += '<div style=float:left;height:24px;width:24px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
                 x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
@@ -4879,41 +4934,26 @@
             }
             x += '</table>';
             QH('p3users', x);
+
+            // Update current user panel if needed
+            if ((currentUser != null) && (xxcurrentView == 30)) { gotoUser(encodeURIComponent(currentUser._id),true); }
         }
 
         function showUserAlertDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
-            setDialogMode(2, "Notify " + EscapeHtml(users[userid].name), 3, showUserAlertDialogEx, 'Send a text notification to this user.<textarea id=d2notifyText maxlength=2048 style="width:100%;height:184px;resize:none"></textarea>', userid);
+            setDialogMode(2, "Notify " + EscapeHtml(users[decodeURIComponent(userid)].name), 3, showUserAlertDialogEx, 'Send a text notification to this user.<textarea id=d2notifyText maxlength=2048 style="width:100%;height:184px;resize:none"></textarea>', userid);
             Q('d2notifyText').focus();
             return false;
         }
 
-        function showUserAlertDialogEx(button, userid) { meshserver.send({ action: 'notifyuser', userid: userid, msg: Q('d2notifyText').value }); }
+        function showUserAlertDialogEx(button, userid) { meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: Q('d2notifyText').value }); }
 
         function doemail(e, addr) {
             if (xxdialogMode) return;
             haltEvent(e);
             window.open("mailto:" + addr);
             return false;
-        }
-
-        function showUserInfoDialog(userid) {
-            var user = users[userid], x = '';
-            if (xxdialogMode) return;
-            x += addHtmlValue('Name', EscapeHtml(user.name));
-            if (user.email != null) { x += addHtmlValue('Email', EscapeHtml(user.email)); }
-            x += addHtmlValue('Creation', new Date(user.creation).toLocaleString());
-            if (user.login) x += addHtmlValue('Last Login', new Date(user.login).toLocaleString());
-            if (user.quota) x += addHtmlValue('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
-            var deletePossible = true;
-            if (user._id == userinfo._id) deletePossible = false;
-            if (user.siteadmin && user.siteadmin > 0 && userinfo.siteadmin != 0xFFFFFFFF) deletePossible = false;
-            setDialogMode(2, "User " + EscapeHtml(user.name), deletePossible?5:1, showUserInfoDialogDelete, x, user);
-        }
-
-        function showUserInfoDialogDelete(button, user) {
-            if (button == 2) { meshserver.send({ action: 'deleteuser', userid: user._id, username: user.name }); }
         }
 
         function showCreateNewAccountDialog() {
@@ -4929,7 +4969,7 @@
         }
 
         function showCreateNewAccountDialogValidate() {
-            QE('idx_dlgOkButton', Q('p4name').value.length > 0 && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value);
+            QE('idx_dlgOkButton', (!Q('p4name') || (Q('p4name').value.length > 0)) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value);
         }
 
         function showCreateNewAccountDialogEx() {
@@ -4995,6 +5035,177 @@
             var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
             meshserver.send(x);
+        }
+
+        //
+        // MY USERS GENERAL
+        //
+
+        var currentUser = null;
+        function gotoUser(userid, force) {
+            if (xxdialogMode && !force) return;
+            var user = currentUser = users[decodeURIComponent(userid)];
+            if (user == null) { setDialogMode(0); go(4); return; }
+            QH('p30userName', user.name);
+            QH('p31userName', user.name);
+            var self = (user.name == userinfo.name), activeSessions = 0;
+
+            if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
+
+            // Server permissions
+            var msg = '';
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0)  && (user.siteadmin != 0xFFFFFFFF)) { msg += "Locked account, "; }
+            if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) { msg += "No server rights"; } else if (user.siteadmin == 8) { msg += "Access to server files"; } else if (user.siteadmin == 0xFFFFFFFF) { msg += "Full administrator"; } else { msg += "Partial rights"; }
+
+            // Show user attributes
+            var x = '<div style=min-height:80px><table style=width:100%>';
+            if (user.email) x += addDeviceAttribute('Email', '<a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")>' + EscapeHtml(user.email) + '</a>');
+            x += addDeviceAttribute('Creation', new Date(user.creation).toLocaleString());
+            if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login).toLocaleString());
+            x += addDeviceAttribute('Server Rights', "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
+            if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
+            
+            x += '</table></div><br />';
+
+            // Add action buttons
+            //x += '<input type=button value=Notes title="View notes about this user" onclick=userNotesFunction("' + userid + '") />';
+            if (!self && (activeSessions > 0)) { x += '<input type=button value=Notify title="Send user notification" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
+
+            // Setup the panel
+            QH('p30html', x);
+
+            // Draw the user timeline
+            drawUserTimeline();
+
+            // Check if we can delete this user
+            var deletePossible = true;
+            if (user._id == userinfo._id) deletePossible = false;
+            if (user.siteadmin && user.siteadmin > 0 && userinfo.siteadmin != 0xFFFFFFFF) deletePossible = false;
+
+            // Show bottom buttons
+            x = '<div style=float:right;font-size:x-small>';
+            if (deletePossible) x += '<a style=cursor:pointer onclick=p30showDeleteUserDialog() title="Remove this user">Delete User</a>';
+            x += '</div><div style=font-size:x-small>';
+            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a style=cursor:pointer onclick=p30showUserChangePassDialog() title="Change the password for this user">Change Password</a>';
+            x += '</div><br>'
+            QH('p30html3', x);
+
+            // Update user's connection state
+            x = '';
+            if (activeSessions == 1) { x = '1 active session'; } else if (activeSessions > 1) { x = activeSessions + ' active sessions'; }
+            QH('MainUserState', x);
+
+            go(30);
+
+            // Update user events (TODO: do this only if we change users)
+            QH('p31events', '');
+            refreshUsersEvents();
+        }
+
+        function p30showUserChangePassDialog() {
+            if (xxdialogMode) return;
+            var x = '';
+            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x);
+            showCreateNewAccountDialogValidate();
+            Q('p4pass1').focus();
+        }
+
+        function p30showUserChangePassDialogEx() {
+            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value }); } }
+
+        function p30showDeleteUserDialog() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Delete User " + EscapeHtml(currentUser.name), 3, p30showDeleteUserDialogEx, 'Confirm deletion of user ' + EscapeHtml(currentUser.name) + '?');
+        }
+
+        function p30showDeleteUserDialogEx() {
+            meshserver.send({ action: 'deleteuser', userid: currentUser._id, username: currentUser.name });
+        }
+
+        // Draw device power bars. The bars are 766px wide.
+        function drawUserTimeline() {
+            var timeline = null, now = Date.now();
+            //if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
+            timeline = [];
+
+            // Calculate when the timeline starts
+            var d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d = new Date(d.getTime() - (1000 * 60 * 60 * 24 * 6));
+            var timelineStart = d.getTime();
+
+            // De-compact the timeline
+            var timeline2 = [];
+            if (timeline != null && timeline.length > 1) {
+                timeline2.push([ 0, timeline[1], timeline[0] ]); // Start, End, Power
+                var ct = timeline[1];
+                for (var i = 2; i < timeline.length; i += 2) {
+                    var power = timeline[i], dt = now;
+                    if (timeline.length > (i + 1)) { dt = timeline[i + 1]; }
+                    timeline2.push([ ct, ct + dt, power ]); // Start, End, Power
+                    ct = ct + dt;
+                }
+            }
+
+            // Draw the timeline
+            var x = '', count = 1, date = new Date();
+            date.setHours(0, 0, 0, 0);
+            for (var i = 0; i < 7; i++) {
+                var datavalue = '', start = date.getTime(), end = start + (1000 * 60 * 60 * 24);
+                for (var j in timeline2) {
+                    var block = timeline2[j];
+                    if (isTimeBlockInside(start, end, block[0], block[1]) == true) {
+                        var ts = Math.max(start, block[0]);
+                        var te = Math.min(Math.min(end, block[1]), now);
+                        var width = Math.round((te - ts) / 112794);
+                        if (width > 0) {
+                            var title = powerStateStrings2[block[2]] + ' from ' + new Date(ts).toLocaleTimeString() + ' to ' + new Date(te).toLocaleTimeString() + '.';
+                            datavalue += '<div title="' + title + '" style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>';
+                        }
+                    }
+                }
+                x += '<tr style=' + (((count % 2) == 0)?'background-color:#DDD':'') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                ++count;
+                date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
+            }
+            QH('p30html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center>7 Day Login State</th></tr>' + x + '</tbody></table>');
+        }
+
+        //
+        // MY USERS EVENTS
+        //
+
+        var currentUserEvents = null;
+        function userEvents_update() {
+            var x = '', dateHeader = null;
+            for (var i in currentUserEvents) {
+                var event = currentUserEvents[i];
+                var time = new Date(event.time);
+                if (time.toLocaleDateString() != dateHeader) {
+                    if (dateHeader != null) x += '</table>';
+                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                    dateHeader = time.toLocaleDateString();
+                }
+                var icon = 'si3';
+                if (event.etype == 'user') icon = 'm2';
+                if (event.etype == 'server') icon = 'si3';
+
+                var msg = event.msg.split('(R)').join('&reg;');
+                if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
+                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
+                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
+                x += '<div style=font-size:14px><span style=width:300px>' + time.toLocaleTimeString() + ' - ' + msg + '</span></div></div></td></tr>';
+            }
+            if (dateHeader != null) x += '</table>';
+            if (x == '') x = "<br><i>No Events Found</i><br><br>";
+            QH('p31events', x);
+        }
+
+        function refreshUsersEvents() {
+            meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), user: currentUser.name });
         }
 
         //
@@ -5237,14 +5448,14 @@
         function go(x) {
             if (xxdialogMode || xxcurrentView == x) return;
             // Edit this line when adding a new screen
-            for (var i = 0; i < 22; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             QV('topbar', x != 0);
             if (x >= 10 && x < 20) { QS('MainMenuMyDevices').backgroundColor = "#606060"; } else { QS('MainMenuMyDevices').backgroundColor = ((x == 1) ? "#003366" : "#808080"); }
             if (x >= 20 && x < 30) { QS('MainMenuMyAccount').backgroundColor = "#606060"; } else { QS('MainMenuMyAccount').backgroundColor = ((x == 2) ? "#003366" : "#808080"); }
             QS('MainMenuMyEvents').backgroundColor = ((x == 3) ? "#003366" : "#808080");
-            QS('MainMenuMyUsers').backgroundColor = ((x == 4) ? "#003366" : "#808080");
+            if (x >= 30 && x < 40) { QS('MainMenuMyUsers').backgroundColor = "#606060"; } else { QS('MainMenuMyUsers').backgroundColor = ((x == 4) ? "#003366" : "#808080"); }
             QS('MainMenuMyFiles').backgroundColor = ((x == 5) ? "#003366" : "#808080");
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QS('MainDev').backgroundColor = ((x == 10) ? "#003366" : "#808080");
@@ -5255,6 +5466,9 @@
             QS('MainDevConsole').backgroundColor = ((x == 15) ? "#003366" : "#808080");
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QS('MeshGeneral').backgroundColor = ((x == 20) ? "#003366" : "#808080");
+            QV('UserSubMenuSpan', x >= 30 && x < 40);
+            QS('UserGeneral').backgroundColor = ((x == 30) ? "#003366" : "#808080");
+            QS('UserEvents').backgroundColor = ((x == 31) ? "#003366" : "#808080");
             if (x == 1) updateDevices();
         }
 
