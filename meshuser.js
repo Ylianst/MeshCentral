@@ -1021,49 +1021,101 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'setNotes':
                     {
                         // Argument validation
-                        if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                        var splitid = command.id.split('/');
+                        if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        var idtype = splitid[0];
+                        if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
-                        // Check if this user has rights on this nodeid to set notes
-                        obj.db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                            if (nodes.length == 1) {
-                                var meshlinks = user.links[nodes[0].meshid];
-                                if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_SETNOTES != 0)) {
-                                    // Set the node's notes
-                                    if (obj.common.validateString(command.notes, 1) == false) {
-                                        obj.db.Remove('nt' + command.nodeid); // Delete the note for this node
-                                    } else {
-                                        obj.db.Set({ _id: 'nt' + command.nodeid, value: command.notes }); // Set the note for this node
+                        if (idtype == 'node') {
+                            // Check if this user has rights on this id to set notes
+                            obj.db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                                if (nodes.length == 1) {
+                                    var meshlinks = user.links[nodes[0].meshid];
+                                    if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_SETNOTES != 0)) {
+                                        // Set the id's notes
+                                        if (obj.common.validateString(command.notes, 1) == false) {
+                                            obj.db.Remove('nt' + command.id); // Delete the note for this node
+                                        } else {
+                                            obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                                        }
                                     }
                                 }
+                            });
+                        } else if (idtype == 'mesh') {
+                            // Get the mesh for this device
+                            var mesh = obj.parent.meshes[command.id];
+                            if (mesh) {
+                                // Check if this user has rights to do this
+                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+
+                                // Set the id's notes
+                                if (obj.common.validateString(command.notes, 1) == false) {
+                                    obj.db.Remove('nt' + command.id); // Delete the note for this node
+                                } else {
+                                    obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                                }
                             }
-                        });
+                        } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
+                            // Set the id's notes
+                            if (obj.common.validateString(command.notes, 1) == false) {
+                                obj.db.Remove('nt' + command.id); // Delete the note for this node
+                            } else {
+                                obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                            }
+                        }
+
                         break;
                     }
                 case 'getNotes':
                     {
                         // Argument validation
-                        if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                        var splitid = command.id.split('/');
+                        if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        var idtype = splitid[0];
+                        if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
-                        // Get the device
-                        obj.db.Get(command.nodeid, function (err, nodes) {
-                            if (nodes.length != 1) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
-                            var node = nodes[0];
+                        if (idtype == 'node') {
+                            // Get the device
+                            obj.db.Get(command.id, function (err, nodes) {
+                                if (nodes.length != 1) return;
+                                var node = nodes[0];
 
+                                // Get the mesh for this device
+                                var mesh = obj.parent.meshes[node.meshid];
+                                if (mesh) {
+                                    // Check if this user has rights to do this
+                                    if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+
+                                    // Get the notes about this node
+                                    obj.db.Get('nt' + command.id, function (err, notes) {
+                                        if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                        ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                    });
+                                }
+                            });
+                        } else if (idtype == 'mesh') {
                             // Get the mesh for this device
-                            var mesh = obj.parent.meshes[node.meshid];
+                            var mesh = obj.parent.meshes[command.id];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
 
                                 // Get the notes about this node
-                                obj.db.Get('nt' + command.nodeid, function (err, notes) {
-                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', nodeid: command.nodeid, notes: null })); return; }
-                                    ws.send(JSON.stringify({ action: 'getNotes', nodeid: command.nodeid, notes: notes[0].value }));
+                                obj.db.Get('nt' + command.id, function (err, notes) {
+                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                    ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
                                 });
                             }
-                        });
+                        } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
+                            // Get the notes about this node
+                            obj.db.Get('nt' + command.id, function (err, notes) {
+                                if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                            });
+                        }
+
                         break;
                     }
             }

@@ -1092,7 +1092,7 @@
                 }
                 case 'getNotes':{
                     var n = Q('d2devNotes');
-                    if (n && (message.nodeid == n.attributes['nodeid'].value)) {
+                    if (n && (message.id == decodeURIComponent(n.attributes['noteid'].value))) {
                         if (message.notes) { QH('d2devNotes', decodeURIComponent(message.notes)); } else { QH('d2devNotes', ''); }
                         var ro = n.attributes['ro'].value == 'true';
                         if (ro == false) { // If we have permissions, set read/write on this note.
@@ -2817,7 +2817,7 @@
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
                 if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
-                x += '<input type=button value=Notes title="View notes about this device" onclick=deviceNotesFunction(' + ((meshrights & 128) == 0) + ',"' + node._id + '") />';
+                x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -2898,13 +2898,13 @@
             go(panel);
         }
 
-        function deviceNotesFunction(readonly, nodeid) {
+        function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Notes", 2, deviceNotesFunctionEx, '<textarea id=d2devNotes ro=' + readonly + ' nodeid=' + nodeid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>', nodeid);
-            meshserver.send({ action: 'getNotes', nodeid: nodeid });
+            setDialogMode(2, "Notes", 2, showNotesEx, '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>Notes can be viewed and changed by other administrators.<span>', noteid);
+            meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
-        function deviceNotesFunctionEx(buttons, tag) { meshserver.send({ action: 'setNotes', nodeid: tag, notes: encodeURIComponent(Q('d2devNotes').value) }); }
+        function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponent(Q('d2devNotes').value) }); }
 
         function deviceActionFunction() {
             var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
@@ -4452,7 +4452,9 @@
             x += addHtmlValue('Type', meshtype);
             x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
-            x += '<br>';
+            x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
+
+            x += '<br><br>';
             var currentMeshLinks = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
 
@@ -4550,7 +4552,7 @@
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Notes<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
             x += '</div>';
             setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -5068,7 +5070,7 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            //x += '<input type=button value=Notes title="View notes about this user" onclick=userNotesFunction("' + userid + '") />';
+            x += '<input type=button value=Notes title="View notes about this user" onclick=showNotes(false,"' + userid + '") />';
             if (!self && (activeSessions > 0)) { x += '<input type=button value=Notify title="Send user notification" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
 
             // Setup the panel
