@@ -278,18 +278,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     }
                 case 'events':
                     {
-                        // Setup the event filter
-                        var filter = user.subscriptions;
+                        // User filtered events
                         if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
-                            // TODO: Add the meshes command.user has access to
-                            filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
-                        }
-                        if ((command.limit == null) || (typeof command.limit != 'number')) {
-                            // Send the list of all events for this session
-                            obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
-                        } else {
+                            // TODO: Add the meshes command.user has access to (???)
+                            var filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
+                            if ((command.limit == null) || (typeof command.limit != 'number')) {
+                                // Send the list of all events for this session
+                                obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            } else {
+                                // Send the list of most recent events for this session, up to 'limit' count
+                                obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            }
+                        } else if (obj.common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
+                            // TODO: Check that the user has access to this nodeid
+                            var limit = 10000;
+                            if (obj.common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { } });
+                        } else {
+                            // All events
+                            var filter = user.subscriptions;
+                            if ((command.limit == null) || (typeof command.limit != 'number')) {
+                                // Send the list of all events for this session
+                                obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            } else {
+                                // Send the list of most recent events for this session, up to 'limit' count
+                                obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            }
                         }
                         break;
                     }
@@ -443,6 +459,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.parent.users[chguserid], change = 0;
                             if (chguser) {
                                 if (obj.common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                                if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                                 if (obj.common.validateInt(command.quota, 0) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                                 if ((user.siteadmin == 0xFFFFFFFF) && obj.common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1 }
                                 if (change == 1) {

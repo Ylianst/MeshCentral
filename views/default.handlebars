@@ -35,9 +35,10 @@
         <div id="cxterminal" class="cmtext" onclick="cmaction(2)">Terminal</div>
         <div id="cxdesktop" class="cmtext" onclick="cmaction(3)">Desktop</div>
         <div id="cxfiles" class="cmtext" onclick="cmaction(4)">Files</div>
-        <div id="cxconsole" class="cmtext" onclick="cmaction(5)">Console</div>
+        <div id="cxevents" class="cmtext" onclick="cmaction(5)">Events</div>
+        <div id="cxconsole" class="cmtext" onclick="cmaction(6)">Console</div>
         <hr id="cxmgroupsplit" />
-        <div id="cxmdesktop" class="cmtext" onclick="cmaction(6)" style=display:none>Multi-Desktop</div>
+        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7)" style=display:none>Multi-Desktop</div>
     </div>
     <div id="meshContextMenu" class="contextMenu" style="display: none; min-width: 0px">
         <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1)">Select All</div>
@@ -82,6 +83,7 @@
                                     <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
                                     <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
                                     <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
+                                    <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(16)>Events</td>
                                     <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
                                     <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
                                     <td class=style3 style=height:24px>&nbsp;</td>
@@ -547,6 +549,28 @@
                         </tr>
                     </table>
                 </div>
+                <div id=p16 style=display:none>
+                    <div id="p16title"><h1><span id=p16deviceName></span> - Events</h1></div>
+                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
+                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
+                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
+                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style=display:none value="Delete All..." />&nbsp;</div>-->
+                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshDeviceEvents() />&nbsp;</div>
+                        <div class="auto-style1" style="height:100%;float:right">
+                            Show
+                            <select id=p16limitdropdown onchange=refreshDeviceEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                            </select>
+                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
+                            <div class=h2 style=height:100%;float:right>&nbsp;</div>
+                        </div>
+                    </div>
+                    <div id=p16events style="max-height:600px;overflow-y:scroll"></div>
+                </div>
                 <div id=p20 style=display:none>
                     <h1><span id=p20meshName></span> - General</h1>
                     <p id=p20info></p>
@@ -773,6 +797,7 @@
                 QV('p13title', !(hide & 8));
                 QV('p14title', !(hide & 8));
                 QV('p15title', !(hide & 8));
+                QV('p16title', !(hide & 8));
             }
             p1updateInfo();
 
@@ -1073,7 +1098,10 @@
                     break;
                 }
                 case 'events': {
-                    if ((message.user != null) && (message.user == currentUser.name)) {
+                    if ((message.nodeid != null) && (message.nodeid == currentNode._id)) {
+                        currentDeviceEvents = message.events;
+                        devevents_update();
+                    } else if ((message.user != null) && (message.user == currentUser.name)) {
                         currentUserEvents = message.events;
                         userEvents_update();
                     } else {
@@ -2077,8 +2105,9 @@
             if (action == 2) gotoDevice(nodeid, 12); // Desktop
             if (action == 3) gotoDevice(nodeid, 11); // Terminal
             if (action == 4) gotoDevice(nodeid, 13); // Files
-            if (action == 5) gotoDevice(nodeid, 15); // Console
-            if (action == 6) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
+            if (action == 5) gotoDevice(nodeid, 16); // Events
+            if (action == 6) gotoDevice(nodeid, 15); // Console
+            if (action == 7) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
         }
 
         function cmmeshaction(action) {
@@ -2736,6 +2765,7 @@
                 QH('p13deviceName', nname);
                 QH('p14deviceName', nname);
                 QH('p15deviceName', nname);
+                QH('p16deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -2892,6 +2922,9 @@
                 // Reset the desktop tools
                 QV('DeskTools', false);
                 showDeskToolsProcesses();
+
+                // Ask for device events
+                refreshDeviceEvents();
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -4116,6 +4149,61 @@
         }
 
         //
+        // DEVICE EVENTS
+        //
+
+        var currentDeviceEvents = null;
+        function devevents_update() {
+            var x = '', dateHeader = null;
+            for (var i in currentDeviceEvents) {
+                var event = currentDeviceEvents[i];
+                var time = new Date(event.time);
+                if (time.toLocaleDateString() != dateHeader) {
+                    if (dateHeader != null) x += '</table>';
+                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                    dateHeader = time.toLocaleDateString();
+                }
+                var icon = 'si3';
+                if (event.etype == 'user') icon = 'm2';
+                if (event.etype == 'server') icon = 'si3';
+
+                var msg = event.msg.split('(R)').join('&reg;');
+                //if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
+                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
+                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
+                x += '<div style=font-size:14px><span style=width:300px>' + time.toLocaleTimeString() + ' - ' + msg + '</span></div></div></td></tr>';
+            }
+            if (dateHeader != null) x += '</table>';
+            if (x == '') x = "<br><i>No Events Found</i><br><br>";
+            QH('p16events', x);
+        }
+
+        /*
+        function showDeleteAllEventsDialog() {
+            if (xxdialogMode) return;
+            var x = "Delete all events in the server event log?<br /><br />";
+            x += "<input id=p3check type=checkbox onchange=validateDeleteAllEventsDialog() />Confirm";
+            setDialogMode(2, "Delete All Events", 3, showDeleteAllEventsDialogEx, x);
+            validateDeleteAllEventsDialog();
+        }
+
+        function validateDeleteAllEventsDialog() {
+            QE('idx_dlgOkButton', Q('p3check').checked);
+        }
+
+        function showDeleteAllEventsDialogEx(buttons, tag) {
+            meshserver.send({ action: 'clearevents' });
+        }
+        */
+
+        function refreshDeviceEvents() {
+            //currentDeviceEvents = null;
+            //QH('p16events', '');
+            meshserver.send({ action: 'events', nodeid: currentNode._id, limit: parseInt(p16limitdropdown.value) });
+        }
+
+        //
         // CONSOLE
         //
 
@@ -4292,7 +4380,7 @@
             Q('dp2email').focus();
         }
 
-        function account_validateEmail(e) {
+        function account_validateEmail(e, email) {
             var x = Q('dp2email').value.split('@');
             x = (x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (Q('dp2email').value.length < 1024) && (Q('dp2email').value != userinfo.email);
             QE('idx_dlgOkButton', x);
@@ -5061,11 +5149,13 @@
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
-            if (user.email) x += addDeviceAttribute('Email', '<a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")>' + EscapeHtml(user.email) + '</a>');
-            x += addDeviceAttribute('Creation', new Date(user.creation).toLocaleString());
-            if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login).toLocaleString());
+            var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
+            if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'':', Unverified'); }
+            x += addDeviceAttribute('Email', "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + everify + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
+            x += addDeviceAttribute('Creation', new Date(user.creation).toLocaleString());
+            if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login).toLocaleString());
             
             x += '</table></div><br />';
 
@@ -5104,6 +5194,34 @@
             refreshUsersEvents();
         }
 
+        // Display the user's email change dialog box
+        function p30showUserEmailChangeDialog(event) {
+            if (xxdialogMode) return;
+            var x = '';
+            x += addHtmlValue('Email', '<input id=dp30email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() />');
+            if (serverinfo.emailcheck) { x += addHtmlValue('Status', '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>Not verified</option><option value=1>Verified</option></select>'); }
+            setDialogMode(2, "Change Email for " + EscapeHtml(currentUser.name), 3, p30showUserEmailChangeDialogEx, x);
+            Q('dp30email').focus();
+            Q('dp30email').value = currentUser.email;
+            if (serverinfo.emailcheck) { Q('dp30verified').value = currentUser.emailVerified?1:0; }
+            p30validateEmail();
+        }
+
+        // Perform validation on the user's email change dialog box
+        function p30validateEmail() {
+            var v = Q('dp30email').value, x = v.split('@');
+            x = (x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (v.length < 1024) && ((v != userinfo.email) || ((serverinfo.emailcheck == true) && (Q('dp30verified').value != (userinfo.emailVerified?1:0))));
+            QE('idx_dlgOkButton', x);
+        }
+
+        // Send to the server the new user's email address and validation status
+        function p30showUserEmailChangeDialogEx() {
+            var x = { action: 'edituser', name: currentUser.name, email: Q('dp30email').value };
+            if (serverinfo.emailcheck) { x.emailVerified = (Q('dp30verified').value == 1); }
+            meshserver.send(x);
+        }
+
+        // Display the user's password change dialog box
         function p30showUserChangePassDialog() {
             if (xxdialogMode) return;
             var x = '';
@@ -5464,6 +5582,7 @@
             QS('MainDevDesktop').backgroundColor = ((x == 11) ? "#003366" : "#808080");
             QS('MainDevTerminal').backgroundColor = ((x == 12) ? "#003366" : "#808080");
             QS('MainDevFiles').backgroundColor = ((x == 13) ? "#003366" : "#808080");
+            QS('MainDevEvents').backgroundColor = ((x == 16) ? "#003366" : "#808080");
             QS('MainDevAmt').backgroundColor = ((x == 14) ? "#003366" : "#808080");
             QS('MainDevConsole').backgroundColor = ((x == 15) ? "#003366" : "#808080");
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
