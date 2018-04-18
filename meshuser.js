@@ -366,7 +366,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                         delete userinfo.domain;
                                         delete userinfo.subscriptions;
                                         delete userinfo.passtype;
-                                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email, domain: domain.id })
+                                        var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
+                                        if (oldemail != null) {
+                                            message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
+                                        } else {
+                                            message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
+                                        }
+                                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
                                     }
                                 });
                             }

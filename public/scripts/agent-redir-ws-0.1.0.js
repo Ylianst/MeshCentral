@@ -82,12 +82,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     }
 
     // Close the WebRTC connection, should be called if a problem occurs during WebRTC setup.
-    obj.xxCloseWebRTC = function () {
-        sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"close\"}");
-        if (obj.webchannel != null) { try { obj.webchannel.close(); } catch (e) { } obj.webchannel = null; }
-        if (obj.webrtc != null) { try { obj.webrtc.close(); } catch (e) { }  obj.webrtc = null; }
-        obj.webRtcActive = false;
-    }
+    obj.xxCloseWebRTC = function () { obj.Stop(); }
 
     obj.xxOnMessage = function (e) {
         //if (obj.debugmode == 1) { console.log('Recv', e.data); }
@@ -213,9 +208,14 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
 
     obj.Stop = function (x) {
         if (obj.debugmode == 1) { console.log('stop', x); }
+
+        // Close WebRTC
+        if (obj.webchannel != null) { try { obj.webchannel.close(); } catch (e) { } obj.webchannel = null; }
+        if (obj.webrtc != null) { try { obj.webrtc.close(); } catch (e) { } obj.webrtc = null; }
+        obj.webRtcActive = false;
+
         //obj.debug("Agent Redir Socket Stopped");
         obj.connectstate = -1;
-        obj.xxCloseWebRTC();
         if (obj.socket != null) {
             try { if (obj.socket.readyState == 1) { sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"close\"}"); obj.socket.close(); } } catch (e) { }
             obj.socket = null;

@@ -583,7 +583,7 @@ function createMeshCore(agent) {
                         if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. (****************)
                     this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -789,7 +789,7 @@ function createMeshCore(agent) {
             } else if (ws.httprequest.protocol == 2) { // Desktop
                 // Switch the user input from websocket to webrtc at this point.
                 ws.unpipe(ws.httprequest.desktop.kvm);
-                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1 }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
                 ws.resume(); // Resume the websocket to keep receiving control data
             }
             ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
