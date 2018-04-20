@@ -3524,6 +3524,7 @@
             if (Q('DeskTools').nodeid != message.nodeid) return;
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
+            console.log(processes);
             if (processes != null) {
                 for (var pid in processes) { p.push( { p:parseInt(pid), c:processes[pid].cmd, d:processes[pid].cmd.toLowerCase(), u: processes[pid].user } ); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }

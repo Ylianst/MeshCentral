@@ -266,7 +266,7 @@ function lme_heci(options) {
                             this.sockets[rChannelId].bufferedStream.emit('readable');
                         }
                     } else {
-                        console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_WINDOW_ADJUST');
+                        //console.log('Unknown Recipient ID/' + rChannelId + ' for APF_CHANNEL_WINDOW_ADJUST');
                     }
                     break;
                 case APF_CHANNEL_DATA:

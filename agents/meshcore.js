@@ -372,7 +372,7 @@ function createMeshCore(agent) {
                             break;
                         }
                         case 'pskill': {
-                            sendConsoleText(JSON.stringify(data));
+                            //sendConsoleText(JSON.stringify(data));
                             try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
                             break;
                         }
@@ -856,8 +856,14 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'toast': {
-                    require('toaster').Toast('MeshCentral', args['_'][0]);
-                    response = 'ok';
+                    if (process.platform == 'win32') {
+                        if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
+                            require('toaster').Toast('MeshCentral', args['_'][0]);
+                            response = 'ok';
+                        }
+                    } else {
+                        response = 'Only supported on Windows.';
+                    }
                     break;
                 }
                 case 'setdebug': {

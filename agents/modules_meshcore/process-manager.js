@@ -38,13 +38,13 @@ function processManager() {
             default:
                 throw ('Enumerating processes on ' + process.platform + ' not supported');
             case 'win32':
-                var retVal = [];
+                var retVal = {};
                 var h = this._kernel32.CreateToolhelp32Snapshot(2, 0);
                 var info = GM.CreateVariable(304);
                 info.toBuffer().writeUInt32LE(304, 0);
                 var nextProcess = this._kernel32.Process32First(h, info);
                 while (nextProcess.Val) {
-                    retVal.push({ pid: info.Deref(8, 4).toBuffer().readUInt32LE(0), cmd: info.Deref(GM.PointerSize == 4 ? 36 : 44, 260).String });
+                    retVal[info.Deref(8, 4).toBuffer().readUInt32LE(0)] = { cmd: info.Deref(GM.PointerSize == 4 ? 36 : 44, 260).String };
                     nextProcess = this._kernel32.Process32Next(h, info);
                 }
                 if (callback) { callback.apply(this, [retVal]); }
@@ -60,7 +60,7 @@ function processManager() {
                 for (var i = 1; i < arguments.length; ++i) { p.args.push(arguments[i]); }
                 p.on('exit', function onGetProcesses() {
                     delete this.Parent._psp[this.pid];
-                    var retVal = [], lines = this.ps.split('\x0D\x0A'), key = {}, keyi = 0;
+                    var retVal = {}, lines = this.ps.split('\x0D\x0A'), key = {}, keyi = 0;
                     for (var i in lines) {
                         var tokens = lines[i].split(' ');
                         var tokenList = [];
@@ -69,7 +69,7 @@ function processManager() {
                             if (i > 0 && tokens[x]) { tokenList.push(tokens[x]); }
                         }
                         if ((i > 0) && (tokenList[key.PID])) {
-                            retVal.push({ pid: tokenList[key.PID], user: tokenList[key.USER], cmd: tokenList[key.COMMAND] });
+                            retVal[tokenList[key.PID]] = { user: tokenList[key.USER], cmd: tokenList[key.COMMAND] };
                         }
                     }
                     if (this.callback) {
