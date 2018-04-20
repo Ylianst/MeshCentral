@@ -1,4 +1,18 @@
+/*
+Copyright 2018 Intel Corporation
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 function UserSessions()
 {
@@ -87,6 +101,8 @@ function UserSessions()
             }
 
             this._wts.WTSFreeMemory(pinfo.Deref());
+
+            Object.defineProperty(retVal, 'connected', { value: showActiveOnly(retVal) });
             return (retVal);
         };
     }
@@ -94,9 +110,58 @@ function UserSessions()
     {
         this.Current = function Current()
         {
-            return ({});
+            var retVal = {};
+            var emitterUtils = require('events').inherits(retVal);
+            emitterUtils.createEvent('logon');
+
+            retVal._child = require('child_process').execFile('/usr/bin/last', ['last', '-f', '/var/run/utmp']);
+            retVal._child.Parent = retVal;
+            retVal._child._txt = '';
+            retVal._child.on('exit', function (code)
+            {
+                var lines = this._txt.split('\n');
+                var sessions = [];
+                for(var i in lines)
+                {
+                    if (lines[i])
+                    {
+                        console.log(getTokens(lines[i]));
+                        var user = lines[i].substring(0, lines[i].indexOf(' '));
+                        sessions.push(user);
+                    }
+                }
+                sessions.pop();
+                console.log(sessions);
+            });
+            retVal._child.stdout.Parent = retVal._child;
+            retVal._child.stdout.on('data', function (chunk) { this.Parent._txt += chunk.toString(); });
+
+            return (retVal);
         }
     }
+}
+function showActiveOnly(source)
+{
+    var retVal = [];
+    for (var i in source)
+    {
+        if (source[i].State == 'Active' || source[i].State == 'Connected')
+        {
+            retVal.push(source[i]);
+        }
+    }
+    return (retVal);
+}
+function getTokens(str)
+{
+    var columns = [];
+    var i;
+
+    columns.push(str.substring(0, (i=str.indexOf(' '))));
+    while (str[++i] == ' ');
+    columns.push(str.substring(i, str.substring(i).indexOf(' ') + i));
+    
+    return (columns);
 }
 
 module.exports = new UserSessions();

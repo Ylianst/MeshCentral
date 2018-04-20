@@ -385,6 +385,7 @@
                             <td style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
                                     <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
+                                    <input id=DeskToastButton type=button value=Toast title="Display a notification message on the remote computer" onkeypress="return false" onkeydown="return false" onclick="deviceToastFunction()">&nbsp;
                                     <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                                 </div>
                                 <div>
@@ -2849,7 +2850,7 @@
                 // Show action button, only show if we have permissions 4, 8, 64
                 if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
-                if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
+                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -3306,7 +3307,7 @@
             QV('d7meshkvm', (mesh.mtype == 2) && ((deskState == false) || (desktop.contype == 1)));
 
             // Enable buttons
-            var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
+            var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
@@ -3314,6 +3315,8 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskCAD', deskState == 3);
             QE('DeskToolsButton', online);
+            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5));
+            QE('DeskToastButton', online);
             if (online == false) QV('DeskTools', false);
         }
 
