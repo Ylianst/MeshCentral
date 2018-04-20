@@ -81,9 +81,6 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         }
     }
 
-    // Close the WebRTC connection, should be called if a problem occurs during WebRTC setup.
-    obj.xxCloseWebRTC = function () { obj.Stop(); }
-
     obj.xxOnMessage = function (e) {
         //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         //console.log('Recv', e.data, obj.State);
@@ -111,7 +108,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                         }
                         obj.webrtc.oniceconnectionstatechange = function () {
                             if (obj.webrtc != null) {
-                                if ((obj.webrtc.iceConnectionState == 'disconnected') || (obj.webrtc.iceConnectionState == 'failed')) { obj.xxCloseWebRTC(); }
+                                if (obj.webrtc.iceConnectionState == 'disconnected') { obj.Stop(); }
+                                else if (obj.webrtc.iceConnectionState == 'failed') { obj.xxCloseWebRTC(); }
                             }
                         }
                         obj.webrtc.createOffer(function (offer) {
@@ -206,13 +204,18 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         if (obj.onStateChanged != null) obj.onStateChanged(obj, obj.State);
     }
 
-    obj.Stop = function (x) {
-        if (obj.debugmode == 1) { console.log('stop', x); }
-
-        // Close WebRTC
+    // Close the WebRTC connection, should be called if a problem occurs during WebRTC setup.
+    obj.xxCloseWebRTC = function () {
         if (obj.webchannel != null) { try { obj.webchannel.close(); } catch (e) { } obj.webchannel = null; }
         if (obj.webrtc != null) { try { obj.webrtc.close(); } catch (e) { } obj.webrtc = null; }
         obj.webRtcActive = false;
+    }
+
+    obj.Stop = function (x) {
+        if (obj.debugmode == 1) { console.log('stop', x); }
+
+        // Clean up WebRTC
+        obj.xxCloseWebRTC();
 
         //obj.debug("Agent Redir Socket Stopped");
         obj.connectstate = -1;

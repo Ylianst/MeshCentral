@@ -572,6 +572,7 @@
                     <div id=p16events style="max-height:600px;overflow-y:scroll"></div>
                 </div>
                 <div id=p20 style=display:none>
+                    <img id=MainMeshImage src="images/mesh-200.png" style=border-width:0px;height:200px;width:200px;float:right>
                     <h1><span id=p20meshName></span> - General</h1>
                     <p id=p20info></p>
                 </div>
@@ -2848,6 +2849,7 @@
                 // Show action button, only show if we have permissions 4, 8, 64
                 if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -2939,7 +2941,17 @@
 
         function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponent(Q('d2devNotes').value) }); }
 
+        function deviceToastFunction() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Device Toast", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+        }
+
+        function deviceToastFunctionEx() {
+            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: 'MeshCentral', msg: Q('d2devToast').value });
+        }
+
         function deviceActionFunction() {
+            if (xxdialogMode) return;
             var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
             var y = '<select id=d2deviceop style=float:right;width:250px>';
@@ -4542,7 +4554,7 @@
 
             x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
-            x += '<br><br>';
+            x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
 

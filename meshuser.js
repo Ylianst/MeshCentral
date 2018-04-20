@@ -873,6 +873,40 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'toast':
+                    {
+                        if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                        if (obj.common.validateString(command.title, 1, 512) == false) break; // Check title
+                        if (obj.common.validateString(command.msg, 1, 4096) == false) break; // Check message
+                        for (var i in command.nodeids) {
+                            var nodeid = command.nodeids[i], powerActions = 0;
+                            if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                            if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                                // Get the device
+                                obj.db.Get(nodeid, function (err, nodes) {
+                                    if (nodes.length != 1) return;
+                                    var node = nodes[0];
+
+                                    // Get the mesh for this device
+                                    var mesh = obj.parent.meshes[node.meshid];
+                                    if (mesh) {
+
+                                        // Check if this user has rights to do this
+                                        if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
+
+                                            // Get this device
+                                            var agent = obj.parent.wsagents[node._id];
+                                            if (agent != null) {
+                                                // Send the power command
+                                                agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg }));
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        break;
+                    }
                 case 'getnetworkinfo':
                     {
                         // Argument validation

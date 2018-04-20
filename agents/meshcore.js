@@ -18,7 +18,7 @@ function createMeshCore(agent) {
     var obj = {};
     
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    obj.meshCoreInfo = "MeshCore v4";
+    obj.meshCoreInfo = "MeshCore v5";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
     var meshServerConnectionState = 0;
     var tunnels = {};
@@ -402,6 +402,11 @@ function createMeshCore(agent) {
                     getIpLocationData(function (location) { mesh.SendCommand({ "action": "iplocation", "type": "publicip", "value": location }); });
                     break;
                 }
+                case 'toast': {
+                    // Display a toast message
+                    if (data.title && data.msg) { require('toaster').Toast(data.title, data.msg); }
+                    break;
+                }
             }
         }
     }
@@ -521,7 +526,6 @@ function createMeshCore(agent) {
 
         // Clean up WebSocket
         this.removeAllListeners('data');
-        delete this;
     }
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
@@ -571,19 +575,28 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
                     if (process.platform != 'win32') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
-                } else if (this.httprequest.protocol == 2) {
+                } else if (this.httprequest.protocol == 2)
+                {
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
+
+                    // Display a toast message
+                    //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Started.');
+
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
                         this.unpipe(this.httprequest.desktop.kvm);
                         this.httprequest.desktop.kvm.unpipe(this);
-                        if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
+                        if (this.desktop.kvm.connectionCount == 0) {
+                            // Display a toast message
+                            //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.');
+                            this.httprequest.desktop.kvm.end();
+                        }
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. (****************)
+                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                     this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -839,7 +852,12 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios.';
+                    response = 'aaaAvailable commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast.';
+                    break;
+                }
+                case 'toast': {
+                    require('toaster').Toast('MeshCentral', args['_'][0]);
+                    response = 'ok';
                     break;
                 }
                 case 'setdebug': {

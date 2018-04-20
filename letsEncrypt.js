@@ -75,7 +75,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     func(certs);
 
                     // Check if the Let's Encrypt certificate needs to be renewed.
-                    setTimeout(obj.checkRenewCertificate, 300000); // Check in 5 minutes.
+                    setTimeout(obj.checkRenewCertificate, 60000); // Check in 1 minute.
                     setInterval(obj.checkRenewCertificate, 86400000); // Check again in 24 hours and every 24 hours.
                     return;
                 } else {
@@ -111,7 +111,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
             if (obj.leResults == null) { return; }
             // TODO: Only renew on one of the peers if multi-peers are active.
             // Check if we need to renew the certificate
-            obj.le.renew({ duplicate: false }, obj.leResults).then(function (xresults) {
+            obj.le.renew({ duplicate: false, domains: obj.leDomains, email: obj.parent.config.letsencrypt.email }, obj.leResults).then(function (xresults) {
                 obj.parent.performServerCertUpdate(); // Reset the server, TODO: Reset all peers
             }, function (err) { }); // If we can't renew, ignore.
         }
