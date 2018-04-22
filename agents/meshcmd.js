@@ -331,18 +331,26 @@ function run(argv) {
         amtMei.getVersion(function (val) { for (var version in val.Versions) { if (val.Versions[version].Description == 'AMT') { mestate.ver = val.Versions[version].Version; } } });
         amtMei.getProvisioningState(function (result) { mestate.ProvisioningState = result; });
         amtMei.getProvisioningMode(function (result) { mestate.ProvisioningMode = result; });
-        amtMei.getEHBCState(function (result) { mestate.ehbc = result; });
-        amtMei.getControlMode(function (result) { mestate.controlmode = result; });
-        amtMei.getMACAddresses(function (result) { mestate.mac = result; });
-        amtMei.getLanInterfaceSettings(0, function (result) { mestate.net0 = result; });
-        amtMei.getLanInterfaceSettings(1, function (result) { mestate.net1 = result; });
+        amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = result; } });
+        amtMei.getControlMode(function (result) { if (result) { mestate.controlmode = result; } });
+        amtMei.getMACAddresses(function (result) { if (result) { mestate.mac = result; } });
+        amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
+        amtMei.getLanInterfaceSettings(1, function (result) { if (result) { mestate.net1 = result; } });
         amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
         amtMei.getDnsSuffix(function (result) {
             mestate.dns = result;
             var str = 'Intel AMT v' + mestate.ver;
             if (mestate.ProvisioningState.stateStr == 'PRE') { str += ', pre-provisioning state'; }
             else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
-            else if (mestate.ProvisioningState.stateStr == 'POST') { if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; } }
+            else if (mestate.ProvisioningState.stateStr == 'POST') {
+                if (mestate.ProvisioningMode) {
+                    if (mestate.controlmode) {
+                        if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; }
+                    } else {
+                        str += ', activated in ' + mestate.ProvisioningMode.modeStr;
+                    }
+                }
+            }
             if ((mestate.ehbc) && (mestate.ehbc.EHBC == true)) { str += ', EHBC enabled'; }
             str += '.';
             if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }

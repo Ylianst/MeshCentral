@@ -1253,7 +1253,7 @@ function createMeshCore(agent) {
                 var intelamt = {}, p = false;
                 if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; p = true; }
                 if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; p = true; }
-                if (meinfo.flags) { intelamt.flags = meinfo.Flags; p = true; }
+                if (meinfo.Flags) { intelamt.flags = meinfo.Flags; p = true; }
                 if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; p = true; }
                 if (meinfo.UUID) { intelamt.uuid = meinfo.UUID; p = true; }
                 if (p == true) { r.intelamt = intelamt }
@@ -1298,7 +1298,7 @@ function createMeshCore(agent) {
         amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
         amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
         amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
-        amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
+        amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
         amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
         //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
         amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
