@@ -199,9 +199,12 @@ function AmtStackCreateService(wsmanStack) {
     }
 
     // Auto generated methods
-    obj.AMT_AgentPresenceWatchdog_RegisterAgent = function (callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "RegisterAgent", {}, callback_func); }
-    obj.AMT_AgentPresenceWatchdog_AssertPresence = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertPresence", { "SequenceNumber": SequenceNumber }, callback_func); }
-    obj.AMT_AgentPresenceWatchdog_AssertShutdown = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func); }
+    obj.AMT_AgentPresenceWatchdog_RegisterAgent = function (callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "RegisterAgent", {}, callback_func, tag, pri, selectors); }
+    obj.AMT_AgentPresenceWatchdog_AssertPresence = function (SequenceNumber, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertPresence", { "SequenceNumber": SequenceNumber }, callback_func, tag, pri, selectors); }
+    obj.AMT_AgentPresenceWatchdog_AssertShutdown = function (SequenceNumber, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func, tag, pri, selectors); }
+    //obj.AMT_AgentPresenceWatchdog_RegisterAgent = function (callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "RegisterAgent", {}, callback_func); }
+    //obj.AMT_AgentPresenceWatchdog_AssertPresence = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertPresence", { "SequenceNumber": SequenceNumber }, callback_func); }
+    //obj.AMT_AgentPresenceWatchdog_AssertShutdown = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func); }
     obj.AMT_AgentPresenceWatchdog_AddAction = function (OldState, NewState, EventOnTransition, ActionSd, ActionEac, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AddAction", { "OldState": OldState, "NewState": NewState, "EventOnTransition": EventOnTransition, "ActionSd": ActionSd, "ActionEac": ActionEac }, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdog_DeleteAllActions = function (callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "DeleteAllActions", {}, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdogAction_GetActionEac = function (callback_func) { obj.Exec("AMT_AgentPresenceWatchdogAction", "GetActionEac", {}, callback_func); }

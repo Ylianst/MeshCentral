@@ -389,9 +389,16 @@
                                     <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                                 </div>
                                 <div>
-                                    &nbsp;
-                                    <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">&nbsp;
-                                    <span title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span>&nbsp;
+                                    <select style="margin-left:6px" id="deskkeys">
+                                        <option value=0>Win+Down</option>
+                                        <option value=1>Win+Up</option>
+                                        <option value=2>Win+L</option>
+                                        <option value=3>Win+M</option>
+                                        <option value=4>Shift+Win+M</option>
+                                    </select>
+                                    <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
+                                    <input id="DeskCAD" style="margin-left:6px" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
+                                    <span style="margin-left:6px" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span>&nbsp;
                                 </div>
                             </td>
                         </tr>
@@ -1094,7 +1101,8 @@
                         if (message.current == message.latest) {
                             setDialogMode(2, "MeshCentral Version", 1, null, x);
                         } else {
-                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x + '<br />Select OK to start server self-update.');
+                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x + '<br /><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to start server self-update.');
+                            server_showVersionDlgUpdate();
                         }
                     }
                     break;
@@ -3318,6 +3326,10 @@
             QE('deskSaveBtn', deskState == 3);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskCAD', deskState == 3);
+            QE('DeskWD', deskState == 3);
+            QE('deskkeys', deskState == 3);
+            QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5));
+            QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5));
             QE('DeskToolsButton', online);
             QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5));
             QE('DeskToastButton', online);
@@ -3490,6 +3502,43 @@
                 QS('Desk')['max-width'] = null;
                 QS('Desk')['margin-top'] = '0';
                 QS('Desk')['margin-bottom'] = '0';
+            }
+        }
+
+        // Remote desktop special key combos for Windows
+        function deskSendKeys() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            var ks = Q('deskkeys').value;
+            if (ks == 0) { // WIN+Down arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7,1],[0xff54,1],[0xff54,0],[0xffe7,0]]); // Intel AMT: Meta-left down, Down arrow press, Down arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,40],[desktop.m.KeyAction.UP,40],[desktop.m.KeyAction.EXUP,0x5B]]); // Agent: L-Winkey press, Down arrow press, Down arrow release, L-Winkey release
+                }
+            } else if (ks == 1) { // WIN+Up arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7,1],[0xff52,1],[0xff52,0],[0xffe7,0]]); // Intel AMT: Meta-left down, Up arrow press, Up arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,38],[desktop.m.KeyAction.UP,38],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, Up arrow press, Up arrow release, L-Winkey release
+                }
+            } else if (ks == 2) { // WIN+L arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7,1],[0x6c,1],[0x6c,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
+                }
+            } else if (ks == 3) { // WIN+M arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7,1],[0x6d,1],[0x6d,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'm' press, 'm' release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,77],[desktop.m.KeyAction.UP,77],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'M' press, 'M' release, L-Winkey release
+                }
+            } else if (ks == 4) { // Shift+WIN+M arrow
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe1,1],[0xffe7,1],[0x6d,1],[0x6d,0],[0xffe7,0],[0xffe1,0]]); // Intel AMT: Shift-left down, Meta-left down, 'm' press, 'm' release, Meta-left release, Shift-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN,16],[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,77],[desktop.m.KeyAction.UP,77],[desktop.m.KeyAction.EXUP,0x5B],[desktop.m.KeyAction.UP, 16]]);     // MeshAgent: L-shift press, L-Winkey press, 'M' press, 'M' release, L-Winkey release, L-shift release
+                }
             }
         }
 
@@ -4538,9 +4587,8 @@
             meshserver.send({ action: 'serverversion' });
         }
 
-        function server_showVersionDlgEx() {
-            meshserver.send({ action: 'serverupdate' });
-        }
+        function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
+        function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
 
         //
         // MY MESHS

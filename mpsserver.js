@@ -216,6 +216,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         passwordLen = common.ReadInt(data, 14 + usernameLen + serviceNameLen + methodNameLen);
                         password = data.substring(18 + usernameLen + serviceNameLen + methodNameLen, 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen);
                     }
+                    //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
                     Debug(3, 'MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
                     // Check the CIRA password

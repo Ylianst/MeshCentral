@@ -91,7 +91,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -117,6 +117,7 @@ function run(argv) {
     if ((typeof args.output) == 'string') { settings.output = args.output; }
     if ((typeof args.debug) == 'string') { settings.debugLevel = parseInt(args.debug); }
     if ((typeof args.script) == 'string') { settings.script = args.script; }
+    if ((typeof args.agent) == 'string') { settings.agent = args.agent; }
     if (args.noconsole) { settings.noconsole = true; }
     if (args.nocommander) { settings.noconsole = true; }
     if (args.lmsdebug) { settings.lmsdebug = true; }
@@ -147,6 +148,7 @@ function run(argv) {
         console.log('  AmtClearWebApp  - Clear everything from Intel AMT web storage.');
         console.log('  AmtStorageState - Show contents of the Intel AMT web storage.');
         console.log('  AmtSaveState    - Save all Intel AMT WSMAN object to file.');
+        console.log('  AmtPresence     - Heartbeat a local Intel AMT watchdog agent.');
         console.log('  AmtScript       - Run .mescript on Intel AMT.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
@@ -221,6 +223,12 @@ function run(argv) {
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtpresence') {
+            console.log('AmtPresence will heartbeat a local Intel AMT watchdog agent. Example usage:\r\n\r\n  meshcmd amtpresence --agent B4B6A24C-255E-A75C-F5E8-B00B4D946AA7');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --agent [uuid]         The unique identifier of the watchdog agent.');
         } else if (action == 'amtscript') {
             console.log('AmtScript will run a .mescript file on the local or remote Intel AMT. Script files can be built using the MeshCommander script editor and be used to setup or perform actions on Intel AMT. Example usage:\r\n\r\n  meshcmd amtscript --script myscript.mescript --host 1.2.3.4 --user admin --pass mypassword --tls');
             console.log('\r\nPossible arguments:\r\n');
@@ -373,6 +381,12 @@ function run(argv) {
         startLms(function (state) {
             console.log(['MicroLMS did not start. Must run as administrator or LMS already active.', 'MicroLMS started.', 'MicroLMS started, MeshCommander on HTTP/16994.', 'MEI error'][state]); console.log('Press ctrl-c to exit.'); if (state == 0) { exit(0); }
         });
+    } else if (settings.action == 'amtpresence') {
+        // Heartbeat a Intel AMT watchdog
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if ((settings.agent == null) || (typeof settings.agent != 'string') || (settings.agent == '')) { console.log('No or invalid \"agent\" specified, use --agent [agent].'); exit(1); return; }
+        performAmtAgentPresence();
     } else if (settings.action == 'amtscript') {
         // Start running a MEScript
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -414,6 +428,84 @@ function run(argv) {
     }
 }
 
+//
+// Intel AMT Agent Presence
+//
+
+function performAmtAgentPresence() { startLms(function () { tempWatchdogTimer = setTimeout(performAmtAgentPresenceRegister, 3000); }); }
+
+function performAmtAgentPresenceRegister() {
+    // Setup the Intel AMT WSMAN stack
+    tempWatchdogTimer = null;
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, '127.0.0.1', settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+
+    // Register the watchdog
+    watchdog = { DeviceID: Buffer.from(guidToStr(settings.agent.split('-').join('')).split('-').join(''), 'hex').toString('base64'), Retry: 0 };
+    amtstack.AMT_AgentPresenceWatchdog_RegisterAgent(performAmtAgentPresenceRegisterRetry, watchdog, watchdog.Seq, { 'DeviceID': watchdog.DeviceID });
+}
+
+// Called after the agent is registered
+function performAmtAgentPresenceRegisterRetry(stack, name, response, status, watchdog) {
+    if ((status == 200) && (response.Body.SessionSequenceNumber) && (response.Body.TimeoutInterval)) {
+        console.log('Asserting presence of the watchdog...');
+        watchdog.Seq = response.Body.SessionSequenceNumber;
+        watchdog.Interval = response.Body.TimeoutInterval * 800;
+        watchdog.Retry = 0;
+        tempWatchdogTimer = setTimeout(performAmtAgentPresenceAssert, watchdog.Interval);
+    } else {
+        debug(1, 'Failed to register, status = ' + status);
+        watchdog.Retry++;
+        if (watchdog.Retry < 5) {
+            tempWatchdogTimer = setTimeout(function () { amtstack.AMT_AgentPresenceWatchdog_RegisterAgent(performAmtAgentPresenceRegisterRetry, watchdog, watchdog.Seq, { 'DeviceID': watchdog.DeviceID }); }, 1000);
+        } else {
+            console.log('Failed to register this watchdog.');
+            process.exit(0);
+        }
+    }
+}
+
+// Start a new agent assert
+function performAmtAgentPresenceAssert() {
+    watchdog.Seq++;
+    amtstack.AMT_AgentPresenceWatchdog_AssertPresence(watchdog.Seq, performAmtAgentPresenceAssertRetry, watchdog, 0, { 'DeviceID': watchdog.DeviceID });
+}
+
+// Called after the agent is asserted
+function performAmtAgentPresenceAssertRetry(stack, name, response, status, watchdog) {
+    if (status == 200) {
+        debug(1, 'Succesful assert, sequence = ' + watchdog.Seq);
+        watchdog.Retry = 0;
+        tempWatchdogTimer = setTimeout(performAmtAgentPresenceAssert, watchdog.Interval);
+    } else {
+        debug(1, 'Failed to assert, status = ' + status);
+        watchdog.Retry++;
+        if (watchdog.Retry < 5) {
+            amtstack.AMT_AgentPresenceWatchdog_AssertPresence(watchdog.Seq, performAmtAgentPresenceAssertRetry, watchdog, 0, { 'DeviceID': watchdog.DeviceID });
+        } else {
+            console.log('Failed to assert presence on this watchdog.');
+            process.exit(0);
+        }
+    }
+}
+
+function performAmtAgentPresenceEx5(stack, name, response, status, watchdog) {
+    console.log('b', status, watchdog);
+    if (status == 200) {
+        watchdog.Retry = 0;
+    } else {
+        watchdog.Retry++;
+        if (watchdog.Retry < 5) {
+            amtstack.AMT_AgentPresenceWatchdog_AssertPresence(watchdog.Seq, performAmtAgentPresenceEx4, watchdog, 0, { 'DeviceID': watchdog.DeviceID });
+        } else {
+            console.log('Failed to assert presence on this watchdog.');
+            process.exit(0);
+        }
+    }
+}
 
 //
 // Intel AMT Audit Log
@@ -868,9 +960,10 @@ function setupMeiOsAdmin(func, state) {
         //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
         //osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
 
-        tempTimer = setInterval(function () { kvmGetData(true); }, 2000);
-        kvmGetData(false);
-        kvmSetData(JSON.stringify({ action: 'restart', ver: 1 }));
+        //*************************************
+        //tempTimer = setInterval(function () { kvmGetData(true); }, 2000);
+        //kvmGetData(false);
+        //kvmSetData(JSON.stringify({ action: 'restart', ver: 1 }));
     });
 }
 
