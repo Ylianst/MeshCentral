@@ -976,6 +976,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
                                     if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                                 }
+                                if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
+                                    var ok = true;
+                                    if (obj.common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
+                                    if (obj.common.validateStrArray(command.tags, 1, 256) == true) { var groupTags = command.tags; for (var i in groupTags) { groupTags[i] = groupTags[i].trim(); if ((groupTags[i] == '') || (groupTags[i].indexOf(',') >= 0)) { ok = false; } } }
+                                    if (ok == true) { groupTags.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }); node.tags = groupTags; change = 1; }
+                                } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
 
                                 if (change == 1) {
                                     // Save the node

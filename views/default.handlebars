@@ -155,6 +155,7 @@
                                     <option>Mesh</option>
                                     <option>Power</option>
                                     <option>Device</option>
+                                    <option>Group</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -1284,6 +1285,7 @@
                                 node.iploc = message.event.node.iploc;
                                 node.wifiloc = message.event.node.wifiloc;
                                 node.gpsloc = message.event.node.gpsloc;
+                                node.tags = message.event.node.tags;
                                 node.userloc = message.event.node.userloc;
                                 if (message.event.node.agent != null) {
                                     if (node.agent == null) node.agent = {};
@@ -1476,17 +1478,16 @@
         var deviceHeaders = {};
         var oldviewmode = 0;
         function updateDevices() {
-            var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value;
+            var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view < 4);
             QV('xdevicesmap', view == 4);
             QV('devListToolbar', view < 3);
             QV('kvmListToolbar', view == 3);
             QV('devMapToolbar', view == 4);
-            QV('devListToolbarSort', view < 4);
             QV('devListToolbarSize', view == 3);
             QV('NoMeshesPanel', meshcount == 0);
             QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
-            QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0));
+            QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0) && (view < 4));
             if ((meshcount == 0) || (nodes.length == 0)) { view = 1; }
             if (view == 4) {
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
@@ -1572,8 +1573,39 @@
                         }
                     }
 
+                    // If we are displaying devices by group, put the device in the right group.
+                    if ((sort == 3) && (r != '')) {
+                        if (nodes[i].tags) {
+                            for (var j in nodes[i].tags) {
+                                var tag = nodes[i].tags[j];
+                                if (groups[tag] == null) { groups[tag] = r; groupCount[tag] = 1; } else { groups[tag] += r; groupCount[tag] += 1; }
+                                if (view == 3) break;
+                            }
+                        }
+                        r = '';
+                    }
+
                     deviceHeaderTotal++;
                     if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
+                }
+
+                // If displaying devices by groups, sort the group names and display the devices.
+                if (sort == 3) {
+                    var groupNames = [];
+                    for (var i in groups) { groupNames.push(i); }
+                    groupNames.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+                    for (var j in groupNames) {
+                        var i = groupNames[j]; r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + i + '</span><span class="devHeaderx">, ' + groupCount[i] + ' device' + ((groupCount[i] > 1)?'s':'') + '</span></div>' + groups[i];
+                    }
+                }
+
+                // If there is nothing to display, explain the problem
+                if (r == '') {
+                    if ((Q('SearchInput').value == '') && (sort == 3)) {
+                        r = '<div style="margin:30px">No devices are included in any groups, click on a device\'s \"Groups\" to add to a group.</div>';
+                    } else {
+                        r = '<div style="margin:30px">No devices matching this search.</div>';
+                    }
                 }
 
                 if ((view == 1) && (c == 2)) r += '<td><div style=width:301px></div></td>'; // Adds device padding
@@ -1654,7 +1686,7 @@
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
-                                QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></canvas>');
+                                QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                             } else {
                                 // This is a new device, create a canvas for it.
                                 var c = document.createElement('canvas');
@@ -1664,7 +1696,7 @@
                                 c.setAttribute('oncontextmenu', 'return false');
                                 c.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
                                 c.setAttribute('onclick', 'toggleKvmDevice(\'' + id + '\')');
-                                Q('xkvmid_' + shortid).appendChild(c);
+                                try { Q('xkvmid_' + shortid).appendChild(c); } catch (ex) {}
                                 // Check if we need to auto-connect
                                 if (Q('autoConnectDesktopCheckbox').checked == true) { setTimeout(function() { connectMultiDesktop(node, 1); }, 100); }
                             }
@@ -2037,13 +2069,18 @@
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
+        // Get the list of checked devices, removes any duplicates.
+        function getCheckedDevices() {
+            var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
+            for (var i in elements) { if (elements[i].checked) { if (elements[i].value) { var nid = elements[i].value.substring(6); if (nodeids.indexOf(nid) == -1) { nodeids.push(nid); } } } }
+            return nodeids;
+        }
+
         function groupActionFunctionEx() {
             var op = Q('d2groupop').value;
             if (op == 100) {
                 // Group wake
-                var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-                for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-                meshserver.send({ action: 'wakedevices', nodeids: nodeids });
+                meshserver.send({ action: 'wakedevices', nodeids: getCheckedDevices() });
             } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var x = "Confirm delete selected devices(s)?<br /><br />";
@@ -2052,19 +2089,12 @@
                 QE('idx_dlgOkButton', false);
             } else {
                 // Power operation
-                var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-                for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-                meshserver.send({ action: 'poweraction', nodeids: nodeids, actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: op });
             }
         }
 
         function d2groupActionFunctionDelEx() { QE('idx_dlgOkButton', Q('d2check').checked); }
-
-        function groupActionFunctionDelEx() {
-            var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-            for (var i in elements) { if (elements[i].checked) { nodeids.push(elements[i].value.substring(6)); } }
-            meshserver.send({ action: 'removedevices', nodeids: nodeids });
-        }
+        function groupActionFunctionDelEx() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); }
 
         function onSortSelectChange(skipsave) {
             sort = document.getElementById("sortselect").selectedIndex;
@@ -2858,6 +2888,11 @@
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
 
+                // Node grouping tags
+                var groupingTags = '<i>None</i>';
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
+                x += addDeviceAttribute('Groups', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
                 if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
@@ -3233,14 +3268,16 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description'];
-        var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc'];
+        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Groups'];
+        var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
+        var showEditNodeValueDialog_modes3 = ['', '', '', 'Group1, Group2, Group3'];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=64 onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
+            if (Array.isArray(v)) { v = v.join(', '); }
             Q('dp10devicevalue').value = v;
             p10editdevicevalueValidate();
             Q('dp10devicevalue').focus();
