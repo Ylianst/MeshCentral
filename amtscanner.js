@@ -206,7 +206,7 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.changeConnectState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
         //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
         //var provisioningStateStr = provisioningStates[provisioningState];
-        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPorts.join(', ') + '], tag: ' + tag);
+        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPort + '], tag: ' + tag);
         var scaninfo = obj.scanTableTags[tag];
         if (scaninfo != undefined) {
             scaninfo.lastpong = Date.now();
@@ -255,8 +255,8 @@ module.exports.CreateAmtScanner = function (parent) {
                 var change = false;
                 if (node.intelamt == undefined) { node.intelamt = {}; }
                 if (node.intelamt.tls != tls) { node.intelamt.tls = tls; change = true; changes.push(tls==1?'TLS':'NoTLS'); }
-                if (obj.compareAmtVersionStr(node.intelamt.ver, version)) { node.intelamt.ver = version; change = true; changes.push('Version ' + version); }
-                if (node.intelamt.state != provisioningState) { node.intelamt.state = provisioningState; change = true; changes.push('State'); }
+                if (obj.compareAmtVersionStr(node.intelamt.ver, version)) { node.intelamt.ver = version; change = true; changes.push('AMT Version ' + version); }
+                if (node.intelamt.state != provisioningState) { node.intelamt.state = provisioningState; change = true; changes.push('AMT State'); }
                 if (change == true) {
                     // Make the change in the database
                     obj.parent.db.Set(node);

@@ -574,11 +574,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
                     if (command.intelamt) {
                         if (!device.intelamt) { device.intelamt = {}; }
-                        if (device.intelamt.ver != command.intelamt.ver) { device.intelamt.ver = command.intelamt.ver; change = 1; changes.push('AMT version'); }
-                        if (device.intelamt.state != command.intelamt.state) { device.intelamt.state = command.intelamt.state; change = 1; changes.push('AMT state'); }
-                        if (device.intelamt.flags != command.intelamt.flags) { device.intelamt.flags = command.intelamt.flags; change = 1; changes.push('AMT flags'); }
-                        if (device.intelamt.host != command.intelamt.host) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
-                        if (device.intelamt.uuid != command.intelamt.uuid) { device.intelamt.uuid = command.intelamt.uuid; change = 1; changes.push('AMT uuid'); }
+                        if ((command.intelamt.ver != null) && (device.intelamt.ver != command.intelamt.ver)) { device.intelamt.ver = command.intelamt.ver; change = 1; changes.push('AMT version'); }
+                        if ((command.intelamt.state != null) && (device.intelamt.state != command.intelamt.state)) { device.intelamt.state = command.intelamt.state; change = 1; changes.push('AMT state'); }
+                        if ((command.intelamt.flags != null) && (device.intelamt.flags != command.intelamt.flags)) { device.intelamt.flags = command.intelamt.flags; change = 1; changes.push('AMT flags'); }
+                        if ((command.intelamt.host != null) && (device.intelamt.host != command.intelamt.host)) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
+                        if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { device.intelamt.uuid = command.intelamt.uuid; change = 1; changes.push('AMT uuid'); }
                     }
                     if (mesh.mtype == 2) {
                         if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
