@@ -1600,7 +1600,7 @@
                 }
 
                 // If there is nothing to display, explain the problem
-                if (r == '') {
+                if ((r == '') && (meshcount > 0)) {
                     if ((Q('SearchInput').value == '') && (sort == 3)) {
                         r = '<div style="margin:30px">No devices are included in any groups, click on a device\'s \"Groups\" to add to a group.</div>';
                     } else {
@@ -2114,17 +2114,28 @@
         function onConsoleFocus(x) { consoleFocus = x; }
 
         function onSearchInputChanged() {
-            var x = Q('SearchInput').value.toLowerCase();
-            putstore("search", x);
-            if (x == '') { for (var d in nodes) { nodes[d].v = true; } }
-            else {
+            var x = Q('SearchInput').value.toLowerCase().trim(); putstore("search", x);
+            if (x == '') {
+                for (var d in nodes) { nodes[d].v = true; }
+            } else {
+                var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs);
                 for (var d in nodes) {
-                    nodes[d].v = (nodes[d].name.toLowerCase().indexOf(x) >= 0) || (nodes[d].hostl != null && nodes[d].hostl.toLowerCase().indexOf(x) >= 0);
-                    if (nodes[d].tags) { for (var s in nodes[d].tags) { if (nodes[d].tags[s].toLowerCase().indexOf(x) >= 0) { nodes[d].v = true; break; } } }
+                    nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].hostl != null && rx.test(nodes[d].hostl.toLowerCase()));
+                    if ((nodes[d].v == false) && nodes[d].tags) {
+                        for (var s in nodes[d].tags) {
+                            if (rx.test(nodes[d].tags[s].toLowerCase())) {
+                                nodes[d].v = true;
+                                break;
+                            } else {
+                                nodes[d].v = false;
+                            }
+                        }
+                    }
                 }
             }
             updateDevices();
         }
+
 
         var contextelement = null;
         function handleContextMenu(event) {
@@ -2477,7 +2488,7 @@
 
         // TODO: Add more connection status types. Currently we only change color if connection status changes
         function connStateColor(nodeConn){
-            if (nodeConn.conn == 1 || nodeConn.conn == 5) { return '#00ffdd'; } // Green for connected devices
+            if (nodeConn.conn == 1 || nodeConn.conn == 3 || nodeConn.conn == 5) { return '#00ffdd'; } // Green for connected devices
             return '#C70039'; // Red if the Agent is not connected
         }
 
@@ -3038,9 +3049,9 @@
 
         // Called when MeshCommander needs new credentials or updated credentials.
         function updateAmtCredentials(forceDialog) {
-            var node = getNodeFromId(desktopNode._id);
+            var node = getNodeFromId(currentNode._id);
             if ((forceDialog == true) || (node.intelamt.user == null) || (node.intelamt.user == '')) {
-                editDeviceAmtSettings(desktopNode._id, updateAmtCredentialsEx);
+                editDeviceAmtSettings(currentNode._id, updateAmtCredentialsEx);
             } else {
                 Q('p14iframe').contentWindow.connectButtonfunctionEx();
             }
@@ -3364,7 +3375,7 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && (mesh.mtype == 2));
-            QV('connectbutton1hspan', (deskState == 0) && ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton1hspan', (deskState == 0) && ((currentNode.intelamt != null) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
@@ -3691,7 +3702,7 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (mesh.mtype == 2));
-            QV('connectbutton2hspan', (termState == false) && ((terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton2hspan', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal

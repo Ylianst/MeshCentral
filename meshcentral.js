@@ -474,10 +474,35 @@ function CreateMeshCentralServer(config, args) {
             if (restoreFile) {
                 obj.debug(1, 'Server stopped, updating settings: ' + restoreFile);
                 console.log('Updating settings folder...');
+                /*
                 var unzip = require('unzip');
                 var rs = obj.fs.createReadStream(restoreFile);
                 rs.on('end', () => { setTimeout(function () { fs.unlinkSync(restoreFile); process.exit(123); }, 500); });
                 rs.pipe(unzip.Extract({ path: obj.datapath }));
+                */
+
+                var yauzl = require("yauzl");
+                yauzl.open(restoreFile, { lazyEntries: true }, function (err, zipfile) {
+                    if (err) throw err;
+                    zipfile.readEntry();
+                    zipfile.on("entry", function (entry) {
+                        if (/\/$/.test(entry.fileName)) {
+                            // Directory file names end with '/'.
+                            // Note that entires for directories themselves are optional.
+                            // An entry's fileName implicitly requires its parent directories to exist.
+                            zipfile.readEntry();
+                        } else {
+                            // file entry
+                            zipfile.openReadStream(entry, function (err, readStream) {
+                                if (err) throw err;
+                                readStream.on("end", function () { zipfile.readEntry(); });
+                                // console.log('Extracting:', obj.path.join(obj.datapath, entry.fileName));
+                                readStream.pipe(obj.fs.createWriteStream(obj.path.join(obj.datapath, entry.fileName)));
+                            });
+                        }
+                    });
+                    zipfile.on("end", function () { setTimeout(function () { fs.unlinkSync(restoreFile); process.exit(123); }); });
+                });
             } else {
                 obj.debug(1, 'Server stopped');
                 process.exit(0);
@@ -1124,7 +1149,7 @@ function mainStart(args) {
         if (config == null) { process.exit(); }
 
         // Build the list of required modules
-        var modules = ['ws', 'nedb', 'https', 'unzip', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
+        var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-sspi'); modules.push('node-windows'); } // Add Windows modules
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB

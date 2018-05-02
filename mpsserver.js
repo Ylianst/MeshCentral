@@ -542,7 +542,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     
     // Disconnect CIRA tunnel
     obj.close = function (socket) {
-        try { socket.close(); } catch (e) { }
+        try { socket.end(); } catch (e) { }
         try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
         obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
     }
