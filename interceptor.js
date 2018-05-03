@@ -6,8 +6,8 @@
 * @version v0.0.3
 */
 
-var crypto = require('crypto');
-var common = require('./common.js');
+const crypto = require('crypto');
+const common = require('./common.js');
 
 var HttpInterceptorAuthentications = {};
 var RedirInterceptorAuthentications = {};

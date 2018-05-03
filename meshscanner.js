@@ -16,9 +16,9 @@ module.exports.CreateMeshScanner = function (parent) {
     obj.servers4 = {};
     obj.servers6 = {};
     obj.mainTimer = null;
-    var periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
-    var membershipIPv4 = '239.255.255.235';
-    var membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
+    const periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
+    const membershipIPv4 = '239.255.255.235';
+    const membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
     obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' }).toUpperCase();
     obj.error = 0;
 

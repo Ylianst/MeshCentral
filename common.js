@@ -6,7 +6,7 @@
 * @version v0.0.1
 */
 
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 // Binary encoding and decoding functions
 module.exports.ReadShort = function(v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); }

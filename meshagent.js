@@ -27,7 +27,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentCoreCheck = 0;
     obj.agentInfo;
     obj.agentUpdate = null;
-    var agentUpdateBlockSize = 65520;
+    const agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     obj.useSHA386 = false;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }

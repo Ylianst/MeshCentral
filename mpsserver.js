@@ -14,9 +14,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.args = args;
     obj.certificates = certificates;
     obj.ciraConnections = {};
-    var common = require('./common.js');
-    var net = require('net');
-    var tls = require('tls');
+    const common = require('./common.js');
+    const net = require('net');
+    const tls = require('tls');
+
+    const MAX_IDLE = 90000;      // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
+    const CHECK_INTERVAL = 30000;  // 30 seconds check interval
 
     if (obj.args.tlsoffload) {
         obj.server = net.createServer(onConnection);
@@ -96,7 +99,15 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         }
         socket.setEncoding('binary');
         Debug(1, 'MPS:New CIRA connection');
-        
+
+        // Setup the CIRA keep alive timer
+        socket.lastping = new Date().getTime(); // Get current time in milliseconds from epoch
+        socket.timer = setInterval(function () {
+            const now = new Date().getTime();
+            Debug(3, "MPS:Check interval:" + (socket.lastping && (socket.lastping + MAX_IDLE) < now));
+            if (socket.lastping && ((socket.lastping + MAX_IDLE) < now)) { Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } }
+        }, CHECK_INTERVAL);
+
         socket.addListener("data", function (data) {
             if (args.mpsdebug) { var buf = new Buffer(data, "binary"); console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
             socket.tag.accumulator += data;
@@ -167,6 +178,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             }
 
             try {
+                // Set the last time we received data on the CIRA channel
+                socket.lastping = new Date().getTime();
+
                 // Parse all of the APF data we can
                 var l = 0;
                 do { l = ProcessCommand(socket); if (l > 0) { socket.tag.accumulator = socket.tag.accumulator.substring(l); } } while (l > 0);
@@ -530,6 +544,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         
         socket.addListener("close", function () {
             Debug(1, 'MPS:CIRA connection closed');
+            if (socket.timer) { try { clearInterval(socket.timer); } catch (e) { } socket.timer = null; }
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
         });

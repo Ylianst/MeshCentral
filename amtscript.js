@@ -10,16 +10,16 @@ module.exports.CreateAmtScriptEngine = function () {
     var o = {};
 
     // Core functions
-    script_functionTable1 = ['nop', 'jump', 'set', 'print', 'dialog', 'getitem', 'substr', 'indexof', 'split', 'join', 'length', 'jsonparse', 'jsonstr', 'add', 'substract', 'parseint', 'wsbatchenum', 'wsput', 'wscreate', 'wsdelete', 'wsexec', 'scriptspeed', 'wssubscribe', 'wsunsubscribe', 'readchar', 'signwithdummyca'];
+    const script_functionTable1 = ['nop', 'jump', 'set', 'print', 'dialog', 'getitem', 'substr', 'indexof', 'split', 'join', 'length', 'jsonparse', 'jsonstr', 'add', 'substract', 'parseint', 'wsbatchenum', 'wsput', 'wscreate', 'wsdelete', 'wsexec', 'scriptspeed', 'wssubscribe', 'wsunsubscribe', 'readchar', 'signwithdummyca'];
 
     // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-    script_functionTable2 = ['encodeuri', 'decodeuri', 'passwordcheck', 'atob', 'btoa', 'hex2str', 'str2hex', 'random', 'md5', 'maketoarray', 'readshort', 'readshortx', 'readint', 'readsint', 'readintx', 'shorttostr', 'shorttostrx', 'inttostr', 'inttostrx'];
+    const script_functionTable2 = ['encodeuri', 'decodeuri', 'passwordcheck', 'atob', 'btoa', 'hex2str', 'str2hex', 'random', 'md5', 'maketoarray', 'readshort', 'readshortx', 'readint', 'readsint', 'readintx', 'shorttostr', 'shorttostrx', 'inttostr', 'inttostrx'];
 
     // functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
     //script_functionTableX2 = [encodeURI, decodeURI, passwordcheck, window.atob.bind(window), window.btoa.bind(window), hex2rstr, rstr2hex, random, rstr_md5, MakeToArray, ReadShort, ReadShortX, ReadInt, ReadSInt, ReadIntX, ShortToStr, ShortToStrX, IntToStr, IntToStrX];
 
     // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)
-    script_functionTable3 = ['pullsystemstatus', 'pulleventlog', 'pullauditlog', 'pullcertificates', 'pullwatchdog', 'pullsystemdefense', 'pullhardware', 'pulluserinfo', 'pullremoteaccess', 'highlightblock', 'disconnect', 'getsidstring', 'getsidbytearray'];
+    const script_functionTable3 = ['pullsystemstatus', 'pulleventlog', 'pullauditlog', 'pullcertificates', 'pullwatchdog', 'pullsystemdefense', 'pullhardware', 'pulluserinfo', 'pullremoteaccess', 'highlightblock', 'disconnect', 'getsidstring', 'getsidbytearray'];
 
     /*
     // Optional functions of type ARG1 = func(ARG2, ARG3, ARG4, ARG5, ARG6)

@@ -24,8 +24,8 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.pendingSendTimer = null;
     obj.mainTimer = null;
     obj.nextTag = 0;
-    var PeriodicScanTime = 30000; // Interval between scan sweeps
-    var PeriodicScanTimeout = 65000; // After this time, timeout the device.
+    const PeriodicScanTime = 30000; // Interval between scan sweeps
+    const PeriodicScanTimeout = 65000; // After this time, timeout the device.
 
     // Build a RMCP packet with a given tag field
     obj.buildRmcpPing = function (tag) {
