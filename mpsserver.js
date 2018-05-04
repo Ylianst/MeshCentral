@@ -17,9 +17,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     const common = require('./common.js');
     const net = require('net');
     const tls = require('tls');
-
     const MAX_IDLE = 90000;      // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
-    const CHECK_INTERVAL = 30000;  // 30 seconds check interval
 
     if (obj.args.tlsoffload) {
         obj.server = net.createServer(onConnection);
@@ -32,7 +30,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.parent.updateServerState('mps-name', certificates.AmtMpsName);
     if (args.mpsaliasport != null) { obj.parent.updateServerState('mps-alias-port', args.mpsaliasport); }
 
-    var APFProtocol = {
+    const APFProtocol = {
         UNKNOWN: 0,
         DISCONNECT: 1,
         SERVICE_REQUEST: 5,
@@ -56,7 +54,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         KEEPALIVE_OPTIONS_REPLY: 211
     }
     
-    var APFDisconnectCode = {
+    const APFDisconnectCode = {
         HOST_NOT_ALLOWED_TO_CONNECT: 1,
         PROTOCOL_ERROR: 2,
         KEY_EXCHANGE_FAILED: 3,
@@ -77,14 +75,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         TEMPORARILY_UNAVAILABLE: 18
     }
     
-    var APFChannelOpenFailCodes = {
+    const APFChannelOpenFailCodes = {
         ADMINISTRATIVELY_PROHIBITED: 1,
         CONNECT_FAILED: 2,
         UNKNOWN_CHANNEL_TYPE: 3,
         RESOURCE_SHORTAGE: 4,
     }
     
-    var APFChannelOpenFailureReasonCode = {
+    const APFChannelOpenFailureReasonCode = {
         AdministrativelyProhibited: 1,
         ConnectFailed: 2,
         UnknownChannelType: 3,
@@ -101,12 +99,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         Debug(1, 'MPS:New CIRA connection');
 
         // Setup the CIRA keep alive timer
-        socket.lastping = new Date().getTime(); // Get current time in milliseconds from epoch
-        socket.timer = setInterval(function () {
-            const now = new Date().getTime();
-            Debug(3, "MPS:Check interval:" + (socket.lastping && (socket.lastping + MAX_IDLE) < now));
-            if (socket.lastping && ((socket.lastping + MAX_IDLE) < now)) { Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } }
-        }, CHECK_INTERVAL);
+        socket.setTimeout(MAX_IDLE);
+        socket.on('timeout', () => { Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
         socket.addListener("data", function (data) {
             if (args.mpsdebug) { var buf = new Buffer(data, "binary"); console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
@@ -178,9 +172,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             }
 
             try {
-                // Set the last time we received data on the CIRA channel
-                socket.lastping = new Date().getTime();
-
                 // Parse all of the APF data we can
                 var l = 0;
                 do { l = ProcessCommand(socket); if (l > 0) { socket.tag.accumulator = socket.tag.accumulator.substring(l); } } while (l > 0);
@@ -544,7 +535,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         
         socket.addListener("close", function () {
             Debug(1, 'MPS:CIRA connection closed');
-            if (socket.timer) { try { clearInterval(socket.timer); } catch (e) { } socket.timer = null; }
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
         });
