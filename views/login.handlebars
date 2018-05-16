@@ -215,19 +215,16 @@
         }
 
         function validateLogin(box, e) {
-            var ok = (Q('username').value.length > 0 && Q('password').value.length > 0);
+            var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
             QE('loginButton', ok);
             setDialogMode(0);
-            if ((e != null) && (e.keyCode == 13)) {
-                if (box == 1) { Q('password').focus(); }
-                if (box == 2) { Q('loginButton').click(); }
-            }
+            if ((e != null) && (e.keyCode == 13)) { if (box == 1) { Q('password').focus(); } else if (box == 2) { Q('loginButton').click(); } }
             if (e != null) { haltEvent(e); }
         }
 
         function validateCreate(box,e) {
             setDialogMode(0);
-            var ok = ((Q('ausername').value.length > 0) && (checkEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
+            var ok = ((Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (validateEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
             if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
             QE('createButton', ok);
             if (Q('apassword1').value == '') {
@@ -243,36 +240,20 @@
                 if (box == 2) { Q('apassword1').focus(); }
                 if (box == 3) { Q('apassword2').focus(); }
                 if (box == 4) { Q('apasswordhint').focus(); }
-                if (box == 5) {
-                    if (newAccountPass == 1) {
-                        Q('anewaccountpass').focus();
-                    } else {
-                        Q('createButton').click();
-                    }
-                }
-                if (box == 6) {
-                    Q('createButton').click();
-                }
+                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { Q('createButton').click(); } }
+                if (box == 6) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
         }
 
         function validateReset(e) {
             setDialogMode(0);
-            var x = checkEmail(Q('remail').value);
+            var x = validateEmail(Q('remail').value);
             QE('eresetButton', x);
             if ((e != null) && (e.keyCode == 13) && (x == true)) {
                 Q('eresetButton').click();
             }
             if (e != null) { haltEvent(e); }
-        }
-
-        // Return true is the input string looks like an email address
-        function checkEmail(str) {
-            var x = str.split('@');
-            var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
-            if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
-            return ok;
         }
 
         // Return a password strength score
@@ -328,6 +309,7 @@
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
+        function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
 
     </script>
 </body>

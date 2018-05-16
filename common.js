@@ -132,4 +132,6 @@ module.exports.validateString = function(str, minlen, maxlen) { return ((str != 
 module.exports.validateInt = function(int, minval, maxval) { return ((int != null) && (typeof int == 'number') && ((minval == null) || (int >= minval)) && ((maxval == null) || (int <= maxval))); }
 module.exports.validateArray = function (array, minlen, maxlen) { return ((array != null) && Array.isArray(array) && ((minlen == null) || (array.length >= minlen)) && ((maxlen == null) || (array.length <= maxlen))); }
 module.exports.validateStrArray = function (array, minlen, maxlen) { if (((array != null) && Array.isArray(array)) == false) return false; for (var i in array) { if ((typeof array[i] != 'string') && ((minlen == null) || (array[i].length >= minlen)) && ((maxlen == null) || (array[i].length <= maxlen))) return false; } return true; }
-module.exports.validateObject = function(obj) { return ((obj != null) && (typeof obj == 'object')); }
+module.exports.validateObject = function (obj) { return ((obj != null) && (typeof obj == 'object')); }
+module.exports.validateEmail = function (email, minlen, maxlen) { if (module.exports.validateString(email, minlen, maxlen) == false) return false; var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(email); } 
+module.exports.validateUsername = function (username, minlen, maxlen) { return (module.exports.validateString(username, minlen, maxlen) && (username.indexOf(' ') == -1)); }

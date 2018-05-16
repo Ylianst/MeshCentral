@@ -350,7 +350,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if (domain.newaccounts == 0) { res.sendStatus(401); return; }
-        if (!req.body.username || !req.body.email || !req.body.password1 || !req.body.password2 || (req.body.password1 != req.body.password2) || req.body.username == '~') {
+        if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~') {
             req.session.loginmode = 2;
             req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';;
             res.redirect(domain.url);

@@ -341,41 +341,38 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'changeemail':
                     {
                         // Change the email address
-                        if (obj.common.validateString(command.email, 3, 1024) == false) return;
-                        var x = command.email.split('@');
-                        if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
-                            if (obj.parent.users[req.session.userid].email != command.email) {
-                                // Check if this email is already validated on a different account
-                                obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
-                                    if (docs.length > 0) {
-                                        // Notify the duplicate email error
-                                        ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
-                                    } else {
-                                        // Update the user's email
-                                        var oldemail = user.email;
-                                        user.email = command.email;
-                                        user.emailVerified = false;
-                                        obj.parent.db.SetUser(user);
+                        if (obj.common.validateEmail(command.email, 1, 256) == false) return;
+                        if (obj.parent.users[req.session.userid].email != command.email) {
+                            // Check if this email is already validated on a different account
+                            obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
+                                if (docs.length > 0) {
+                                    // Notify the duplicate email error
+                                    ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
+                                } else {
+                                    // Update the user's email
+                                    var oldemail = user.email;
+                                    user.email = command.email;
+                                    user.emailVerified = false;
+                                    obj.parent.db.SetUser(user);
 
-                                        // Event the change
-                                        var userinfo = obj.common.Clone(user);
-                                        delete userinfo.hash;
-                                        delete userinfo.passhint;
-                                        delete userinfo.salt;
-                                        delete userinfo.type;
-                                        delete userinfo.domain;
-                                        delete userinfo.subscriptions;
-                                        delete userinfo.passtype;
-                                        var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
-                                        if (oldemail != null) {
-                                            message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
-                                        } else {
-                                            message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
-                                        }
-                                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+                                    // Event the change
+                                    var userinfo = obj.common.Clone(user);
+                                    delete userinfo.hash;
+                                    delete userinfo.passhint;
+                                    delete userinfo.salt;
+                                    delete userinfo.type;
+                                    delete userinfo.domain;
+                                    delete userinfo.subscriptions;
+                                    delete userinfo.passtype;
+                                    var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
+                                    if (oldemail != null) {
+                                        message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
+                                    } else {
+                                        message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
                                     }
-                                });
-                            }
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+                                }
+                            });
                         }
                         break;
                     }
@@ -435,13 +432,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Add a new user account
                         if ((user.siteadmin & 2) == 0) break;
-                        if (obj.common.validateString(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters
+                        if (obj.common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
                         if (obj.common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                        if ((command.email != null) && (obj.common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                         var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                         if (newusername == '~') break; // This is a reserved user name
                         if (!obj.parent.users[newuserid]) {
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Date.now(), domain: domain.id };
-                            if (obj.common.validateString(command.email, 1, 256) == true) { newuser.email = command.email; } // Email is between 1 and 256 characters
+                            if (command.email != null) { newuser.email = command.email; } // Email
                             obj.parent.users[newuserid] = newuser;
                             // Create a user, generate a salt and hash the password
                             require('./pass').hash(command.pass, function (err, salt, hash) {

@@ -1952,7 +1952,7 @@
             x += "</div>";
 
             // Linux agent install
-            x += "<div id=agins_linux style=display:none>To add a computer to " + EscapeHtml(mesh.name) + " run the following command. Root credentails will be needed:<br />";
+            x += "<div id=agins_linux style=display:none>To add a computer to " + EscapeHtml(mesh.name) + " run the following command. Root credentials will be needed.<br />";
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += "</div>";
 
@@ -1963,7 +1963,7 @@
             x += "</div>";
 
             // Linux agent uninstall
-            x += "<div id=agins_linux_un style=display:none>To remove a mesh agent, run the following command. Root credentails will be needed:<br />";
+            x += "<div id=agins_linux_un style=display:none>To remove a mesh agent, run the following command. Root credentials will be needed.<br />";
             x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += "</div>";
 
@@ -4505,7 +4505,7 @@
         function account_showChangeEmail() {
             if (xxdialogMode) return;
             var x = "Change your account e-mail address here.<br /><br />";
-            x += addHtmlValue('Email', '<input id=dp2email style=width:230px maxlength=32 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
+            x += addHtmlValue('Email', '<input id=dp2email style=width:230px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
             setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
             account_validateEmail();
@@ -4513,9 +4513,7 @@
         }
 
         function account_validateEmail(e, email) {
-            var x = Q('dp2email').value.split('@');
-            x = (x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (Q('dp2email').value.length < 1024) && (Q('dp2email').value != userinfo.email);
-            QE('idx_dlgOkButton', x);
+            QE('idx_dlgOkButton', validateEmail(Q('dp2email').value) && (Q('dp2email').value != userinfo.email));
             if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
         }
 
@@ -4526,13 +4524,12 @@
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
             var x = "To delete this account, type in the account password in both boxes below and hit ok.<br /><br />";
-            x += "<form action='{{{domainurl}}}deleteaccount' method='post'><table style=margin-left:80px><tr>";
+            x += "<form action='{{{domainurl}}}deleteaccount' method=post><table style=margin-left:80px><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
-            x += "</tr><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
-            x += '</tr></table><br /><div style="padding:10px;margin-bottom:4px">';
-            x += '<input id="account_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">';
-            x += '<input id="account_dlgOkButton" type="submit" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">';
+            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
+            x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
+            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Delete Account", 0, null, x);
             account_validateDeleteAccount();
@@ -4542,15 +4539,13 @@
         function account_showChangePassword() {
             if (xxdialogMode) return;
             var x = "Change your account password by entering the new password twice in the boxes below.<br /><br />";
-            x += "<form action='{{{domainurl}}}changepassword' method='post'><table style=margin-left:60px><tr>";
+            x += "<form action='{{{domainurl}}}changepassword' method=post><table style=margin-left:60px><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
-            x += "</tr><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
-            x += "</tr><tr>";
-            x += "<td align=right>Password Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
-            x += '</tr></table><br /><div style="padding:10px;margin-bottom:4px">';
-            x += '<input id=account_dlgCancelButton type=button value="Cancel" style="float:right;width:80px;margin-left:5px" onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value="OK" style="float:right;width:80px" onclick="dialogclose(1)">';
+            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
+            x += "</tr><tr><td align=right>Password Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
+            x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
+            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Change Password", 0, null, x);
             account_validateDeleteAccount();
@@ -4704,13 +4699,17 @@
 
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th><th scope=col style=text-align:left></th></tr>';
 
-            var count = 1;
-            for (var i in currentMesh.links) {
-                var rights = 'Partial Rights', r = currentMesh.links[i].rights, xusername = i.split('/')[2];
+            // Sort the users for this mesh
+            var count = 1, sortedusers = [];
+            for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
+            sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
+
+            // Display all users for this mesh
+            for (var i in sortedusers) {
+                var trash = '', rights = 'Partial Rights', r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = 'Full Administrator'; else if (r == 0) rights = 'No Rights';
-                var trash = '';
-                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0) && (rights != 0xFFFFFFFF)))) { trash = '<a onclick=p20deleteUser(event,"' + i + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                x += '<tr onclick=p20viewuser("' + i + '") style=cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td><div title="Mesh User" class=m2></div><div>&nbsp;' + xusername + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td><div title="Mesh User" class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -4809,9 +4808,8 @@
 
         function p20viewuser(userid) {
             if (xxdialogMode) return;
-            var cmeshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
-            var meshrights = currentMesh.links[userid].rights;
-            var r = '';
+            userid = decodeURIComponent(userid);
+            var r = '', cmeshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
                 if ((meshrights &   1) != 0) r += ', Edit Mesh';
                 if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
@@ -4824,26 +4822,15 @@
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
-            var x = addHtmlValue('User Name', userid.split('/')[2]);
+            var buttons = 1, x = addHtmlValue('User Name', userid.split('/')[2]);
             x += addHtmlValue('Permissions', r);
-            var buttons = 1;
             if ((('user/{{{domain}}}/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
         }
 
-        function p20viewuserEx(button, userid) {
-            if (button != 2) return;
-            setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid);
-        }
-
-        function p20deleteUser(e, userid) {
-            haltEvent(e);
-            p20viewuserEx(2, userid);
-        }
-
-        function p20viewuserEx2(button, userid) {
-            meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid});
-        }
+        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid); }
+        function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
+        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid}); }
 
         //
         // MY FILES
@@ -5216,7 +5203,8 @@
         }
 
         function showCreateNewAccountDialogValidate() {
-            QE('idx_dlgOkButton', (!Q('p4name') || (Q('p4name').value.length > 0)) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value);
+            if ((Q('p4email').value.length > 0) && (validateEmail(Q('p4email').value)) == false) { QE('idx_dlgOkButton', false); return; }
+            QE('idx_dlgOkButton', (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value);
         }
 
         function showCreateNewAccountDialogEx() {
@@ -5784,6 +5772,7 @@
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
         function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
+        function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
 
     </script>
     </body>
