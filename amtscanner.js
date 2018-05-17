@@ -11,6 +11,7 @@ module.exports.CreateAmtScanner = function (parent) {
     var obj = {};
     obj.active = false;
     obj.parent = parent;
+    obj.net = require('net');
     obj.dns = require('dns');
     obj.dgram = require('dgram');
     obj.common = require('./common.js');
@@ -107,26 +108,34 @@ module.exports.CreateAmtScanner = function (parent) {
 
     // Look for all AMT computers that may be locally reachable and poll their presence
     obj.performScan = function () {
+        //console.log('performScan');
         if (obj.action == false) { return false; }
         obj.parent.db.getLocalAmtNodes(function (err, docs) {
             for (var i in obj.scanTable) { obj.scanTable[i].present = false; }
             if (err == null && docs.length > 0) {
                 for (var i in docs) {
-                    var doc = docs[i];
-                    var host = doc.host.toLowerCase();
+                    var doc = docs[i], host = doc.host.toLowerCase();
                     if ((host != '127.0.0.1') && (host != '::1') && (host != 'localhost')) { // Don't scan localhost
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == undefined) {
                             var tag = obj.nextTag++;
                             obj.scanTableTags[tag] = obj.scanTable[doc._id] = scaninfo = { nodeinfo: doc, present: true, tag: tag, state: 0 };
+                            //console.log('Scan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
                         } else {
                             scaninfo.present = true;
-                            if (scaninfo.state == 1) {
-                                var delta = Date.now() - scaninfo.lastpong;
-                                if (delta > PeriodicScanTimeout) { // More than 10 seconds without a response, mark the node as unknown state
-                                    scaninfo.state = 0;
-                                    obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
-                                }
+                            var delta = Date.now() - scaninfo.lastpong;
+                            //console.log('Rescan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
+                            if ((scaninfo.state == 1) && (delta >= PeriodicScanTimeout)) {
+                                // More than 2 minutes without a response, mark the node as unknown state
+                                scaninfo.state = 0;
+                                obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
+                            } else if ((scaninfo.tcp == null) && ((scaninfo.state == 0) || isNaN(delta) || (delta > PeriodicScanTime))) {
+                                // More than 30 seconds without a response, try TCP detection
+                                obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result) {
+                                    if (result == false) return;
+                                    tag.lastpong = Date.now();
+                                    if (tag.state == 0) { tag.state = 1; obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); } // Report power state as "present" (7).
+                                });
                             }
                         }
                         // Start scanning this node
@@ -146,7 +155,7 @@ module.exports.CreateAmtScanner = function (parent) {
         return true;
     }
 
-    // Check the presense of a specific Intel AMT computer
+    // Check the presense of a specific Intel AMT computer using RMCP
     obj.checkAmtPresence = function (host, tag) {
         var serverid = Math.floor(tag / 255);
         var servertag = (tag % 255);
@@ -284,6 +293,21 @@ module.exports.CreateAmtScanner = function (parent) {
         if (newVerArr.length > oldVerArr.length) return true;
         if ((newVerArr.length == 3) && (oldVerArr.length == 3) && (oldVerArr[2] != newVerArr[2])) return true;
         return false;
+    }
+
+    // Check that we can connect TCP to a given port
+    obj.checkTcpPresence = function (host, port, scaninfo, func) {
+        //console.log('checkTcpPresence(' + host + ':' + port + ')');
+        var client = new obj.net.Socket();
+        client.scaninfo = scaninfo;
+        client.func = func;
+        client.setTimeout(10000);
+        client.connect(port, host, function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, true); } });
+        client.on('data', function (data) { });
+        client.on('close', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+        client.on('error', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+        client.on('timeout', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+        scaninfo.tcp = client;
     }
 
     return obj;
