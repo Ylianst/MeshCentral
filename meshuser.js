@@ -415,6 +415,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((deluser == null) || (delusersplit.length != 3) || (delusersplit[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
                         if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
 
+                        // Remove all the mesh links to this user
+                        if (deluser.links != null) {
+                            for (var meshid in deluser.links) {
+                                // Get the mesh
+                                var mesh = obj.parent.meshes[meshid];
+                                if (mesh) {
+                                    // Remove user from the mesh
+                                    if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; obj.parent.db.Set(mesh); }
+                                    // Notify mesh change
+                                    var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                    obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                }
+                            }
+                        }
+
+                        // Remove notes for this user
+                        obj.db.Remove('nt' + deluser._id);
+
                         // Delete all files on the server for this account
                         try {
                             var deluserpath = obj.parent.getServerRootFilePath(deluser);

@@ -558,6 +558,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     }
                 }
 
+                // Remove notes for this user
+                obj.db.Remove('nt' + user._id);
+
                 // Remove the user
                 obj.db.Remove(user._id);
                 delete obj.users[user._id];
