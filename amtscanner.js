@@ -12,7 +12,9 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.active = false;
     obj.parent = parent;
     obj.net = require('net');
+    obj.tls = require('tls');
     obj.dns = require('dns');
+    obj.constants = require('constants');
     obj.dgram = require('dgram');
     obj.common = require('./common.js');
     obj.servers = {};
@@ -131,10 +133,14 @@ module.exports.CreateAmtScanner = function (parent) {
                                 obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
                             } else if ((scaninfo.tcp == null) && ((scaninfo.state == 0) || isNaN(delta) || (delta > PeriodicScanTime))) {
                                 // More than 30 seconds without a response, try TCP detection
-                                obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result) {
+                                obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result, version) {
                                     if (result == false) return;
                                     tag.lastpong = Date.now();
-                                    if (tag.state == 0) { tag.state = 1; obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); } // Report power state as "present" (7).
+                                    if (tag.state == 0) {
+                                        tag.state = 1;
+                                        obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); // Report power state as "present" (7).
+                                        if (version != null) { obj.changeAmtState(tag.nodeinfo._id, version, 2, tag.nodeinfo.intelamt.tls); }
+                                    } 
                                 });
                             }
                         }
@@ -298,17 +304,46 @@ module.exports.CreateAmtScanner = function (parent) {
     // Check that we can connect TCP to a given port
     obj.checkTcpPresence = function (host, port, scaninfo, func) {
         //console.log('checkTcpPresence(' + host + ':' + port + ')');
-        var client = new obj.net.Socket();
-        client.scaninfo = scaninfo;
-        client.func = func;
-        client.setTimeout(10000);
-        client.connect(port, host, function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, true); } });
-        client.on('data', function (data) { });
-        client.on('close', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
-        client.on('error', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
-        client.on('timeout', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
-        scaninfo.tcp = client;
+        try {
+            var client;
+            if (port == 16992) {
+                // Connect using TCP
+                client = new obj.net.Socket();
+                client.connect(port, host, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
+            } else {
+                // Connect using TLS, we will switch from default TLS to TLS1-only and back if we get a connection error to support older Intel AMT.
+                if (scaninfo.tlsoption == null) { scaninfo.tlsoption = 0; }
+                client = obj.tls.connect(port, host, scaninfo.tlsoption == 1 ? { secureProtocol: 'TLSv1_method', rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE } : { rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE }, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
+            }
+            client.scaninfo = scaninfo;
+            client.func = func;
+            client.port = port;
+            client.setTimeout(10000);
+            client.on('data', function (data) { var version = obj.getIntelAmtVersionFromHeaders(data.toString()); if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, version != null, version); } });
+            client.on('error', function () { if (this.scaninfo.tlsoption == 0) { this.scaninfo.tlsoption = 1; } else if (this.scaninfo.tlsoption == 1) { this.scaninfo.tlsoption = 0; } if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('timeout', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('close', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('end', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            scaninfo.tcp = client;
+        } catch (ex) { console.log(ex); }
     }
+
+    // Return the Intel AMT version from the HTTP headers. Return null if nothing is found.
+    obj.getIntelAmtVersionFromHeaders = function (headers) {
+        if (headers == null || headers.length == 0) return null;
+        var lines = headers.split('\r\n');
+        for (var i in lines) {
+            // Look for the Intel AMT version
+            if (lines[i].substring(0, 46) == 'Server: Intel(R) Active Management Technology ') {
+                // We need to check that the Intel AMT version is correct, in the "a.b.c" format
+                var ver = lines[i].substring(46), splitver = ver.split('.');
+                if ((splitver.length == 3 || splitver.length == 4) && ('' + parseInt(splitver[0]) === splitver[0]) && ('' + parseInt(splitver[1]) === splitver[1]) && ('' + parseInt(splitver[2]) === splitver[2])) { return (splitver[0] + '.' + splitver[1] + '.' + splitver[2]); }
+            }
+        }
+        return null;
+    }
+
+    //console.log(obj.getIntelAmtVersionFromHeaders("HTTP/1.1 303 See Other\r\nLocation: /logon.htm\r\nContent-Length: 0\r\nServer: Intel(R) Active Management Technology 7.1.91\r\n\r\n"));
 
     return obj;
 }
