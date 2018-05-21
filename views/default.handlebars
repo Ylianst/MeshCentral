@@ -28,7 +28,7 @@
     <script type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>MeshCentral</title>
 </head>
-<body onload="javascript:if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)">
+<body onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)">
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu" style="display: none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1)"><b>Information</b></div>
@@ -124,7 +124,7 @@
                             &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input id=SearchInput type=text style=width:120px placeholder=Search onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
-                            <input type=checkbox id=HostnameCheckBox onclick=onHostnameCheckBox() /><span title="Show device hostnames">Hostname</span>
+                            <input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span>
                         </div>
                         <div id=kvmListToolbar class=style14 style=height:100%;float:left>
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
@@ -182,7 +182,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="xdevices" style="max-height:calc(100vh - 228px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch"></div>
+                    <div id="xdevices" style="max-height:calc(100vh - 242px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch"></div>
                     <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden;position:relative">
                         <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
                             <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
@@ -748,7 +748,7 @@
         var searchFocus = 0;
         var mapSearchFocus = 0;
         var consoleFocus = 0;
-        var showHostnames = false;
+        var showRealNames = false;
         var meshserver = null;
         var meshes = {};
         var meshcount = 0;
@@ -829,8 +829,8 @@
             Q('sortselect').selectedIndex = sort = getstore("sort", 0);
             Q('sizeselect').selectedIndex = getstore("viewsize", 1);
             Q('SearchInput').value = getstore("search", "");
-            showHostnames = (getstore("showHostnames", 0) == 1);
-            Q('HostnameCheckBox').checked = showHostnames;
+            showRealNames = (getstore("showRealNames", 0) == 1);
+            Q('RealNameCheckBox').checked = showRealNames;
             Q('viewselect').value = getstore("deviceView", 1);
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
@@ -1013,7 +1013,7 @@
                         for (var n in message.nodes[m]) {
                             if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
-                            if (message.nodes[m][n].host) { message.nodes[m][n].hostl = message.nodes[m][n].host.toLowerCase(); } else { message.nodes[m][n].hostl = message.nodes[m][n].namel; }
+                            if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
                             message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
@@ -1244,7 +1244,7 @@
                             var node = message.event.node;
                             if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
                             node.namel = node.name.toLowerCase();
-                            if (node.host) { node.hostl = node.host.toLowerCase(); } else { node.hostl = node.namel; }
+                            if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                             node.meshnamel = meshes[node.meshid].name.toLowerCase();
                             node.state = 0;
                             if (!node.icon) node.icon = 1;
@@ -1304,7 +1304,7 @@
                                     if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                 }
                                 node.namel = node.name.toLowerCase();
-                                if (node.host) { node.hostl = node.host.toLowerCase(); } else { node.hostl = node.namel; }
+                                if (node.host) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
 
                                 onSortSelectChange(true);
@@ -1396,9 +1396,9 @@
         // MY DEVICES
         //
 
-        function onHostnameCheckBox() {
-            showHostnames = Q('HostnameCheckBox').checked;
-            putstore("showHostnames", showHostnames ? 1 : 0);
+        function onRealNameCheckBox() {
+            showRealNames = Q('RealNameCheckBox').checked;
+            putstore("showRealNames", showRealNames ? 1 : 0);
             onSortSelectChange();
             return;
         }
@@ -1415,9 +1415,9 @@
             if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
             if (xxdialogMode || xxcurrentView != 1) return;
             if (e.ctrlKey == true && e.charCode == 96) {
-                showHostnames = !showHostnames;
-                Q('HostnameCheckBox').value = showHostnames;
-                putstore("showHostnames", showHostnames ? 1 : 0);
+                showRealNames = !showRealNames;
+                Q('RealNameCheckBox').value = showRealNames;
+                putstore("showRealNames", showRealNames ? 1 : 0);
                 onSortSelectChange();
                 return;
             }
@@ -1545,9 +1545,9 @@
                     count++;
                     var title = EscapeHtml(nodes[i].name);
                     if (title.length == 0) { title = '<i>None</i>'; }
-                    if ((nodes[i].host != null) && (nodes[i].host.length > 0)) { title += " / " + EscapeHtml(nodes[i].host); }
+                    if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
                     var name = EscapeHtml(nodes[i].name);
-                    if (showHostnames == true && nodes[i].host != null) name = EscapeHtml(nodes[i].host);
+                    if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
                     if (name.length == 0) { name = '<i>None</i>'; }
 
                     // Node
@@ -2101,14 +2101,14 @@
             if (!skipsave) { putstore("sort", sort); }
             if (sort == 0) { nodes.sort(meshSort); }
             if (sort == 1) { nodes.sort(powerSort); }
-            if (sort == 2) { if (showHostnames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
+            if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
             updateDevices();
         }
 
-        function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showHostnames == true) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
-        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showHostnames == true) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
+        function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
+        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
-        function deviceHostSort(a, b) { if (a.hostl > b.hostl) return 1; if (a.hostl < b.hostl) return -1; return 0; }
+        function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
         function onSearchFocus(x) { searchFocus = x; }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
@@ -2120,7 +2120,7 @@
             } else {
                 var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs);
                 for (var d in nodes) {
-                    nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].hostl != null && rx.test(nodes[d].hostl.toLowerCase()));
+                    nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()));
                     if ((nodes[d].v == false) && nodes[d].tags) {
                         for (var s in nodes[d].tags) {
                             if (rx.test(nodes[d].tags[s].toLowerCase())) {
@@ -2623,7 +2623,7 @@
         function updatePlaceNodeTable(inputSearch) {
             var elements = document.getElementsByName("PlaceMapDeviceCheckbox"), count = 0;
             for (var i in nodes) {
-                var visible = ((nodes[i].namel.indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != null && nodes[i].hostl.indexOf(inputSearch) >= 0));
+                var visible = ((nodes[i].namel.indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].rnamel != null && nodes[i].rnamel.indexOf(inputSearch) >= 0));
                 if (visible) { count++; }
                 QV(nodes[i]._id + '-rowid', visible);
             }
@@ -2631,7 +2631,7 @@
             /*
             console.log(selected);
             for (var i in nodes) {
-                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].hostl != null && nodes[i].hostl.toLowerCase().indexOf(inputSearch) >= 0)) {
+                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].rnamel != null && nodes[i].rnamel.toLowerCase().indexOf(inputSearch) >= 0)) {
                     console.log(selected.indexOf(nodes[i]._id));
                     x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline ' + ((selected.indexOf(nodes[i]._id) >= 0)?'checked':'') + ' />';
                     x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
@@ -2834,7 +2834,10 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('Mesh', '<a onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+
+                // Attribute: Name
+                if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
                 if ((mesh.mtype == 1) || (node.name != node.host)) {

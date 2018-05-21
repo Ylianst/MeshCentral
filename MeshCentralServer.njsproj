@@ -200,8 +200,10 @@
     <Content Include="SourceFileList.txt" />
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
+    <Content Include="views\login-mobile.handlebars" />
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />
+    <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
   </ItemGroup>
   <ItemGroup>

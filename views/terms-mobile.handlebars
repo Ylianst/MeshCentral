@@ -6,23 +6,38 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <title>MeshCentral - Terms of use</title>
+    <style type="text/css">
+        a {
+           color: #036;
+            text-decoration: underline;
+        }
+
+        #footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+            #footer a:hover {
+                color: #fff;
+                text-decoration: none;
+            }
+    </style>
 </head>
-<body onload="if (typeof(startup) !== 'undefined') startup();">
+<body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id="container">
         <!-- Begin Masthead -->
-        <div id="masthead" style="background: url(images/logoback.png) 0px 0px; background-color: #036; background-repeat: no-repeat; height: 66px; width: 100%; overflow:hidden">
-            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:20px; padding-top:8px">
-                <strong><font style="font-size:46px; font-family: Arial, Helvetica, sans-serif;">{{{title}}}</font></strong>
+        <div id=masthead style="background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:4px">
+                <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
             </div>
-            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:5px; padding-top:14px">
-                <strong><font style="font-size:14px; font-family: Arial, Helvetica, sans-serif;">{{{title2}}}</font></strong>
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:7px">
+                <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
             </div>
             <p>{{{logoutControl}}}</p>
         </div>
-        <div id="page_content">
-            <div id="column_l">
+        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px">
+            <div id="column_l" style="padding-left:10px;padding-right:10px">
                 <h1>Terms of use</h1>
                 <p>Please contact the site administrator for terms of use.</p>
                 <hr />
@@ -140,11 +155,11 @@
                 <br />
             </div>
         </div>
-        <div id="footer">
-            <table cellpadding="0" cellspacing="10" style="width: 100%">
+        <div id=footer style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
+            <table cellpadding=0 cellspacing=6 style=width:100%>
                 <tr>
-                    <td style="text-align:left"></td>
-                    <td style="text-align:right"><a href="/">Login</a></td>
+                    <td style=text-align:left;color:white>{{{footer}}}</td>
+                    <td style=text-align:right>{{{rootCertLink}}}&nbsp;<a href="/">Login</a></td>
                 </tr>
             </table>
         </div>

@@ -671,37 +671,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                         if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                        // Check if the user exists
-                        var deluserid = command.userid, deluser = obj.parent.users[deluserid];
-                        if (deluser == null) {
-                            // TODO: Send error back, user not found.
-                            break;
-                        }
-
                         // Get the mesh
                         var mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
 
-                            // Remove mesh from user
-                            if (deluser.links != null && deluser.links[command.meshid] != null) {
-                                var delmeshrights = deluser.links[command.meshid].rights;
-                                if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[user._id].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
-                                delete deluser.links[command.meshid];
-                                obj.db.Set(deluser);
-                                obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+                            // Check if the user exists - Just in case we need to delete a mesh right for a non-existant user, we do it this way. Technically, it's not possible, but just in case.
+                            var deluserid = command.userid, deluser = obj.parent.users[deluserid];
+                            if (deluser != null) {
+                                // Remove mesh from user
+                                if (deluser.links != null && deluser.links[command.meshid] != null) {
+                                    var delmeshrights = deluser.links[command.meshid].rights;
+                                    if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[user._id].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
+                                    delete deluser.links[command.meshid];
+                                    obj.db.Set(deluser);
+                                    obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+                                }
                             }
 
                             // Remove user from the mesh
                             if (mesh.links[command.userid] != null) {
                                 delete mesh.links[command.userid];
                                 obj.db.Set(mesh);
-                            }
 
-                            // Notify mesh change
-                            var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
-                            obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                // Notify mesh change
+                                var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                            }
                         }
                         break;
                     }
