@@ -29,23 +29,19 @@
     <div id=container>
         <div id=mastheadx></div>
         <div id=masthead style="background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:4px">
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
                 <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
             </div>
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:7px">
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:10px">
                 <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
             </div>
         </div>
-        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px">
-            <div id=column_l style="padding:10px">
-                <div align=center>
-                    <img alt="" src=images/icons50.png width=300 height=50 />
-                </div>
-                <p>Connect to your devices anywhere using MeshCentral, the remote monitoring and management web site. Get started by creating an account if you don't have one already.</p>
-                <table style=width:100%>
+        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%;display:flex;align-items:center">
+            <div id=column_l style="padding:10px;width:100%">
+                <table style="width:100%">
                     <tr>
                         <td align=center>
-                            <div id=loginpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none">
+                            <div id=loginpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both;display:none">
                                 <form action="login" method=post>
                                     <div id=message1>
                                         {{{message}}}
@@ -76,50 +72,52 @@
                                     </div>
                                 </form>
                             </div>
-                            <div id=createpanel style="background-color: #979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none">
-                                <form action=createaccount method=post>
-                                    <div id=message2>
-                                        {{{message}}}
-                                    </div>
-                                    <div>
-                                        <b>Account Creation</b>
-                                    </div>
-                                    <table>
-                                        <tr>
-                                            <td align=right width=100>Username:</td>
-                                            <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
-                                        </tr>
-                                        <tr>
-                                            <td align=right width=100>Email:</td>
-                                            <td><input id=aemail type=text name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
-                                        </tr>
-                                        <tr>
-                                            <td align=right>Password:</td>
-                                            <td><input id=apassword1 type=password name=password1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3) onkeyup=validateCreate(3,event) /></td>
-                                        </tr>
-                                        <tr>
-                                            <td align=right>Password:</td>
-                                            <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
-                                        </tr>
-                                        <tr>
-                                            <td align=right>Pass Hint:</td>
-                                            <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5) onkeyup=validateCreate(5,event) /></td>
-                                        </tr>
-                                        <tr id=newAccountPass title="Enter the account creation token">
-                                            <td align=right>Creation Token:</td>
-                                            <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6) onkeyup=validateCreate(6,event) /></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan=2>
-                                                <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
-                                                <div id=passWarning style="padding-top:6px"></div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
-                                </form>
+                            <div id=createpanel style="display:none">
+                                <div style="background-color: #979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both">
+                                    <form action=createaccount method=post>
+                                        <div id=message2>
+                                            {{{message}}}
+                                        </div>
+                                        <div>
+                                            <b>Account Creation</b>
+                                        </div>
+                                        <table>
+                                            <tr>
+                                                <td align=right width=100>Username:</td>
+                                                <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
+                                            </tr>
+                                            <tr>
+                                                <td align=right width=100>Email:</td>
+                                                <td><input id=aemail type=text name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
+                                            </tr>
+                                            <tr>
+                                                <td align=right>Password:</td>
+                                                <td><input id=apassword1 type=password name=password1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3) onkeyup=validateCreate(3,event) /></td>
+                                            </tr>
+                                            <tr>
+                                                <td align=right>Password:</td>
+                                                <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
+                                            </tr>
+                                            <tr>
+                                                <td align=right>Pass Hint:</td>
+                                                <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5) onkeyup=validateCreate(5,event) /></td>
+                                            </tr>
+                                            <tr id=newAccountPass title="Enter the account creation token">
+                                                <td align=right>Creation Token:</td>
+                                                <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6) onkeyup=validateCreate(6,event) /></td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan=2>
+                                                    <div style=float:right><input id=createButton type=submit value="Create Account" disabled="disabled" /></div>
+                                                    <div id=passWarning style="padding-top:6px"></div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    </form>
+                                </div>
                             </div>
-                            <div id=resetpanel style="background-color: #979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none">
+                            <div id=resetpanel style="background-color: #979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
                                 <form action=resetaccount method=post>
                                     <div id=message3>
                                         {{{message}}}
