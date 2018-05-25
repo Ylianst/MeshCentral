@@ -198,6 +198,7 @@
     <Content Include="readme.txt" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
+    <Content Include="views\default-mobile.handlebars" />
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
     <Content Include="views\login-mobile.handlebars" />

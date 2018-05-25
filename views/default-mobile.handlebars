@@ -1,0 +1,867 @@
+﻿<!DOCTYPE html>
+<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <script type="text/javascript" src="scripts/meshcentral.js"></script>
+    <title>MeshCentral - Login</title>
+    <style>
+        a {
+            color: #036;
+            text-decoration: underline;
+        }
+
+        #footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+            #footer a:hover {
+                color: #fff;
+                text-decoration: none;
+            }
+
+        .i1 {
+            background: url(../images/icons50.png) 0px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i2 {
+            background: url(../images/icons50.png) -50px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i3 {
+            background: url(../images/icons50.png) -100px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i4 {
+            background: url(../images/icons50.png) -150px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i5 {
+            background: url(../images/icons50.png) -200px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i6 {
+            background: url(../images/icons50.png) -250px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .gray {
+            /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
+            filter: gray; /* IE6-9 */
+            -webkit-filter: grayscale(100%) opacity(60%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+        }
+    </style>
+</head>
+<body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
+    <div id=container>
+        <div id=mastheadx></div>
+        <div id=masthead style="background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
+                <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
+            </div>
+            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:10px">
+                <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
+            </div>
+        </div>
+        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
+            <div id=column_l style="width:100%;height:calc(100hv - 82px)">
+                <div id=p0 style=display:none;width:100%;height:100%>
+                    <div style="display:flex;align-items:center;width:100%;height:100%">
+                        <div id=p0message style=text-align:center;width:100%>Server disconnected, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
+                    </div>
+                </div>
+                <div id=p1 style=display:none;width:100%;height:100%>
+                    <div style="display:flex;align-items:center;width:100%;height:100%">
+                        <div id=p1message style=text-align:center;width:100%></div>
+                    </div>
+                </div>
+                <div id=p2 style=display:none>
+                    <div id=xdevices></div>
+                </div>
+            </div>
+        </div>
+        <div id=footer style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
+            <table cellpadding=0 cellspacing=6 style=width:100%>
+                <tr>
+                    <td style=text-align:left;color:white>{{{footer}}}</td>
+                    <td style=text-align:right>{{{rootCertLink}}}&nbsp;<a href=terms>Terms &amp; Privacy</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:180px;width:400px;display:none">
+        <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+            <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
+            <div id=id_dialogtitle style=padding:5px></div>
+            <div style=width:100%;margin:6px></div>
+        </div>
+        <div style="margin-right:16px;margin-left:8px">
+            <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
+                <div id=id_dialogMessage style="padding:10px"></div>
+            </div>
+            <div id=dialog2 style="margin:auto;margin:3px">
+                <div id=id_dialogOptions></div>
+            </div>
+        </div>
+        <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
+            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
+            <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
+        </div>
+    </div>
+    <script>
+        var debugLevel = {{{debuglevel}}};
+        var features = {{{features}}};
+        var meshserver = null;
+        var xdr = null;
+        var serverinfo = null;
+        var nodes = [];
+        var filetree = {};
+        var userinfo = null;
+        var serverinfo = null;
+        var users = null;
+        var nodeShortIdent = 0;
+
+        function startup() {
+            if ((features & 32) == 0) {
+                // Guard against other site's top frames (web bugs).
+                var loc = null;
+                try { loc = top.location.toString().toLowerCase(); } catch (e) { }
+                if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
+            }
+
+            window.onresize = center;
+            center();
+            QH('p1message', 'Connecting...');
+            go(1);
+
+            // Connect to the mesh server
+            meshserver = MeshServerCreateControl("{{{domainurl}}}");
+            meshserver.onStateChanged = onStateChanged;
+            meshserver.onMessage = onMessage;
+            meshserver.Start();
+        }
+
+        function onStateChanged(server, state) {
+            if (state == 0) {
+                // Control web socket disconnected
+                setDialogMode(0); // Close any dialog boxes if present
+                go(0); // Go to disconnection panel
+                setTimeout(serverPoll, 5000); // Start polling for the server
+
+                // Clean up here
+                
+            } else if (state == 2) {
+                // Fetch list of meshes, nodes, files
+                meshserver.send({ action: 'meshes' });
+                meshserver.send({ action: 'nodes' });
+                //meshserver.send({ action: 'files' });
+                if (xxcurrentView < 2) { go(2); }
+            }
+        }
+
+        // Poll the server, if it responds, refresh the page.
+        function serverPoll() {
+            xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open("HEAD", window.location.href);
+            xdr.timeout = 15000;
+            xdr.onload = function () { reload(); };
+            xdr.onerror = xdr.ontimeout = function () { setTimeout(serverPoll, 10000); };
+            xdr.send();
+        }
+
+        function onMessage(server, message) {
+            switch (message.action) {
+                case 'serverinfo': {
+                    serverinfo = message.serverinfo;
+                    break;
+                }
+                case 'userinfo': {
+                    userinfo = message.userinfo;
+                    //updateSiteAdmin();
+                    //QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    //QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    break;
+                }
+                case 'users': {
+                    users = {};
+                    for (var m in message.users) { users[message.users[m]._id] = message.users[m]; }
+                    updateUsers();
+                    break;
+                }
+                case 'wssessioncount': {
+                    wssessions = message.wssessions;
+                    updateUsers();
+                    break;
+                }
+                case 'meshes': {
+                    meshes = {};
+                    for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
+                    updateMeshes();
+                    updateDevices();
+                    break;
+                }
+                case 'files': {
+                    filetree = setupBackPointers(message.filetree);
+                    updateFiles();
+                    d3updatefiles();
+                    break;
+                }
+                case 'nodes': {
+                    nodes = [];
+                    for (var m in message.nodes) {
+                        for (var n in message.nodes[m]) {
+                            if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
+                            message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
+                            if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
+                            message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
+                            message.nodes[m][n].meshid = m;
+                            message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
+                            message.nodes[m][n].desc = message.nodes[m][n].desc;
+                            if (!message.nodes[m][n].icon) message.nodes[m][n].icon = 1;
+                            message.nodes[m][n].ident = ++nodeShortIdent;
+                            nodes.push(message.nodes[m][n]);
+                        }
+                    }
+                    //onSortSelectChange();
+                    //onSearchInputChanged();
+                    updateDevices();
+                    //refreshMap(false, true);
+                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { setDialogMode(0); go(1); } }
+                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',{{viewmode}});}
+                    break;
+                }
+                case 'powertimeline': {
+                    if (message.nodeid != powerTimelineReq) break;
+                    powerTimelineNode = message.nodeid;
+                    powerTimeline = message.timeline;
+                    powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
+                    if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
+                    break;
+                }
+                case 'event': {
+                    /*
+                    if (!message.event.nolog) {
+                        events.unshift(message.event);
+                        var eventLimit = parseInt(p3limitdropdown.value);
+                        while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
+                        events_update();
+                    }
+                    */
+                    switch (message.event.action) {
+                        case 'createmesh': {
+                            // A new mesh was created
+                            if (message.event.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                updateMeshes();
+                                updateDevices();
+                                meshserver.send({ action: 'files' });
+                            }
+                            break;
+                        }
+                        case 'meshchange': {
+                            // Update mesh information
+                            if (meshes[message.event.meshid] == null) {
+                                // This is a new mesh for us
+                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                            } else {
+                                // This is an existing mesh
+                                meshes[message.event.meshid].name = message.event.name;
+                                meshes[message.event.meshid].desc = message.event.desc;
+                                meshes[message.event.meshid].links = message.event.links;
+
+                                // Check if we lost rights to this mesh in this change.
+                                if (meshes[message.event.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] == null) {
+                                    if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
+                                    delete meshes[message.event.meshid];
+
+                                    // Delete all nodes in that mesh
+                                    var newnodes = [];
+                                    for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
+                                    nodes = newnodes;
+
+                                    // If we are looking at a node in the deleted mesh, move back to "My Devices"
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+                                }
+                            }
+                            updateMeshes();
+                            updateDevices();
+                            meshserver.send({ action: 'files' });
+
+                            // If we are looking at a mesh that is now deleted, move back to "My Account"
+                            if (xxcurrentView == 20 && currentMesh._id == message.event.meshid) { p20updateMesh(); }
+                            break;
+                        }
+                        case 'deletemesh': {
+                            // Delete the mesh
+                            if (meshes[message.event.meshid]) {
+                                delete meshes[message.event.meshid];
+                                updateMeshes();
+                                meshserver.send({ action: 'files' });
+                            }
+
+                            // Delete all nodes in that mesh
+                            var newnodes = [];
+                            for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
+                            nodes = newnodes;
+                            updateDevices();
+
+                            // If we are looking at a mesh that is now deleted, move back to "My Account"
+                            if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
+                            // If we are looking at a node in the deleted mesh, move back to "My Devices"
+                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+
+                            break;
+                        }
+                        case 'addnode': {
+                            var node = message.event.node;
+                            if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
+                            node.namel = node.name.toLowerCase();
+                            if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                            node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                            node.state = 0;
+                            if (!node.icon) node.icon = 1;
+                            node.ident = ++nodeShortIdent;
+                            nodes.push(node);
+                            //onSortSelectChange();
+                            //onSearchInputChanged();
+                            updateDevices();
+                            //updateMapMarkers();
+                            break;
+                        }
+                        case 'removenode': {
+                            var index = -1;
+                            for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
+                            if (index != -1) {
+                                var node = nodes[index];
+                                if (currentNode == node) {
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); }
+                                    delete currentNode; // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
+                                }
+                                nodes.splice(index, 1);
+                                updateDevices();
+                                updateMapMarkers();
+                            }
+                            break;
+                        }
+                        case 'changenode': {
+                            var index = -1;
+                            for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
+                            if (index != -1) {
+                                var node = nodes[index];
+
+                                // Change the node
+                                node.name = message.event.node.name;
+                                node.host = message.event.node.host;
+                                node.desc = message.event.node.desc;
+                                node.publicip = message.event.node.publicip;
+                                node.iploc = message.event.node.iploc;
+                                node.wifiloc = message.event.node.wifiloc;
+                                node.gpsloc = message.event.node.gpsloc;
+                                node.tags = message.event.node.tags;
+                                node.userloc = message.event.node.userloc;
+                                if (message.event.node.agent != null) {
+                                    if (node.agent == null) node.agent = {};
+                                    if (message.event.node.agent.ver != null) { node.agent.ver = message.event.node.agent.ver; }
+                                    if (message.event.node.agent.id != null) { node.agent.id = message.event.node.agent.id; }
+                                    if (message.event.node.agent.caps != null) { node.agent.caps = message.event.node.agent.caps; }
+                                    if (message.event.node.agent.core != null) { node.agent.core = message.event.node.agent.core; } else { if (node.agent.core) { delete node.agent.core; } }
+                                    node.agent.tag = message.event.node.agent.tag;
+                                }
+                                if (message.event.node.intelamt != null) {
+                                    if (node.intelamt == null) node.intelamt = {};
+                                    if (message.event.node.intelamt.host != null) { node.intelamt.user = message.event.node.intelamt.host; }
+                                    if (message.event.node.intelamt.user != null) { node.intelamt.user = message.event.node.intelamt.user; }
+                                    if (message.event.node.intelamt.tls != null) { node.intelamt.tls = message.event.node.intelamt.tls; }
+                                    if (message.event.node.intelamt.ver != null) { node.intelamt.ver = message.event.node.intelamt.ver; }
+                                    if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
+                                }
+                                node.namel = node.name.toLowerCase();
+                                if (node.host) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                                if (message.event.node.icon) { node.icon = message.event.node.icon; }
+
+                                //onSortSelectChange(true);
+                                //drawNotifications();
+                                //refreshDevice(node._id);
+                                //updateMapMarkers();
+                                updateDevices();
+
+                                //if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
+                            }
+                            break;
+                        }
+                        case 'nodeconnect': {
+                            // Indicated a node has changed connectivity state
+                            var index = -1;
+                            for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
+                            if (index != -1) {
+                                var node = nodes[index];
+
+                                // Change the node connection state
+                                //node.conn = message.event.conn;
+                                //node.pwr = message.event.pwr;
+                                updateDevices();
+                                //updateMapMarkers();
+                                //refreshDevice(node._id);
+                            }
+                            break;
+                        }
+                        case 'clearevents': {
+                            //events = [];
+                            //events_update();
+                            break;
+                        }
+                        case 'login': {
+                            // Update the last login time
+                            if (users != null && users['user/{{{domain}}}/' + message.event.username.toLowerCase()]) { users['user/{{{domain}}}/' + message.event.username.toLowerCase()].login = message.event.time; }
+                            break;
+                        }
+                        case 'notify': {
+                            //var n = { text: message.event.value };
+                            //if (message.event.tag != null) { n.tag = message.event.tag; }
+                            //addNotification(n);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        //
+        // MY ACCOUNT
+        //
+
+        function updateMeshes() { }
+
+        //
+        // MY DEVICES
+        //
+
+        var sort = 0;
+        var deviceHeaderId = 0;
+        var deviceHeaderCount;
+        var deviceHeaders = {};
+        function updateDevices() {
+            var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, groups = {}, groupCount = {};
+
+            // 3 wide, list view or desktop view
+            deviceHeaderId = 0;
+            deviceHeaderCount = {};
+            var deviceHeaderTotal = 0;
+            var deviceHeaders = {};
+            var deviceHeadersTitles = {};
+            var current;
+
+            // Go thru the list of nodes and display them
+            for (var i in nodes) {
+                if (nodes[i].v == false) continue;
+                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+                if (meshlinks == null) continue;
+                var meshrights = meshlinks.rights;
+
+                /*
+                if (sort == 0) {
+                    // Mesh header
+                    if (nodes[i].meshid != current) {
+                        //deviceHeaderSet();
+                        var extra = '';
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
+                        if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
+                        r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
+                        //r += getMeshActions(mesh2, meshrights);
+                        r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
+                        current = nodes[i].meshid;
+                        displayedMeshes[current] = 1;
+                        c = 0;
+                    }
+                } else if (sort == 1) {
+                    // Power header
+                    if (nodes[i].pwr !== current) {
+                        //deviceHeaderSet();
+                        if (current !== null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
+                        r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
+                        current = nodes[i].pwr;
+                        c = 0;
+                    }
+                } else if (sort == 2) {
+                    // Device header
+                    if (current == null) { current = '1'; }
+                }
+                */
+
+
+                count++;
+                var title = EscapeHtml(nodes[i].name);
+                if (title.length == 0) { title = '<i>None</i>'; }
+                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
+                var name = EscapeHtml(nodes[i].name);
+                //if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
+                if (name.length == 0) { name = '<i>None</i>'; }
+
+                // Node
+                var icon = nodes[i].icon;
+                var nodestate = NodeStateStr(nodes[i]);
+                if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
+                //var title = '';
+                //r += '<div id=devs style=display:inline-block;width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
+                r += '<div>';
+                r += '<div class="i' + icon + '" style="float:left;margin-left:4px"></div>';
+                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;cursor:pointer;border-radius:8px 0px 0px 8px">';
+                r += '<div><div style=padding-left:12px;padding-top:2px><b>' + name + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + nodestate + '</div></div>';
+                r += '</div>';
+                r += '</div>';
+
+                // If we are displaying devices by group, put the device in the right group.
+                /*
+                if ((sort == 3) && (r != '')) {
+                    if (nodes[i].tags) {
+                        for (var j in nodes[i].tags) {
+                            var tag = nodes[i].tags[j];
+                            if (groups[tag] == null) { groups[tag] = r; groupCount[tag] = 1; } else { groups[tag] += r; groupCount[tag] += 1; }
+                            if (view == 3) break;
+                        }
+                    }
+                    r = '';
+                }
+                */
+
+                deviceHeaderTotal++;
+                if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
+            }
+
+            QH('xdevices', r);
+        }
+
+        var powerStateStrings = ['', '<span title="Device is powered on.">Powered</span>', '<span title="Device is in sleep state (S1).">Sleeping</span>', '<span title="Device is in sleep state (S2).">Sleeping</span>', '<span title="Device is in deep sleep state (S3).">Deep Sleep</span>', '<span title="Device is in hibernating state (S4).">Hibernating</span>', '<span title="Device is in powered off state (S5).">Soft-Off</span>', '<span title="Device is detected but power state could not be obtained.">Present</span>'];
+        var powerStateStrings2 = ['', 'Device is powered', 'Device is in sleep state (S1)', 'Device is in sleep state (S2)', 'Device is in deep sleep state (S3)', 'Device is hibernating (S4)', 'Device is in soft-off state (S5)', 'Device is present, but power state cannot be determined'];
+        var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
+        function NodeStateStr(node) {
+            var states = [];
+            if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
+            if (node.conn) {
+                if ((node.conn & 1) != 0) states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>');
+                if ((node.conn & 2) != 0) states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>');
+                if ((node.conn & 4) != 0) states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>');
+                if ((node.conn & 8) != 0) states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>');
+            }
+            if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
+            return states.join(', ');
+        }
+
+        function PowerStateStr(x) {
+            if (x < powerStatetable.length) return powerStatetable[x];
+            return '';
+        }
+
+        function PowerStateStr2(x) {
+            if ((x != 0) && (x < powerStatetable.length)) return powerStatetable[x];
+            return 'Unknown';
+        }
+
+        //
+        // MY DEVICE
+        //
+
+        function refreshDevice(nodeid) {
+            if (!currentNode || currentNode._id != nodeid) return;
+            gotoDevice(nodeid, xxcurrentView, true);
+        }
+
+        function getNodeRights(nodeid) {
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
+            return mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+        }
+
+        var currentNode;
+        var powerTimelineNode = null;
+        var powerTimelineReq = null;
+        var powerTimelineUpdate = null;
+        var powerTimeline = null;
+        function getCurrentNode() { return currentNode; };
+        function gotoDevice(nodeid, panel, refresh) {
+            //disconnectAllKvmFunction();
+            var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
+            var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            if (!currentNode || currentNode._id != node._id || refresh == true) {
+                currentNode = node;
+
+                // Add node name
+                var nname = EscapeHtml(node.name);
+                if (nname.length == 0) { nname = '<i>None</i>'; }
+                if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
+                QH('p10deviceName', nname);
+                QH('p11deviceName', nname);
+                QH('p12deviceName', nname);
+                QH('p13deviceName', nname);
+                QH('p14deviceName', nname);
+                QH('p15deviceName', nname);
+                QH('p16deviceName', nname);
+
+                // Node attributes
+                var x = '<table style=width:100%>';
+
+                // Attribute: Mesh
+                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+
+                // Attribute: Name
+                if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
+
+                // Attribute: Host
+                if ((mesh.mtype == 1) || (node.name != node.host)) {
+                    if ((meshrights & 4) != 0) {
+                        if (node.host) {
+                            x += addDeviceAttribute('Hostname', '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
+                        } else {
+                            x += addDeviceAttribute('Hostname', '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>None</i></span>');
+                        }
+                    } else {
+                        x += addDeviceAttribute('Hostname', EscapeHtml(node.host));
+                    }
+                }
+
+                // Attribute: Description
+                var description = node.desc?EscapeHtml(node.desc):"<i>None</i>";
+                if ((meshrights & 4) != 0) {
+                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
+                } else {
+                    x += addDeviceAttribute('Description', description);
+                }
+
+                // Attribute: Mesh Agent
+                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'OSX 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'OSX 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l' ];
+                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+                    var str = '';
+                    if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
+                    if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    x += addDeviceAttribute('Mesh Agent', str);
+                }
+
+                // Attribute: Intel AMT
+                if (node.intelamt != null) {
+                    var str = '';
+                    var provisioningStates = { 0: 'Not Activated (Pre)', 1: 'Not Activated (In)', 2: 'Activated' };
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>Unknown State</i>, v' + node.intelamt.ver; } else
+                        if (node.intelamt.ver == null || node.intelamt.state == null) { str += '<i>Unknown Version & State</i>'; } else {
+                            str += provisioningStates[node.intelamt.state];
+                            if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="Intel AMT is activated in Client Control Mode">CCM</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="Intel AMT is activated in Admin Control Mode">ACM</span>'; } }
+                            str += (', v' + node.intelamt.ver);
+                        }
+                    if (node.intelamt.tls == 1) { str += ', <span  title="Intel AMT is setup with TLS network security">TLS</span>'; }
+                    if (node.intelamt.state == 2) {
+                        if (node.intelamt.user == null || node.intelamt.user == '') {
+                            if ((meshrights & 4) != 0) {
+                                str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No Credentials</i>';
+                            } else {
+                                str += ', <i style=color:#FF0000>No Credentials</i>';
+                            }
+                        }
+                        str += ' ';
+                        if ((meshrights & 4) != 0) {
+                            str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
+                        }
+                    }
+                    x += addDeviceAttribute('Intel&reg; AMT', str);
+                }
+
+                // Attribute: Mesh Agent Tag
+                if ((node.agent != null) && (node.agent.tag != null) && (node.agent.tag != 'mailto:')) {
+                    var tag = EscapeHtml(node.agent.tag);
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    x += addDeviceAttribute('Agent Tag', tag);
+                }
+
+                // Attribute: Intel AMT
+                //if (node.intelamt && node.intelamt.user) { x += addDeviceAttribute('Intel&reg; AMT', node.intelamt.user); }
+
+                // Attribute: Connectivity (Only show this if more than just the agent is connected).
+                var connectivity = node.conn;
+                if (connectivity && connectivity > 1) {
+                    var cstate = [];
+                    if ((node.conn & 1) != 0) cstate.push('<span title="Mesh agent is connected and ready for use.">Mesh Agent</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
+                    if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
+                    if ((node.conn & 8) != 0) cstate.push('<span title="Mesh agent is reachable using another agent as relay.">Mesh Relay</span>');
+                    x += addDeviceAttribute('Connectivity', cstate.join(', '));
+                }
+
+                // Node grouping tags
+                var groupingTags = '<i>None</i>';
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
+                x += addDeviceAttribute('Groups', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+
+                x += '</table><br />';
+                // Show action button, only show if we have permissions 4, 8, 64
+                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
+                x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
+                QH('p10html', x);
+
+                // Show node last 7 days timeline
+                drawDeviceTimeline();
+
+                // Show bottom buttons
+                x = '<div style=float:right;font-size:x-small>';
+                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                x += '</div><div style=font-size:x-small>';
+                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
+                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
+
+                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+
+                // RDP link, show this link only of the remote machine is Windows.
+                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
+                    if (node.agent.id > 4) {
+                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","PSSH",22) title="Requires Microsoft ClickOnce support in your browser.">Putty</a>&nbsp;';
+                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
+                    }
+                }
+                x += '</div><br>'
+
+                QH('p10html3', x);
+
+                // Set the node power state
+                powerstate = PowerStateStr(node.state);
+                //if (node.state == 0) { powerstate = 'Unknown State'; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
+                if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                QH('MainComputerState', powerstate);
+
+                // Set the node icon
+                Q('MainComputerImage').setAttribute("src", "images/icons200-" + node.icon + "-1.png");
+                Q('MainComputerImage').className = ((!node.conn) || (node.conn == 0)?'gray':'');
+
+                // Setup/Refresh the desktop tab
+                setupTerminal();
+                setupFiles();
+                var consoleRights = ((meshrights & 16) != 0);
+                if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
+
+                // Show or hide the tabs
+                // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
+                // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
+                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0)) && (meshrights & 8));
+                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0)) && (meshrights & 8));
+                QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8));
+                QV('MainDevAmt', (node.intelamt != null) && (node.intelamt.state == 2) && (meshrights & 8));
+                QV('MainDevConsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
+                QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0) && (userinfo.siteadmin == 0xFFFFFFFF));
+                QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
+
+                // Setup/Refresh Intel AMT tab
+                var amtFrameNode = Q('p14iframe').contentWindow.getCurrentMeshNode();
+                if ((amtFrameNode != null) && (amtFrameNode._id != currentNode._id)) { Q('p14iframe').contentWindow.disconnect(); }
+                var online = ((node.conn & 6) != 0)?true:false; // If CIRA (2) or AMT (4) connected, enable Commander
+                Q('p14iframe').contentWindow.setConnectionState(online);
+                Q('p14iframe').contentWindow.setFrameHeight('650px');
+                Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
+
+                // Display "action" button on desktop/terminal/files
+                QV('deskActionsBtn', (meshrights & 72) != 0); // 72 = Wake-up + Remote Control permissions
+                QV('termActionsBtn', (meshrights & 72) != 0);
+                QV('filesActionsBtn', (meshrights & 72) != 0);
+
+                // Request the power timeline
+                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
+
+                // Reset the desktop tools
+                QV('DeskTools', false);
+                showDeskToolsProcesses();
+
+                // Ask for device events
+                //refreshDeviceEvents();
+            }
+            setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
+            if (!panel) panel = 10;
+            go(panel);
+        }
+
+        //
+        // PANELS
+        //
+
+        var xxcurrentView = -1;
+        function go(x) {
+            if (xxdialogMode || xxcurrentView == x) return;
+            setDialogMode(0);
+            // Edit this line when adding a new screen
+            for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
+            xxcurrentView = x;
+        }
+        
+        //
+        // POPUP DIALOG
+        //
+
+        // undefined = Hidden, 1 = Generic Message
+        var xxdialogMode;
+        var xxdialogFunc;
+        var xxdialogButtons;
+        var xxdialogTag;
+
+        // Display a dialog box
+        // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        function setDialogMode(x, y, b, f, c, tag) {
+            xxdialogMode = x;
+            xxdialogFunc = f;
+            xxdialogButtons = b;
+            xxdialogTag = tag;
+            QE('idx_dlgOkButton', true);
+            QV('idx_dlgOkButton', b & 1);
+            QV('idx_dlgCancelButton', b & 2);
+            QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgButtonBar', b & 7);
+            if (y) QH('id_dialogtitle', y);
+            for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            QV('dialog', x);
+            if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+        }
+
+        function dialogclose(x) {
+            var f = xxdialogFunc;
+            var b = xxdialogButtons;
+            var t = xxdialogTag;
+            setDialogMode();
+            if (((b & 8) || x) && f) f(x, t);
+        }
+
+        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); }
+        function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
+        function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+        function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
+        function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
+        function reload() { window.location.href = window.location.href; }
+        function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
+
+    </script>
+</body>
+</html>
