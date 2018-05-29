@@ -20,57 +20,33 @@
             text-decoration: underline;
         }
 
-            #footer a:hover {
-                color: #fff;
-                text-decoration: none;
-            }
-
-        .i1 {
-            background: url(../images/icons50.png) 0px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
+        #footer a:hover {
+            color: #fff;
+            text-decoration: none;
         }
 
-        .i2 {
-            background: url(../images/icons50.png) -50px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
-        }
-
-        .i3 {
-            background: url(../images/icons50.png) -100px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
-        }
-
-        .i4 {
-            background: url(../images/icons50.png) -150px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
-        }
-
-        .i5 {
-            background: url(../images/icons50.png) -200px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
-        }
-
-        .i6 {
-            background: url(../images/icons50.png) -250px 0px;
-            height: 50px;
-            width: 50px;
-            border: none;
-        }
+        .i1 {background:url(../images/icons50.png) 0px 0px;height:50px;width:50px;border:none;}
+        .i2 {background:url(../images/icons50.png) -50px 0px;height:50px;width:50px;border:none;}
+        .i3 {background:url(../images/icons50.png) -100px 0px;height:50px;width:50px;border:none;}
+        .i4 {background:url(../images/icons50.png) -150px 0px;height:50px;width:50px;border:none;}
+        .i5 {background:url(../images/icons50.png) -200px 0px;height:50px;width:50px;border:none;}
+        .i6 {background:url(../images/icons50.png) -250px 0px; height:50px;width:50px; border:none; }
+        .m0 {background:url(../images/images16.png)  -32px 0px; height:16px;width:16px; border:none;float:left }
+        .m1 {background:url(../images/images16.png)  -16px 0px; height:16px;width:16px; border:none;float:left }
+        .m2 {background:url(../images/images16.png)  -96px 0px; height:16px;width:16px; border:none;float:left }
+        .m3 {background:url(../images/images16.png) -112px 0px; height:16px;width:16px; border:none;float:left }
 
         .gray {
             /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
             filter: gray; /* IE6-9 */
             -webkit-filter: grayscale(100%) opacity(60%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+        }
+
+        .DevSt {
+            padding-left:5px;
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-bottom-color: #DDDDDD;
         }
     </style>
 </head>
@@ -86,7 +62,7 @@
             </div>
         </div>
         <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
-            <div id=column_l style="width:100%;height:calc(100hv - 82px)">
+            <div id=column_l style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
                 <div id=p0 style=display:none;width:100%;height:100%>
                     <div style="display:flex;align-items:center;width:100%;height:100%">
                         <div id=p0message style=text-align:center;width:100%>Server disconnected, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
@@ -100,6 +76,51 @@
                 <div id=p2 style=display:none>
                     <div id=xdevices></div>
                 </div>
+                <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%>
+                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tr style=padding:0>
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                                <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
+                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                </div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                            </td>
+                            <td>
+                                <a id=MainComputerImage style=cursor:pointer onclick=p10showiconselector()></a>
+                            </td>
+                            <td>
+                                <div style=margin-left:5px>
+                                    <strong><span id=p10deviceName></span></strong><br />
+                                    <span id=MainComputerState></span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p10html style="margin-left:8px;margin-right:8px"></div>
+                    <div id=p10html2></div>
+                    <div id=p10html3></div>
+                </div>
+                <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
+                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tr style=padding:0>
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                                <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
+                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                </div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                            </td>
+                            <td onclick="p20editmesh(1)">
+                                <img src="/images/meshicon50.png" width=50 height=50 />
+                            </td>
+                            <td onclick="p20editmesh(1)">
+                                <div style=margin-left:5px>
+                                    <strong style="font-size:large"><span id=p20meshName></span></strong><br />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p20info style="margin-left:8px;margin-right:8px"></div>
+                </div>
             </div>
         </div>
         <div id=footer style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
@@ -111,7 +132,7 @@
             </table>
         </div>
     </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:180px;width:400px;display:none">
+    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:90px;width:300px;display:none">
         <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
             <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
             <div id=id_dialogtitle style=padding:5px></div>
@@ -225,9 +246,9 @@
                     break;
                 }
                 case 'files': {
-                    filetree = setupBackPointers(message.filetree);
-                    updateFiles();
-                    d3updatefiles();
+                    //filetree = setupBackPointers(message.filetree);
+                    //updateFiles();
+                    //d3updatefiles();
                     break;
                 }
                 case 'nodes': {
@@ -401,12 +422,12 @@
                                     if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                 }
                                 node.namel = node.name.toLowerCase();
-                                if (node.host) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                                if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
 
                                 //onSortSelectChange(true);
                                 //drawNotifications();
-                                //refreshDevice(node._id);
+                                refreshDevice(node._id);
                                 //updateMapMarkers();
                                 updateDevices();
 
@@ -422,8 +443,8 @@
                                 var node = nodes[index];
 
                                 // Change the node connection state
-                                //node.conn = message.event.conn;
-                                //node.pwr = message.event.pwr;
+                                node.conn = message.event.conn;
+                                node.pwr = message.event.pwr;
                                 updateDevices();
                                 //updateMapMarkers();
                                 //refreshDevice(node._id);
@@ -462,19 +483,27 @@
         // MY DEVICES
         //
 
+        var backStack = [];
+        function goBack() { if (backStack.length == 0) { goMyDevices(); } else { gotoDevice(backStack.pop()); } }
+        function goMyDevices() { go(2); }
+
         var sort = 0;
         var deviceHeaderId = 0;
         var deviceHeaderCount;
         var deviceHeaders = {};
+        var showRealNames = false;
+        var deviceHeaderTotal = 0;
+        var deviceHeaders = {};
+        var deviceHeadersTitles = {};
         function updateDevices() {
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, groups = {}, groupCount = {};
 
             // 3 wide, list view or desktop view
             deviceHeaderId = 0;
             deviceHeaderCount = {};
-            var deviceHeaderTotal = 0;
-            var deviceHeaders = {};
-            var deviceHeadersTitles = {};
+            deviceHeaderTotal = 0;
+            deviceHeaders = {};
+            deviceHeadersTitles = {};
             var current;
 
             // Go thru the list of nodes and display them
@@ -484,17 +513,17 @@
                 if (meshlinks == null) continue;
                 var meshrights = meshlinks.rights;
 
-                /*
                 if (sort == 0) {
                     // Mesh header
+                    nodes.sort(meshSort);
                     if (nodes[i].meshid != current) {
-                        //deviceHeaderSet();
+                        deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>, Intel&reg; AMT only</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
-                        r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
+                        r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
-                        r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
+                        r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                         current = nodes[i].meshid;
                         displayedMeshes[current] = 1;
                         c = 0;
@@ -502,9 +531,9 @@
                 } else if (sort == 1) {
                     // Power header
                     if (nodes[i].pwr !== current) {
-                        //deviceHeaderSet();
+                        deviceHeaderSet();
                         if (current !== null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
-                        r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
+                        r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                         current = nodes[i].pwr;
                         c = 0;
                     }
@@ -512,29 +541,23 @@
                     // Device header
                     if (current == null) { current = '1'; }
                 }
-                */
-
 
                 count++;
                 var title = EscapeHtml(nodes[i].name);
                 if (title.length == 0) { title = '<i>None</i>'; }
                 if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
-                //if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
+                if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
                 if (name.length == 0) { name = '<i>None</i>'; }
 
                 // Node
-                var icon = nodes[i].icon;
-                var nodestate = NodeStateStr(nodes[i]);
+                var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
                 if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
-                //var title = '';
-                //r += '<div id=devs style=display:inline-block;width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
-                r += '<div>';
+                r += '<div style=cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')>';
                 r += '<div class="i' + icon + '" style="float:left;margin-left:4px"></div>';
-                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;cursor:pointer;border-radius:8px 0px 0px 8px">';
+                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
                 r += '<div><div style=padding-left:12px;padding-top:2px><b>' + name + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + nodestate + '</div></div>';
-                r += '</div>';
-                r += '</div>';
+                r += '</div></div>';
 
                 // If we are displaying devices by group, put the device in the right group.
                 /*
@@ -554,9 +577,39 @@
                 if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
             }
 
+            // Display all empty meshes, we need to do this because users can add devices to these at any time.
+            if (sort == 0) {
+                for (var i in meshes) {
+                    var mesh = meshes[i], meshlink = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+                    if (meshlink != null) {
+                        var meshrights = meshlink.rights;
+                        if (displayedMeshes[mesh._id] == null) {
+                            if ((current != '') && (r != '')) { r += '</tr></table>'; }
+                            r += '<div><div colspan=3 class=DevSt><span style=float:right>';
+                            //r += getMeshActions(mesh, meshrights);
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
+                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>No Intel&reg; AMT devices in this mesh'; }
+                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>No devices in this mesh'; }
+                            r += '.</i></div></div>';
+                            current = mesh._id;
+                            count++;
+                        }
+                    }
+                }
+            }
+
             QH('xdevices', r);
+            deviceHeaderSet();
+            for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
+            for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
         }
 
+        function gotoMeshStack(meshid) {
+            backStack.push(currentNode._id);
+            gotoMesh(meshid);
+        }
+
+        var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
         var powerStateStrings = ['', '<span title="Device is powered on.">Powered</span>', '<span title="Device is in sleep state (S1).">Sleeping</span>', '<span title="Device is in sleep state (S2).">Sleeping</span>', '<span title="Device is in deep sleep state (S3).">Deep Sleep</span>', '<span title="Device is in hibernating state (S4).">Hibernating</span>', '<span title="Device is in powered off state (S5).">Soft-Off</span>', '<span title="Device is detected but power state could not be obtained.">Present</span>'];
         var powerStateStrings2 = ['', 'Device is powered', 'Device is in sleep state (S1)', 'Device is in sleep state (S2)', 'Device is in deep sleep state (S3)', 'Device is hibernating (S4)', 'Device is in soft-off state (S5)', 'Device is present, but power state cannot be determined'];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
@@ -583,6 +636,31 @@
             return 'Unknown';
         }
 
+        function onSortSelectChange(skipsave) {
+            sort = document.getElementById("sortselect").selectedIndex;
+            if (!skipsave) { putstore("sort", sort); }
+            if (sort == 0) { nodes.sort(meshSort); }
+            if (sort == 1) { nodes.sort(powerSort); }
+            if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
+            updateDevices();
+        }
+
+        function deviceHeaderSet() {
+            if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
+            deviceHeaders["DevxHeader" + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
+            var title = '';
+            for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
+            deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
+            deviceHeaderId++;
+            deviceHeaderCount = {};
+            deviceHeaderTotal = 0;
+        }
+
+        function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
+        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
+        function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
+        function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
+
         //
         // MY DEVICE
         //
@@ -604,9 +682,7 @@
         var powerTimeline = null;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
-            //disconnectAllKvmFunction();
-            var node = getNodeFromId(nodeid);
-            var mesh = meshes[node.meshid];
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
             var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
@@ -616,18 +692,20 @@
                 if (nname.length == 0) { nname = '<i>None</i>'; }
                 if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
                 QH('p10deviceName', nname);
+                /*
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
                 QH('p13deviceName', nname);
                 QH('p14deviceName', nname);
                 QH('p15deviceName', nname);
                 QH('p16deviceName', nname);
+                */
 
                 // Node attributes
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMeshStack("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
                 if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
@@ -676,12 +754,12 @@
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No Credentials</i>';
+                                str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No&nbsp;Credentials</i>';
                             } else {
-                                str += ', <i style=color:#FF0000>No Credentials</i>';
+                                str += ', <i style=color:#FF0000>No&nbsp;Credentials</i>';
                             }
                         }
-                        str += ' ';
+                        str += '&nbsp;';
                         if ((meshrights & 4) != 0) {
                             str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
@@ -717,31 +795,20 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
-                x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                //if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
+                //x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
-                drawDeviceTimeline();
+                //drawDeviceTimeline();
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                //if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
-                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
-
-                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
-
-                // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
-                    if (node.agent.id > 4) {
-                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","PSSH",22) title="Requires Microsoft ClickOnce support in your browser.">Putty</a>&nbsp;';
-                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
-                    }
-                }
+                //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
+                //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -749,59 +816,268 @@
                 // Set the node power state
                 powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
-                if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Agent connected">Mesh Agent</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; } else
+                if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
-                Q('MainComputerImage').setAttribute("src", "images/icons200-" + node.icon + "-1.png");
-                Q('MainComputerImage').className = ((!node.conn) || (node.conn == 0)?'gray':'');
-
-                // Setup/Refresh the desktop tab
-                setupTerminal();
-                setupFiles();
-                var consoleRights = ((meshrights & 16) != 0);
-                if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
-
-                // Show or hide the tabs
-                // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
-                // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0)) && (meshrights & 8));
-                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0)) && (meshrights & 8));
-                QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8));
-                QV('MainDevAmt', (node.intelamt != null) && (node.intelamt.state == 2) && (meshrights & 8));
-                QV('MainDevConsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
-                QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0) && (userinfo.siteadmin == 0xFFFFFFFF));
-                QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
-
-                // Setup/Refresh Intel AMT tab
-                var amtFrameNode = Q('p14iframe').contentWindow.getCurrentMeshNode();
-                if ((amtFrameNode != null) && (amtFrameNode._id != currentNode._id)) { Q('p14iframe').contentWindow.disconnect(); }
-                var online = ((node.conn & 6) != 0)?true:false; // If CIRA (2) or AMT (4) connected, enable Commander
-                Q('p14iframe').contentWindow.setConnectionState(online);
-                Q('p14iframe').contentWindow.setFrameHeight('650px');
-                Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
-
-                // Display "action" button on desktop/terminal/files
-                QV('deskActionsBtn', (meshrights & 72) != 0); // 72 = Wake-up + Remote Control permissions
-                QV('termActionsBtn', (meshrights & 72) != 0);
-                QV('filesActionsBtn', (meshrights & 72) != 0);
-
-                // Request the power timeline
-                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
-
-                // Reset the desktop tools
-                QV('DeskTools', false);
-                showDeskToolsProcesses();
-
-                // Ask for device events
-                //refreshDeviceEvents();
+                QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
             }
-            setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
             go(panel);
         }
+
+        function addDeviceAttribute(name, value) {
+            return '<tr><td style=width:100px;color:gray>' + name + '</td><td style=overflow:hidden>' + value + '</td></tr>';
+        }
+
+        function p10showiconselector() {
+            if (xxdialogMode) return;
+            var mesh = meshes[currentNode.meshid];
+            var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            if ((meshrights & 4) == 0) return;
+
+            var x = '<table align=center><td>';
+            x += '<div style=display:inline-block class=i1 onclick=p10setIcon(1)></div>';
+            x += '<div style=display:inline-block class=i2 onclick=p10setIcon(2)></div>';
+            x += '<div style=display:inline-block class=i3 onclick=p10setIcon(3)></div><br>';
+            x += '<div style=display:inline-block class=i4 onclick=p10setIcon(4)></div>';
+            x += '<div style=display:inline-block class=i5 onclick=p10setIcon(5)></div>';
+            x += '<div style=display:inline-block class=i6 onclick=p10setIcon(6)></div></table>';
+            setDialogMode(2, "Icon Selection", 0, null, x);
+            QV('id_dialogclose', true);
+        }
+
+        function p10setIcon(icon) {
+            setDialogMode(0);
+            meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
+        }
+
+        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Groups'];
+        var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
+        var showEditNodeValueDialog_modes3 = ['', '', '', 'Group1, Group2, Group3'];
+        function showEditNodeValueDialog(mode) {
+            if (xxdialogMode) return;
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:170px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
+            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
+            if (v == null) v = '';
+            if (Array.isArray(v)) { v = v.join(', '); }
+            Q('dp10devicevalue').value = v;
+            p10editdevicevalueValidate();
+            Q('dp10devicevalue').focus();
+        }
+
+        function showEditNodeValueDialogEx(button, mode) {
+            var x = { action: 'changedevice', nodeid: currentNode._id };
+            x[showEditNodeValueDialog_modes2[mode]] = Q('dp10devicevalue').value;
+            meshserver.send(x);
+        }
+
+        function p10editdevicevalueValidate(mode, e) {
+            var x = ((mode > 1) || (Q('dp10devicevalue').value.length > 0));
+            QE('idx_dlgOkButton', x);
+            if ((e != null) && (x == true) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        //
+        // MY ACCOUNT
+        //
+
+        function gotoMesh(meshid) {
+            currentMesh = meshes[meshid];
+            p20updateMesh();
+            go(20);
+        }
+
+        
+        //
+        // MY MESHS
+        //
+
+        var currentMesh;
+        function p20updateMesh() {
+            QH('p20meshName', EscapeHtml(currentMesh.name));
+            var meshtype = 'Unknown #' + currentMesh.mtype;
+            var meshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT group';
+            if (currentMesh.mtype == 2) meshtype = 'Mesh agent group';
+
+            var x = '';
+            x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
+            x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):'<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue('Type', meshtype);
+            //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+
+            //x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
+
+            x += '<br style=clear:both><br>';
+            var currentMeshLinks = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
+
+            /*
+            if ((meshrights & 4) != 0) {
+                if (currentMesh.mtype == 1) {
+                    x += '<a onclick=addCiraDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new Intel&reg; AMT computer that is located on the internet."><img src=images/icon-installmesh.png border=0 height=12 width=12> Install CIRA</a>';
+                    x += '<a onclick=addDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new Intel&reg; AMT computer that is located on the local network."><img src=images/icon-installmesh.png border=0 height=12 width=12> Install local</a>';
+                }
+                if (currentMesh.mtype == 2) {
+                    x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new computer to this mesh by installing the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
+                }
+            }
+            */
+
+            /*
+            function getMeshActions(mesh, meshrights) {
+                if ((meshrights & 4) == 0) return '';
+                var r = '';
+                if (mesh.mtype == 1) {
+                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the local network." onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
+                }
+                if (mesh.mtype == 2) {
+                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
+                }
+                return r;
+            }
+            */
+
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th><th scope=col style=text-align:left></th></tr>';
+
+            // Sort the users for this mesh
+            var count = 1, sortedusers = [];
+            for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
+            sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
+
+            // Display all users for this mesh
+            for (var i in sortedusers) {
+                var trash = '', rights = 'Partial&nbsp;Rights', r = sortedusers[i].rights;
+                if (r == 0xFFFFFFFF) rights = 'Full&nbsp;Administrator'; else if (r == 0) rights = 'No&nbsp;Rights';
+                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td>';
+                x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div>';
+                x += '</td></tr>';
+                ++count;
+            }
+
+            x += '</tbody></table>';
+
+            // If we are full administrator on this mesh, allow deletion of the mesh
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
+
+            QH('p20info', x);
+        }
+
+        
+        function p20showDeleteMeshDialog() {
+            if (xxdialogMode) return;
+            var x = "Are you sure you want to delete mesh \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the mesh will also delete all information about computers within this mesh.<br /><br />";
+            x += "<input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />Confirm";
+            setDialogMode(2, "Delete Mesh", 3, p20showDeleteMeshDialogEx, x);
+            p20validateDeleteMeshDialog();
+        }
+
+        function p20validateDeleteMeshDialog() {
+            QE('idx_dlgOkButton', Q('p20check').checked);
+        }
+
+        function p20showDeleteMeshDialogEx(buttons, tag) {
+            meshserver.send({ action: 'deletemesh', meshid: currentMesh._id, meshname: currentMesh.name });
+        }
+
+        function p20editmesh(focus) {
+            if (xxdialogMode) return;
+            var x = addHtmlValue('Name', '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
+            x += addHtmlValue('Description', '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
+            setDialogMode(2, "Edit Mesh", 3, p20editmeshEx, x);
+            Q('dp20meshname').value = currentMesh.name;
+            if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
+            p20editmeshValidate();
+            if (focus == 2) { Q('dp20meshdesc').focus(); } else { Q('dp20meshname').focus(); }
+        }
+
+        function p20editmeshEx() {
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, meshname: Q('dp20meshname').value, desc: Q('dp20meshdesc').value });
+        }
+
+        function p20editmeshValidate() {
+            QE('idx_dlgOkButton', Q('dp20meshname').value.length > 0);
+        }
+
+        function p20showAddMeshUserDialog() {
+            if (xxdialogMode) return;
+            var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
+            x += '<div style="border:2px groove gray;background-color:white;max-height:80px;overflow-y:scroll">';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Mesh<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Mesh Users<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Mesh Computers<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
+            x += '</div>';
+            setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
+            p20validateAddMeshUserDialog();
+            Q('dp20username').focus();
+        }
+
+        function p20validateAddMeshUserDialog() {
+            var meshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
+            QE('p20fulladmin', meshrights == 0xFFFFFFFF);
+            QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
+            QE('p20manageusers', !Q('p20fulladmin').checked);
+            QE('p20managecomputers', !Q('p20fulladmin').checked);
+            QE('p20remotecontrol', !Q('p20fulladmin').checked);
+            QE('p20meshagentconsole', !Q('p20fulladmin').checked);
+            QE('p20meshserverfiles', !Q('p20fulladmin').checked);
+            QE('p20wakedevices', !Q('p20fulladmin').checked);
+            QE('p20editnotes', !Q('p20fulladmin').checked);
+        }
+
+        function p20showAddMeshUserDialogEx() {
+            var meshadmin = 0;
+            if (Q('p20fulladmin').checked == true) { meshadmin = 0xFFFFFFFF; } else {
+                if (Q('p20editmesh').checked == true) meshadmin += 1;
+                if (Q('p20manageusers').checked == true) meshadmin += 2;
+                if (Q('p20managecomputers').checked == true) meshadmin += 4;
+                if (Q('p20remotecontrol').checked == true) meshadmin += 8;
+                if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
+                if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
+                if (Q('p20wakedevices').checked == true) meshadmin += 64;
+                if (Q('p20editnotes').checked == true) meshadmin += 128;
+            }
+            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
+        }
+
+        function p20viewuser(userid) {
+            if (xxdialogMode) return;
+            userid = decodeURIComponent(userid);
+            var r = '', cmeshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
+            if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
+                if ((meshrights &   1) != 0) r += ', Edit Mesh';
+                if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
+                if ((meshrights &   4) != 0) r += ', Manage Mesh Computers';
+                if ((meshrights &   8) != 0) r += ', Remote Control';
+                if ((meshrights &  16) != 0) r += ', Agent Console';
+                if ((meshrights &  32) != 0) r += ', Server Files';
+                if ((meshrights &  64) != 0) r += ', Wake Devices';
+                if ((meshrights & 128) != 0) r += ', Edit Notes';
+            }
+            r = r.substring(2);
+            if (r == '') { r = 'No Rights'; }
+            var buttons = 1, x = addHtmlValue('User', userid.split('/')[2]);
+            x += addHtmlValue('Permissions', r);
+            if ((('user/{{{domain}}}/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+            setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
+        }
+
+        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid); }
+        function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
+        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid}); }
 
         //
         // PANELS
@@ -852,7 +1128,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
@@ -861,6 +1137,10 @@
         function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
         function reload() { window.location.href = window.location.href; }
         function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
+        function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
+        function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
+        function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
+        function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
 
     </script>
 </body>

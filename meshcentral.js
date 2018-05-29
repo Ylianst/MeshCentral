@@ -99,7 +99,7 @@ function CreateMeshCentralServer(config, args) {
             console.log('   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.');
             console.log('   --exactports                      Server must run with correct ports or exit.');
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
-            console.log('   --cert [name], (country), (org)   Create a web server certificate with [name]server name.');
+            console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
             console.log('                                     country and organization can optionaly be set.');
             return;
         }
@@ -1148,9 +1148,13 @@ function mainStart(args) {
         var config = getConfig();
         if (config == null) { process.exit(); }
 
+        // Check is Windows SSPI will be used
+        var sspi = false;
+        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } } }
+
         // Build the list of required modules
         var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-session', 'express-handlebars'];
-        if (require('os').platform() == 'win32') { modules.push('node-sspi'); modules.push('node-windows'); } // Add Windows modules
+        if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support

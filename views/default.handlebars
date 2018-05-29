@@ -1304,7 +1304,7 @@
                                     if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                 }
                                 node.namel = node.name.toLowerCase();
-                                if (node.host) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                                if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
 
                                 onSortSelectChange(true);
@@ -4742,8 +4742,7 @@
 
         function p20editmesh(focus) {
             if (xxdialogMode) return;
-            x = "Create a new mesh computer group using the options below.<br /><br />";
-            x += addHtmlValue('Mesh Name', '<input id=dp20meshname style=width:230px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
+            var x = addHtmlValue('Mesh Name', '<input id=dp20meshname style=width:230px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
             x += addHtmlValue('Description', '<div style=width:230px;margin:0;padding:0><textarea id=dp20meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "Edit Mesh", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
@@ -4762,7 +4761,7 @@
 
         function p20showAddMeshUserDialog() {
             if (xxdialogMode) return;
-            x = "Allow a user to manage the mesh and computers on this mesh<br /><br />";
+            var x = "Allow a user to manage the mesh and computers on this mesh<br /><br />";
             x += addHtmlValue('User Name', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<br><div>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';

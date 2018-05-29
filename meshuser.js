@@ -624,7 +624,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                             if ((obj.common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                            if ((obj.common.validateString(command.desc, 1, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
+                            if ((obj.common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
                             if (change != '') { obj.db.Set(mesh); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
                         }
                         break;
