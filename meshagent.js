@@ -467,7 +467,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             var cmdstr = JSON.stringify(command);
                             for (var userid in obj.parent.wssessions) { // Find all connected users for this mesh and send the message
                                 var user = obj.parent.users[userid];
-                                if (user) {
+                                if ((user != null) && (user.links != null)) {
                                     var rights = user.links[obj.dbMeshKey];
                                     if (rights != null) { // TODO: Look at what rights are needed for message routing
                                         var sessions = obj.parent.wssessions[userid];

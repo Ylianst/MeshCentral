@@ -48,18 +48,30 @@
             border-bottom-width: 1px;
             border-bottom-color: #DDDDDD;
         }
+
+        .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id=container>
         <div id=mastheadx></div>
         <div id=masthead style="background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
-                <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
+            <div style="width:calc(100% - 50px);overflow:hidden">
+                <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
+                    <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
+                </div>
+                <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:10px">
+                    <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
+                </div>
             </div>
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:10px">
-                <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
-            </div>
+            <img class=noselect style="position:absolute;right:0;top:10px;bottom:50px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
         <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
             <div id=column_l style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
@@ -76,8 +88,48 @@
                 <div id=p2 style=display:none>
                     <div id=xdevices></div>
                 </div>
-                <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%>
+                <div id=p3 style=display:none;position:absolute;bottom:0;top:0;width:100%>
                     <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tr style=padding:0>
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                                <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
+                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                </div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                            </td>
+                            <td>
+                                <img src="/images/user-50.png" width=50 height=50 />
+                            </td>
+                            <td>
+                                <div style=margin-left:5px>
+                                    <strong style="font-size:large"><span id=p3userName></span></strong><br />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p3info style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <div style="margin-left:8px">
+                            <div id="p3AccountActions">
+                                <p><strong>Account actions</strong></p>
+                                <div style="margin-left:9px;margin-bottom:8px">
+                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
+                                    <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
+                                    <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a></div>
+                                    <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                </div>
+                            </div>
+                            <br style=clear:both />
+                            <strong>Meshes</strong>
+                            ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
+                            <br /><br />
+                            <div id=p3meshes></div>
+                            <div id=p3noMeshFound style=margin-left:9px;display:none>No meshes. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
+                            <br style=clear:both />
+                        </div>
+                    </div>
+                </div>
+                <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden>
+                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
@@ -96,9 +148,11 @@
                             </td>
                         </tr>
                     </table>
-                    <div id=p10html style="margin-left:8px;margin-right:8px"></div>
-                    <div id=p10html2></div>
-                    <div id=p10html3></div>
+                    <div style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <div id=p10html style="margin-left:8px;margin-right:8px"></div>
+                        <div id=p10html2></div>
+                        <div id=p10html3></div>
+                    </div>
                 </div>
                 <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
                     <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
@@ -150,6 +204,10 @@
             <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
             <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
         </div>
+    </div>
+    <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
+        <a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a>
     </div>
     <script>
         var debugLevel = {{{debuglevel}}};
@@ -222,6 +280,7 @@
                 }
                 case 'userinfo': {
                     userinfo = message.userinfo;
+                    QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
                     //QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     //QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
@@ -397,6 +456,7 @@
 
                                 // Change the node
                                 node.name = message.event.node.name;
+                                node.rname = message.event.node.rname;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
                                 node.publicip = message.event.node.publicip;
@@ -474,18 +534,192 @@
         }
 
         //
+        // Menu System
+        //
+
+        function topMenu(select) {
+            if ((xxdialogMode != null) && (xxdialogMode != 0) && (xxdialogMode != 999)) return;
+            if (select === undefined) {
+                var x = (QS('topMenu').display == 'none');
+                if (x == true) { if ((xxdialogMode == 0) || (xxdialogMode == null)) { QV('topMenu', true); xxdialogMode = 999; } } else { QV('topMenu', false); xxdialogMode = 0; }
+            } else {
+                QV('topMenu', false);
+                xxdialogMode = 0;
+                if ((select == 1) && (xxcurrentView != 3)) { goForward('account'); } // My Account
+            }
+        }
+
+        var backStack = [];
+        function goBack() { if (xxdialogMode) return; if (backStack.length > 0) { backStack.pop(); } goStack(); }
+        function goForward(id) { if (xxdialogMode) return; backStack.push(id); goStack(); }
+        function goStack() {
+            if (backStack.length == 0) { go(2); return; }
+            var id = backStack[backStack.length - 1], idtype = id.split('/')[0];
+            if (idtype == 'node') { gotoDevice(id); }
+            if (idtype == 'mesh') { gotoMesh(id); }
+            if (idtype == 'account') { go(3); }
+            if (idtype == 'devices') { go(2); }
+        }
+
+        //
         // MY ACCOUNT
         //
 
-        function updateMeshes() { }
+        function account_showVerifyEmail() {
+            if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
+            var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
+            setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
+        }
+
+        function account_showVerifyEmailEx() {
+            meshserver.send({ action: 'verifyemail', email: userinfo.email });
+        }
+
+        function account_showChangeEmail() {
+            if (xxdialogMode) return;
+            var x = addHtmlValue('Email', '<input id=dp3email style=width:170px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
+            setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
+            if (userinfo.email != null) { Q('dp3email').value = userinfo.email; }
+            account_validateEmail();
+            Q('dp3email').focus();
+        }
+
+        function account_validateEmail(e, email) {
+            QE('idx_dlgOkButton', validateEmail(Q('dp3email').value) && (Q('dp3email').value != userinfo.email));
+            if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function account_changeEmail() {
+            meshserver.send({ action: 'changeemail', email: Q('dp3email').value });
+        }
+
+        function account_showDeleteAccount() {
+            if (xxdialogMode) return;
+            var x = "<form action='{{{domainurl}}}deleteaccount' method=post><table style=margin-left:10px><tr>";
+            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
+            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
+            x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
+            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
+            x += '</div><br /></form>';
+            setDialogMode(2, "Delete Account", 0, null, x);
+            account_validateDeleteAccount();
+            Q('apassword1').focus();
+        }
+
+        function account_showChangePassword() {
+            if (xxdialogMode) return;
+            var x = "<form action='{{{domainurl}}}changepassword' method=post><table style=margin-left:10px><tr>";
+            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
+            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
+            x += "</tr><tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
+            x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
+            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
+            x += '</div><br /></form>';
+            setDialogMode(2, "Change Password", 0, null, x);
+            account_validateDeleteAccount();
+            Q('apassword1').focus();
+        }
+
+        function account_createMesh() {
+            if (xxdialogMode) return;
+            var x = addHtmlValue('Name', '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
+            x += addHtmlValue('Type', '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Mesh Agent Policy</option><option value=1>Intel&reg; AMT Agent-less Policy</option></select></div>');
+            x += addHtmlValue('Description', '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            setDialogMode(2, "Create Mesh", 3, account_createMeshEx, x);
+            account_validateMeshCreate();
+            Q('dp3meshname').focus();
+        }
+
+        function account_validateMeshCreate() {
+            QE('idx_dlgOkButton', Q('dp3meshname').value.length > 0);
+        }
+
+        function account_createMeshEx(button, tag) {
+            meshserver.send({ action: 'createmesh', meshname: Q('dp3meshname').value, meshtype: Q('dp3meshtype').value, desc: Q('dp3meshdesc').value });
+        }
+
+        function account_validateDeleteAccount() {
+            QE('account_dlgOkButton', (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value));
+        }
+
+        function account_validateNewPassword() {
+            QE('account_dlgOkButton', (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value));
+            var r = '';
+            if (Q('apassword1').value != '') {
+                var passStrength = checkPasswordStrength(Q('apassword1').value);
+                if (passStrength >= 80) { r = '<span style=color:green>Strong<span>'; } else if (passStrength >= 60) { r = '<span style=color:blue>Good<span>'; } else { r = '<span style=color:red>Weak<span>'; }
+            }
+            QH('dxPassWarn', r);
+        }
+
+        // Return a password strength score
+        function checkPasswordStrength(password) {
+            var r = 0, letters = {}, varCount = 0, variations = { digits: /\d/.test(password), lower: /[a-z]/.test(password), upper: /[A-Z]/.test(password), nonWords: /\W/.test(password) }
+            if (!password) return 0;
+            for (var i = 0; i< password.length; i++) { letters[password[i]] = (letters[password[i]] || 0) + 1; r += 5.0 / letters[password[i]]; }
+            for (var c in variations) { varCount += (variations[c] == true) ? 1 : 0; }
+            return parseInt(r + (varCount - 1) * 10);
+        }
+
+        function updateMeshes() {
+            var r = '', count = 0;
+            for (i in meshes) {
+                count++;
+
+                // Mesh rights
+                var meshrights = meshes[i].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+                var rights = 'Partial Rights';
+                if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
+
+                // Print the mesh information
+                r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
+                r += '<div style="float:left;margin-left:4px"><img src="/images/meshicon50.png" width=50 height=50 /></div>';
+                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
+                r += '<div><div style=padding-left:12px;padding-top:2px><b>' + EscapeHtml(meshes[i].name) + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + rights + '</div></div>';
+                r += '</div></div>';
+            }
+
+            meshcount = count;
+            QH('p3meshes', r);
+            QV('p3noMeshFound', count == 0);
+        }
+
+        function gotoMesh(meshid) {
+            currentMesh = meshes[meshid];
+            p20updateMesh();
+            go(20);
+        }
+
+        function server_showRestoreDlg() {
+            if (xxdialogMode) return;
+            var x = 'Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing.<br /><br />';
+            x += '<form action="/restoreserver.ashx" enctype="multipart/form-data" method="post"><div>';
+            x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
+            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=OK style=float:right;width:80px onclick=dialogclose(1)>';
+            x += '</div><br /><br /></form>';
+            setDialogMode(2, "Restore Server", 0, null, x);
+            account_validateServerRestore();
+        }
+
+        function account_validateServerRestore() {
+            QE('account_dlgOkButton', Q('account_dlgFileInput').files.length == 1);
+        }
+
+        function server_showVersionDlg() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
+            meshserver.send({ action: 'serverversion' });
+        }
+
+        function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
+        function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
 
         //
         // MY DEVICES
         //
-
-        var backStack = [];
-        function goBack() { if (backStack.length == 0) { goMyDevices(); } else { gotoDevice(backStack.pop()); } }
-        function goMyDevices() { go(2); }
 
         var sort = 0;
         var deviceHeaderId = 0;
@@ -523,7 +757,7 @@
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
-                        r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                        r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                         current = nodes[i].meshid;
                         displayedMeshes[current] = 1;
                         c = 0;
@@ -553,7 +787,7 @@
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
                 if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
-                r += '<div style=cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')>';
+                r += '<div style=cursor:pointer onclick=goForward(\'' + nodes[i]._id + '\')>';
                 r += '<div class="i' + icon + '" style="float:left;margin-left:4px"></div>';
                 r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
                 r += '<div><div style=padding-left:12px;padding-top:2px><b>' + name + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + nodestate + '</div></div>';
@@ -587,7 +821,7 @@
                             if ((current != '') && (r != '')) { r += '</tr></table>'; }
                             r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                             //r += getMeshActions(mesh, meshrights);
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
                             if (mesh.mtype == 1) { r += '<div style=padding:10px><i>No Intel&reg; AMT devices in this mesh'; }
                             if (mesh.mtype == 2) { r += '<div style=padding:10px><i>No devices in this mesh'; }
                             r += '.</i></div></div>';
@@ -602,11 +836,6 @@
             deviceHeaderSet();
             for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
-        }
-
-        function gotoMeshStack(meshid) {
-            backStack.push(currentNode._id);
-            gotoMesh(meshid);
         }
 
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
@@ -705,7 +934,7 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMeshStack("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
                 if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
@@ -743,23 +972,27 @@
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
-                    var provisioningStates = { 0: 'Not Activated (Pre)', 1: 'Not Activated (In)', 2: 'Activated' };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>Unknown State</i>, v' + node.intelamt.ver; } else
-                        if (node.intelamt.ver == null || node.intelamt.state == null) { str += '<i>Unknown Version & State</i>'; } else {
+                    var provisioningStates = { 0: 'Not&nbsp;Activated&nbsp;(Pre)', 1: 'Not&nbsp;Activated&nbsp;(In)', 2: 'Activated' };
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>Unknown&nbsp;State</i>, v' + node.intelamt.ver; } else
+
+                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>Activated</i>'; }
+                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>Unknown Version & State</i>'; }
+                        else {
                             str += provisioningStates[node.intelamt.state];
                             if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="Intel AMT is activated in Client Control Mode">CCM</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="Intel AMT is activated in Admin Control Mode">ACM</span>'; } }
                             str += (', v' + node.intelamt.ver);
                         }
+
                     if (node.intelamt.tls == 1) { str += ', <span  title="Intel AMT is setup with TLS network security">TLS</span>'; }
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
                                 str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No&nbsp;Credentials</i>';
                             } else {
-                                str += ', <i style=color:#FF0000>No&nbsp;Credentials</i>';
+                                str += ', <i style=color:#FF0000>No Credentials</i>';
                             }
                         }
-                        str += '&nbsp;';
+                        str += ' ';
                         if ((meshrights & 4) != 0) {
                             str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
@@ -795,7 +1028,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                //if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
+                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
                 //x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
@@ -804,8 +1037,8 @@
                 //drawDeviceTimeline();
 
                 // Show bottom buttons
-                x = '<div style=float:right;font-size:x-small>';
-                //if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                x = '<div style=float:right;font-size:x-small;margin-right:10px>';
+                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
                 x += '</div><div style=font-size:x-small>';
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
@@ -823,13 +1056,154 @@
 
                 // Set the node icon
                 QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
+
+                // Request the power timeline
+                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { QH('p10html2', ''); powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
             }
             if (!panel) panel = 10;
             go(panel);
         }
 
+        function deviceActionFunction() {
+            if (xxdialogMode) return;
+            var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var x = "Select an operation to perform on this device.<br /><br />";
+            var y = '<select id=d2deviceop style=float:right;width:170px>';
+            if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
+            if ((meshrights & 8) != 0) { y += '<option value=4>Sleep</option><option value=3>Reset</option><option value=2>Power off</option>'; } // Remote control permission
+            y += '</select>';
+            x += addHtmlValue('Operation', y);
+            setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
+        }
+
+        function deviceActionFunctionEx() {
+            var op = Q('d2deviceop').value;
+            if (op == 100) {
+                // Device wake
+                meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
+            } else {
+                // Power operation
+                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
+            }
+        }
+
+        // Look to see if we need to update the device timeline
+        function updateDeviceTimeline() {
+            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null)) return;
+            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
+        }
+
+        // Draw device power bars. The bars are 766px wide.
+        function drawDeviceTimeline() {
+            var timeline = null, now = Date.now();
+            if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
+
+            // Calculate when the timeline starts
+            var d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d = new Date(d.getTime() - (1000 * 60 * 60 * 24 * 6));
+            var timelineStart = d.getTime();
+
+            // De-compact the timeline
+            var timeline2 = [];
+            if (timeline != null && timeline.length > 1) {
+                timeline2.push([ 0, timeline[1], timeline[0] ]); // Start, End, Power
+                var ct = timeline[1];
+                for (var i = 2; i < timeline.length; i += 2) {
+                    var power = timeline[i], dt = now;
+                    if (timeline.length > (i + 1)) { dt = timeline[i + 1]; }
+                    timeline2.push([ ct, ct + dt, power ]); // Start, End, Power
+                    ct = ct + dt;
+                }
+            }
+
+            // Draw the timeline
+            var x = '', count = 1, date = new Date();
+            var totalWidth = Q('masthead').offsetWidth - (90 + 9 + 9 + 14); // Compute the total width of the power bar
+            date.setHours(0, 0, 0, 0);
+            for (var i = 0; i < 7; i++) {
+                var datavalue = '', start = date.getTime(), end = start + (1000 * 60 * 60 * 24);
+                for (var j in timeline2) {
+                    var block = timeline2[j];
+                    if (isTimeBlockInside(start, end, block[0], block[1]) == true) {
+                        var ts = Math.max(start, block[0]);
+                        var te = Math.min(Math.min(end, block[1]), now);
+                        var width = Math.round(((te - ts) * totalWidth) / 86400000);
+                        if (width > 0) {
+                            var title = powerStateStrings2[block[2]] + ' from ' + new Date(ts).toLocaleTimeString() + ' to ' + new Date(te).toLocaleTimeString() + '.';
+                            datavalue += '<div title="' + title + '" style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>';
+                        }
+                    }
+                }
+                x += '<tr style=' + (((count % 2) == 0)?'background-color:#DDD':'') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                ++count;
+                date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
+            }
+            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>Day</th><th scope=col style=text-align:center>Power State</th></tr>' + x + '</tbody></table>');
+        }
+
+        // Return a color for the given power state
+        function powerColor(x) { if (x < powerColorTable.length) { return powerColorTable[x]; } return 'yellow'; }
+
+        // Return true if the time block is visible within the start/end period
+        function isTimeBlockInside(start, end, blockStart, blockEnd) {
+            if ((blockStart < start) && (blockEnd > end)) return true; // Block is wider than timespan
+            if ((blockStart > start) && (blockStart < end)) return true;
+            if ((blockEnd > start) && (blockEnd < end)) return true;
+            return false;
+        }
+
         function addDeviceAttribute(name, value) {
             return '<tr><td style=width:100px;color:gray>' + name + '</td><td style=overflow:hidden>' + value + '</td></tr>';
+        }
+
+        function editDeviceAmtSettings(nodeid, func) {
+            if (xxdialogMode) return;
+            var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
+            if ((meshrights & 4) == 0) return;
+            x += addHtmlValue('Username', '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue('Password', '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue('Security', '<select id=dp10tls style=width:176px><option value=0>No TLS security</option><option value=1>TLS security required</option></select>');
+            if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
+            setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
+            if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
+            Q('dp10tls').value = node.intelamt.tls;
+            validateDeviceAmtSettings();
+        }
+
+        function validateDeviceAmtSettings() {
+            QE('idx_dlgOkButton', passwordcheck(Q('dp10password').value));
+        }
+
+        function editDeviceAmtSettingsEx(button, tag) {
+            if (button == 2) {
+                // Delete button pressed, remove credentials
+                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: '', pass: '' } });
+            } else {
+                // Change Intel AMT credentials
+                var amtuser = Q('dp10username').value;
+                if (amtuser == '') amtuser = 'admin';
+                var amtpass = Q('dp10password').value;
+                if (amtpass == '') amtuser = '';
+                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: Q('dp10tls').value } });
+                tag.node.intelamt.user = amtuser;
+                tag.node.intelamt.tls = Q('dp10tls').value;
+                if (tag.func) { setTimeout(tag.func, 300); }
+            }
+        }
+
+        function p10showDeleteNodeDialog(nodeid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, "Delete \"" + EscapeHtml(currentNode.name) + "\"?<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />Confirm", nodeid);
+            p10validateDeleteNodeDialog();
+        }
+
+        function p10validateDeleteNodeDialog() {
+            QE('idx_dlgOkButton', Q('p10check').checked);
+        }
+
+        function p10showDeleteNodeDialogEx(buttons, nodeid) {
+            meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
         function p10showiconselector() {
@@ -880,17 +1254,6 @@
             QE('idx_dlgOkButton', x);
             if ((e != null) && (x == true) && (e.keyCode == 13)) { dialogclose(1); }
         }
-
-        //
-        // MY ACCOUNT
-        //
-
-        function gotoMesh(meshid) {
-            currentMesh = meshes[meshid];
-            p20updateMesh();
-            go(20);
-        }
-
         
         //
         // MY MESHS
@@ -898,6 +1261,7 @@
 
         var currentMesh;
         function p20updateMesh() {
+            if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
             var meshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
@@ -914,7 +1278,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -964,7 +1328,7 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
 
             QH('p20info', x);
         }
@@ -1141,6 +1505,7 @@
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
+        function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
 
     </script>
 </body>

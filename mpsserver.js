@@ -135,7 +135,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 if (nodes.length == 0) {
                                     if (mesh.mtype == 1) {
                                         // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0 } };
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
                                         obj.db.Set(device);
 
                                         // Event the new node
@@ -152,7 +152,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 } else {
                                     // Node is already present
                                     var node = nodes[0];
-                                    if (node.intelamt != undefined) { socket.tag.host = node.intelamt.host; }
+                                    if ((node.intelamt != undefined) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                                 }
 
                                 // Add the connection to the MPS connection list
@@ -249,7 +249,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 if (nodes.length == 0) {
                                     if (mesh.mtype == 1) {
                                         // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0 } };
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
                                         obj.db.Set(device);
 
                                         // Event the new node
@@ -266,7 +266,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 } else {
                                     // Node is already present
                                     var node = nodes[0];
-                                    if (node.intelamt != undefined) { socket.tag.host = node.intelamt.host; }
+                                    if ((node.intelamt != undefined) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                                 }
 
                                 // Add the connection to the MPS connection list
@@ -286,7 +286,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                 // Node is present
                                 var node = nodes[0];
-                                if (node.intelamt != undefined) { socket.tag.host = node.intelamt.host; }
+                                if ((node.intelamt != undefined) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                                 socket.tag.nodeid = node._id;
                                 socket.tag.meshid = mesh._id;
                                 socket.tag.connectTime = Date.now();
@@ -667,7 +667,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         obj.db.Get(socket.tag.nodeid, function (err, nodes) {
             if (nodes.length != 1) return;
             var node = nodes[0];
-            if ((node.intelamt != undefined) && (node.intelamt.host == host)) return;
+
+            // See if any changes need to be made
+            console.log(node.intelamt);
+            if ((node.intelamt != undefined) && (node.intelamt.host == host) && (node.name != '') && (node.intelamt.state == 2)) return;
             
             // Get the mesh for this device
             obj.db.Get(node.meshid, function (err, meshes) {
@@ -681,9 +684,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 // Make the change & save
                 if (node.intelamt == undefined) node.intelamt = {};
                 node.intelamt.host = host;
+                node.intelamt.state = 2; // Set the state to activated, since this is pretty obvious, we have a CIRA connection.
                 if (node.name == '') { node.name = host.split('.')[0]; }
                 obj.db.Set(node);
-                    
+
                 // Event the node change
                 event.msg = 'CIRA changed device ' + node.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ');
                 var node2 = common.Clone(node);
