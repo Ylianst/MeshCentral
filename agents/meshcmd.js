@@ -1305,8 +1305,10 @@ function removeItemFromArray(array, element) {
 // Run MeshCmd, but before we do, we need to see if what type of service we are going to be
 var serviceName = null;
 var serviceOpSpecified = 0;
+var serviceInstall = 0;
 
 for (var i in process.argv) {
+    if (process.argv[i].toLowerCase() == 'install') { serviceInstall = 1 } else if (process.argv[i].toLowerCase() == 'uninstall') { serviceInstall = -1 }
     if ((process.argv[i].toLowerCase() == 'microlms') || (process.argv[i].toLowerCase() == 'amtlms') || (process.argv[i].toLowerCase() == 'lms')) { serviceName = 'MicroLMS'; break; }
     if ((process.argv[i].toLowerCase() == 'meshcommander') || (process.argv[i].toLowerCase() == 'commander')) { serviceName = 'MeshCommander'; break; }
 }
@@ -1323,22 +1325,24 @@ if (serviceName == null) {
     else { serviceName = 'not_a_service'; }
 }
 
-var serviceHost = require('serviceHost');
-var meshcmdService = new serviceHost({ name: serviceName, startType: 'AUTO_START' });
+if (serviceInstall == 0) {
+    run(process.argv);
+} else {
+    var serviceHost = require('serviceHost');
+    var meshcmdService = new serviceHost({ name: serviceName, startType: 'AUTO_START' });
 
-// Called when the background service is started.
-meshcmdService.on('serviceStart', function onStart() {
-    console.setDestination(console.Destinations.DISABLED); // Disable console.log().
-    if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } // 
-    else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); }
-    else { console.log('Aborting Service Start, because unknown binary: ' + process.execPath); process.exit(1); }
-});
+    // Called when the background service is started.
+    meshcmdService.on('serviceStart', function onStart() {
+        console.setDestination(console.Destinations.DISABLED); // Disable console.log().
+        if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } //
+        else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); }
+        else { console.log('Aborting Service Start, because unknown binary: ' + process.execPath); process.exit(1); }
+    });
 
-// Called when the background service is stopping
-meshcmdService.on('serviceStop', function onStop() { console.log('Stopping service'); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
+    // Called when the background service is stopping
+    meshcmdService.on('serviceStop', function onStop() { console.log('Stopping service'); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
 
-// Called when the executable is not running as a service, run normally.
-meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } });
-meshcmdService.run();
-
-
+    // Called when the executable is not running as a service, run normally.
+    meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } });
+    meshcmdService.run();
+}

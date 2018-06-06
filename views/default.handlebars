@@ -3475,6 +3475,7 @@
         }
 
         function showDesktopSettings() {
+            if (xxdialogMode) return;
             applyDesktopSettings();
             updateDesktopButtons();
             setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
