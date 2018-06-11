@@ -5716,10 +5716,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() {
-            QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust();
-            drawDeviceTimeline();
-        }
+        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust(); drawDeviceTimeline(); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }

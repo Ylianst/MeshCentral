@@ -17,6 +17,7 @@
     <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
+    <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <title>MeshCentral - Login</title>
     <style>
         a { color: #036; text-decoration: underline }
@@ -53,6 +54,47 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+        }
+
+        .fileIcon1 {
+            background: url(data:image/gif;base64,R0lGODlhEAAQAJEDAPb49Y2Sj9LT2f///yH5BAEAAAMALAAAAAAQABAAAAImnI+py+1vhJwyUYAzHTL4D3qdlJWaIFJqmKod607sDKIiDUP63hQAOw==);
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .fileIcon2 {
+            background: url(data:image/gif;base64,R0lGODlhEAAQAJEDAM2xV/Xur+XPgP///yH5BAEAAAMALAAAAAAQABAAAAJD3ISZIGHWUGihznesYDYATFVM+D2hJ4lgN1olxALAtAlmPCJvuMmJd6PJckDYwicrHhTD5o7plJmg0Uc0asNMkphHAQA7);
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .fileIcon3 {
+            background: url(data:image/gif;base64,R0lGODlhEAAQAJEDAPb19IGBgbq6uv///yH5BAEAAAMALAAAAAAQABAAAAIy3ISpxgcPH2ouQgFEw1YmxnUXKEaaEZZnVWZk66JwzKpvuwZzwOgwb/C1gIOA8Yg8DgoAOw==);
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .filelist {
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            -o-user-select: none;
+            cursor: default;
+            -khtml-user-drag: element;
+            background-color: white;
+            clear: both;
         }
     </style>
 </head>
@@ -201,7 +243,63 @@
                         </div>
                     </div>
                     <div id=p10files style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
-
+                        <table id="p13toolbar" style="width:100%;height:111px" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
+                                    <div style="float:right;text-align:right">
+                                        <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                                    </div>
+                                    <div>
+                                        <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
+                                        <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
+                                        <span id=p13Status>Disconnected</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
+                                    <div style="width:100%;text-align:center">
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13NewFolderButton disabled="disabled" value="Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />
+                                    </div>
+                                    <div style="width:100%;text-align:center">
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#E4E9E7;height:28px">
+                                    <div style=float:right>
+                                        <select id=p13sortdropdown onchange=p13updateFiles()>
+                                            <option value=1 selected="selected">Sort by name</option>
+                                            <option value=2>Sort by size</option>
+                                            <option value=3>Sort by date</option>
+                                            <option value=4>Descend by name</option>
+                                            <option value=5>Descend by size</option>
+                                            <option value=6>Descend by date</option>
+                                        </select>
+                                    </div>
+                                    <div id=p13currentpath style="height:18px;overflow:hidden;padding-left:4px;padding-top:2px"></div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div id="p13filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
+                            <!--
+                            <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
+                            <div id="p13bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
+                            -->
+                            <span id="p13files"></span>
+                        </div>
+                        <table id="p13toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px" cellpadding=0 cellspacing=0>
+                            <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
+                        </table>
                     </div>
                 </div>
                 <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
@@ -271,6 +369,7 @@
         var features = {{{features}}};
         var attemptWebRTC = ((features & 128) != 0);
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
+        var files;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -617,8 +716,9 @@
         }
 
         function updateFooterMenu(options) {
-            var x = '', count = 0;
-            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + (count == 0?'':';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; count++; } }
+            while (options != null && options.length < 3) { options.push( { n:'' } ); }
+            var x = '', prev = '';
+            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '')?'':';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
             QH('footerMenu', '<tr>' + x);
         }
 
@@ -1093,6 +1193,7 @@
 
                 // Show node last 7 days timeline
                 //drawDeviceTimeline();
+                setupFiles();
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
@@ -1135,7 +1236,7 @@
             meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: 'MeshCentral', msg: Q('d2devToast').value });
         }
 
-        function setupDeviceMenu(op) {
+        function setupDeviceMenu(op, obj) {
             if (op != null) { currentDevicePanel = op; }
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1);
@@ -1143,7 +1244,7 @@
             var menus = [];
             if (currentDevicePanel != 0) { menus.push( { n:'General', f:'setupDeviceMenu(0)' } ); }
             if (currentDevicePanel != 1) { menus.push( { n:'Desktop', f:'setupDeviceMenu(1)' } ); }
-            if (currentDevicePanel != 2) { menus.push( { n:'Files', f:'setupDeviceMenu(2)' } ); }
+            if ((currentDevicePanel != 2) && ((currentNode != null) && (currentNode.mtype == 2))) { menus.push( { n:'Files', f:'setupDeviceMenu(2)' } ); }
             updateFooterMenu(menus);
         }
 
@@ -1531,31 +1632,19 @@
         */
 
         function deskAdjust() {
-            var x = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('Desk').clientHeight + Q('deskarea4').clientHeight + 2)) / 2;
-            if (fullscreen) {
-                document.documentElement.style.overflow = 'hidden';
-                //QS('deskarea3x').height = null;
-                if (x < 0) {
-                    var mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('deskarea4').clientHeight));
-                    var mw = 9999;
-                    if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
-                    QS('Desk')['max-height'] = mh + 'px';
-                    QS('Desk')['max-width'] = mw + 'px';
-                    x = 0;
-                } else {
-                    QS('Desk')['max-height'] = null;
-                    QS('Desk')['max-width'] = null;
-                }
-                QS('Desk')['margin-top'] = x + 'px';
-                QS('Desk')['margin-bottom'] = x + 'px';
+            var x = (Q('DeskParent').clientHeight - Q('Desk').clientHeight) / 2;
+            if (x < 0) {
+                var mh = Q('DeskParent').clientHeight, mw = 9999;
+                if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
+                QS('Desk')['max-height'] = mh + 'px';
+                QS('Desk')['max-width'] = mw + 'px';
+                x = 0;
             } else {
-                document.documentElement.style.overflow = 'auto';
-                //QS('deskarea3x').height = (desktop)?'40px':'400px';
                 QS('Desk')['max-height'] = null;
                 QS('Desk')['max-width'] = null;
-                QS('Desk')['margin-top'] = '0';
-                QS('Desk')['margin-bottom'] = '0';
             }
+            QS('Desk')['margin-top'] = x + 'px';
+            QS('Desk')['margin-bottom'] = x + 'px';
         }
 
         // Remote desktop special key combos for Windows
@@ -1668,6 +1757,440 @@
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
+
+        //
+        // FILES
+        //
+
+        var filesNode;
+        function setupFiles() {
+            // Setup the files tab
+            var samenode = (filesNode == currentNode);
+            filesNode = currentNode;
+            var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
+            QE('p13Connect', online);
+            if (((samenode == false) || (online == false)) && files) { files.Stop(); delete files; files = null; }
+        }
+
+        function onFilesStateChange(xfiles, state) {
+            p13Connect.value = (state == 0) ? 'Connect' : 'Disconnect';
+            var str = StatusStrs[state];
+            if (files.webRtcActive == true) { str += ', WebRTC'; }
+            Q('p13Status').textContent = str;
+            switch (state) {
+                case 0:
+                    // Disconnected, clear the files
+                    QH('p13files', '');
+                    p13filetree = null;
+                    p13filetreelocation = [];
+                    QH('p13currentpath', '');
+                    QE('p13FolderUp', false);
+                    p13setActions();
+                    if (files != null) { files.Stop(); delete files; files = null; }
+                    break;
+                case 3:
+                    p13targetpath = '';
+                    files.send(JSON.stringify({ action: 'ls', reqid: 1, path: '' }));
+                    break;
+            }
+        }
+
+        function CreateRemoteFiles(onFileUpdate) {
+            var obj = { protocol: 5 };
+            obj.onFileUpdate = onFileUpdate;
+            obj.xxStateChange = function(state) { }
+            obj.ProcessData = function(data) { obj.onFileUpdate(data); }
+            return obj;
+        }
+
+        // Debug Only
+        var autoConnectFilesTimer = null;
+        function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
+
+        function connectFiles(e) {
+            if (!files) {
+                // Setup a mesh agent files
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort);
+                files.attemptWebRTC = attemptWebRTC;
+                files.onStateChanged = onFilesStateChange;
+                files.Start(filesNode._id);
+            } else {
+                //QH('Term', '');
+                files.Stop();
+                delete files;
+                files = null;
+            }
+            p13clipboard = p13clipboardFolder = null;
+            p13clipboardCut = 0;
+            p13updateClipview();
+            p13oldlinkpath = null;
+        }
+
+        var p13filetree = null;
+        var p13targetpath = null;
+        var p13filetreelocation = [];
+
+        function p13gotFiles(data) {
+            //console.log('p13gotFiles', data);
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; }
+            //console.log('p13gotFiles', data);
+            data = JSON.parse(data);
+            if (data.action == 'download') { p13gotDownloadCommand(data); return; }
+            data.path = data.path.replace(/\//g, "\\");
+            if ((p13filetree != null) && (data.path == p13filetree.path)) {
+                // This is an update to the same folder
+                var checkedNames = p13getCheckedNames();
+                p13filetree = data;
+                p13updateFiles(checkedNames);
+            } else {
+                // Make both paths use the same seperator not start with /
+                var x1 = data.path.replace(/\//g, "\\");
+                var x2 = p13targetpath.replace(/\//g, "\\");
+                while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
+                while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
+                if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
+                    // This is a different folder
+                    p13filetree = data;
+                    p13updateFiles();
+                }
+            }
+        }
+
+        function p13getCheckedNames() {
+            // Save all existing checked boxes
+            var checkedNames = [], checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { checkedNames.push(p13filetree.dir[checkboxes[i].value].n) }; }
+            return checkedNames;
+        }
+
+        //var p13oldlinkpath = null;
+        function p13updateFiles(checkedNames) {
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>Root</a>', fullPath = 'Root';
+
+            // Work on parsing the file path
+            var x = p13filetree.path.split('\\');
+            p13filetreelocation = [];
+            for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
+            for (var i in p13filetreelocation) { displayPath += ' / <a style=cursor:pointer onclick=p13folderup(' + (parseInt(i) + 1) + ')>' + p13filetreelocation[i] + '</a>' } // Setup the path we display
+            var newlinkpath = p13filetreelocation.join('/');
+
+            // Sort the files
+            var filetreexx = p13sort_files(p13filetree.dir);
+
+            // Display all files and folders at this location
+            for (var i in filetreexx) {
+                // Figure out the name and shortname
+                var f = filetreexx[i], name = f.n, shortname;
+                shortname = name;
+                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "...</span>"; } else { shortname = EscapeHtml(name); }
+                name = EscapeHtml(name);
+
+                // Figure out the size
+                var fsize = '';
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
+
+                var h = '';
+                if (f.t < 3) {
+                    var right = '', title = '';
+                    h = "<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p13folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                } else {
+                    var link = shortname;
+                    if (f.s > 0) { link = "<a target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile('" + encodeURIComponent(newlinkpath + '/' + name) + "','" + encodeURIComponent(name) + "'," + f.s + ")\">" + shortname + "</a>"; }
+                    h = "<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                }
+
+                if (f.t < 3) { html1 += h; } else { html2 += h; }
+            }
+
+            // Display the files and path
+            QH('p13files', html1 + html2);
+            QH('p13currentpath', displayPath);
+            QE('p13FolderUp', p13filetreelocation.length != 0);
+
+            // Re-check all boxes if needed using names
+            if (checkedNames != null) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkedNames.indexOf(p13filetree.dir[checkboxes[i].value].n) >= 0) { checkboxes[i].checked = true; } } }
+
+            // Update the actions buttons
+            p13setActions();
+        }
+
+        function p13folderset(x) {
+            p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
+            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+        }
+
+        function p13folderup(x) {
+            if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
+            p13targetpath = p13filetreelocation.join('/');
+            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+        }
+
+        var p13sortorder;
+        function p13sort_filename(a, b) { if (a.ln > b.ln) return (1 * p13sortorder); if (a.ln < b.ln) return (-1 * p13sortorder); return 0; }
+        function p13sort_timestamp(a, b) { if (a.d > b.d) return (1 * p13sortorder); if (a.d < b.d) return (-1 * p13sortorder); return 0; }
+        function p13sort_bysize(a, b) { if (a.s == b.s) return p13sort_filename(a, b); return (((a.s - b.s)) * p13sortorder); }
+
+        function p13sort_files(files) {
+            var r = [], sortselection = Q('p13sortdropdown').value;
+            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            p13sortorder = 1;
+            if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
+            if (sortselection == 1) { r.sort(p13sort_filename); }
+            else if (sortselection == 2) { r.sort(p13sort_bysize); }
+            else if (sortselection == 3) { r.sort(p13sort_timestamp); }
+            return r;
+        }
+
+        function p13setActions() {
+            if (p13filetree == null) {
+                QE('p13DeleteFileButton', false);
+                QE('p13NewFolderButton', false);
+                QE('p13UploadButton', false);
+                QE('p13RenameFileButton', false);
+                QE('p13SelectAllButton', false);
+                Q('p13SelectAllButton').value = 'All';
+                QE('p13RefreshButton', false);
+                QE('p13CutButton', false);
+                QE('p13CopyButton', false);
+                QE('p13PasteButton', false);
+            } else {
+                var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
+                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+                QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13NewFolderButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13SelectAllButton', tc > 0);
+                Q('p13SelectAllButton').value = (cc > 0 ? 'None' : 'All');
+                QE('p13RefreshButton', true);
+                QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13PasteButton', ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
+            }
+        }
+
+        function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
+        function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
+        function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
+        function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfolderEx() { files.send(JSON.stringify({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value })); p13folderup(999); }
+        function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
+        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.send(JSON.stringify({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles })); p13folderup(999); }
+        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.send(JSON.stringify(t)); p13folderup(999); }
+        function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
+        function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
+        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+
+        var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
+        function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
+        function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0?'copy':'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
+        function p13pasteFileEx() { files.send(JSON.stringify({ action: (p13clipboardCut == 0?'copy':'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard })); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
+        function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' for ' + (p13clipboardCut == 0?'copy':'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
+        function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); }
+        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+        function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
+        function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
+
+        //
+        // FILES DOWNLOAD
+        //
+
+        var downloadFile; // Global state for file download
+
+        // Called by the html page to start a download, arguments are: path, file name and file size.
+        function p13downloadfile(x, y, z) {
+            if (xxdialogMode || downloadFile || !files) return;
+            downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
+            //console.log('p13downloadFileCancel', downloadFile);
+            files.send(JSON.stringify({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path }));
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+        }
+
+        // Called by the html page to cancel the download
+        function p13downloadFileCancel() { setDialogMode(0); files.send(JSON.stringify({ action: 'download', sub: 'cancel', id: downloadFile.id })); downloadFile = null; }
+
+        // Called by the transport when download control command is received
+        function p13gotDownloadCommand(cmd) {
+            //console.log('p13gotDownloadCommand', cmd);
+            if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
+            if (cmd.sub == 'start') { downloadFile.state = 1; files.send(JSON.stringify({ action: 'download', sub: 'startack', id: downloadFile.id })); }
+            else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
+        }
+
+        // Called by the transport when binary data is received
+        function p13gotDownloadBinaryData(data) {
+            if (!downloadFile || downloadFile.state == 0) return;
+            if (data.length > 4) {
+                downloadFile.tsize += (data.length - 4); // Add to the total bytes received
+                downloadFile.data += data.substring(4); // Append the data
+                Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
+            }
+            if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
+                saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
+            } else {
+                files.send(JSON.stringify({ action: 'download', sub: 'ack', id: downloadFile.id })); // Send the ACK
+            }
+        }
+
+        /*
+        var downloadFile; // Global state for file download
+
+        // Called by the html page to start a download, arguments are: path, file name and file size.
+        function p13downloadfile(x, y, z) {
+            if (xxdialogMode) return;
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our websocket file transport
+            downloadFile.ctrlMsgAllowed = false;
+            downloadFile.onStateChanged = onFileDownloadStateChange;
+            downloadFile.xpath = decodeURIComponent(x);
+            downloadFile.xfile = decodeURIComponent(y);
+            downloadFile.xsize = z;
+            downloadFile.xtsize = 0;
+            downloadFile.xstate = 0;
+            downloadFile.Start(filesNode._id);
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.xfile + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+        }
+
+        // Called by the html page to cancel the download
+        function p13downloadFileCancel(button, tag) {
+            //console.log('p13downloadFileCancel');
+            downloadFile.Stop();
+            delete downloadFile;
+            downloadFile = null;
+        }
+
+        // Called by the file transport to indicate when the transport connection state has changed
+        function onFileDownloadStateChange(xdownloadFile, state) {
+            switch (state) {
+                case 0: // Transport as disconnected. If this is not part of an abort, we need to save the file
+                    setDialogMode(0); // Close any dialog boxes if present
+                    if ((downloadFile != null) && (downloadFile.xstate == 1)) { saveAs(data2blob(downloadFile.xdata), downloadFile.xfile); } // Save the file
+                    break;
+                case 3: // Transport as connected, send a command to indicate we want to start a file download
+                    downloadFile.send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
+                    break;
+            }
+        }
+
+        // Called by the transport when data is received
+        function p13gotDownloadData(data) {
+            if (downloadFile.xstate == 0) { // If state is 0, this is a command confirming if the file will be transfered.
+                var cmd = JSON.parse(data);
+                if (cmd.action == 'downloadstart') { // Yes, the file is about to start
+                    downloadFile.xstate = 1; // Switch to state 1, we will start receiving the file data
+                    downloadFile.xdata = ''; // Start with empty data
+                    downloadFile.send('a'); // Send the first ACK
+                } else if (cmd.action == 'downloaderror') { // Problem opening this file, cancel
+                    p13downloadFileCancel();
+                }
+            } else { // We are in the process of receiving the file
+                downloadFile.xtsize += (data.length); // Add to the total bytes received
+                downloadFile.xdata += data; // Append the data
+                Q('d2progressBar').value = downloadFile.xtsize; // Change the progress bar
+                downloadFile.send('a'); // Send the ACK
+            }
+        }
+        */
+
+        //
+        // FILES UPLOAD
+        //
+
+        var uploadFile;
+        function p13doUploadFiles(files) {
+            if (xxdialogMode) return;
+            uploadFile = {};
+            uploadFile.xpath = p13filetreelocation.join('/');
+            uploadFile.xfiles = files;
+            uploadFile.xfilePtr = -1;
+            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>Connecting...</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            p13uploadReconnect();
+        }
+
+        function onFileUploadStateChange(xdownloadFile, state) {
+            switch (state) {
+                case 0:
+                    p13folderup(9999);
+                    break;
+                case 3:
+                    p13uploadNextFile();
+                    break;
+            }
+        }
+
+        // Connect again
+        function p13uploadReconnect() {
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort);
+            uploadFile.ws.attemptWebRTC = false;
+            uploadFile.ws.ctrlMsgAllowed = false;
+            uploadFile.ws.onStateChanged = onFileUploadStateChange;
+            uploadFile.ws.Start(filesNode._id);
+        }
+
+        // Push the next file
+        function p13uploadNextFile() {
+            uploadFile.xfilePtr++;
+            if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
+                uploadFile.xptr = 0;
+                var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                QH('p13dfileName', file.name);
+                Q('d2progressBar').max = file.size;
+                Q('d2progressBar').value = 0;
+
+                uploadFile.xreader = new FileReader();
+                uploadFile.xreader.onload = function() {
+                    uploadFile.xdata = uploadFile.xreader.result;
+                    uploadFile.ws.send(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                };
+                uploadFile.xreader.readAsArrayBuffer(file);
+            } else {
+                p13uploadFileCancel();
+            }
+        }
+
+        // Used to cancel the entire transfer.
+        function p13uploadFileCancel(button, tag) {
+            if (uploadFile != null) {
+                if (uploadFile.ws != null) {
+                    uploadFile.ws.Stop();
+                    uploadFile.ws = null;
+                }
+                uploadFile = null;
+            }
+            setDialogMode(0); // Close any dialog boxes if present
+        }
+
+        // Receive upload ack from the mesh agent, use this to keep sending more data
+        function p13gotUploadData(data) {
+            var cmd = JSON.parse(data);
+            if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
+
+            if (cmd.action == 'uploadstart') {
+                p13uploadNextPart(false);
+                for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } // Send 8 more blocks of 4 k to full the websocket.
+            } else if (cmd.action == 'uploadack') {
+                p13uploadNextPart(false);
+            } else if (cmd.action == 'uploaderror') {
+                p13uploadFileCancel();
+            }
+        }
+
+        // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
+        function p13uploadNextPart(dataPriming) {
+            var data = uploadFile.xdata;
+            var start = uploadFile.xptr;
+            var end = uploadFile.xptr + 4096;
+            if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
+            if (start == data.byteLength) {
+                if (uploadFile.ws != null) { uploadFile.ws.Stop(); uploadFile.ws = null; }
+                if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
+            } else {
+                var datapart = data.slice(start, end);
+                uploadFile.ws.send(datapart);
+                uploadFile.xptr = end;
+                Q('d2progressBar').value = end;
+            }
+        }
 
         //
         // MY MESHS
@@ -1907,7 +2430,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); deskAdjust(); /*drawDeviceTimeline();*/ }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
@@ -1921,6 +2444,10 @@
         function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
+        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
+        function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
+        function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
+        var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
 
     </script>
 </body>
