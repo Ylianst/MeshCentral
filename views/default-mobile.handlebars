@@ -29,9 +29,9 @@
         .i4 {background:url(../images/icons50.png) -150px 0px;height:50px;width:50px;border:none;}
         .i5 {background:url(../images/icons50.png) -200px 0px;height:50px;width:50px;border:none;}
         .i6 {background:url(../images/icons50.png) -250px 0px; height:50px;width:50px; border:none; }
-        .m0 {background:url(../images/images16.png)  -32px 0px; height:16px;width:16px; border:none;float:left }
-        .m1 {background:url(../images/images16.png)  -16px 0px; height:16px;width:16px; border:none;float:left }
-        .m2 {background:url(../images/images16.png)  -96px 0px; height:16px;width:16px; border:none;float:left }
+        .m0 {background:url(../images/images16.png) -32px 0px; height:16px;width:16px; border:none;float:left }
+        .m1 {background:url(../images/images16.png) -16px 0px; height:16px;width:16px; border:none;float:left }
+        .m2 {background:url(../images/images16.png) -96px 0px; height:16px;width:16px; border:none;float:left }
         .m3 {background:url(../images/images16.png) -112px 0px; height:16px;width:16px; border:none;float:left }
 
         .gray {
@@ -167,6 +167,77 @@
                         </div>
                     </div>
                 </div>
+                <div id=p5 style=display:none>
+                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tr style=padding:0>
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                                <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
+                                    <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
+                                </div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                            </td>
+                            <td>
+                                <img src="/images/user-50.png" width=50 height=50 />
+                            </td>
+                            <td>
+                                <div style=margin-left:5px>
+                                    <strong style="font-size:large">My Files</strong><br />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p5myfiles style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <table id="p5toolbar" style="width:100%;height:78px" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
+                                    <div style="width:100%;text-align:center">
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5FolderUp disabled="disabled" onclick="p5folderup()" value="Up" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5NewFolderButton disabled="disabled" value="Folder" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false" />
+                                    </div>
+                                    <div style="width:100%;text-align:center">
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false" />
+                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5RefreshButton value="Refresh" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#E4E9E7;height:28px">
+                                    <table style="width:100%">
+                                        <tr>
+                                            <td id=p5currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                            <td style="text-align:right;padding-right:4px">
+                                                <select id=p5sortdropdown onchange=updateFiles()>
+                                                    <option value=1 selected="selected">Sort by name</option>
+                                                    <option value=2>Sort by size</option>
+                                                    <option value=3>Sort by date</option>
+                                                    <option value=4>Descend by name</option>
+                                                    <option value=5>Descend by size</option>
+                                                    <option value=6>Descend by date</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <div id="p5filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
+                            <!--
+                            <div id="p5bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
+                            <div id="p5bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
+                            -->
+                            <span id="p5files"></span>
+                        </div>
+                        <table id="p5toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px" cellpadding=0 cellspacing=0>
+                            <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p5bottomstatus"></span></td></tr>
+                        </table>
+                    </div>
+                </div>
                 <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden>
                     <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
                         <tr style=padding:0>
@@ -193,7 +264,7 @@
                         <div id=p10html3></div>
                     </div>
                     <div id=p10desktop style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
-                        <div id=deskarea1>
+                        <div id=deskarea1 style="position:absolute;top:0px;width:100%;height:25px">
                             <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
                                     <span id="p14power"></span>&nbsp;
@@ -206,12 +277,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea2>
-                            <div>
-                                <div style=background-color:gray><div id=progressbar style=height:2px;width:0%;background-color:red></div></div>
-                            </div>
-                        </div>
-                        <div id=deskarea3 style="height:calc(100% - 56px)">
+                        <div id=deskarea3 style="position:absolute;top:25px;width:100%;height:calc(100% - 50px)">
                             <div id=deskarea3x style="background:black;text-align:center;height:100%;position:relative">
                                 <div id=DeskParent style="height:100%">
                                     <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
@@ -226,7 +292,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea4>
+                        <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:25px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
                                     <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
@@ -247,9 +313,9 @@
                             <tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                                        <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
                                     </div>
-                                    <div>
+                                    <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
                                         <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
                                         <span id=p13Status>Disconnected</span>
@@ -276,17 +342,21 @@
                             </tr>
                             <tr>
                                 <td style="background-color:#E4E9E7;height:28px">
-                                    <div style=float:right>
-                                        <select id=p13sortdropdown onchange=p13updateFiles()>
-                                            <option value=1 selected="selected">Sort by name</option>
-                                            <option value=2>Sort by size</option>
-                                            <option value=3>Sort by date</option>
-                                            <option value=4>Descend by name</option>
-                                            <option value=5>Descend by size</option>
-                                            <option value=6>Descend by date</option>
-                                        </select>
-                                    </div>
-                                    <div id=p13currentpath style="white-space:nowrap;overflow:hidden;padding-left:4px;padding-top:2px;max-width:100px"></div>
+                                    <table style="width:100%">
+                                        <tr>
+                                            <td id=p13currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                            <td style="text-align:right;padding-right:4px">
+                                                <select id=p13sortdropdown onchange=p13updateFiles()>
+                                                    <option value=1 selected="selected">Sort by name</option>
+                                                    <option value=2>Sort by size</option>
+                                                    <option value=3>Sort by date</option>
+                                                    <option value=4>Descend by name</option>
+                                                    <option value=5>Descend by size</option>
+                                                    <option value=6>Descend by date</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </td>
                             </tr>
                         </table>
@@ -349,6 +419,7 @@
         </div>
     </div>
     <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Files</div>
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
         <a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a>
     </div>
@@ -409,7 +480,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes' });
-                //meshserver.send({ action: 'files' });
+                meshserver.send({ action: 'files' });
                 if (xxcurrentView < 2) { go(2); }
             }
         }
@@ -459,8 +530,8 @@
                     break;
                 }
                 case 'files': {
-                    //filetree = setupBackPointers(message.filetree);
-                    //updateFiles();
+                    filetree = setupBackPointers(message.filetree);
+                    updateFiles();
                     //d3updatefiles();
                     break;
                 }
@@ -700,6 +771,7 @@
                 QV('topMenu', false);
                 xxdialogMode = 0;
                 if ((select == 1) && (xxcurrentView != 3)) { goForward('account'); } // My Account
+                if ((select == 2) && (xxcurrentView != 5)) { goForward('files'); } // My Files
             }
         }
 
@@ -713,6 +785,7 @@
             if (idtype == 'mesh') { gotoMesh(id); }
             if (idtype == 'account') { go(3); }
             if (idtype == 'devices') { go(2); }
+            if (idtype == 'files') { go(5); }
         }
 
         function updateFooterMenu(options) {
@@ -878,6 +951,213 @@
 
         function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
         function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
+
+        //
+        // MY FILES
+        //
+
+        var filetreelinkpath;
+        var filetreelocation = [];
+
+        function p5refreshFiles() { meshserver.send({ action: 'files' }); }
+
+        function updateFiles() {
+            QV('MainMenuMyFiles', ((features & 8) == 0));
+            if ((features & 8) != 0) return; // If running on a server without files, exit now.
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>Root</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+
+            // Navigate to path location, build the paths at the same time
+            var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { checkedBoxes.push(checkboxes[i].value) }; } // Save all existing checked boxes
+
+            filetreelinkpath = '';
+            for (var i in filetreelocation) {
+                if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) {
+                    filetreelocation2.push(filetreelocation[i]);
+                    fullPath += ' / ' + filetreelocation[i];
+                    if ((folderdepth == 1)) {
+                        var sp = filetreelocation[i].split('/');
+                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        //if (filetreelocation[i] === userinfo._id) { filetreelinkpath += 'self'; } else { filetreelinkpath += (sp[0] + '/' + sp[2]); }
+                        filetreelinkpath += filetreelocation[i];
+                    } else {
+                        if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
+                    }
+                    filetreex = filetreex.f[filetreelocation[i]];
+                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != null?filetreex.n:filetreelocation[i]) + '</a>';
+                    folderdepth++;
+                } else {
+                    break;
+                }
+            }
+            filetreelocation = filetreelocation2; // In case we could not go down the full path, we set the new path location here.
+            var publicfolder = fullPath.toLowerCase().startsWith("root / " + userinfo._id + " / public");
+
+            // Sort the files
+            var filetreexx = p5sort_files(filetreex.f);
+
+            // Display all files and folders at this location
+            for (var i in filetreexx) {
+                // Figure out the name and shortname
+                var f = filetreexx[i], name = f.n, shortname;
+                shortname = name;
+                if (name.length > 40) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 40)) + "...</span>"; } else { shortname = EscapeHtml(name); }
+                name = EscapeHtml(name);
+
+                // Figure out the date
+                //var fdatestr = '';
+                //if (f.d != null) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
+
+                // Figure out the size
+                var fsize = '';
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
+
+                var h = '';
+                if (f.t < 3) {
+                    var right = (f.t == 1)?p5getQuotabar(f):'', title = '';
+                    h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right;padding-right:4px title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                } else {
+                    var link = shortname;
+                    var publiclink = '';
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
+                    if (f.s > 0) { link = "<a target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
+                    h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                }
+
+                if (f.t < 3) { html1 += h; } else { html2 += h; }
+            }
+
+            //if (f.parent == null) {  }
+            //QH('p5rightOfButtons', p5getQuotabar(filetreex));
+
+            QH('p5files', html1 + html2);
+            QH('p5currentpath', displayPath);
+            QE('p5FolderUp', filetreelocation.length != 0);
+            QV('p5PublicShare', publicfolder);
+
+            // Re-check all boxes if needed
+            if (oldlinkpath == filetreelinkpath) {
+                checkboxes = document.getElementsByName('fc');
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = (checkedBoxes.indexOf(checkboxes[i].value) >= 0);
+                }
+            }
+
+            p5setActions();
+        }
+
+        function p5getQuotabar(f) {
+            while (f.t > 1) { f = f.parent; }
+            if ((f.t != 1) || (f.maxbytes == null)) return '';
+            var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
+            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+        }
+
+        function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
+
+        var sortorder;
+        function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
+        function p5sort_timestamp(a, b) { if (a.d > b.d) return (1 * sortorder); if (a.d < b.d) return (-1 * sortorder); return 0; }
+        function p5sort_bysize(a, b) { if (a.s == b.s) return p5sort_filename(a, b); return (((a.s - b.s)) * sortorder); }
+
+        function p5sort_files(files) {
+            var r = [], sortselection = Q('p5sortdropdown').value;
+            for (var i in files) { files[i].nx = i; if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            sortorder = 1;
+            if (sortselection > 3) { sortorder = -1; sortselection -= 3; }
+            if (sortselection == 1) { r.sort(p5sort_filename); }
+            else if (sortselection == 2) { r.sort(p5sort_bysize); }
+            else if (sortselection == 3) { r.sort(p5sort_timestamp); }
+            return r;
+        }
+
+        function p5setActions() {
+            var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
+            QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
+            QE('p5NewFolderButton', filetreelocation.length > 0);
+            QE('p5UploadButton', filetreelocation.length > 0);
+            QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
+            QE('p5SelectAllButton', tc > 0);
+            Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
+            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CopyButton', (sfc > 0) && (cc == sfc));
+            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0));
+        }
+
+        function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
+        function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
+        function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
+        function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
+        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
+        function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
+        function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
+        function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
+        function p5deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
+        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles}); }
+        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile}); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
+        function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
+        var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFileEx() { Q('p5loginSubmit').click(); }
+        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+
+        var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
+        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0?'copy':'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' for ' + (p5clipboardCut == 0?'copy':'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
+
+        function p5fileDragDrop(e) {
+            haltEvent(e);
+            QV('bigfail', false);
+            QV('bigok', false);
+            //QV('p5fileCatchAllInput', false);
+            if (e.dataTransfer == null || e.dataTransfer.files.length == 0 || filetreelocation.length == 0) return;
+            var names = [], sizes = [], types = [], datas = [], readercount = e.dataTransfer.files.length;
+            for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                var reader = new FileReader(), file = e.dataTransfer.files[i];
+                names.push(file.name);
+                sizes.push(file.size);
+                types.push(file.type);
+                reader.onload = function(event) {
+                    datas.push(event.target.result);
+                    if (--readercount == 0) {
+                        Q('p5fileDragName').value = names.join('*');
+                        Q('p5fileDragSize').value = sizes.join('*');
+                        Q('p5fileDragType').value = types.join('*');
+                        Q('p5fileDragData').value = datas.join('*');
+                        Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
+                        Q('p5loginSubmit2').click();
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        var p5dragtimer = null;
+        function p5fileDragOver(e) {
+            haltEvent(e);
+            if (p5dragtimer != null) { clearTimeout(p5dragtimer); p5dragtimer = null; }
+            var ac = true; // TODO: Set to true if we can accept the file
+            if (filetreelocation.length == 0) { ac = false; }
+            QV('bigok', ac);
+            QV('bigfail', !ac);
+            //QV('p5fileCatchAllInput', ac);
+        }
+
+        function p5fileDragLeave(e) {
+            haltEvent(e);
+            if (e.target.id != "p5filetable") {
+                QV('bigfail', false);
+                QV('bigok', false);
+                //QV('p5fileCatchAllInput', false);
+            } else {
+                p5dragtimer = setTimeout("QV('bigfail',false);QV('bigok',false);p5dragtimer=null;", 200);
+            }
+        }
 
         //
         // MY DEVICES
