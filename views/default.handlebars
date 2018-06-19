@@ -4899,8 +4899,8 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3) {
-                    var right = (f.t == 1)?p5getQuotabar(f):'', title = '';
+                if (f.t < 3 || f.t == 4) {
+                    var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
                     h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
@@ -4933,8 +4933,8 @@
         }
 
         function p5getQuotabar(f) {
-            while (f.t > 1) { f = f.parent; }
-            if ((f.t != 1) || (f.maxbytes == null)) return '';
+            while (f.t > 1 && f.t != 4) { f = f.parent; }
+            if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
             return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
@@ -4967,7 +4967,7 @@
             Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
-            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0));
+            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
         }
 
         function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }

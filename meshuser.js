@@ -37,6 +37,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         } else if (splitid[0] == 'mesh') {
             // Check mesh access
             var meshrights = user.links[meshpath[0]];
+            if (meshrights == null) return null; // No meth rights for this user
+            meshrights = meshrights.rights; // Get the rights bit mask
             if ((meshrights == null) || ((meshrights & 32) == 0)) return null; // This user must have mesh rights to "server files"
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
@@ -1283,7 +1285,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 var mesh = obj.parent.meshes[i];
                 if (mesh) {
                     var meshsplit = mesh._id.split('/');
-                    files.filetree.f[mesh._id] = { t: 1, n: mesh.name, f: {} };
+                    files.filetree.f[mesh._id] = { t: 4, n: mesh.name, f: {} };
                     files.filetree.f[mesh._id].maxbytes = obj.parent.getQuota(mesh._id, domain);
 
                     // Read all files recursively

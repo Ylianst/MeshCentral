@@ -278,6 +278,16 @@ a {
     margin-top: 1px;
 }
 
+.fileIcon4 {
+    background: url(../images/meshicon16.png);
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
 .filelist {
     -moz-user-select: none;
     -khtml-user-select: none;
