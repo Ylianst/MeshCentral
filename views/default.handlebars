@@ -1788,7 +1788,7 @@
         function getMeshActions(mesh, meshrights) {
             if ((meshrights & 4) == 0) return '';
             var r = '';
-            if ((features & 2) == 0) { // If not LAN-Only
+            if ((features & 1024) == 0) { // If CIRA is allowed
                 r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
             }
             if (mesh.mtype == 1) {

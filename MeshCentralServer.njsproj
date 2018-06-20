@@ -40,6 +40,7 @@
     <Compile Include="agents\modules_meshcore\amt-scanner.js" />
     <Compile Include="agents\modules_meshcore\amt-xml.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
+    <Compile Include="agents\modules_meshcore\user-sessions.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\testsuite.js" />
