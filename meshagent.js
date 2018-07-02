@@ -73,7 +73,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
 
         if (obj.authenticated == 2) { // We are authenticated
-            if (msg.charCodeAt(0) == 123) { processAgentData(msg); }
+            if ((obj.agentUpdate == null) && (msg.charCodeAt(0) == 123)) { processAgentData(msg); } // Only process JSON messages if meshagent update is not in progress
             if (msg.length < 2) return;
             var cmdid = obj.common.ReadShort(msg, 0);
             if (cmdid == 11) { // MeshCommand_CoreModuleHash

@@ -1335,12 +1335,16 @@ function createMeshCore(agent) {
             var lme_heci = require('amt-lme');
             amtLmsState = 1;
             amtLms = new lme_heci();
-            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
-            amtLms.on('connect', function () { amtLmsState = 2; });
+            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; obj.setupMeiOsAdmin(null, 1); });
+            amtLms.on('connect', function () { amtLmsState = 2; obj.setupMeiOsAdmin(null, 2); });
             //amtLms.on('bind', function (map) { });
-            amtLms.on('notify', function (data, options, str) {
-                if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
-                handleAmtNotification(data);
+            amtLms.on('notify', function (data, options, str, code) {
+                if (code == 'iAMT0052-3') {
+                    kvmGetData();
+                } else {
+                    //if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
+                    handleAmtNotification(data);
+                }
             });
         } catch (e) { amtLmsState = -1; amtLms = null; }
 
@@ -1369,9 +1373,287 @@ function createMeshCore(agent) {
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
     }
-    
+
+
+    //
+    // KVM Data Channel
+    //
+
+    obj.setupMeiOsAdmin = function(func, state) {
+        amtMei.getLocalSystemAccount(function (x) {
+            var transport = require('amt-wsman-duk');
+            var wsman = require('amt-wsman');
+            var amt = require('amt');
+            oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
+            obj.osamtstack = new amt(oswsstack);
+            if (func) { func(state); }
+            //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
+            //obj.osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
+            //*************************************
+            // Setup KVM data channel if this is Intel AMT 12 or above
+            amtMei.getVersion(function (x) {
+                var amtver = null;
+                try { for (var i in x.Versions) { if (x.Versions[i].Description == 'AMT') amtver = parseInt(x.Versions[i].Version.split('.')[0]); } } catch (e) { }
+                if ((amtver != null) && (amtver >= 12)) {
+                    obj.kvmGetData('skip'); // Clear any previous data, this is a dummy read to about handling old data.
+                    obj.kvmTempTimer = setInterval(function () { obj.kvmGetData(); }, 2000); // Start polling for KVM data.
+                    obj.kvmSetData(JSON.stringify({ action: 'restart', ver: 1 })); // Send a restart command to advise the console if present that MicroLMS just started.
+                }
+            });
+        });
+    }
+
+    obj.kvmGetData = function(tag) {
+        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelRead(obj.kvmDataGetResponse, tag);
+    }
+
+    obj.kvmDataGetResponse = function (stack, name, response, status, tag) {
+        if ((tag != 'skip') && (status == 200) && (response.Body.ReturnValue == 0)) {
+            var val = null;
+            try { val = Buffer.from(response.Body.DataMessage, 'base64').toString(); } catch (e) { return }
+            if (val != null) { obj.kvmProcessData(response.Body.RealmsBitmap, response.Body.MessageId, val); }
+        }
+    }
+
+    var webRtcDesktop = null;
+    obj.kvmProcessData = function (realms, messageId, val) {
+        var data = null;
+        try { data = JSON.parse(val) } catch (e) { }
+        if ((data != null) && (data.action)) {
+            if (data.action == 'present') { obj.kvmSetData(JSON.stringify({ action: 'present', ver: 1, platform: process.platform })); }
+            if (data.action == 'offer') {
+                webRtcDesktop = {};
+                var rtc = require('ILibWebRTC');
+                webRtcDesktop.webrtc = rtc.createConnection();
+                webRtcDesktop.webrtc.on('connected', function () { });
+                webRtcDesktop.webrtc.on('disconnected', function () { webRtcCleanUp(); });
+                webRtcDesktop.webrtc.on('dataChannel', function (rtcchannel) {
+                    webRtcDesktop.rtcchannel = rtcchannel;
+                    webRtcDesktop.kvm = mesh.getRemoteDesktopStream();
+                    webRtcDesktop.kvm.pipe(webRtcDesktop.rtcchannel, { dataTypeSkip: 1, end: false });
+                    webRtcDesktop.rtcchannel.on('end', function () { obj.webRtcCleanUp(); });
+                    webRtcDesktop.rtcchannel.on('data', function (x) { obj.kvmCtrlData(this, x); });
+                    webRtcDesktop.rtcchannel.pipe(webRtcDesktop.kvm, { dataTypeSkip: 1, end: false });
+                    //webRtcDesktop.kvm.on('end', function () { console.log('WebRTC DataChannel closed2'); webRtcCleanUp(); });
+                    //webRtcDesktop.rtcchannel.on('data', function (data) { console.log('WebRTC data: ' + data); });
+                });
+                obj.kvmSetData(JSON.stringify({ action: 'answer', ver: 1, sdp: webRtcDesktop.webrtc.setOffer(data.sdp) }));
+            }
+        }
+    }
+
+    // Polyfill path.join
+    var path = {
+        join: function () {
+            var x = [];
+            for (var i in arguments) {
+                var w = arguments[i];
+                if (w != null) {
+                    while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
+                    if (i != 0) { while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } }
+                    x.push(w);
+                }
+            }
+            if (x.length == 0) return '/';
+            return x.join('/');
+        }
+    };
+
+    // Get a formated response for a given directory path
+    obj.getDirectoryInfo = function(reqpath) {
+        var response = { path: reqpath, dir: [] };
+        if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
+            // List all the drives in the root, or the root itself
+            var results = null;
+            try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+            //console.log('a', objToString(results, 0, ' '));
+            if (results != null) {
+                for (var i = 0; i < results.length; ++i) {
+                    var drive = { n: results[i].name, t: 1 };
+                    if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
+                    response.dir.push(drive);
+                }
+            }
+        } else {
+            // List all the files and folders in this path
+            if (reqpath == '') { reqpath = '/'; }
+            var xpath = path.join(reqpath, '*');
+            var results = null;
+
+            try { results = fs.readdirSync(xpath); } catch (e) { }
+            if (results != null) {
+                for (var i = 0; i < results.length; ++i) {
+                    if ((results[i] != '.') && (results[i] != '..')) {
+                        var stat = null, p = path.join(reqpath, results[i]);
+                        try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
+                        if ((stat != null) && (stat != undefined)) {
+                            if (stat.isDirectory() == true) {
+                                response.dir.push({ n: results[i], t: 2, d: stat.mtime });
+                            } else {
+                                response.dir.push({ n: results[i], t: 3, s: stat.size, d: stat.mtime });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return response;
+    }
+
+    // Process KVM control channel data
+    obj.kvmCtrlData = function(channel, cmd) {
+        if (cmd.length > 0 && cmd.charCodeAt(0) != 123) {
+            // This is upload data
+            if (this.fileupload != null) {
+                cmd = Buffer.from(cmd, 'base64');
+                var header = cmd.readUInt32BE(0);
+                if ((header == 0x01000000) || (header == 0x01000001)) {
+                    fs.writeSync(this.fileupload.fp, cmd.slice(4));
+                    channel.write({ action: 'upload', sub: 'ack', reqid: this.fileupload.reqid });
+                    if (header == 0x01000001) { fs.closeSync(this.fileupload.fp); this.fileupload = null; } // Close the file
+                }
+            }
+            return;
+        }
+        //console.log('KVM Ctrl Data', cmd);
+
+        try { cmd = JSON.parse(cmd); } catch (ex) { console.error('Invalid JSON: ' + cmd); return; }
+        if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
+        switch (cmd.action) {
+            case 'ls': {
+                /*
+                // Close the watcher if required
+                var samepath = ((this.httprequest.watcher != undefined) && (cmd.path == this.httprequest.watcher.path));
+                if ((this.httprequest.watcher != undefined) && (samepath == false)) {
+                    //console.log('Closing watcher: ' + this.httprequest.watcher.path);
+                    //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
+                    delete this.httprequest.watcher;
+                }
+                */
+
+                // Send the folder content to the browser
+                var response = getDirectoryInfo(cmd.path);
+                if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
+                channel.write(response);
+
+                /*
+                // Start the directory watcher
+                if ((cmd.path != '') && (samepath == false)) {
+                    var watcher = fs.watch(cmd.path, onFileWatcher);
+                    watcher.tunnel = this.httprequest;
+                    watcher.path = cmd.path;
+                    this.httprequest.watcher = watcher;
+                    //console.log('Starting watcher: ' + this.httprequest.watcher.path);
+                }
+                */
+                break;
+            }
+            case 'mkdir': {
+                // Create a new empty folder
+                fs.mkdirSync(cmd.path);
+                break;
+            }
+            case 'rm': {
+                // Remove many files or folders
+                for (var i in cmd.delfiles) {
+                    var fullpath = path.join(cmd.path, cmd.delfiles[i]);
+                    try { fs.unlinkSync(fullpath); } catch (e) { console.log(e); }
+                }
+                break;
+            }
+            case 'rename': {
+                // Rename a file or folder
+                try { fs.renameSync(path.join(cmd.path, cmd.oldname), path.join(cmd.path, cmd.newname)); } catch (e) { console.log(e); }
+                break;
+            }
+            case 'download': {
+                // Download a file, to browser
+                var sendNextBlock = 0;
+                if (cmd.sub == 'start') { // Setup the download
+                    if (this.filedownload != null) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                    this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
+                    try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                    if (this.filedownload) { channel.write({ action: 'download', sub: 'start', id: cmd.id }); }
+                } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
+                    if (cmd.sub == 'startack') { sendNextBlock = 8; } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
+                }
+                // Send the next download block(s)
+                while (sendNextBlock > 0) {
+                    sendNextBlock--;
+                    var buf = new Buffer(4096);
+                    var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
+                    this.filedownload.ptr += len;
+                    if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                    channel.write(buf.slice(0, len + 4).toString('base64')); // Write as Base64
+                }
+                break;
+            }
+            case 'upload': {
+                // Upload a file, from browser
+                if (cmd.sub == 'start') { // Start the upload
+                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); }
+                    if (!cmd.path || !cmd.name) break;
+                    this.fileupload = { reqid: cmd.reqid };
+                    var filepath = path.join(cmd.path, cmd.name);
+                    try { this.fileupload.fp = fs.openSync(filepath, 'wbN'); } catch (e) { }
+                    if (this.fileupload.fp) { channel.write({ action: 'upload', sub: 'start', reqid: this.fileupload.reqid }); } else { this.fileupload = null; channel.write({ action: 'upload', sub: 'error', reqid: this.fileupload.reqid }); }
+                }
+                else if (cmd.sub == 'cancel') { // Stop the upload
+                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); this.fileupload = null; }
+                }
+                break;
+            }
+            case 'copy': {
+                // Copy a bunch of files from scpath to dspath
+                for (var i in cmd.names) {
+                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                    if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                }
+                break;
+            }
+            case 'move': {
+                // Move a bunch of files from scpath to dspath
+                for (var i in cmd.names) {
+                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                    if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                }
+                break;
+            }
+        }
+    }
+
+    obj.webRtcCleanUp = function() {
+        if (webRtcDesktop == null) return;
+        if (webRtcDesktop.rtcchannel) {
+            try { webRtcDesktop.rtcchannel.close(); } catch (e) { }
+            try { webRtcDesktop.rtcchannel.removeAllListeners('data'); } catch (e) { }
+            try { webRtcDesktop.rtcchannel.removeAllListeners('end'); } catch (e) { }
+            delete webRtcDesktop.rtcchannel;
+        }
+        if (webRtcDesktop.webrtc) {
+            try { webRtcDesktop.webrtc.close(); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('connected'); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('disconnected'); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('dataChannel'); } catch (e) { }
+            delete webRtcDesktop.webrtc;
+        }
+        if (webRtcDesktop.kvm) {
+            try { webRtcDesktop.kvm.end(); } catch (e) { }
+            delete webRtcDesktop.kvm;
+        }
+        webRtcDesktop = null;
+    }
+
+    obj.kvmSetData = function(x) {
+        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelWrite(Buffer.from(x).toString('base64'), function () { });
+    }
+
     return obj;
 }
+
+//
+// Module startup
+//
 
 var xexports = null, mainMeshCore = null;
 try { xexports = module.exports; } catch (e) { }

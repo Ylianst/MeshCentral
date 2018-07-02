@@ -311,7 +311,7 @@
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id="p10title">
-                                    <h1><span id=p10deviceName></span> - General</h1>
+                                    <h1>General - <span id=p10deviceName></span></h1>
                                 </div>
                                 <div id=p10html></div>
                             </td>
@@ -327,7 +327,7 @@
                 </div>
                 <div id=p11 style=display:none>
                     <div id="p11title">
-                        <h1 id=p11deviceNameHeader><span id=p11deviceName></span> - Desktop</h1>
+                        <h1 id=p11deviceNameHeader>Desktop - <span id=p11deviceName></span></h1>
                     </div>
                     <div id="p14warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showFeaturesDlg()">
                         <div class=icon2 style="float:left;margin:7px"></div>
@@ -406,7 +406,7 @@
                     </table>
                 </div>
                 <div id=p12 style=display:none>
-                    <div id="p12title"><h1><span id=p12deviceName></span> - Terminal</h1></div>
+                    <div id="p12title"><h1>Terminal - <span id=p12deviceName></span></h1></div>
                     <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
                         <div class="icon2" style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
@@ -461,7 +461,7 @@
                     </table>
                 </div>
                 <div id=p13 style=display:none>
-                    <div id="p13title"><h1><span id=p13deviceName></span> - Files</h1></div>
+                    <div id="p13title"><h1>Files - <span id=p13deviceName></span></h1></div>
                     <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
@@ -518,11 +518,11 @@
                     </table>
                 </div>
                 <div id=p14 style=display:none>
-                    <div id="p14title"><h1><span id=p14deviceName></span> - Intel&reg; AMT</h1></div>
+                    <div id="p14title"><h1>Intel&reg; AMT - <span id=p14deviceName></span></h1></div>
                     <iframe id=p14iframe style="width:100%;height:650px;border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style=display:none>
-                    <div id="p15title"><h1><span id=p15deviceName></span> - Console</h1></div>
+                    <div id="p15title"><h1>Console - <span id=p15deviceName></span></h1></div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr>
                             <td style=background:#C0C0C0>
@@ -559,7 +559,7 @@
                     </table>
                 </div>
                 <div id=p16 style=display:none>
-                    <div id="p16title"><h1><span id=p16deviceName></span> - Events</h1></div>
+                    <div id="p16title"><h1>Events - <span id=p16deviceName></span></h1></div>
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
@@ -2116,20 +2116,22 @@
             if (x == '') {
                 for (var d in nodes) { nodes[d].v = true; }
             } else {
-                var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs);
-                for (var d in nodes) {
-                    nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()));
-                    if ((nodes[d].v == false) && nodes[d].tags) {
-                        for (var s in nodes[d].tags) {
-                            if (rx.test(nodes[d].tags[s].toLowerCase())) {
-                                nodes[d].v = true;
-                                break;
-                            } else {
-                                nodes[d].v = false;
+                try {
+                    var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    for (var d in nodes) {
+                        nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()));
+                        if ((nodes[d].v == false) && nodes[d].tags) {
+                            for (var s in nodes[d].tags) {
+                                if (rx.test(nodes[d].tags[s].toLowerCase())) {
+                                    nodes[d].v = true;
+                                    break;
+                                } else {
+                                    nodes[d].v = false;
+                                }
                             }
                         }
                     }
-                }
+                } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
             }
             updateDevices();
         }
@@ -2819,7 +2821,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>None</i>'; }
-                if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
+                if ((meshrights & 4) != 0) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img src="images/link5.png" /></span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
@@ -4084,7 +4086,7 @@
                 QV('p13bigfail', false);
                 QV('p13bigok', false);
             } else {
-                p13dragtimer = setTimeout("QV('p13bigfail',false);QV('p13bigok',false);p13dragtimer=null;", 200);
+                p13dragtimer = setTimeout(function () { QV('p13bigfail',false); QV('p13bigok',false); p13dragtimer=null; }, 10);
             }
         }
 
@@ -5041,7 +5043,7 @@
                 QV('bigok', false);
                 //QV('p5fileCatchAllInput', false);
             } else {
-                p5dragtimer = setTimeout("QV('bigfail',false);QV('bigok',false);p5dragtimer=null;", 200);
+                p5dragtimer = setTimeout(function () { QV('bigfail',false); QV('bigok',false); p5dragtimer=null; }, 10);
             }
         }
 
