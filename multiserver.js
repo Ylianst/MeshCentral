@@ -173,7 +173,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8');
             if (str[0] == '{') {
-                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
@@ -337,7 +337,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8');
             if (str[0] == '{') {
-                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.

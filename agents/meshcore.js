@@ -438,9 +438,7 @@ function createMeshCore(agent) {
         } else {
             // List all the files and folders in this path
             if (reqpath == '') { reqpath = '/'; }
-            var xpath = obj.path.join(reqpath, '*');
-            var results = null;
-            
+            var results = null, xpath = obj.path.join(reqpath, '*');
             try { results = fs.readdirSync(xpath); } catch (e) { }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
@@ -530,7 +528,7 @@ function createMeshCore(agent) {
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
         //console.log("OnTunnelData");
-        //sendConsoleText('OnTunnelData, ' +  data.length + ', ' + typeof data + ', ' + data);
+        //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
         
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {

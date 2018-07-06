@@ -182,7 +182,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     ws.on('message', function (data) {
         //console.log(typeof data, data.length);
         if (this.peer != null) {
-            //if (typeof data == 'string') { console.log('Relay: ' + data); }
+            //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { }
         }
     });

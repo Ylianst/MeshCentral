@@ -166,7 +166,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         //console.log("xxOnSocketData", rstr2hex(data));
         return obj.m.ProcessData(data);
     }
-    
+
+    obj.sendText = function (x) {
+        if (typeof x != 'string') { x = JSON.stringify(x); } // Turn into a string if needed
+        obj.send(encode_utf8(x)); // Encode UTF8 correctly
+    }
+
     obj.send = function (x) {
         //obj.debug("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
         //console.log("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + ((typeof x == 'string')?x:rstr2hex(x)));

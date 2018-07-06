@@ -411,7 +411,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function processAgentData(msg) {
         var str = msg.toString('utf8');
         if (str[0] == '{') {
-            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str); return; } // If the command can't be parsed, ignore it.
             switch (command.action) {
                 case 'msg':
                     {
