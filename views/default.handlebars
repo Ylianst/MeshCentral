@@ -3916,8 +3916,7 @@
                 p13updateFiles(checkedNames);
             } else {
                 // Make both paths use the same seperator not start with /
-                var x1 = data.path.replace(/\//g, "\\");
-                var x2 = p13targetpath.replace(/\//g, "\\");
+                var x1 = data.path.replace(/\//g, "\\"), x2 = p13targetpath.replace(/\//g, "\\");
                 while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
                 while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
                 if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
@@ -4240,7 +4239,7 @@
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onload = function() {
                     uploadFile.xdata = uploadFile.xreader.result;
-                    uploadFile.ws.send(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    uploadFile.ws.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
                 };
                 uploadFile.xreader.readAsArrayBuffer(file);
             } else {

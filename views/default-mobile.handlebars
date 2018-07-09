@@ -1092,7 +1092,7 @@
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
-            Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
+            Q('p5SelectAllButton').value = (cc > 0 ? 'None' : 'All');
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
@@ -2084,7 +2084,7 @@
                     break;
                 case 3:
                     p13targetpath = '';
-                    files.send(JSON.stringify({ action: 'ls', reqid: 1, path: '' }));
+                    files.sendText({ action: 'ls', reqid: 1, path: '' });
                     break;
             }
         }
@@ -2128,7 +2128,7 @@
             //console.log('p13gotFiles', data);
             if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; }
             //console.log('p13gotFiles', data);
-            data = JSON.parse(data);
+            data = JSON.parse(decode_utf8(data));
             if (data.action == 'download') { p13gotDownloadCommand(data); return; }
             data.path = data.path.replace(/\//g, "\\");
             if ((p13filetree != null) && (data.path == p13filetree.path)) {
@@ -2138,8 +2138,7 @@
                 p13updateFiles(checkedNames);
             } else {
                 // Make both paths use the same seperator not start with /
-                var x1 = data.path.replace(/\//g, "\\");
-                var x2 = p13targetpath.replace(/\//g, "\\");
+                var x1 = data.path.replace(/\//g, "\\"), x2 = p13targetpath.replace(/\//g, "\\");
                 while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
                 while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
                 if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
@@ -2210,13 +2209,13 @@
 
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
-            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+            files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
         }
 
         function p13folderup(x) {
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
-            files.send(JSON.stringify({ action: 'ls', reqid: 1, path: p13targetpath }));
+            files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
         }
 
         var p13sortorder;
@@ -2267,11 +2266,11 @@
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
-        function p13createfolderEx() { files.send(JSON.stringify({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value })); p13folderup(999); }
+        function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
-        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.send(JSON.stringify({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles })); p13folderup(999); }
+        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
-        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.send(JSON.stringify(t)); p13folderup(999); }
+        function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
@@ -2279,7 +2278,7 @@
         var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
         function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
         function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0?'copy':'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
-        function p13pasteFileEx() { files.send(JSON.stringify({ action: (p13clipboardCut == 0?'copy':'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard })); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
+        function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0?'copy':'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
         function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' for ' + (p13clipboardCut == 0?'copy':'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
         function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
@@ -2297,18 +2296,18 @@
             if (xxdialogMode || downloadFile || !files) return;
             downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
             //console.log('p13downloadFileCancel', downloadFile);
-            files.send(JSON.stringify({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path }));
+            files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
             setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
-        function p13downloadFileCancel() { setDialogMode(0); files.send(JSON.stringify({ action: 'download', sub: 'cancel', id: downloadFile.id })); downloadFile = null; }
+        function p13downloadFileCancel() { setDialogMode(0); files.sendText({ action: 'download', sub: 'cancel', id: downloadFile.id }); downloadFile = null; }
 
         // Called by the transport when download control command is received
         function p13gotDownloadCommand(cmd) {
             //console.log('p13gotDownloadCommand', cmd);
             if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
-            if (cmd.sub == 'start') { downloadFile.state = 1; files.send(JSON.stringify({ action: 'download', sub: 'startack', id: downloadFile.id })); }
+            if (cmd.sub == 'start') { downloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: downloadFile.id }); }
             else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
         }
 
@@ -2323,7 +2322,7 @@
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
             } else {
-                files.send(JSON.stringify({ action: 'download', sub: 'ack', id: downloadFile.id })); // Send the ACK
+                files.sendText({ action: 'download', sub: 'ack', id: downloadFile.id }); // Send the ACK
             }
         }
 
@@ -2434,7 +2433,7 @@
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onload = function() {
                     uploadFile.xdata = uploadFile.xreader.result;
-                    uploadFile.ws.send(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    uploadFile.ws.sendText({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength });
                 };
                 uploadFile.xreader.readAsArrayBuffer(file);
             } else {
