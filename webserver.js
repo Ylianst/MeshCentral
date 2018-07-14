@@ -189,7 +189,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     });
 
     // Fetch all meshes from the database, keep this in memory
-    obj.db.GetAllType('mesh', function (err, docs) { for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } });
+    obj.db.GetAllType('mesh', function (err, docs) { obj.common.unEscapeAllLinksFieldName(docs); for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } });
 
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
@@ -550,7 +550,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                         var mesh = obj.meshes[meshid];
                         if (mesh) {
                             // Remove user from the mesh
-                            if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(mesh); }
+                            var escUserId = obj.common.escapeFieldName(userid);
+                            if (mesh.links[escUserId] != null) { delete mesh.links[escUserId]; obj.db.Set(mesh); }
                             // Notify mesh change
                             var change = 'Removed user ' + user.name + ' from mesh ' + mesh.name;
                             obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
@@ -997,9 +998,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if (user.siteadmin == 0xFFFFFFFF) subscriptions.push('*');
             if ((user.siteadmin & 2) != 0) subscriptions.push('server-users');
         }
-        if (user.links != null) {
-            for (var i in user.links) { subscriptions.push(i); }
-        }
+        if (user.links != null) { for (var i in user.links) { subscriptions.push(i); } }
         obj.parent.RemoveAllEventDispatch(target);
         obj.parent.AddEventDispatch(subscriptions, target);
         return subscriptions;
@@ -1458,7 +1457,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     // If required, check if this user has rights to do this
                     if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
                         var user = obj.users[req.session.userid];
-                        if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+                        var escUserId = obj.common.escapeFieldName(user._id);
+                        if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
                         if (domain.id != mesh.domain) { res.sendStatus(401); return; }
                     }
 
@@ -1591,7 +1591,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             // If needed, check if this user has rights to do this
             if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
                 var user = obj.users[req.session.userid];
-                if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
+                var escUserId = obj.common.escapeFieldName(user._id);
+                if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
                 if (domain.id != mesh.domain) { res.sendStatus(401); return; }
             }
 

@@ -17,24 +17,25 @@
 // Just run with --mongodb [connectionstring], where the connection string is documented here: https://docs.mongodb.com/manual/reference/connection-string/
 // The default collection is "meshcentral", but you can override it using --mongodbcol [collection]
 //
-module.exports.CreateDB = function (args, datapath) {
+module.exports.CreateDB = function (parent) {
     var obj = {};
     obj.path = require('path');
+    obj.parent = parent;
     obj.identifier = null;
 
-    if (args.mongodb) {
+    if (obj.parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 2;
         var Datastore = require('mongojs');
-        var db = Datastore(args.mongodb);
+        var db = Datastore(obj.parent.args.mongodb);
         var dbcollection = 'meshcentral';
-        if (args.mongodbcol) { dbcollection = args.mongodbcol; }
+        if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
         obj.file = db.collection(dbcollection);
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
         var Datastore = require('nedb');
-        obj.file = new Datastore({ filename: obj.path.join(datapath, 'meshcentral.db'), autoload: true });
+        obj.file = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true });
         obj.file.persistence.setAutocompactionInterval(3600);
     }
     

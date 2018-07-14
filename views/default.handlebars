@@ -391,6 +391,7 @@
                                 </div>
                                 <div>
                                     <select style="margin-left:6px" id="deskkeys">
+                                        <option value=5>Win</option>
                                         <option value=0>Win+Down</option>
                                         <option value=1>Win+Up</option>
                                         <option value=2>Win+L</option>
@@ -3598,7 +3599,11 @@
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7,1],[0x6c,1],[0x6c,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
                 } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
+                    //desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
+                    desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXDOWN, 0x5B);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.DOWN, 76);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.UP, 76);
+                    desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
                 }
             } else if (ks == 3) { // WIN+M arrow
                 if (desktop.contype == 2) {
@@ -3611,6 +3616,12 @@
                     desktop.m.sendkey([[0xffe1,1],[0xffe7,1],[0x6d,1],[0x6d,0],[0xffe7,0],[0xffe1,0]]); // Intel AMT: Shift-left down, Meta-left down, 'm' press, 'm' release, Meta-left release, Shift-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN,16],[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,77],[desktop.m.KeyAction.UP,77],[desktop.m.KeyAction.EXUP,0x5B],[desktop.m.KeyAction.UP, 16]]);     // MeshAgent: L-shift press, L-Winkey press, 'M' press, 'M' release, L-Winkey release, L-shift release
+                }
+            } else if (ks == 5) { // WIN
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7,1],[0xffe7,0]]); // Intel AMT: Meta-left down, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B], [desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, L-Winkey release
                 }
             }
         }

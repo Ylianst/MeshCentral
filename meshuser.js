@@ -111,6 +111,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             if ((user == null) || (obj.common.validateString(command.action, 3, 32) == false)) return; // User must be set and action must be a string between 3 and 32 chars
 
             switch (command.action) {
+                case 'ping': { ws.send(JSON.stringify({ action: 'pong' })); break; }
                 case 'meshes':
                     {
                         // Request a list of all meshes this user as rights to
@@ -565,7 +566,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var links = {}
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                                 var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
-                                obj.db.Set(mesh);
+                                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
                                 obj.parent.meshes[meshid] = mesh;
                                 obj.parent.parent.AddEventDispatch([meshid], ws);
                                 if (user.links == null) user.links = {};
@@ -583,7 +584,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                         obj.db.Get(command.meshid, function (err, meshes) {
                             if (meshes.length != 1) return;
-                            var mesh = meshes[0];
+                            var mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
 
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
@@ -627,7 +628,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                             if ((obj.common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
                             if ((obj.common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                            if (change != '') { obj.db.Set(mesh); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
+                            if (change != '') { obj.db.Set(obj.common.escapeLinksFieldName(mesh)); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
                         }
                         break;
                     }
@@ -659,7 +660,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                             // Add a user to the mesh
                             mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
-                            obj.db.Set(mesh);
+                            obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
                             var change = 'Added user ' + newuser.name + ' to mesh ' + mesh.name;
@@ -685,7 +686,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 // Remove mesh from user
                                 if (deluser.links != null && deluser.links[command.meshid] != null) {
                                     var delmeshrights = deluser.links[command.meshid].rights;
-                                    if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[user._id].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
+                                    if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[deluserid].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
                                     delete deluser.links[command.meshid];
                                     obj.db.Set(deluser);
                                     obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
@@ -695,7 +696,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Remove user from the mesh
                             if (mesh.links[command.userid] != null) {
                                 delete mesh.links[command.userid];
-                                obj.db.Set(mesh);
+                                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                                 // Notify mesh change
                                 var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;

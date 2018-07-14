@@ -1095,6 +1095,11 @@ function kvmCtrlData(channel, cmd) {
     try { cmd = JSON.parse(cmd); } catch (ex) { console.error('Invalid JSON: ' + cmd); return; }
     if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
     switch (cmd.action) {
+        case 'ping': {
+            // This is a keep alive
+            channel.write({ action: 'pong' });
+            break;
+        }
         case 'ls': {
             /*
             // Close the watcher if required

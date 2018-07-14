@@ -669,7 +669,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             var node = nodes[0];
 
             // See if any changes need to be made
-            console.log(node.intelamt);
             if ((node.intelamt != undefined) && (node.intelamt.host == host) && (node.name != '') && (node.intelamt.state == 2)) return;
             
             // Get the mesh for this device

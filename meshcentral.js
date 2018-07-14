@@ -99,6 +99,7 @@ function CreateMeshCentralServer(config, args) {
             console.log('   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.');
             console.log('   --exactports                      Server must run with correct ports or exit.');
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
+            console.log('   --fastcert                        Generate weaker RSA2048 certificates.');
             console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
             console.log('                                     country and organization can optionaly be set.');
             return;
@@ -169,7 +170,7 @@ function CreateMeshCentralServer(config, args) {
         xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Updating server certificates...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } console.log(data); });
         xprocess.stderr.on('data', function (data) {
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
-            if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync(obj.path.join(obj.datapath, 'mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
+            if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
         });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     }
@@ -237,7 +238,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (typeof obj.args.debug == 'number') obj.debugLevel = obj.args.debug;
         if (obj.args.debug == true) obj.debugLevel = 1;
-        obj.db = require('./db.js').CreateDB(obj.args, obj.datapath);
+        obj.db = require('./db.js').CreateDB(obj);
         obj.db.SetupDatabase(function (dbversion) {
             // See if any database operations needs to be completed
             if (obj.args.deletedomain) { obj.db.DeleteDomain(obj.args.deletedomain, function () { console.log('Deleted domain ' + obj.args.deletedomain + '.'); process.exit(); }); return; }
@@ -254,7 +255,7 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
             if (obj.args.dbexport) {
                 // Export the entire database to a JSON file
-                if (obj.args.dbexport == true) { obj.args.dbexport = obj.path.join(obj.datapath, 'meshcentral.db.json'); }
+                if (obj.args.dbexport == true) { obj.args.dbexport = obj.getConfigFilePath('meshcentral.db.json'); }
                 obj.db.GetAll(function (err, docs) {
                     obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs));
                     console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexport + '.'); process.exit();
@@ -263,12 +264,14 @@ function CreateMeshCentralServer(config, args) {
             }
             if (obj.args.dbimport) {
                 // Import the entire database from a JSON file
-                if (obj.args.dbimport == true) { obj.args.dbimport = obj.path.join(obj.datapath, 'meshcentral.db.json'); }
-                var json = null;
+                if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
+                var json = null, json2 = "";
                 try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + '.'); process.exit(); }
-                try { json = JSON.parse(json); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); process.exit(); }
+                for (var i = 0; i < json.length; i++) { if (json[i] >= 32) json2 += String.fromCharCode(json[i]); } // Remove all bad chars
+                try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
                 if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
-                obj.db.RemoveAll(function () { obj.db.InsertMany(json, function () { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); process.exit(); }); });
+                for (var i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
+                obj.db.RemoveAll(function () { obj.db.InsertMany(json, function (err) { if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit(); }); });
                 return;
             }
 
@@ -330,7 +333,7 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx2 = function () {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations()
-        obj.certificateOperations.GetMeshServerCertificate(obj.datapath, obj.args, obj.config, obj, function (certs) {
+        obj.certificateOperations.GetMeshServerCertificate(obj, obj.args, obj.config, function (certs) {
             if (obj.config.letsencrypt == null) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
@@ -496,8 +499,8 @@ function CreateMeshCentralServer(config, args) {
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on("end", function () { zipfile.readEntry(); });
-                                // console.log('Extracting:', obj.path.join(obj.datapath, entry.fileName));
-                                readStream.pipe(obj.fs.createWriteStream(obj.path.join(obj.datapath, entry.fileName)));
+                                // console.log('Extracting:', obj.getConfigFilePath(entry.fileName));
+                                readStream.pipe(obj.fs.createWriteStream(obj.getConfigFilePath(entry.fileName)));
                             });
                         }
                     });
@@ -1044,7 +1047,7 @@ function CreateMeshCentralServer(config, args) {
         }
         r = 'time=' + Date.now() + '\r\n';
         for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
-        obj.fs.writeFileSync(obj.path.join(obj.datapath, 'serverstate.txt'), r);
+        obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r);
     }
     
     // Logging funtions
@@ -1072,6 +1075,16 @@ function CreateMeshCentralServer(config, args) {
                 });
             });
         } catch (e) { console.log(e); if (called == false) { func(null); } }
+    }
+
+    // Return the path of a file into the meshcentral-data path
+    obj.getConfigFilePath = function (filename) {
+        if ((obj.config != null) && (obj.config.configfiles != null) && (obj.config.configfiles[filename] != null) && (typeof obj.config.configfiles[filename] == 'string')) {
+            //console.log('getConfigFilePath(\"' + filename + '\") = ' + obj.config.configfiles[filename]);
+            return obj.config.configfiles[filename];
+        }
+        //console.log('getConfigFilePath(\"' + filename + '\") = ' + obj.path.join(obj.datapath, filename));
+        return obj.path.join(obj.datapath, filename);
     }
 
     return obj;

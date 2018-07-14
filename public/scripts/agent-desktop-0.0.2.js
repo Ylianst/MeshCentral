@@ -272,6 +272,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendKeyMsgKC = function (action, kc) {
+        console.log('SendKeyMsgKC', action, kc);
         if (obj.State != 3) return;
         if (typeof action == 'object') { for (var i in action) { obj.SendKeyMsgKC(action[i][0], action[i][1]); } }
         else { obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc)); }

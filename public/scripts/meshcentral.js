@@ -8,6 +8,7 @@ var MeshServerCreateControl = function (domain) {
     var obj = {};
     obj.State = 0;
     obj.connectstate = 0;
+    obj.pingTimer = null;
     
     obj.xxStateChange = function (newstate) {
         if (obj.State == newstate) return;
@@ -22,11 +23,14 @@ var MeshServerCreateControl = function (domain) {
         obj.socket.onmessage = obj.xxOnMessage;
         obj.socket.onclose = function () { obj.Stop(); }
         obj.xxStateChange(1);
+        if (obj.pingTimer != null) { clearInterval(obj.pingTimer); }
+        obj.pingTimer = setInterval(function () { obj.send({ action: 'ping' }); }, 29000); // Ping the server every 29 seconds, stops corporate proxies from disconnecting.
     }
     
     obj.Stop = function () {
         obj.connectstate = 0;
         if (obj.socket) { obj.socket.close(); delete obj.socket; }
+        if (obj.pingTimer != null) { clearInterval(obj.pingTimer); obj.pingTimer = null; }
         obj.xxStateChange(0);
     }
     
@@ -34,6 +38,7 @@ var MeshServerCreateControl = function (domain) {
         // console.log('xxOnMessage', e.data);
         var message;
         try { message = JSON.parse(e.data); } catch (e) { return; }
+        if (message.action == 'pong') { return; }
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     

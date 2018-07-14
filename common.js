@@ -127,6 +127,16 @@ module.exports.objKeysToLower = function (obj) {
     return obj;
 }
 
+// Escape and unexcape feild names so there are no invalid characters for MongoDB
+module.exports.escapeFieldName = function (name) { return name.split('%').join('%25').split('.').join('%2E').split('$').join('%24'); }
+module.exports.unEscapeFieldName = function (name) { return name.split('%2E').join('.').split('%24').join('$').split('%25').join('%'); }
+
+// Escape all links
+module.exports.escapeLinksFieldName = function (docx) { var doc = module.exports.Clone(docx); if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.escapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; }
+module.exports.unEscapeLinksFieldName = function (doc) { if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; }
+//module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } }
+module.exports.unEscapeAllLinksFieldName = function (docs) { for (var i in docs) { docs[i] = module.exports.unEscapeLinksFieldName(docs[i]); } }
+
 // Validation methods
 module.exports.validateString = function(str, minlen, maxlen) { return ((str != null) && (typeof str == 'string') && ((minlen == null) || (str.length >= minlen)) && ((maxlen == null) || (str.length <= maxlen))); }
 module.exports.validateInt = function(int, minval, maxval) { return ((int != null) && (typeof int == 'number') && ((minval == null) || (int >= minval)) && ((maxval == null) || (int <= maxval))); }
