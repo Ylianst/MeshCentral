@@ -316,6 +316,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     if (req.session.passhint) { delete req.session.passhint; }
                     if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
                     if (req.body.host) {
+                        // TODO: This is a terrible search!!! FIX THIS.
+                        /*
                         obj.db.GetAllType('node', function (err, docs) {
                             for (var i = 0; i < docs.length; i++) {
                                 if (docs[i].name == req.body.host) {
@@ -327,6 +329,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                             // This redirect happens after finding node is completed
                             res.redirect(domain.url);
                         });
+                        */
                     } else {
                         res.redirect(domain.url);
                     }
@@ -722,6 +725,15 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
             res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile' : 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer });
+
+            /*
+            var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
+            var xpath = obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile' : 'views/login');
+            console.log('Render...');
+            res.render(xpath, xoptions, function (err, html) {
+                console.log(err, html);
+            });
+            */
         }
     }
 

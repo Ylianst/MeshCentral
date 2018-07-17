@@ -246,7 +246,10 @@
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;</div>
+                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;
+                            <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
+                            <input id=UserSearchInput type=text style=width:120px placeholder=Search onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
+                        </div>
                         <div class=auto-style1 style="height:100%;float:right">
                             <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
                             <div class=h2 style="height:100%;float:right">&nbsp;</div>
@@ -748,6 +751,7 @@
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
+        var userSearchFocus = 0;
         var consoleFocus = 0;
         var showRealNames = false;
         var meshserver = null;
@@ -1412,6 +1416,18 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeys(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
+            if (!xxdialogMode && xxcurrentView == 4) {
+                if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
+                var processed = 0;
+                if (e.key) {
+                    if (e.key.length === 1 && userSearchFocus == 0) { Q('UserSearchInput').value = ((Q('UserSearchInput').value + e.key)); processed = 1; }
+                    if (e.keyCode == 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = x.substring(0, x.length - 1); processed = 1; }
+                    if (e.keyCode == 27) { Q('UserSearchInput').value = ''; processed = 1; }
+                } else {
+                    if (e.charCode != 0 && userSearchFocus == 0) { Q('UserSearchInput').value = ((Q('UserSearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
+                }
+                if (processed > 0) { if (processed == 1) { onUserSearchInputChanged(); } return haltEvent(e); }
+            }
             if (xxdialogMode || xxcurrentView != 1) return;
             if (e.ctrlKey == true && e.charCode == 96) {
                 showRealNames = !showRealNames;
@@ -1449,6 +1465,11 @@
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
+            if (!xxdialogMode && xxcurrentView == 4) { 
+                if (e.keyCode === 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if (e.keyCode === 27) { Q('UserSearchInput').value = ''; processed = 1; }
+                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+            }
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             var processed = 0;
             if (Q('viewselect').value < 3) {
@@ -1466,6 +1487,7 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
             if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             if (Q('viewselect').value < 3) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
@@ -2110,6 +2132,7 @@
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
         function onSearchFocus(x) { searchFocus = x; }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
+        function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
 
         function onSearchInputChanged() {
@@ -2838,10 +2861,10 @@
                 x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
-                if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
+                if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if ((mesh.mtype == 1) || (node.name != node.host)) {
+                if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
                             x += addDeviceAttribute('Hostname', '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
@@ -5126,9 +5149,12 @@
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
             // Sort the list of user id's
-            var sortedUserIds = [];
+            var sortedUserIds = [], maxUsers = 100, hiddenUsers = 0;
             for (var i in users) { sortedUserIds.push(i); }
             sortedUserIds.sort();
+
+            // Get search
+            var userSearch = Q('UserSearchInput').value.toLowerCase();
 
             // Display the users using the sorted list
             var x = '<table style=width:100% cellpadding=0 cellspacing=0>', addHeader = true;
@@ -5136,9 +5162,14 @@
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
-                if (sessions != null) {
-                    if (addHeader) { x += '<tr><td style="border-bottom:1pt solid lightgray;padding-top:4px;padding-bottom:4px">Online Users</td></tr>'; addHeader = false; }
-                    x += addUserHtml(user, sessions);
+                if ((sessions != null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
+                    if (maxUsers > 0) {
+                        if (addHeader) { x += '<tr><td class=userTableHeader>Online Users'; addHeader = false; }
+                        x += addUserHtml(user, sessions);
+                        maxUsers--; 
+                    } else {
+                        hiddenUsers++;
+                    }
                 }
             }
             addHeader = true;
@@ -5146,12 +5177,19 @@
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
-                if (sessions == null) {
-                    if (addHeader) { x += '<tr><td style="border-bottom:1pt solid lightgray;padding-top:4px;padding-bottom:4px">Offline Users</td></tr>'; addHeader = false; }
-                    x += addUserHtml(user, sessions);
+                if ((sessions == null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
+                    if (maxUsers > 0) {
+                        if (addHeader) { x += '<tr><td class=userTableHeader>Offline Users'; addHeader = false; }
+                        x += addUserHtml(user, sessions);
+                        maxUsers--; 
+                    } else {
+                        hiddenUsers++;
+                    }
                 }
             }
             x += '</table>';
+            if (hiddenUsers == 1) { x += '<br />1 more user not shown, use search box to look for users...<br />'; }
+            else if (hiddenUsers > 1) { x += '<br />' + hiddenUsers + ' more users not shown, use search box to look for users...<br />'; }
             QH('p3users', x);
 
             // Update current user panel if needed
@@ -5191,7 +5229,7 @@
             x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
             x += '<div style=float:left;height:24px;width:24px;background-color:white><div class="' + icon + gray + '" style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
             x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
-            x += '<div><span>' + username + '</span><span style=float:right>' + msg + '</span></div></div></td></tr>';
+            x += '<div><span>' + username + '</span><span style=float:right>' + msg + '</span></div></div>'; // </td></tr>
             return x;
         }
 
@@ -5293,6 +5331,8 @@
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
             meshserver.send(x);
         }
+
+        function onUserSearchInputChanged() { updateUsers(); }
 
         //
         // MY USERS GENERAL

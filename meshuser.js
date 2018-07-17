@@ -717,6 +717,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
                         if ((command.amttls != 1) && (command.amttls != 0)) break;
 
+                        // If we are in WAN-only mode, hostname is not used
+                        if ((obj.parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
+
                         // Get the mesh
                         var mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
@@ -971,6 +974,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 // Ready the node change event
                                 var changes = [], change = 0, event = { etype: 'node', username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
                                 event.msg = ": ";
+
+                                // If we are in WAN-only mode, host is not used
+                                if ((obj.parent.parent.args.wanonly == true) && (command.host)) { delete command.host; }
 
                                 // Look for a change
                                 if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }

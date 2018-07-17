@@ -112,7 +112,7 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.performScan = function () {
         //console.log('performScan');
         if (obj.action == false) { return false; }
-        obj.parent.db.getLocalAmtNodes(function (err, docs) {
+        obj.parent.db.getLocalAmtNodes(10, function (err, docs) { // TODO: handler more than 10 computer scan at the same time.
             for (var i in obj.scanTable) { obj.scanTable[i].present = false; }
             if (err == null && docs.length > 0) {
                 for (var i in docs) {

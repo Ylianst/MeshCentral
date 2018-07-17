@@ -79,7 +79,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
         
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (var i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -199,7 +199,7 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx = function () {
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
-
+        
         // Write the server state
         obj.updateServerState('state', 'starting');
 
@@ -265,12 +265,14 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.dbimport) {
                 // Import the entire database from a JSON file
                 if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
-                var json = null, json2 = "";
-                try { json = obj.fs.readFileSync(obj.args.dbimport); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + '.'); process.exit(); }
-                for (var i = 0; i < json.length; i++) { if (json[i] >= 32) json2 += String.fromCharCode(json[i]); } // Remove all bad chars
+                var json = null, json2 = "", badCharCount = 0;
+                try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + '.'); process.exit(); }
+                for (var i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
+                if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
                 try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
                 if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
                 for (var i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
+                //for (var i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
                 obj.db.RemoveAll(function () { obj.db.InsertMany(json, function (err) { if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit(); }); });
                 return;
             }
@@ -278,6 +280,42 @@ function CreateMeshCentralServer(config, args) {
             // Clear old event entries and power entires
             obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.
             obj.db.clearOldEntries('power', 10); // Clear all event entires that are older than 10 days. If a node is connected longer than 10 days, current power state will be used for everything.
+
+            // Setup a site administrator
+            if ((obj.args.admin) && (typeof obj.args.admin == 'string')) {
+                var adminname = obj.args.admin.split('/');
+                if (adminname.length == 1) { adminname = 'user//' + adminname[0]; }
+                else if (adminname.length == 2) { adminname = 'user/' + adminname[0] + '/' + adminname[1]; }
+                else { console.log('Invalid administrator name.'); process.exit(); return; }
+                obj.db.Get(adminname, function (err, user) {
+                    if (user.length != 1) { console.log('Invalid user name.'); process.exit(); return; }
+                    user[0].siteadmin = 0xFFFFFFFF;
+                    obj.db.Set(user[0], function () {
+                        if (user[0].domain == '') { console.log('User ' + user[0].name + ' set to site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' set to site administrator.'); }
+                        process.exit();
+                        return;
+                    });
+                });
+                return;
+            }
+
+            // Remove a site administrator
+            if ((obj.args.unadmin) && (typeof obj.args.unadmin == 'string')) {
+                var adminname = obj.args.unadmin.split('/');
+                if (adminname.length == 1) { adminname = 'user//' + adminname[0]; }
+                else if (adminname.length == 2) { adminname = 'user/' + adminname[0] + '/' + adminname[1]; }
+                else { console.log('Invalid administrator name.'); process.exit(); return; }
+                obj.db.Get(adminname, function (err, user) {
+                    if (user.length != 1) { console.log('Invalid user name.'); process.exit(); return; }
+                    if (user[0].siteadmin) { delete user[0].siteadmin; }
+                    obj.db.Set(user[0], function () {
+                        if (user[0].domain == '') { console.log('User ' + user[0].name + ' is not a site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' is not a site administrator.'); }
+                        process.exit();
+                        return;
+                    });
+                });
+                return;
+            }
 
             // Perform other database cleanup
             obj.db.cleanup();

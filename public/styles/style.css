@@ -532,3 +532,9 @@ a {
 .deskToolsBar:hover {
     background-color: #EFE8B6;
 }
+
+.userTableHeader {
+    border-bottom: 1pt solid lightgray;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
