@@ -1353,10 +1353,12 @@ function discoverMeshServerOnce() {
                 multicastSockets[i] = dgram.createSocket({ type: (addr.family == "IPv4" ? "udp4" : "udp6") });
                 multicastSockets[i].bind({ address: addr.address, exclusive: false });
                 if (addr.family == "IPv4") {
-                    multicastSockets[i].addMembership(membershipIPv4);
-                    //multicastSockets[i].setMulticastLoopback(true);
-                    multicastSockets[i].once('message', OnMulticastMessage);
-                    multicastSockets[i].send(settings.serverId, 16989, membershipIPv4);
+                    try {
+                        multicastSockets[i].addMembership(membershipIPv4);
+                        //multicastSockets[i].setMulticastLoopback(true);
+                        multicastSockets[i].once('message', OnMulticastMessage);
+                        multicastSockets[i].send(settings.serverId, 16989, membershipIPv4);
+                    } catch (e) { }
                 }
             }
         }

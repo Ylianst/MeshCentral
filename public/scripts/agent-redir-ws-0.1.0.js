@@ -63,26 +63,25 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                 obj.webSwitchOk = true; // Other side is ready for switch over
                 performWebRtcSwitch();
             } else if (controlMsg.type == 'webrtc1') {
-                sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Confirm we got end of data marker, indicates data will no longer be received on websocket.
+                obj.sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Confirm we got end of data marker, indicates data will no longer be received on websocket.
             } else if (controlMsg.type == 'webrtc2') {
                 // TODO: Resume/Start sending data over WebRTC
             }
         }
     }
 
-    function sendCtrlMsg(x) { if (obj.ctrlMsgAllowed == true) { try { obj.socket.send(x); } catch (ex) { } } }
+    obj.sendCtrlMsg = function (x) { if (obj.ctrlMsgAllowed == true) { if (args && args.redirtrace) { console.log('RedirSend', typeof x, x); } try { obj.socket.send(x); } catch (ex) { } } }
 
     function performWebRtcSwitch() {
         if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
-            sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate to the meshagent that it can start traffic switchover
-            sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // Indicate to the meshagent that data traffic will no longer be sent over websocket.
+            obj.sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate to the meshagent that it can start traffic switchover
+            obj.sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // Indicate to the meshagent that data traffic will no longer be sent over websocket.
             // TODO: Hold/Stop sending data over websocket
             if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
         }
     }
 
     obj.xxOnMessage = function (e) {
-        //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         //console.log('Recv', e.data, obj.State);
         if (obj.State < 3) {
             if (e.data == 'c') {
@@ -149,7 +148,6 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
             }
         } else {
             // If we get a string object, it maybe the WebRTC confirm. Ignore it.
-            //obj.debug("Agent Redir Relay - OnData - " + typeof e.data + " - " + e.data.length);
             obj.xxOnSocketData(e.data);
         }
     };
@@ -164,6 +162,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         }
         else if (typeof data !== 'string') return;
         //console.log("xxOnSocketData", rstr2hex(data));
+        if (args && args.redirtrace) { console.log("RedirRecv", typeof data, data.length, data); }
         return obj.m.ProcessData(data);
     }
 
@@ -175,6 +174,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.send = function (x) {
         //obj.debug("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
         //console.log("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + ((typeof x == 'string')?x:rstr2hex(x)));
+        if (args && args.redirtrace) { console.log('RedirSend', typeof x, x.length, x); }
         try {
             if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
                 if (typeof x == 'string') {
@@ -225,7 +225,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         //obj.debug("Agent Redir Socket Stopped");
         obj.connectstate = -1;
         if (obj.socket != null) {
-            try { if (obj.socket.readyState == 1) { sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"close\"}"); obj.socket.close(); } } catch (e) { }
+            try { if (obj.socket.readyState == 1) { obj.sendCtrlMsg("{\"ctrlChannel\":\"102938\",\"type\":\"close\"}"); obj.socket.close(); } } catch (e) { }
             obj.socket = null;
         }
         obj.xxStateChange(0);

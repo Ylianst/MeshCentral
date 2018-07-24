@@ -61,13 +61,11 @@ module.exports.CreateMeshScanner = function (parent) {
                     if (server4.xxlocal != '*') { bindOptions.address = server4.xxlocal; }
                     server4.bind(bindOptions, function () {
                         try {
-                            this.setBroadcast(true);
-                            this.setMulticastTTL(128);
-                            this.addMembership(membershipIPv4);
+                            var doscan = true;
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv4); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
-                            obj.performScan(this);
-                            obj.performScan(this);
+                            if (doscan == true) { obj.performScan(this); obj.performScan(this); }
                         } catch (e) { console.log(e); }
                     });
                     obj.servers4[localAddress] = server4;
@@ -94,13 +92,11 @@ module.exports.CreateMeshScanner = function (parent) {
                     if (server6.xxlocal != '*') { bindOptions.address = server6.xxlocal; }
                     server6.bind(bindOptions, function () {
                         try {
-                            this.setBroadcast(true);
-                            this.setMulticastTTL(128);
-                            this.addMembership(membershipIPv6);
+                            var doscan = true;
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv6); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
-                            obj.performScan(this);
-                            obj.performScan(this);
+                            if (doscan == true) { obj.performScan(this); obj.performScan(this); }
                         } catch (e) { console.log(e); }
                     });
                     obj.servers6[localAddress] = server6;

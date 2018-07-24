@@ -112,13 +112,9 @@ function createMeshCore(agent) {
         try {
             getIpLocationDataExInProgress = true;
             getIpLocationDataExCounts[0]++;
-            http.request({
-                host: 'ipinfo.io', // TODO: Use a HTTP proxy if needed!!!!
-                port: 80,
-                path: 'http://ipinfo.io/json', // Use this service to get our geolocation
-                headers: { Host: "ipinfo.io" }
-            },
-                function (resp) {
+            var options = http.parseUri("http://ipinfo.io/json");
+            options.method = 'GET';
+            http.request(options, function (resp) {
                 if (resp.statusCode == 200) {
                     var geoData = '';
                     resp.data = function (geoipdata) { geoData += geoipdata; };
@@ -755,7 +751,7 @@ function createMeshCore(agent) {
     function onTunnelWebRTCControlData(data) {
         if (typeof data != 'string') return;
         var obj;
-        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON on WebRTC'); return; }
+        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON on WebRTC: ' + data); return; }
         if (obj.type == 'close') {
             //sendConsoleText('Tunnel #' + this.xrtc.websocket.tunnel.index + ' WebRTC control close');
             try { this.close(); } catch (e) { }
@@ -767,10 +763,26 @@ function createMeshCore(agent) {
     function onTunnelControlData(data, ws) {
         var obj;
         if (ws == null) { ws = this; }
-        if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON'); return; } }
+        if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
         else if (typeof data == 'object') { obj = data; } else { return; }
         //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
         //console.log('onTunnelControlData: ' + JSON.stringify(data));
+
+        if (obj.action) {
+            switch (obj.action) {
+                case 'lock': {
+                    // Lock the current user out of the desktop
+                    try {
+                        if (process.platform == 'win32') {
+                            var child = require('child_process');
+                            child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
+                        }
+                    } catch (e) { }
+                    break;
+                }
+            }
+            return;
+        }
 
         if (obj.type == 'close') {
             // We received the close on the websocket
@@ -850,7 +862,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock.';
                     break;
                 }
                 case 'toast': {
@@ -1115,6 +1127,15 @@ function createMeshCore(agent) {
                             response += (results[i] + " " + ((stat.isDirectory()) ? "(Folder)" : "(File)") + "\r\n");
                         }
                     }
+                    break;
+                }
+                case 'lsx': { // Show list of files and folders
+                    response = objToString(getDirectoryInfo(args['_'][0]), 0, ' ', true);
+                    break;
+                }
+                case 'lock': { // Lock the current user out of the desktop
+                    if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); response = 'Ok'; }
+                    else { response = 'Not supported on the platform'; }
                     break;
                 }
                 case 'amt': { // Show Intel AMT status
@@ -1463,7 +1484,7 @@ function createMeshCore(agent) {
         if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
             // List all the drives in the root, or the root itself
             var results = null;
-            try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+            try { results = fs.readDrivesSync(); } catch (e) { sendConsoleText(e); } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
             //console.log('a', objToString(results, 0, ' '));
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
@@ -1478,7 +1499,7 @@ function createMeshCore(agent) {
             var xpath = path.join(reqpath, '*');
             var results = null;
 
-            try { results = fs.readdirSync(xpath); } catch (e) { }
+            try { results = fs.readdirSync(xpath); } catch (e) { sendConsoleText(e); }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     if ((results[i] != '.') && (results[i] != '..')) {
@@ -1514,6 +1535,7 @@ function createMeshCore(agent) {
             return;
         }
         //console.log('KVM Ctrl Data', cmd);
+        //sendConsoleText('KVM Ctrl Data: ' + cmd);
 
         try { cmd = JSON.parse(cmd); } catch (ex) { console.error('Invalid JSON: ' + cmd); return; }
         if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
@@ -1521,6 +1543,11 @@ function createMeshCore(agent) {
             case 'ping': {
                 // This is a keep alive
                 channel.write({ action: 'pong' });
+                break;
+            }
+            case 'lock': {
+                // Lock the current user out of the desktop
+                if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); }
                 break;
             }
             case 'ls': {

@@ -414,7 +414,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var WindowSize = common.ReadInt(data, 9);
                     socket.tag.activetunnels++;
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return; }
+                    if (cirachannel == undefined) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return 17; }
                     cirachannel.amtchannelid = SenderChannel;
                     cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
                     Debug(3, 'MPS:CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
@@ -450,7 +450,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var ReasonCode = common.ReadInt(data, 5);
                     Debug(3, 'MPS:CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return; }
+                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return 17; }
                     if (cirachannel.state > 0) {
                         cirachannel.state = 0;
                         if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
@@ -464,7 +464,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var RecipientChannel = common.ReadInt(data, 1);
                     Debug(3, 'MPS:CHANNEL_CLOSE', RecipientChannel);
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return; }
+                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return 5; }
                     socket.tag.activetunnels--;
                     if (cirachannel.state > 0) {
                         cirachannel.state = 0;
@@ -479,7 +479,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var RecipientChannel = common.ReadInt(data, 1);
                     var ByteToAdd = common.ReadInt(data, 5);
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return; }
+                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return 9; }
                     cirachannel.sendcredits += ByteToAdd;
                     Debug(3, 'MPS:CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
                     if (cirachannel.state == 2 && cirachannel.sendBuffer != undefined) {
@@ -507,7 +507,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (len < (9 + LengthOfData)) return 0;
                     Debug(4, 'MPS:CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];
-                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return; }
+                    if (cirachannel == undefined) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
                     cirachannel.amtpendingcredits += LengthOfData;
                     if (cirachannel.onData) cirachannel.onData(cirachannel, data.substring(9, 9 + LengthOfData));
                     if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {

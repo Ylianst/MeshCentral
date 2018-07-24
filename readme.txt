@@ -3,7 +3,7 @@ MeshCentral
 
 For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
 
-Download the [full PDF user's guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2UserGuide.pdf) with more information on installing, configuring and running MeshCentral2.
+Download the [full PDF user's guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu and the Raspberry Pi.
 
 This is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 

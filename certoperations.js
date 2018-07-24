@@ -283,6 +283,9 @@ module.exports.CertificateOperations = function () {
             // Fetch the name of the server
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.CommonName = webCertificate.subject.getField('CN').value;
+            r.CommonNames = [ r.CommonName.toLowerCase() ];
+            var altNames = webCertificate.getExtension('subjectAltName')
+            if (altNames) { for (var i in altNames.altNames) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
             r.RootName = rootCertificate.subject.getField('CN').value;
 
@@ -294,14 +297,14 @@ module.exports.CertificateOperations = function () {
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates
-            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == mpsCommonName)) {
+            if ((r.CommonNames.indexOf(commonName.toLowerCase()) >= 0) && (r.AmtMpsName == mpsCommonName)) {
                 // Certificate matches what we want, keep it.
                 if (func != undefined) { func(r); } return r;
             } else {
                 // Check what certificates we really need to re-generate.
-                if ((r.CommonName != commonName) || (xcountry != country) || (xorganization != organization)) { forceWebCertGen = 1; }
+                if ((r.CommonNames.indexOf(commonName.toLowerCase()) < 0)) { forceWebCertGen = 1; }
                 if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
-            } 
+            }
         }
         console.log('Generating certificates, may take a few minutes...');
         parent.updateServerState('state', 'generatingcertificates');

@@ -1,15 +1,17 @@
 {
   "__comment__" : "This is a sample configuration file, edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
-  "_settings": {
-    "MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
-    "MongoDbCol": "meshcentral",
-    "Port": 443,
-    "RedirPort": 80,
-    "AllowLoginToken": true,
-    "AllowFraming": true,
-    "WebRTC": false,
-    "ClickOnce": false,
-    "UserAllowedIP" : "127.0.0.1,::1,192.168.0.100"
+  "settings": {
+    "_MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
+    "_MongoDbCol": "meshcentral",
+    "_WANonly": true,
+    "_LANonly": true,
+    "_Port": 443,
+    "_RedirPort": 80,
+    "_AllowLoginToken": true,
+    "_AllowFraming": true,
+    "_WebRTC": false,
+    "_ClickOnce": false,
+    "_UserAllowedIP" : "127.0.0.1,::1,192.168.0.100"
   },
   "_domains": {
     "": {

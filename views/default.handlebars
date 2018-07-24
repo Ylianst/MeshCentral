@@ -3622,11 +3622,12 @@
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7,1],[0x6c,1],[0x6c,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
                 } else {
+                    desktop.sendCtrlMsg('{"action":"lock"}');
                     //desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B],[desktop.m.KeyAction.DOWN,76],[desktop.m.KeyAction.UP,76],[desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, 'L' press, 'L' release, L-Winkey release
-                    desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXDOWN, 0x5B);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXDOWN, 0x5B);
                     //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.DOWN, 76);
                     //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.UP, 76);
-                    desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
+                    //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
                 }
             } else if (ks == 3) { // WIN+M arrow
                 if (desktop.contype == 2) {
@@ -5190,6 +5191,7 @@
             x += '</table>';
             if (hiddenUsers == 1) { x += '<br />1 more user not shown, use search box to look for users...<br />'; }
             else if (hiddenUsers > 1) { x += '<br />' + hiddenUsers + ' more users not shown, use search box to look for users...<br />'; }
+            if (maxUsers == 100) { x += '<br />No users found.<br />'; }
             QH('p3users', x);
 
             // Update current user panel if needed
