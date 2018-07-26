@@ -423,7 +423,6 @@ function createMeshCore(agent) {
             // List all the drives in the root, or the root itself
             var results = null;
             try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
-            //console.log('a', objToString(results, 0, ' '));
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     var drive = { n: results[i].name, t: 1 };
@@ -435,11 +434,13 @@ function createMeshCore(agent) {
             // List all the files and folders in this path
             if (reqpath == '') { reqpath = '/'; }
             var results = null, xpath = obj.path.join(reqpath, '*');
+            //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
             try { results = fs.readdirSync(xpath); } catch (e) { }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     if ((results[i] != '.') && (results[i] != '..')) {
                         var stat = null, p = obj.path.join(reqpath, results[i]);
+                        //if (process.platform == "win32") { p = p.split('/').join('\\'); }
                         try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
                         if ((stat != null) && (stat != undefined)) {
                             if (stat.isDirectory() == true) {
@@ -1477,47 +1478,6 @@ function createMeshCore(agent) {
             return x.join('/');
         }
     };
-
-    // Get a formated response for a given directory path
-    obj.getDirectoryInfo = function(reqpath) {
-        var response = { path: reqpath, dir: [] };
-        if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
-            // List all the drives in the root, or the root itself
-            var results = null;
-            try { results = fs.readDrivesSync(); } catch (e) { sendConsoleText(e); } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
-            //console.log('a', objToString(results, 0, ' '));
-            if (results != null) {
-                for (var i = 0; i < results.length; ++i) {
-                    var drive = { n: results[i].name, t: 1 };
-                    if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
-                    response.dir.push(drive);
-                }
-            }
-        } else {
-            // List all the files and folders in this path
-            if (reqpath == '') { reqpath = '/'; }
-            var xpath = path.join(reqpath, '*');
-            var results = null;
-
-            try { results = fs.readdirSync(xpath); } catch (e) { sendConsoleText(e); }
-            if (results != null) {
-                for (var i = 0; i < results.length; ++i) {
-                    if ((results[i] != '.') && (results[i] != '..')) {
-                        var stat = null, p = path.join(reqpath, results[i]);
-                        try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
-                        if ((stat != null) && (stat != undefined)) {
-                            if (stat.isDirectory() == true) {
-                                response.dir.push({ n: results[i], t: 2, d: stat.mtime });
-                            } else {
-                                response.dir.push({ n: results[i], t: 3, s: stat.size, d: stat.mtime });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return response;
-    }
 
     // Process KVM control channel data
     obj.kvmCtrlData = function(channel, cmd) {

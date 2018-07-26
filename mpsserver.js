@@ -630,7 +630,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         // This function writes data to this CIRA channel
         cirachannel.write = function (data) {
             if (cirachannel.state == 0) return false;
-            if (cirachannel.state == 1 || cirachannel.sendcredits == 0 || cirachannel.sendBuffer != undefined) { if (cirachannel.sendBuffer == undefined) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer += data; } return; }
+            if (cirachannel.state == 1 || cirachannel.sendcredits == 0 || cirachannel.sendBuffer != undefined) {
+                // Channel is connected, but we are out of credits. Add the data to the outbound buffer.
+                if (cirachannel.sendBuffer == undefined) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer += data; }
+                return true;
+            }
             // Compute how much data we can send                
             if (data.length <= cirachannel.sendcredits) {
                 // Send the entire message
