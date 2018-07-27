@@ -38,8 +38,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Disconnect this agent
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')');  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (arg == 3) { obj.authenticated = -1; } // Don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
@@ -108,7 +108,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
                     if (agenthash != obj.agentExeInfo.hash) {
                         // Mesh agent update required
-                        console.log('Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc);
+                        if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                         obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                             if (err) { return console.error(err); }
                             obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: new Buffer(agentUpdateBlockSize + 4), fd: fd };
@@ -249,8 +249,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });
-    // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
+    ws.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } obj.close(0); });
+    // obj.ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
@@ -319,7 +319,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.parent.wsagents[obj.dbNodeKey] = obj;
                 if (dupAgent) {
                     // Close the duplicate agent
-                    obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')');
+                    if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); }
                     dupAgent.close(3);
                 } else {
                     // Indicate the agent is connected
