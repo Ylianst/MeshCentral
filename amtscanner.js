@@ -110,8 +110,7 @@ module.exports.CreateAmtScanner = function (parent) {
 
     // Look for all AMT computers that may be locally reachable and poll their presence
     obj.performScan = function () {
-        //console.log('performScan');
-        if (obj.action == false) { return false; }
+        if (obj.active == false) { return false; }
         obj.parent.db.getLocalAmtNodes(10, function (err, docs) { // TODO: handler more than 10 computer scan at the same time. DNS resolved may need to be a seperate module.
             for (var i in obj.scanTable) { obj.scanTable[i].present = false; }
             if (err == null && docs.length > 0) {

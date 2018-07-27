@@ -109,7 +109,7 @@ module.exports.CreateDB = function (parent) {
     obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } }
     obj.clearOldEntries = function (type, days, domain) { var cutoff = Date.now() - (1000 * 60 * 60 * 24 * days); obj.file.remove({ type: type, time: { $lt: cutoff } }, { multi: true }); }
     obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }).exec(func); } else { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }, func); } }
-    obj.getLocalAmtNodes = function (limit, func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }).limit(limit, func); }
+    obj.getLocalAmtNodes = function (limit, func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }).limit(limit).exec(func); }
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); }
 
     // This is used to rate limit a number of operation per day. Returns a startValue each new days, but you can substract it and save the value in the db.
