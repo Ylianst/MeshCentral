@@ -70,7 +70,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         }
     }
 
-    obj.sendCtrlMsg = function (x) { if (obj.ctrlMsgAllowed == true) { if (args && args.redirtrace) { console.log('RedirSend', typeof x, x); } try { obj.socket.send(x); } catch (ex) { } } }
+    obj.sendCtrlMsg = function (x) { if (obj.ctrlMsgAllowed == true) { if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirSend', typeof x, x); } try { obj.socket.send(x); } catch (ex) { } } }
 
     function performWebRtcSwitch() {
         if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
@@ -162,7 +162,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
         }
         else if (typeof data !== 'string') return;
         //console.log("xxOnSocketData", rstr2hex(data));
-        if (args && args.redirtrace) { console.log("RedirRecv", typeof data, data.length, data); }
+        if ((typeof args != 'undefined') && args.redirtrace) { console.log("RedirRecv", typeof data, data.length, data); }
         return obj.m.ProcessData(data);
     }
 
@@ -174,7 +174,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.send = function (x) {
         //obj.debug("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + rstr2hex(x));
         //console.log("Agent Redir Send(" + obj.webRtcActive + ", " + x.length + "): " + ((typeof x == 'string')?x:rstr2hex(x)));
-        if (args && args.redirtrace) { console.log('RedirSend', typeof x, x.length, x); }
+        if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirSend', typeof x, x.length, x); }
         try {
             if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
                 if (typeof x == 'string') {

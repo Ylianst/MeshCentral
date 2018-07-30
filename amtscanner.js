@@ -108,15 +108,59 @@ module.exports.CreateAmtScanner = function (parent) {
         return ((num >> 24) & 0xFF) + '.' + ((num >> 16) & 0xFF) + '.' + ((num >> 8) & 0xFF) + '.' + (num & 0xFF);
     }
 
-    // Look for all AMT computers that may be locally reachable and poll their presence
+    /*
+    // Sample we could use to optimize DNS resolving, may not be needed at all.
+    obj.BatchResolvePendingMax = 1;
+    obj.BatchResolvePendingCount = 0;
+    obj.BatchResolveResults = {};
+    obj.BatchResolve = function (hostname) {
+        var r = null;
+        hostname = hostname.toLowerCase();
+        if ((hostname == '127.0.0.1') || (hostname == '::1') || (hostname == 'localhost')) return null; // Don't scan localhost
+        if (obj.net.isIP(hostname) > 0) return hostname; // This is an IP address, already resolved.
+        if (obj.BatchResolveResults[hostname]) {
+            if ((obj.BatchResolveResults[hostname].f == 0) || (obj.BatchResolveResults[hostname].f == -1)) {
+                // Already resolving this one or an error occured during resolve, re-check every 30 minutes.
+                if (((Date.now() - obj.BatchResolveResults[hostname].t) < 1800000) || (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax)) { return null; }
+            } else {
+                // We are to try to re-resolve every 30 minutes
+                if (((Date.now() - obj.BatchResolveResults[hostname].t) < 1800000) || (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax)) { return obj.BatchResolveResults[hostname].a; }
+                r = obj.BatchResolveResults[hostname].a;
+            }
+        }
+        if (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax) return null; // Don't resolve more than 10 names at any given time.
+        console.log('Resolve: ' + hostname);
+        obj.BatchResolvePendingCount++;
+        obj.BatchResolveResults[hostname] = { f: 0, t: Date.now() }; // Mark are resolving
+        obj.dns.lookup(hostname, (err, address, family) => {
+            obj.BatchResolvePendingCount--;
+            if (err != null) {
+                console.log('Resolve error: ' + hostname);
+                obj.BatchResolveResults[hostname] = { f: -1 }; // Mark this as a resolve error
+            } else {
+                console.log('Resolved: %s = %j, family: IPv%s', hostname, address, family);
+                obj.BatchResolveResults[hostname] = { a: address, f: family, t: Date.now() };
+            }
+        });
+        return r;
+    }
+    */
+
+    obj.ResolveName = function (hostname, func) {
+        if ((hostname == '127.0.0.1') || (hostname == '::1') || (hostname == 'localhost')) { func(hostname, null); } // Don't scan localhost
+        if (obj.net.isIP(hostname) > 0) { func(hostname, hostname); return; } // This is an IP address, already resolved.
+        obj.dns.lookup(hostname, function (err, address, family) { if (err == null) { func(hostname, address); } else { func(hostname, null); } });
+    }
+
+    // Look for all Intel AMT computers that may be locally reachable and poll their presence
     obj.performScan = function () {
         if (obj.active == false) { return false; }
-        obj.parent.db.getLocalAmtNodes(10, function (err, docs) { // TODO: handler more than 10 computer scan at the same time. DNS resolved may need to be a seperate module.
+        obj.parent.db.getLocalAmtNodes(function (err, docs) { // TODO: handler more than 10 computer scan at the same time. DNS resolved may need to be a seperate module.
             for (var i in obj.scanTable) { obj.scanTable[i].present = false; }
             if (err == null && docs.length > 0) {
                 for (var i in docs) {
                     var doc = docs[i], host = doc.host.toLowerCase();
-                    if ((host != '127.0.0.1') && (host != '::1') && (host != 'localhost')) { // Don't scan localhost
+                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost')) {
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == undefined) {
                             var tag = obj.nextTag++;
@@ -139,13 +183,13 @@ module.exports.CreateAmtScanner = function (parent) {
                                         tag.state = 1;
                                         obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); // Report power state as "present" (7).
                                         if (version != null) { obj.changeAmtState(tag.nodeinfo._id, version, 2, tag.nodeinfo.intelamt.tls); }
-                                    } 
+                                    }
                                 });
                             }
                         }
                         // Start scanning this node
                         scaninfo.lastping = Date.now();
-                        obj.checkAmtPresence(doc.host, scaninfo.tag);
+                        obj.checkAmtPresence(host, scaninfo.tag);
                     }
                }
             }
@@ -161,7 +205,11 @@ module.exports.CreateAmtScanner = function (parent) {
     }
 
     // Check the presense of a specific Intel AMT computer using RMCP
-    obj.checkAmtPresence = function (host, tag) {
+    obj.checkAmtPresence = function (host, tag) { obj.ResolveName(host, function (hostname, ip) { obj.checkAmtPresenceEx(ip, tag); }); }
+
+    // Check the presense of a specific Intel AMT computer using RMCP
+    obj.checkAmtPresenceEx = function (host, tag) {
+        if (host == null) return;
         var serverid = Math.floor(tag / 255);
         var servertag = (tag % 255);
         var packet = obj.buildRmcpPing(servertag);
@@ -300,8 +348,12 @@ module.exports.CreateAmtScanner = function (parent) {
         return false;
     }
 
+    // Check the presense of a specific Intel AMT computer using RMCP
+    obj.checkTcpPresence = function (host, port, scaninfo, func) { obj.ResolveName(host, function (hostname, ip) { obj.checkTcpPresenceEx(ip, port, scaninfo, func); }); }
+
     // Check that we can connect TCP to a given port
-    obj.checkTcpPresence = function (host, port, scaninfo, func) {
+    obj.checkTcpPresenceEx = function (host, port, scaninfo, func) {
+        if (host == null) return;
         //console.log('checkTcpPresence(' + host + ':' + port + ')');
         try {
             var client;
