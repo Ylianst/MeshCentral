@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /* zlib.js -- JavaScript implementation for the zlib.
   Version: 0.2.0
   LastModified: Apr 12 2012
@@ -109,3 +111,7 @@ if(typeof ZLIB.common_initialized === 'undefined') {
 
 	ZLIB.common_initialized = true;
 } // common definitions
+
+export {
+    ZLIB
+}

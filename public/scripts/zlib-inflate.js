@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /* zlib-inflate.js -- JavaScript implementation for the zlib inflate.
   Version: 0.2.0
   LastModified: Apr 12 2012
@@ -70,6 +72,8 @@ Usage: z_stream.inflateReset();
     TODO document
 
 */
+
+import { ZLIB } from './zlib'
 
 if( typeof ZLIB === 'undefined' ) {
     alert('ZLIB is not defined.  SRC zlib.js before zlib-inflate.js')
@@ -1948,3 +1952,7 @@ ZLIB.z_stream.prototype.inflateReset = function(windowBits)
 };
 
 }());
+
+export {
+    ZLIB 
+}

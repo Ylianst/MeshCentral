@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /**
 * @fileoverview Intel(r) AMT Communication StackXX
 * @author Ylian Saint-Hilaire
@@ -973,4 +975,14 @@ function GetSidByteArray(sidString) {
     // the rest are in 32 bit in little endian
     for (var i = 3; i < sidParts.length; i++) r += IntToStrX(sidParts[i]);
     return r;
+}
+
+export {
+    AmtStackCreateService,
+    hex_md5,
+    execArgumentsToXml,
+    instanceToXml,
+    referenceToXml,
+    GetSidString,
+    GetSidByteArray
 }

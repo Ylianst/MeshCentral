@@ -1,8 +1,13 @@
+/* eslint-disable */
+
 /** 
 * @description Remote Desktop
 * @author Ylian Saint-Hilaire
 * @version v0.0.2g
 */
+
+import { Q, QS, ReadInt, ReadShort, IntToStr, ShortToStr } from './common-0.0.1'
+import { ZLIB } from './zlib-inflate'
 
 // Construct a MeshServer object
 var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
@@ -655,4 +660,8 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     }
 
     return obj;
+}
+
+export {
+    CreateAmtRemoteDesktop
 }

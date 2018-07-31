@@ -1,8 +1,13 @@
+/* eslint-disable */
+
 /** 
 * @description Intel AMT Redirection Transport Module - using websocket relay
 * @author Ylian Saint-Hilaire
 * @version v0.0.1f
 */
+
+import { hex_md5 } from './amt-0.2.0'
+import { ReadIntX, IntToStrX} from './common-0.0.1'
 
 // Construct a MeshServer object
 var CreateAmtRedirect = function (module) {
@@ -306,4 +311,8 @@ var CreateAmtRedirect = function (module) {
     obj.RedirectStartIder = String.fromCharCode(0x10, 0x00, 0x00, 0x00, 0x49, 0x44, 0x45, 0x52);
 
     return obj;
+}
+
+export {
+    CreateAmtRedirect
 }

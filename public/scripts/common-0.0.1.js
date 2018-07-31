@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /** 
 * @description Set of short commonly used methods for handling HTML elements
 * @author Ylian Saint-Hilaire
@@ -98,3 +100,41 @@ function random(max) { return Math.floor(Math.random() * max); }
 
 // Trademarks
 function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, '&trade;'); }
+
+export {
+    Q,
+    QS,
+    QE,
+    QV,
+    QA,
+    QH,
+    ReadShort,
+    ReadShortX,
+    ReadInt,
+    ReadSInt,
+    ReadIntX,
+    ShortToStr,
+    ShortToStrX,
+    IntToStr,
+    IntToStrX,
+    MakeToArray,
+    SplitArray,
+    Clone,
+    EscapeHtml,
+    EscapeHtmlBreaks,
+    ArrayElementMove,
+    ObjectToStringEx,
+    ObjectToStringEx2,
+    gap,
+    gap2,
+    ObjectToString,
+    ObjectToString2,
+    hex2rstr,
+    char2hex,
+    rstr2hex,
+    encode_utf8,
+    decode_utf8,
+    data2blob,
+    random,
+    trademarks
+}
