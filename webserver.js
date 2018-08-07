@@ -1196,7 +1196,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
-                    Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes'); // DEBUG
+                    if (obj.parent.debugLevel >= 1) { // DEBUG
+                        Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
+                        if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + msg.toString('hex')); }
+                    }
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
                     ws.forwardclient.write(new Buffer(msg, 'binary')); // Forward data to the associated TCP connection.
@@ -1239,7 +1242,10 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
                 // When we receive data on the TCP connection, forward it back into the web socket connection.
                 ws.forwardclient.on('data', function (data) {
-                    Debug(1, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.'); // DEBUG
+                    if (obj.parent.debugLevel >= 1) { // DEBUG
+                        Debug(1, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
+                        if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + new Buffer(data, 'binary').toString('hex')); }
+                    }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
                     try { ws.send(new Buffer(data, 'binary')); } catch (e) { }
                 });

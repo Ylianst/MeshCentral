@@ -694,8 +694,8 @@ function AmtStackCreateService(wsmanStack) {
     // TODO: Just put some of them here, but many more still need to be added, helpful link here:
     // https://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/default.htm?turl=WordDocuments%2Fsecurityadminevents.htm
     obj.GetAuditLogExtendedDataStr = function (id, data) {
-        if ((id == 1602 || id == 1604) && data[0] == 0) { return data.splice(2, 2 + data[1]).toString(); } // ACL Entry Added/Removed (Digest)
-        if (id == 1603) { if (data[1] == 0) { return data.splice(3).toString(); } return null; } // ACL Entry Modified
+        if ((id == 1602 || id == 1604) && data[0] == 0) { return bufToArray(data).splice(2, 2 + data[1]).toString(); } // ACL Entry Added/Removed (Digest)
+        if (id == 1603) { if (data[1] == 0) { return bufToArray(data).splice(3).toString(); } return null; } // ACL Entry Modified
         if (id == 1605) { return ["Invalid ME access", "Invalid MEBx access"][data[0]]; } // ACL Access with Invalid Credentials
         if (id == 1606) { var r = ["Disabled", "Enabled"][data[0]]; if (data[1] == 0) { r += ", " + data[3]; } return r; } // ACL Entry State
         if (id == 1607) { return "Remote " + ["NoAuth", "ServerAuth", "MutualAuth"][data[0]] + ", Local " + ["NoAuth", "ServerAuth", "MutualAuth"][data[1]]; } // TLS State Changed
@@ -718,6 +718,7 @@ function AmtStackCreateService(wsmanStack) {
     function ReadIntX(v, p) { return (v[p + 3] * 0x1000000) + (v[p + 2] << 16) + (v[p + 1] << 8) + v[p]; }
     function btoa(x) { return Buffer.from(x).toString('base64'); }
     function atob(x) { var z = null; try { z = Buffer.from(x, 'base64').toString(); } catch (e) { console.log(e); } return z; }
+    function bufToArray(buf) { var r = []; for (var i in buf) { r.push(buf[i]); } return r; }
 
     function _GetAuditLog0(stack, name, responses, status, tag) {
         if (status != 200) { tag[0](obj, [], status); return; }
