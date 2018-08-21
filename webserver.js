@@ -1468,32 +1468,30 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 res.sendFile(argentInfo.path);
             } else {
                 // We are going to embed the .msh file into the Windows executable (signed or not).
-                // First, query the meshid to build the .msh file
-                obj.db.Get('mesh/' + domain.id + '/' + req.query.meshid, function (err, meshes) {
-                    if (meshes.length != 1) { res.sendStatus(401); return; }
-                    var mesh = meshes[0];
+                // First, fetch the mesh object to build the .msh file
+                var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.meshid];
+                if (mesh == null) { res.sendStatus(401); return; }
 
-                    // If required, check if this user has rights to do this
-                    if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
-                        var user = obj.users[req.session.userid];
-                        var escUserId = obj.common.escapeFieldName(user._id);
-                        if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
-                        if (domain.id != mesh.domain) { res.sendStatus(401); return; }
-                    }
+                // If required, check if this user has rights to do this
+                if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+                    var user = obj.users[req.session.userid];
+                    var escUserId = obj.common.escapeFieldName(user._id);
+                    if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+                    if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+                }
 
-                    var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-                    var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
-                    // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-                    var xdomain = (domain.dns == null) ? domain.id : '';
-                    if (xdomain != '') xdomain += "/";
-                    var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-                    if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
-                    if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
-                    obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
-                });
+                // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+                var xdomain = (domain.dns == null) ? domain.id : '';
+                if (xdomain != '') xdomain += "/";
+                var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+                if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+                if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
+                obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
         } else if (req.query.script != null) {
             // Send a specific mesh install script back
@@ -1602,32 +1600,30 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
-        // Query the meshid
-        obj.db.Get('mesh/' + domain.id + '/' + req.query.id, function (err, meshes) {
-            if (meshes.length != 1) { res.sendStatus(401); return; }
-            var mesh = meshes[0];
+        // Fetch the mesh object
+        var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.id];
+        if (mesh == null) { res.sendStatus(401); return; }
 
-            // If needed, check if this user has rights to do this
-            if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
-                var user = obj.users[req.session.userid];
-                var escUserId = obj.common.escapeFieldName(user._id);
-                if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
-                if (domain.id != mesh.domain) { res.sendStatus(401); return; }
-            }
+        // If needed, check if this user has rights to do this
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+            var user = obj.users[req.session.userid];
+            var escUserId = obj.common.escapeFieldName(user._id);
+            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+        }
 
-            var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-            var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
-            // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            if (xdomain != '') xdomain += "/";
-            var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+        // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += "/";
+        var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
 
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
-            res.send(meshsettings);
-        });
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
+        res.send(meshsettings);
     }
 
     // Add HTTP security headers to all responses
