@@ -842,7 +842,6 @@
             // Display the page devices
             onSortSelectChange();
             onSearchInputChanged();
-            updateDevices();
 
             // Setup upload drag & drop
             Q('p5filetable').addEventListener("drop", p5fileDragDrop, false);
@@ -1494,11 +1493,16 @@
             if (Q('viewselect').value == 3) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
         }
 
+        // Since the update device call can be quite frequent, we can moderate it and only call it at most 5 times a second.
+        var updateDevicesTimer = null;
+        function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
+
         var deviceHeaderId = 0;
         var deviceHeaderCount;
         var deviceHeaders = {};
         var oldviewmode = 0;
-        function updateDevices() {
+        function updateDevicesEx() {
+            if (updateDevicesTimer != null) { clearTimeout(updateDevicesTimer); updateDevicesTimer = null; }
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view < 4);
             QV('xdevicesmap', view == 4);
@@ -1522,9 +1526,14 @@
                 deviceHeadersTitles = {};
                 var kvmDivs = [];
 
+                // Perform node sort
+                if (sort == 0) { nodes.sort(meshSort); }
+                else if (sort == 1) { nodes.sort(powerSort); }
+                else if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
+
                 // Save the list of currently checked nodeid's
                 var checkedNodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-                for (var i in elements) { if (elements[i].checked) { checkedNodeids.push(elements[i].value); } }
+                for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedNodeids.push(elements[i].value); } }
                 if ((oldviewmode < 3) && (view == 3)) { multiDesktopFilter = checkedNodeids; }
                 else if ((oldviewmode == 3) && (view < 3)) { checkedNodeids = multiDesktopFilter; }
 
@@ -1551,11 +1560,12 @@
                         }
                     } else if (sort == 1) {
                         // Power header
-                        if (nodes[i].pwr !== current) {
+                        var pwr = nodes[i].pwr?nodes[i].pwr:0;
+                        if (pwr !== current) {
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
-                            current = nodes[i].pwr;
+                            current = pwr;
                             c = 0;
                         }
                     } else if (sort == 2) {
@@ -1670,7 +1680,7 @@
 
                 // Re-check nodeid's
                 var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-                for (var i in elements) { elements[i].checked = (checkedNodeids.indexOf(elements[i].value) >= 0); }
+                for (var i=0;i<elements.length;i++) { elements[i].checked = (checkedNodeids.indexOf(elements[i].value) >= 0); }
 
                 for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
                 for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
@@ -1862,7 +1872,7 @@
         // Called when OK is pressed on the Intel AMT scanning box
         function addAmtScanToMeshEx(button, meshid) {
             var elements = document.getElementsByClassName("DevScanCheckbox"), checkcount = 0;
-            for (var i in elements) {
+            for (var i=0;i<elements.length;i++) {
                 if (elements[i].checked) {
                     var ipaddr = elements[i].getAttribute('tag');
                     var amtinfo = amtScanResults[ipaddr];
@@ -1882,7 +1892,7 @@
         // Called when a scanned computer is checked or unchecked.
         function addAmtScanToMeshCheckbox() {
             var elements = document.getElementsByClassName("DevScanCheckbox"), checkcount = 0;
-            for (var i in elements) { if (elements[i].checked) checkcount++; }
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked) checkcount++; }
             QE('idx_dlgOkButton', checkcount > 0);
         }
 
@@ -2063,14 +2073,14 @@
 
         function selectallButtonFunction() {
             var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-            for (var i in elements) { if (elements[i].checked) checkcount++; }
-            for (var i in elements) { elements[i].checked = (checkcount == 0); }
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0); }
             p1updateInfo();
         }
 
         function p1updateInfo() {
             var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-            for (var i in elements) { if (elements[i].checked) checkcount++; }
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { checkcount++; } }
             if (checkcount > 0) {
                 QE('GroupActionButton', true);
                 Q('SelectAllButton').value = 'Select None';
@@ -2093,7 +2103,7 @@
         // Get the list of checked devices, removes any duplicates.
         function getCheckedDevices() {
             var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-            for (var i in elements) { if (elements[i].checked) { if (elements[i].value) { var nid = elements[i].value.substring(6); if (nodeids.indexOf(nid) == -1) { nodeids.push(nid); } } } }
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked) { if (elements[i].value) { var nid = elements[i].value.substring(6); if (nodeids.indexOf(nid) == -1) { nodeids.push(nid); } } } }
             return nodeids;
         }
 
@@ -2120,14 +2130,11 @@
         function onSortSelectChange(skipsave) {
             sort = document.getElementById("sortselect").selectedIndex;
             if (!skipsave) { putstore("sort", sort); }
-            if (sort == 0) { nodes.sort(meshSort); }
-            if (sort == 1) { nodes.sort(powerSort); }
-            if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
-            updateDevices();
+            updateDevicesEx();
         }
 
         function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
-        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
+        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap > bp) return -1; if (ap < bp) return 1; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
         function onSearchFocus(x) { searchFocus = x; }
@@ -2200,8 +2207,8 @@
         function cmmeshaction(action) {
             var meshid = contextelement.attributes.onclick.value.substring(32, (32 + 69));
             var elements = document.getElementsByClassName("DeviceCheckbox");
-            if (action == 1) { for (var i in elements) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = true; } } }
-            if (action == 2) { for (var i in elements) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = false; } } }
+            if (action == 1) { for (var i=0;i<elements.length;i++) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = true; } } }
+            if (action == 2) { for (var i=0;i<elements.length;i++) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = false; } } }
             //if (action == 3) { window.location = "multidesktop.aspx?mesh=" + meshid + "&auto=1"; }
             p1updateInfo();
         }
@@ -5802,7 +5809,7 @@
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QS('UserGeneral').backgroundColor = ((x == 30) ? "#003366" : "#808080");
             QS('UserEvents').backgroundColor = ((x == 31) ? "#003366" : "#808080");
-            if (x == 1) updateDevices();
+            if (x == 1) updateDevicesEx();
         }
 
         // Generic methods

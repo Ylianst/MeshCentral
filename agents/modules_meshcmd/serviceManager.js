@@ -87,22 +87,12 @@ function serviceManager() {
             }
             return admin;
         };
+        this.getProgramFolder = function getProgramFolder() {
+            if ((require('os').arch() == 'x64') && (this.GM.PointerSize == 4)) { return process.env['ProgramFiles(x86)']; } // 64 bit Windows with 32 Bit App
+            return process.env['ProgramFiles']; // All other cases: 32 bit Windows or 64 bit App
+        };
         this.getServiceFolder = function getServiceFolder() {
-            var destinationFolder = null;
-            if (require('os').arch() == 'x64') {
-                // 64 bit Windows
-                if (this.GM.PointerSize == 4) {
-                    // 32 Bit App
-                    destinationFolder = process.env['ProgramFiles(x86)'];
-                } else {
-                    // 64 bit App
-                    destinationFolder = process.env['ProgramFiles'];
-                }
-            } else {
-                // 32 bit Windows
-                destinationFolder = process.env['ProgramFiles'];
-            }
-            return (destinationFolder + '\\Open Source\\MeshCmd');
+            return getProgramFolder() + '\\Open Source\\MeshCmd';
         };
 
         this.enumerateService = function () {
@@ -192,8 +182,10 @@ function serviceManager() {
             if (!this.isAdmin()) { throw ('Installing as Service, requires administrator permissions.'); }
 
             // Before we start, we need to copy the binary to the right place
-            var folder = this.getServiceFolder();
-            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); }
+            var folder = this.getProgramFolder() + '\\Open Source';
+            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); } // Create the "Open Source" folder
+            folder += '\\MeshCmd';
+            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); } // Create the "MeshCmd" folder
             require('fs').copyFileSync(options.servicePath, folder + '\\' + options.name + '.exe');
             options.servicePath = folder + '\\' + options.name + '.exe';
             console.log('Installing to "' + options.servicePath + '"');

@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+var AgentConnectCount = 0;
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     var obj = {};
@@ -30,6 +32,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     obj.useSHA386 = false;
+    obj.agentConnectCount = ++AgentConnectCount;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
     ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
@@ -65,6 +68,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((state.connectivity & 2) != 0) { obj.parent.parent.mpsserver.close(obj.parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
             }
         }
+        delete obj.nodeid;
     }
 
     // When data is received from the mesh agent web socket
@@ -183,15 +187,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentnonce = msg.substring(50);
                 if (obj.useSwarmCert == true) {
                     // Perform the hash signature using older swarm server certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, function (signature) {
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                         // Send back our certificate + signature
-                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.swarmCertificateAsn1.length) + obj.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
+                        obj2.send(obj2.common.ShortToStr(2) + obj2.common.ShortToStr(obj2.parent.swarmCertificateAsn1.length) + obj2.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
                     });
                 } else {
                     // Perform the hash signature using the server agent certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                         // Send back our certificate + signature
-                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.agentCertificateAsn1.length) + obj.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                        obj2.send(obj2.common.ShortToStr(2) + obj.common.ShortToStr(obj2.parent.agentCertificateAsn1.length) + obj2.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                     });
                 }
 
@@ -259,7 +263,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
-        if (obj.authenticated =! 1 || obj.meshid == null) return;
+        if (obj.authenticated = !1 || obj.meshid == null || obj.pendingCompleteAgentConnection) return;
+        obj.pendingCompleteAgentConnection = true;
+
         // Check that the mesh exists
         obj.db.Get(obj.dbMeshKey, function (err, meshes) {
             if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
@@ -327,6 +333,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // We are done, ready to communicate with this agent
+                delete obj.pendingCompleteAgentConnection;
                 obj.authenticated = 2;
 
                 // Command 4, inform mesh agent that it's authenticated.

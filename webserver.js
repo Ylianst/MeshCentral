@@ -71,6 +71,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
     obj.tlsSniCredentials;
     obj.dnsDomains = {};
+    //obj.agentConnCount = 0;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -1695,7 +1696,16 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
 
         // Receive mesh agent connections
-        obj.app.ws(url + 'agent.ashx', function (ws, req) { try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); } });
+        obj.app.ws(url + 'agent.ashx', function (ws, req) {
+            //console.log(++obj.agentConnCount);
+            /*
+            var ip, port, type;
+            if (req.connection) { ip = req.connection.remoteAddress; port = req.connection.remotePort; type = 1; } // HTTP(S) request
+            else if (req._socket) { ip = req._socket.remoteAddress; port = req._socket.remotePort; type = 2; } // WebSocket request
+            console.log('AgentConnect', ip, port, type);
+            */
+            try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); }
+        });
 
         obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
 

@@ -484,7 +484,16 @@ module.exports.CertificateOperations = function () {
         if (acceleratorCreateCount > 0) {
             acceleratorCreateCount--;
             var accelerator = fork(program, [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-            accelerator.on('message', function (message) { this.func(message); if (pendingAccelerator.length > 0) { accelerator.send(pendingAccelerator.shift()); } else { freeAccelerators.push(this); } });
+            accelerator.accid = acceleratorCreateCount;
+            accelerator.on('message', function (message) {
+                this.func(this.tag, message);
+                delete this.tag;
+                if (pendingAccelerator.length > 0) {
+                    var x = pendingAccelerator.shift();
+                    if (x.tag) { this.tag = x.tag; delete x.tag; }
+                    accelerator.send(x);
+                } else { freeAccelerators.push(this); }
+            });
             accelerator.send({ action: 'setState', certs: obj.acceleratorCertStore });
             return accelerator;
         }
@@ -499,21 +508,22 @@ module.exports.CertificateOperations = function () {
     }
 
     // Perform any RSA signature, just pass in the private key and data.
-    obj.acceleratorPerformSignature = function (privatekey, data, func) {
+    obj.acceleratorPerformSignature = function (privatekey, data, tag, func) {
         if (acceleratorTotalCount <= 1) {
             // No accelerators available
             if (typeof privatekey == 'number') { privatekey = obj.acceleratorCertStore[privatekey].key; }
             const sign = obj.crypto.createSign('SHA384');
             sign.end(new Buffer(data, 'binary'));
-            func(sign.sign(privatekey).toString('binary'));
+            func(tag, sign.sign(privatekey).toString('binary'));
         } else {
             var acc = obj.getAccelerator();
             if (acc == null) {
                 // Add to pending accelerator workload
-                pendingAccelerator.push({ action: 'sign', key: privatekey, data: data });
+                pendingAccelerator.push({ action: 'sign', key: privatekey, data: data, tag: tag });
             } else {
                 // Send to accelerator now
                 acc.func = func;
+                acc.tag = tag;
                 acc.send({ action: 'sign', key: privatekey, data: data });
             }
         }

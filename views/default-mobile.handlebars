@@ -1177,6 +1177,10 @@
         // MY DEVICES
         //
 
+        // Since the update device call can be quite frequent, we can moderate it and only call it at most 5 times a second.
+        var updateDevicesTimer = null;
+        function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
+
         var sort = 0;
         var deviceHeaderId = 0;
         var deviceHeaderCount;
@@ -1185,7 +1189,7 @@
         var deviceHeaderTotal = 0;
         var deviceHeaders = {};
         var deviceHeadersTitles = {};
-        function updateDevices() {
+        function updateDevicesEx() {
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, groups = {}, groupCount = {};
 
             // 3 wide, list view or desktop view
@@ -1195,6 +1199,11 @@
             deviceHeaders = {};
             deviceHeadersTitles = {};
             var current;
+
+            // Perform node sort
+            if (sort == 0) { nodes.sort(meshSort); }
+            else if (sort == 1) { nodes.sort(powerSort); }
+            else if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
 
             // Go thru the list of nodes and display them
             for (var i in nodes) {
@@ -1324,10 +1333,7 @@
         function onSortSelectChange(skipsave) {
             sort = document.getElementById("sortselect").selectedIndex;
             if (!skipsave) { putstore("sort", sort); }
-            if (sort == 0) { nodes.sort(meshSort); }
-            if (sort == 1) { nodes.sort(powerSort); }
-            if (sort == 2) { if (showRealNames == true) { nodes.sort(deviceHostSort); } else { nodes.sort(deviceSort); } }
-            updateDevices();
+            updateDevicesEx();
         }
 
         function deviceHeaderSet() {
