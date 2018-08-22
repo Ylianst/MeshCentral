@@ -5,6 +5,8 @@
     "_MongoDbCol": "meshcentral",
     "_WANonly": true,
     "_LANonly": true,
+    "_SessionTime": 30,
+    "_SessionKey": "MyReallySecretPassword",
     "_Port": 443,
     "_RedirPort": 80,
     "_AllowLoginToken": true,

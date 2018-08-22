@@ -36,7 +36,7 @@ if (!String.prototype.startsWith) { String.prototype.startsWith = function (sear
 if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchString, position) { var subjectString = this.toString(); if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) { position = subjectString.length; } position -= searchString.length; var lastIndex = subjectString.lastIndexOf(searchString, position); return lastIndex !== -1 && lastIndex === position; }; }
 
 // Construct a HTTP web server object
-module.exports.CreateWebServer = function (parent, db, args, secret, certificates) {
+module.exports.CreateWebServer = function (parent, db, args, certificates) {
     var obj = {};
 
     // Modules
@@ -46,7 +46,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.path = require('path');
     obj.constants = require('constants');
     obj.bodyParser = require('body-parser');
-    obj.session = require('express-session');
+    obj.session = require('cookie-session');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
     obj.common = require('./common.js');
@@ -154,9 +154,11 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
     obj.app.set('view engine', 'handlebars');
     obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
     obj.app.use(obj.session({
-        resave: false, // don't save session if unmodified
-        saveUninitialized: false, // don't create session until something stored
-        secret: secret // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+        name: 'xid', // Recommanded security practice to not use the default cookie name
+        httpOnly: true,
+        keys: [ obj.args.sessionkey ], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+        secure: (obj.args.notls != true), // Use this cookie only over TLS
+        maxAge: (obj.args.sessiontime * 60 * 1000) // 24 hours
     }));
 
     // Session-persisted message middleware
@@ -290,9 +292,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
             var user = obj.users[req.session.userid]
             obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id })
         }
-        req.session.destroy(function () {
-            res.redirect(domain.url);
-        });
+        req.session = null;
+        res.redirect(domain.url);
     }
 
     function handleLoginRequest(req, res) {
@@ -306,8 +307,9 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 user.login = Date.now();
                 obj.db.SetUser(user);
 
+
                 // Regenerate session when signing in to prevent fixation
-                req.session.regenerate(function () {
+                //req.session.regenerate(function () {
                     // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
                     // req.session.success = 'Authenticated as ' + user.name + 'click to <a href="/logout">logout</a>. You may now access <a href="/restricted">/restricted</a>.';
                     delete req.session.loginmode;
@@ -334,7 +336,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                     } else {
                         res.redirect(domain.url);
                     }
-                });
+                //});
 
                 obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id })
             } else {
@@ -569,7 +571,8 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
                 // Remove the user
                 obj.db.Remove(user._id);
                 delete obj.users[user._id];
-                req.session.destroy(function () { res.redirect(domain.url); });
+                req.session = null;
+                res.redirect(domain.url);
                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id })
             } else {
                 res.redirect(domain.url);
@@ -679,7 +682,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
 
         // If a user is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid) {
-            if (req.session.domainid != domain.id) { req.session.destroy(function () { res.redirect(domain.url); }); return; } // Check is the session is for the correct domain
+            if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
             var viewmode = 1;
             if (req.session.viewmode) {
                 viewmode = req.session.viewmode;
@@ -751,7 +754,7 @@ module.exports.CreateWebServer = function (parent, db, args, secret, certificate
         if (domain == null) return;
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         if (req.session && req.session.userid) {
-            if (req.session.domainid != domain.id) { req.session.destroy(function () { res.redirect(domain.url); }); return; } // Check is the session is for the correct domain
+            if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
             var user = obj.users[req.session.userid];
             res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
         } else {
