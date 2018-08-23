@@ -333,7 +333,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.parent.wsagents[obj.dbNodeKey] = obj;
             if (dupAgent) {
                 // Close the duplicate agent
-                if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); }
+                if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ')'); }
                 dupAgent.close(3);
             } else {
                 // Indicate the agent is connected
@@ -416,7 +416,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.agentnonce;
         delete obj.unauth;
         if (obj.unauthsign) delete obj.unauthsign;
-        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ').');
+        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ').');
         obj.authenticated = 1;
         return true;
     }
