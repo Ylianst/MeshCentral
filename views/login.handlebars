@@ -169,9 +169,9 @@
     </div>
     <script>
         var passhint = "{{{passhint}}}";
-        var newAccountPass = {{{newAccountPass}}};
-        var emailCheck = {{{emailcheck}}};
-        var features = {{{features}}};
+        var newAccountPass = parseInt('{{{newAccountPass}}}');
+        var emailCheck = parseInt('{{{emailcheck}}}');
+        var features = parseInt('{{{features}}}');
 
         function startup() {
             if ((features & 32) == 0) {
@@ -185,7 +185,7 @@
             center();
             validateLogin();
             validateCreate();
-            if ('{{loginmode}}' != '') { go({{loginmode}}); } else { go(1); }
+            if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
             QV('newAccountDiv', '{{{newAccount}}}' != '0' );
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));

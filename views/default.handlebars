@@ -23,9 +23,9 @@
     <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
-    <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
-    <script type="text/javascript" src="scripts/ol.js"></script>
-    <script type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>MeshCentral</title>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)">
@@ -246,7 +246,8 @@
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;
+                        <div class=style14 style=height:100%;float:left>
+                            &nbsp;&nbsp;
                             <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
                             <input id=UserSearchInput type=text style=width:120px placeholder=Search onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
                         </div>
@@ -770,8 +771,8 @@
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
         var terminal;
         var files;
-        var debugLevel = {{{debuglevel}}};
-        var features = {{{features}}};
+        var debugLevel = parseInt("{{{debuglevel}}}");
+        var features = parseInt("{{{features}}}");
         var multiDesktop = {};
         var multiDesktopFilter = null;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
@@ -940,7 +941,7 @@
         }
 
         function updateSiteAdmin() {
-            var noServerBackup = {{{noServerBackup}}};
+            var noServerBackup = "{{{noServerBackup}}}";
             var siteRights = userinfo.siteadmin;
             if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
@@ -1028,8 +1029,8 @@
                     onSearchInputChanged();
                     updateDevices();
                     refreshMap(false, true);
-                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { setDialogMode(0); go(1); } }
-                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',{{viewmode}});}
+                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
+                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
                     break;
                 }
                 case 'powertimeline': {
@@ -1464,7 +1465,7 @@
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
-            if (!xxdialogMode && xxcurrentView == 4) { 
+            if (!xxdialogMode && xxcurrentView == 4) {
                 if (e.keyCode === 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('UserSearchInput').value = ''; processed = 1; }
                 if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
@@ -2037,9 +2038,9 @@
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
             deviceHeaders["DevxHeader" + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
-            var title = '';
-            for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
-            deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
+            //var title = '';
+            //for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
+            //deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
             deviceHeaderId++;
             deviceHeaderCount = {};
             deviceHeaderTotal = 0;
@@ -2207,8 +2208,8 @@
         function cmmeshaction(action) {
             var meshid = contextelement.attributes.onclick.value.substring(32, (32 + 69));
             var elements = document.getElementsByClassName("DeviceCheckbox");
-            if (action == 1) { for (var i=0;i<elements.length;i++) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = true; } } }
-            if (action == 2) { for (var i=0;i<elements.length;i++) { if (elements[i].attributes && elements[i].attributes.class.value.substring(0, 69) == meshid) { elements[i].checked = false; } } }
+            if (action == 1) { for (var i = 0; i < elements.length; i++) { if ( (elements[i].attributes) && (elements[i].attributes['class']['value'].substring(0, 69) == meshid)) { elements[i].checked = true; } } }
+            if (action == 2) { for (var i = 0; i < elements.length; i++) { if ( (elements[i].attributes) && (elements[i].attributes['class']['value'].substring(0, 69) == meshid)) { elements[i].checked = false; } } }
             //if (action == 3) { window.location = "multidesktop.aspx?mesh=" + meshid + "&auto=1"; }
             p1updateInfo();
         }
@@ -2237,21 +2238,23 @@
 
         // Add a feature for every Node and change style if connection status changes
         function updateMapMarkers(selectedMesh) {
-            if ((xxmap != null) && (xxmap.map == null)) loadmap();
+            if ((xxmap != null) && (xxmap.map == null)) { try { loadmap(); } catch (ex) { console.error('loadmap() exception', ex); } }
             if (xxmap == null) return;
             var boundingBox = null;
             for (var i in nodes) {
-                var loc = map_parseNodeLoc(nodes[i]);
-                var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
-                if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
-                    lat = loc[0];
-                    lon = loc[1];
-                    var type = loc[2];
-                    if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
-                    if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
-                } else {
-                    if (feature) { xxmap.markersSource.removeFeature(feature); }
-                }
+                try {
+                    var loc = map_parseNodeLoc(nodes[i]);
+                    var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
+                    if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
+                        lat = loc[0];
+                        lon = loc[1];
+                        var type = loc[2];
+                        if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
+                        if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
+                    } else {
+                        if (feature) { xxmap.markersSource.removeFeature(feature); }
+                    }
+                } catch (ex) { console.error('updateMapMarkers() exception', ex, JSON.stringify(nodes[i])); }
             }
             return boundingBox;
         }
@@ -2413,7 +2416,7 @@
             if (existingfeature) { xxmap.markersSource.addFeature(existingfeature); } // Add that existing feature
             else { // Add new feature for this node
                 if (!lat && !lon) { var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1]; }
-                
+
                 // Fix the longiture and send an event to patch the db to correct coordinate format. It will cause second unnecessary updateFeature on this node to the map.
                 if (lon > 180) {  lon = 180 - lon;  meshserver.send({ action: 'changedevice', nodeid: node._id, userloc: [ lat, lon ] }); }
 
@@ -4417,7 +4420,7 @@
             if (processed > 0) { return haltEvent(e); }
         }
 
-        // Insert text at the cursor location on the 
+        // Insert text at the cursor location on the
         function insertTextAtCursor(ctrl, val) {
             if (document.selection) { ctrl.focus(); sel = document.selection.createRange(); sel.text = val; }
             else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
@@ -5189,7 +5192,7 @@
                     if (maxUsers > 0) {
                         if (addHeader) { x += '<tr><td class=userTableHeader>Offline Users'; addHeader = false; }
                         x += addUserHtml(user, sessions);
-                        maxUsers--; 
+                        maxUsers--;
                     } else {
                         hiddenUsers++;
                     }
@@ -5375,7 +5378,7 @@
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login).toLocaleString());
-            
+
             x += '</table></div><br />';
 
             // Add action buttons
@@ -5846,5 +5849,5 @@
         function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
 
     </script>
-    </body>
+</body>
 </html>

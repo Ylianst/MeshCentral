@@ -17,22 +17,97 @@
     <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
-    <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <title>MeshCentral - Login</title>
     <style>
-        a { color: #036; text-decoration: underline }
-        #footer a { color: #fff; text-decoration: underline }
-        #footer a:hover { color: #fff; text-decoration: none }
-        .i1 {background:url(../images/icons50.png) 0px 0px;height:50px;width:50px;border:none;}
-        .i2 {background:url(../images/icons50.png) -50px 0px;height:50px;width:50px;border:none;}
-        .i3 {background:url(../images/icons50.png) -100px 0px;height:50px;width:50px;border:none;}
-        .i4 {background:url(../images/icons50.png) -150px 0px;height:50px;width:50px;border:none;}
-        .i5 {background:url(../images/icons50.png) -200px 0px;height:50px;width:50px;border:none;}
-        .i6 {background:url(../images/icons50.png) -250px 0px; height:50px;width:50px; border:none; }
-        .m0 {background:url(../images/images16.png) -32px 0px; height:16px;width:16px; border:none;float:left }
-        .m1 {background:url(../images/images16.png) -16px 0px; height:16px;width:16px; border:none;float:left }
-        .m2 {background:url(../images/images16.png) -96px 0px; height:16px;width:16px; border:none;float:left }
-        .m3 {background:url(../images/images16.png) -112px 0px; height:16px;width:16px; border:none;float:left }
+        a {
+            color: #036;
+            text-decoration: underline;
+        }
+
+        #footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+            #footer a:hover {
+                color: #fff;
+                text-decoration: none;
+            }
+
+        .i1 {
+            background: url(../images/icons50.png) 0px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i2 {
+            background: url(../images/icons50.png) -50px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i3 {
+            background: url(../images/icons50.png) -100px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i4 {
+            background: url(../images/icons50.png) -150px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i5 {
+            background: url(../images/icons50.png) -200px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .i6 {
+            background: url(../images/icons50.png) -250px 0px;
+            height: 50px;
+            width: 50px;
+            border: none;
+        }
+
+        .m0 {
+            background: url(../images/images16.png) -32px 0px;
+            height: 16px;
+            width: 16px;
+            border: none;
+            float: left;
+        }
+
+        .m1 {
+            background: url(../images/images16.png) -16px 0px;
+            height: 16px;
+            width: 16px;
+            border: none;
+            float: left;
+        }
+
+        .m2 {
+            background: url(../images/images16.png) -96px 0px;
+            height: 16px;
+            width: 16px;
+            border: none;
+            float: left;
+        }
+
+        .m3 {
+            background: url(../images/images16.png) -112px 0px;
+            height: 16px;
+            width: 16px;
+            border: none;
+            float: left;
+        }
 
         .gray {
             /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
@@ -41,7 +116,7 @@
         }
 
         .DevSt {
-            padding-left:5px;
+            padding-left: 5px;
             border-bottom-style: solid;
             border-bottom-width: 1px;
             border-bottom-color: #DDDDDD;
@@ -438,8 +513,8 @@
     </div>
     <iframe name="fileUploadFrame" style=display:none></iframe>
     <script>
-        var debugLevel = {{{debuglevel}}};
-        var features = {{{features}}};
+        var debugLevel = parseInt('{{{debuglevel}}}');
+        var features = parseInt('{{{features}}}');
         var meshserver = null;
         var xdr = null;
         var serverinfo = null;
@@ -451,7 +526,6 @@
         var nodeShortIdent = 0;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var debugmode = false;
-        var features = {{{features}}};
         var attemptWebRTC = ((features & 128) != 0);
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
         var files;
@@ -489,7 +563,7 @@
                 setTimeout(serverPoll, 5000); // Start polling for the server
 
                 // Clean up here
-                
+
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
@@ -569,8 +643,8 @@
                     //onSearchInputChanged();
                     updateDevices();
                     //refreshMap(false, true);
-                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go({{viewmode}}); } else { setDialogMode(0); go(1); } }
-                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',{{viewmode}});}
+                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
+                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}', parseInt('{{viewmode}}')); }
                     break;
                 }
                 case 'powertimeline': {
@@ -1738,7 +1812,7 @@
             QE('idx_dlgOkButton', x);
             if ((e != null) && (x == true) && (e.keyCode == 13)) { dialogclose(1); }
         }
-        
+
         //
         // DESKTOP
         //
@@ -2569,7 +2643,7 @@
             QH('p20info', x);
         }
 
-        
+
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return;
             var x = "Are you sure you want to delete mesh \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the mesh will also delete all information about computers within this mesh.<br /><br />";
@@ -2692,7 +2766,7 @@
             for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
         }
-        
+
         //
         // POPUP DIALOG
         //
