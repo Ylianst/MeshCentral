@@ -92,11 +92,12 @@ function amt_heci() {
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(26, null, function (header, fn, opt) {
             if (header.Status == 0) {
-                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
+                var i, CodeVersion = header.Data, val = { BiosVersion: CodeVersion.slice(0, this._amt.BiosVersionLen).toString(), Versions: [] }, v = CodeVersion.slice(this._amt.BiosVersionLen + 4);
                 for (i = 0; i < CodeVersion.readUInt32LE(this._amt.BiosVersionLen) ; ++i) {
                     val.Versions[i] = { Description: v.slice(2, v.readUInt16LE(0) + 2).toString(), Version: v.slice(4 + this._amt.UnicodeStringLen, 4 + this._amt.UnicodeStringLen + v.readUInt16LE(2 + this._amt.UnicodeStringLen)).toString() };
                     v = v.slice(4 + (2 * this._amt.UnicodeStringLen));
                 }
+                if (val.BiosVersion.indexOf('\0') > 0) { val.BiosVersion = val.BiosVersion.substring(0, val.BiosVersion.indexOf('\0')); }
                 opt.unshift(val);
             } else {
                 opt.unshift(null);

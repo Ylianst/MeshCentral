@@ -30,12 +30,17 @@
     <Compile Include="agents\modules_meshcmd\amt-wsman.js" />
     <Compile Include="agents\modules_meshcmd\amt-xml.js" />
     <Compile Include="agents\modules_meshcmd\amt.js" />
+    <Compile Include="agents\modules_meshcmd\process-manager.js" />
+    <Compile Include="agents\modules_meshcmd\serviceHost.js" />
+    <Compile Include="agents\modules_meshcmd\serviceManager.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
+    <Compile Include="agents\modules_meshcmd\user-sessions.js" />
     <Compile Include="agents\modules_meshcore\amt-lme.js" />
     <Compile Include="agents\modules_meshcore\amt-mei.js" />
     <Compile Include="agents\modules_meshcore\amt-scanner.js" />
     <Compile Include="agents\modules_meshcore\amt-xml.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
+    <Compile Include="agents\modules_meshcore\user-sessions.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\testsuite.js" />
@@ -194,10 +199,13 @@
     <Content Include="readme.txt" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
+    <Content Include="views\default-mobile.handlebars" />
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
+    <Content Include="views\login-mobile.handlebars" />
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />
+    <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
   </ItemGroup>
   <ItemGroup>

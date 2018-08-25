@@ -94,9 +94,9 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.servernonce = msg.substring(50);
 
                             // Perform the hash signature using the server agent certificate
-                            obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
+                            obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                                 // Send back our certificate + signature
-                                obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                                obj2.ws.send(obj2.common.ShortToStr(2) + obj2.common.ShortToStr(obj2.agentCertificateAsn1.length) + obj2.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                             });
 
                             break;
@@ -173,7 +173,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8');
             if (str[0] == '{') {
-                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
@@ -257,9 +257,9 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.peernonce = msg.substring(50);
 
                     // Perform the hash signature using the server agent certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (signature) {
                         // Send back our certificate + signature
-                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                        obj2.send(obj2.common.ShortToStr(2) + obj.common.ShortToStr(obj2.agentCertificateAsn1.length) + obj2.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                     });
 
                     // Check the peer server signature if we can
@@ -337,7 +337,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8');
             if (str[0] == '{') {
-                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str) } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.

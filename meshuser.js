@@ -79,6 +79,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         } else if (splitid[0] == 'mesh') {
             // Check mesh access
             var meshrights = user.links[meshpath[0]];
+            if (meshrights == null) return null; // No meth rights for this user
+            meshrights = meshrights.rights; // Get the rights bit mask
             if ((meshrights == null) || ((meshrights & 32) == 0)) return null; // This user must have mesh rights to "server files"
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
@@ -133,7 +135,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         obj.ws.HandleEvent = function (source, event) {
             if (!event.domain || event.domain == obj.domain.id) {
                 try {
-                    if (event == 'close') { obj.req.session.destroy(); obj.ws.close(); }
+                    if (event == 'close') { req.session.destroy(); obj.close(); }
                     else if (event == 'resubscribe') { user.subscriptions = obj.parent.subscribe(user._id, ws); }
                     else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                     else { ws.send(JSON.stringify({ action: 'event', event: event })); }
@@ -151,6 +153,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             if ((user == null) || (obj.common.validateString(command.action, 3, 32) == false)) return; // User must be set and action must be a string between 3 and 32 chars
 
             switch (command.action) {
+                case 'ping': { ws.send(JSON.stringify({ action: 'pong' })); break; }
                 case 'meshes':
                     {
                         // Request a list of all meshes this user as rights to
@@ -320,12 +323,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     }
                 case 'events':
                     {
-                        if ((command.limit == null) || (typeof command.limit != 'number')) {
-                            // Send the list of all events for this session
-                            obj.db.GetEvents(user.subscriptions, domain.id, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
-                        } else {
+                        // User filtered events
+                        if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
+                            // TODO: Add the meshes command.user has access to (???)
+                            var filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
+                            if ((command.limit == null) || (typeof command.limit != 'number')) {
+                                // Send the list of all events for this session
+                                obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            } else {
+                                // Send the list of most recent events for this session, up to 'limit' count
+                                obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            }
+                        } else if (obj.common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
+                            // TODO: Check that the user has access to this nodeid
+                            var limit = 10000;
+                            if (obj.common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(user.subscriptions, domain.id, command.limit, function (err, docs) { if (err != null) return; ws.send(JSON.stringify({ action: 'events', events: docs, tag: command.tag })); });
+                            obj.db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { } });
+                        } else {
+                            // All events
+                            var filter = user.subscriptions;
+                            if ((command.limit == null) || (typeof command.limit != 'number')) {
+                                // Send the list of all events for this session
+                                obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            } else {
+                                // Send the list of most recent events for this session, up to 'limit' count
+                                obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            }
                         }
                         break;
                     }
@@ -361,35 +386,38 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'changeemail':
                     {
                         // Change the email address
-                        if (obj.common.validateString(command.email, 3, 1024) == false) return;
-                        var x = command.email.split('@');
-                        if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
-                            if (obj.parent.users[req.session.userid].email != command.email) {
-                                // Check if this email is already validated on a different account
-                                obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
-                                    if (docs.length > 0) {
-                                        // Notify the duplicate email error
-                                        ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
-                                    } else {
-                                        // Update the user's email
-                                        var oldemail = user.email;
-                                        user.email = command.email;
-                                        user.emailVerified = false;
-                                        obj.parent.db.SetUser(user);
+                        if (obj.common.validateEmail(command.email, 1, 256) == false) return;
+                        if (obj.parent.users[req.session.userid].email != command.email) {
+                            // Check if this email is already validated on a different account
+                            obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
+                                if (docs.length > 0) {
+                                    // Notify the duplicate email error
+                                    ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
+                                } else {
+                                    // Update the user's email
+                                    var oldemail = user.email;
+                                    user.email = command.email;
+                                    user.emailVerified = false;
+                                    obj.parent.db.SetUser(user);
 
-                                        // Event the change
-                                        var userinfo = obj.common.Clone(user);
-                                        delete userinfo.hash;
-                                        delete userinfo.passhint;
-                                        delete userinfo.salt;
-                                        delete userinfo.type;
-                                        delete userinfo.domain;
-                                        delete userinfo.subscriptions;
-                                        delete userinfo.passtype;
-                                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email, domain: domain.id })
+                                    // Event the change
+                                    var userinfo = obj.common.Clone(user);
+                                    delete userinfo.hash;
+                                    delete userinfo.passhint;
+                                    delete userinfo.salt;
+                                    delete userinfo.type;
+                                    delete userinfo.domain;
+                                    delete userinfo.subscriptions;
+                                    delete userinfo.passtype;
+                                    var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
+                                    if (oldemail != null) {
+                                        message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
+                                    } else {
+                                        message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
                                     }
-                                });
-                            }
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+                                }
+                            });
                         }
                         break;
                     }
@@ -432,6 +460,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((deluser == null) || (delusersplit.length != 3) || (delusersplit[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
                         if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
 
+                        // Remove all the mesh links to this user
+                        if (deluser.links != null) {
+                            for (var meshid in deluser.links) {
+                                // Get the mesh
+                                var mesh = obj.parent.meshes[meshid];
+                                if (mesh) {
+                                    // Remove user from the mesh
+                                    if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; obj.parent.db.Set(mesh); }
+                                    // Notify mesh change
+                                    var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                    obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                }
+                            }
+                        }
+
+                        // Remove notes for this user
+                        obj.db.Remove('nt' + deluser._id);
+
                         // Delete all files on the server for this account
                         try {
                             var deluserpath = obj.parent.getServerRootFilePath(deluser);
@@ -449,13 +495,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Add a new user account
                         if ((user.siteadmin & 2) == 0) break;
-                        if (obj.common.validateString(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters
+                        if (obj.common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
                         if (obj.common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                        if ((command.email != null) && (obj.common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                         var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                         if (newusername == '~') break; // This is a reserved user name
                         if (!obj.parent.users[newuserid]) {
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Date.now(), domain: domain.id };
-                            if (obj.common.validateString(command.email, 1, 256) == true) { newuser.email = command.email; } // Email is between 1 and 256 characters
+                            if (command.email != null) { newuser.email = command.email; } // Email
                             obj.parent.users[newuserid] = newuser;
                             // Create a user, generate a salt and hash the password
                             require('./pass').hash(command.pass, function (err, salt, hash) {
@@ -479,6 +526,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.parent.users[chguserid], change = 0;
                             if (chguser) {
                                 if (obj.common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                                if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                                 if (obj.common.validateInt(command.quota, 0) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                                 if ((user.siteadmin == 0xFFFFFFFF) && obj.common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1 }
                                 if (change == 1) {
@@ -494,7 +542,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     delete userinfo.passtype;
                                     obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
                                 }
+                                if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
+                                    obj.parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
+                                }
                             }
+                        }
+                        break;
+                    }
+                case 'changeuserpass':
+                    {
+                        // Change a user's password
+                        if (user.siteadmin != 0xFFFFFFFF) break;
+                        if (obj.common.validateString(command.user, 1, 256) == false) break;
+                        if (obj.common.validateString(command.pass, 1, 256) == false) break;
+                        var chguserid = 'user/' + domain.id + '/' + command.user.toLowerCase(), chguser = obj.parent.users[chguserid];
+                        if (chguser && chguser.salt) {
+                            // Compute the password hash & save it
+                            require('./pass').hash(command.pass, chguser.salt, function (err, hash) { if (!err) { chguser.hash = hash; obj.db.SetUser(chguser); } });
                         }
                         break;
                     }
@@ -502,7 +566,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Send a notification message to a user
                         if ((user.siteadmin & 2) == 0) break;
-                        if (obj.common.validateString(command.userid, 1, 64) == false) break; // Meshname is between 1 and 64 characters
+                        if (obj.common.validateString(command.userid, 1, 2048) == false) break;
                         if (obj.common.validateString(command.msg, 1, 4096) == false) break;
 
                         // Create the notification message
@@ -544,7 +608,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var links = {}
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                                 var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, path: '', filename: '', path2: '', filename2: '' };
-                                obj.db.Set(mesh);
+                                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
                                 obj.parent.meshes[meshid] = mesh;
                                 obj.parent.parent.AddEventDispatch([meshid], ws);
                                 if (user.links == null) user.links = {};
@@ -586,7 +650,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                         obj.db.Get(command.meshid, function (err, meshes) {
                             if (meshes.length != 1) return;
-                            var mesh = meshes[0];
+                            var mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
 
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
@@ -635,7 +699,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                             var sfxname = mesh.name;
                             if ((obj.common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                            if ((obj.common.validateString(command.desc, 1, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
+
+                            if ((obj.common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
+							
                             if (change != '') {
                                 
                                 if (sfxname != mesh.name) {
@@ -665,7 +731,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                         });
                                 }
                                 
-                                if (change != '') { obj.db.Set(mesh); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
+								if (change != '') { obj.db.Set(obj.common.escapeLinksFieldName(mesh)); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
+							
                             }
                         }
                         break;
@@ -682,6 +749,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'user', username: user.name, action: 'emailsfxagent', msg: 'User: ' + user.name + 'sent remote session invite to: ' + command.clientname + ', At: ' + command.clientemail });
                                 }
                             }
+
                         }
                         break;
                     }
@@ -713,7 +781,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                             // Add a user to the mesh
                             mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
-                            obj.db.Set(mesh);
+                            obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
                             var change = 'Added user ' + newuser.name + ' to mesh ' + mesh.name;
@@ -727,37 +795,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                         if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                        // Check if the user exists
-                        var deluserid = command.userid, deluser = obj.parent.users[deluserid];
-                        if (deluser == null) {
-                            // TODO: Send error back, user not found.
-                            break;
-                        }
-
                         // Get the mesh
                         var mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
 
-                            // Remove mesh from user
-                            if (deluser.links != null && deluser.links[command.meshid] != null) {
-                                var delmeshrights = deluser.links[command.meshid].rights;
-                                if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[user._id].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
-                                delete deluser.links[command.meshid];
-                                obj.db.Set(deluser);
-                                obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+                            // Check if the user exists - Just in case we need to delete a mesh right for a non-existant user, we do it this way. Technically, it's not possible, but just in case.
+                            var deluserid = command.userid, deluser = obj.parent.users[deluserid];
+                            if (deluser != null) {
+                                // Remove mesh from user
+                                if (deluser.links != null && deluser.links[command.meshid] != null) {
+                                    var delmeshrights = deluser.links[command.meshid].rights;
+                                    if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[deluserid].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
+                                    delete deluser.links[command.meshid];
+                                    obj.db.Set(deluser);
+                                    obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+                                }
                             }
 
                             // Remove user from the mesh
                             if (mesh.links[command.userid] != null) {
                                 delete mesh.links[command.userid];
-                                obj.db.Set(mesh);
-                            }
+                                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
-                            // Notify mesh change
-                            var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
-                            obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                // Notify mesh change
+                                var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                            }
                         }
                         break;
                     }
@@ -772,6 +837,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.amtpassword, 0, 16) == false) break; // Check password
                         if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
                         if ((command.amttls != 1) && (command.amttls != 0)) break;
+
+                        // If we are in WAN-only mode, hostname is not used
+                        if ((obj.parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
 
                         // Get the mesh
                         var mesh = obj.parent.meshes[command.meshid];
@@ -830,9 +898,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
-                                    // Delete this node including network interface information and events
-                                    obj.db.Remove(node._id);
-                                    obj.db.Remove('if' + node._id);
+                                    // Delete this node including network interface information, events and timeline
+                                    obj.db.Remove(node._id); // Remove node with that id
+                                    obj.db.Remove('if' + node._id); // Remove interface information
+                                    obj.db.Remove('nt' + node._id); // Remove notes
+                                    obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                     // Event node deletion
                                     var change = 'Removed device ' + node.name + ' from mesh ' + mesh.name;
@@ -943,6 +1013,40 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'toast':
+                    {
+                        if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                        if (obj.common.validateString(command.title, 1, 512) == false) break; // Check title
+                        if (obj.common.validateString(command.msg, 1, 4096) == false) break; // Check message
+                        for (var i in command.nodeids) {
+                            var nodeid = command.nodeids[i], powerActions = 0;
+                            if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                            if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                                // Get the device
+                                obj.db.Get(nodeid, function (err, nodes) {
+                                    if (nodes.length != 1) return;
+                                    var node = nodes[0];
+
+                                    // Get the mesh for this device
+                                    var mesh = obj.parent.meshes[node.meshid];
+                                    if (mesh) {
+
+                                        // Check if this user has rights to do this
+                                        if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
+
+                                            // Get this device
+                                            var agent = obj.parent.wsagents[node._id];
+                                            if (agent != null) {
+                                                // Send the power command
+                                                agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg }));
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        break;
+                    }
                 case 'getnetworkinfo':
                     {
                         // Argument validation
@@ -992,6 +1096,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var changes = [], change = 0, event = { etype: 'node', username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
                                 event.msg = ": ";
 
+                                // If we are in WAN-only mode, host is not used
+                                if ((obj.parent.parent.args.wanonly == true) && (command.host)) { delete command.host; }
+
                                 // Look for a change
                                 if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
                                 if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
@@ -1012,6 +1119,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
                                     if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                                 }
+                                if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
+                                    var ok = true;
+                                    if (obj.common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
+                                    if (obj.common.validateStrArray(command.tags, 1, 256) == true) { var groupTags = command.tags; for (var i in groupTags) { groupTags[i] = groupTags[i].trim(); if ((groupTags[i] == '') || (groupTags[i].indexOf(',') >= 0)) { ok = false; } } }
+                                    if (ok == true) { groupTags.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }); node.tags = groupTags; change = 1; }
+                                } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
 
                                 if (change == 1) {
                                     // Save the node
@@ -1111,6 +1224,106 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'setNotes':
+                    {
+                        // Argument validation
+                        if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                        var splitid = command.id.split('/');
+                        if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        var idtype = splitid[0];
+                        if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
+
+                        if (idtype == 'node') {
+                            // Check if this user has rights on this id to set notes
+                            obj.db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                                if (nodes.length == 1) {
+                                    var meshlinks = user.links[nodes[0].meshid];
+                                    if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_SETNOTES != 0)) {
+                                        // Set the id's notes
+                                        if (obj.common.validateString(command.notes, 1) == false) {
+                                            obj.db.Remove('nt' + command.id); // Delete the note for this node
+                                        } else {
+                                            obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                                        }
+                                    }
+                                }
+                            });
+                        } else if (idtype == 'mesh') {
+                            // Get the mesh for this device
+                            var mesh = obj.parent.meshes[command.id];
+                            if (mesh) {
+                                // Check if this user has rights to do this
+                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+
+                                // Set the id's notes
+                                if (obj.common.validateString(command.notes, 1) == false) {
+                                    obj.db.Remove('nt' + command.id); // Delete the note for this node
+                                } else {
+                                    obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                                }
+                            }
+                        } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
+                            // Set the id's notes
+                            if (obj.common.validateString(command.notes, 1) == false) {
+                                obj.db.Remove('nt' + command.id); // Delete the note for this node
+                            } else {
+                                obj.db.Set({ _id: 'nt' + command.id, value: command.notes }); // Set the note for this node
+                            }
+                        }
+
+                        break;
+                    }
+                case 'getNotes':
+                    {
+                        // Argument validation
+                        if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                        var splitid = command.id.split('/');
+                        if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        var idtype = splitid[0];
+                        if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
+
+                        if (idtype == 'node') {
+                            // Get the device
+                            obj.db.Get(command.id, function (err, nodes) {
+                                if (nodes.length != 1) return;
+                                var node = nodes[0];
+
+                                // Get the mesh for this device
+                                var mesh = obj.parent.meshes[node.meshid];
+                                if (mesh) {
+                                    // Check if this user has rights to do this
+                                    if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+
+                                    // Get the notes about this node
+                                    obj.db.Get('nt' + command.id, function (err, notes) {
+                                        if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                        ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                    });
+                                }
+                            });
+                        } else if (idtype == 'mesh') {
+                            // Get the mesh for this device
+                            var mesh = obj.parent.meshes[command.id];
+                            if (mesh) {
+                                // Check if this user has rights to do this
+                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+
+                                // Get the notes about this node
+                                obj.db.Get('nt' + command.id, function (err, notes) {
+                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                    ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                });
+                            }
+                        } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
+                            // Get the notes about this node
+                            obj.db.Get('nt' + command.id, function (err, notes) {
+                                if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                            });
+                        }
+
+                        break;
+                    }
             }
         });
 
@@ -1200,7 +1413,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 var mesh = obj.parent.meshes[i];
                 if (mesh) {
                     var meshsplit = mesh._id.split('/');
-                    files.filetree.f[mesh._id] = { t: 1, n: mesh.name, f: {} };
+                    files.filetree.f[mesh._id] = { t: 4, n: mesh.name, f: {} };
                     files.filetree.f[mesh._id].maxbytes = obj.parent.getQuota(mesh._id, domain);
 
                     // Read all files recursively

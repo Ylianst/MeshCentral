@@ -79,11 +79,7 @@ function hex2rstr(d) {
 function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }
 
 // Convert a raw string to a hex string
-function rstr2hex(input) {
-    var r = '', i;
-    for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); }
-    return r;
-}
+function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }
 
 // UTF-8 encoding & decoding functions
 function encode_utf8(s) { return unescape(encodeURIComponent(s)); }

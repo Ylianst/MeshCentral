@@ -37,7 +37,7 @@ module.exports.streamExeWithJavaScript = function (options) {
     if (!options.js) { throw ('js content not specified'); }
 
     // If a Windows binary, parse it if not already parsed
-    if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = require('PE_Parser')(options.sourcePath); }
+    if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = module.exports.parseWindowsExecutable(options.sourceFileName); }
 
     // If unsigned Windows or Linux, we merge at the end with the GUID and no padding.
     if ((options.platform == 'win32' && options.peinfo.CertificateTableAddress == 0) || options.platform != 'win32') {
@@ -79,7 +79,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
     if (!options.msh) { throw ('msh content not specified'); }
 
     // If a Windows binary, parse it if not already parsed
-    if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = require('PE_Parser')(options.sourcePath); }
+    if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = module.exports.parseWindowsExecutable(options.sourceFileName); }
 
     // If unsigned Windows or Linux, we merge at the end with the GUID and no padding.
     if ((options.platform == 'win32' && options.peinfo.CertificateTableAddress == 0) || options.platform != 'win32') {

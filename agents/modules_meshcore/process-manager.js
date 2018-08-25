@@ -5,15 +5,16 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// JavaScript source code
 var GM = require('_GenericMarshal');
 
 function processManager() {
@@ -34,8 +35,12 @@ function processManager() {
     }
     this.getProcesses = function getProcesses(callback) {
         switch (process.platform) {
+            default:
+                throw ('Enumerating processes on ' + process.platform + ' not supported');
             case 'win32':
-                var h = this._kernel32.CreateToolhelp32Snapshot(2, 0), info = GM.CreateVariable(304), retVal = {};
+                var retVal = {};
+                var h = this._kernel32.CreateToolhelp32Snapshot(2, 0);
+                var info = GM.CreateVariable(304);
                 info.toBuffer().writeUInt32LE(304, 0);
                 var nextProcess = this._kernel32.Process32First(h, info);
                 while (nextProcess.Val) {
@@ -57,7 +62,8 @@ function processManager() {
                     delete this.Parent._psp[this.pid];
                     var retVal = {}, lines = this.ps.split('\x0D\x0A'), key = {}, keyi = 0;
                     for (var i in lines) {
-                        var tokens = lines[i].split(' '), tokenList = [];
+                        var tokens = lines[i].split(' ');
+                        var tokenList = [];
                         for (var x in tokens) {
                             if (i == 0 && tokens[x]) { key[tokens[x]] = keyi++; }
                             if (i > 0 && tokens[x]) { tokenList.push(tokens[x]); }
@@ -73,22 +79,20 @@ function processManager() {
                 });
                 p.stdout.on('data', function (chunk) { this.parent.ps += chunk.toString(); });
                 break;
-            default:
-                throw ('Enumerating processes on ' + process.platform + ' not supported');
         }
     };
     this.getProcessInfo = function getProcessInfo(pid) {
         switch (process.platform) {
+            default:
+                throw ('getProcessInfo() not supported for ' + process.platform);
             case 'linux':
-                var status = require('fs').readFileSync('/proc/' + pid + '/status'), lines = status.toString().split('\n'), info = {};
+                var status = require('fs').readFileSync('/proc/' + pid + '/status'), info = {}, lines = status.toString().split('\n');
                 for (var i in lines) {
                     var tokens = lines[i].split(':');
                     if (tokens.length > 1) { tokens[1] = tokens[1].trim(); }
                     info[tokens[0]] = tokens[1];
                 }
-                return info;
-            default:
-                throw ('getProcessInfo() not supported for ' + process.platform);
+                return (info);
         }
     };
 }

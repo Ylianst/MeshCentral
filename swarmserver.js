@@ -15,12 +15,12 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     obj.certificates = certificates;
     obj.legacyAgentConnections = {};
     obj.migrationAgents = {};
-    var common = require('./common.js');
-    var net = require('net');
-    var tls = require('tls');
-    var forge = require('node-forge');
+    const common = require('./common.js');
+    const net = require('net');
+    const tls = require('tls');
+    const forge = require('node-forge');
 
-    var LegacyMeshProtocol = {
+    const LegacyMeshProtocol = {
         NODEPUSH: 1,	           // Used to send a node block to another peer.
         NODEPULL: 2,	           // Used to send a pull block to another peer.
         NODENOTIFY: 3,	           // Used to indicate the node ID to other peers.

@@ -278,6 +278,16 @@ a {
     margin-top: 1px;
 }
 
+.fileIcon4 {
+    background: url(../images/meshicon16.png);
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
 .filelist {
     -moz-user-select: none;
     -khtml-user-select: none;
@@ -521,4 +531,10 @@ a {
 
 .deskToolsBar:hover {
     background-color: #EFE8B6;
+}
+
+.userTableHeader {
+    border-bottom: 1pt solid lightgray;
+    padding-top: 4px;
+    padding-bottom: 4px;
 }

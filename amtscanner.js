@@ -11,7 +11,10 @@ module.exports.CreateAmtScanner = function (parent) {
     var obj = {};
     obj.active = false;
     obj.parent = parent;
+    obj.net = require('net');
+    obj.tls = require('tls');
     obj.dns = require('dns');
+    obj.constants = require('constants');
     obj.dgram = require('dgram');
     obj.common = require('./common.js');
     obj.servers = {};
@@ -24,8 +27,8 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.pendingSendTimer = null;
     obj.mainTimer = null;
     obj.nextTag = 0;
-    var PeriodicScanTime = 30000; // Interval between scan sweeps
-    var PeriodicScanTimeout = 65000; // After this time, timeout the device.
+    const PeriodicScanTime = 30000; // Interval between scan sweeps
+    const PeriodicScanTimeout = 65000; // After this time, timeout the device.
 
     // Build a RMCP packet with a given tag field
     obj.buildRmcpPing = function (tag) {
@@ -105,33 +108,88 @@ module.exports.CreateAmtScanner = function (parent) {
         return ((num >> 24) & 0xFF) + '.' + ((num >> 16) & 0xFF) + '.' + ((num >> 8) & 0xFF) + '.' + (num & 0xFF);
     }
 
-    // Look for all AMT computers that may be locally reachable and poll their presence
+    /*
+    // Sample we could use to optimize DNS resolving, may not be needed at all.
+    obj.BatchResolvePendingMax = 1;
+    obj.BatchResolvePendingCount = 0;
+    obj.BatchResolveResults = {};
+    obj.BatchResolve = function (hostname) {
+        var r = null;
+        hostname = hostname.toLowerCase();
+        if ((hostname == '127.0.0.1') || (hostname == '::1') || (hostname == 'localhost')) return null; // Don't scan localhost
+        if (obj.net.isIP(hostname) > 0) return hostname; // This is an IP address, already resolved.
+        if (obj.BatchResolveResults[hostname]) {
+            if ((obj.BatchResolveResults[hostname].f == 0) || (obj.BatchResolveResults[hostname].f == -1)) {
+                // Already resolving this one or an error occured during resolve, re-check every 30 minutes.
+                if (((Date.now() - obj.BatchResolveResults[hostname].t) < 1800000) || (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax)) { return null; }
+            } else {
+                // We are to try to re-resolve every 30 minutes
+                if (((Date.now() - obj.BatchResolveResults[hostname].t) < 1800000) || (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax)) { return obj.BatchResolveResults[hostname].a; }
+                r = obj.BatchResolveResults[hostname].a;
+            }
+        }
+        if (obj.BatchResolvePendingCount >= obj.BatchResolvePendingMax) return null; // Don't resolve more than 10 names at any given time.
+        console.log('Resolve: ' + hostname);
+        obj.BatchResolvePendingCount++;
+        obj.BatchResolveResults[hostname] = { f: 0, t: Date.now() }; // Mark are resolving
+        obj.dns.lookup(hostname, (err, address, family) => {
+            obj.BatchResolvePendingCount--;
+            if (err != null) {
+                console.log('Resolve error: ' + hostname);
+                obj.BatchResolveResults[hostname] = { f: -1 }; // Mark this as a resolve error
+            } else {
+                console.log('Resolved: %s = %j, family: IPv%s', hostname, address, family);
+                obj.BatchResolveResults[hostname] = { a: address, f: family, t: Date.now() };
+            }
+        });
+        return r;
+    }
+    */
+
+    obj.ResolveName = function (hostname, func) {
+        if ((hostname == '127.0.0.1') || (hostname == '::1') || (hostname == 'localhost')) { func(hostname, null); } // Don't scan localhost
+        if (obj.net.isIP(hostname) > 0) { func(hostname, hostname); return; } // This is an IP address, already resolved.
+        obj.dns.lookup(hostname, function (err, address, family) { if (err == null) { func(hostname, address); } else { func(hostname, null); } });
+    }
+
+    // Look for all Intel AMT computers that may be locally reachable and poll their presence
     obj.performScan = function () {
-        if (obj.action == false) { return false; }
-        obj.parent.db.getLocalAmtNodes(function (err, docs) {
+        if (obj.active == false) { return false; }
+        obj.parent.db.getLocalAmtNodes(function (err, docs) { // TODO: handler more than 10 computer scan at the same time. DNS resolved may need to be a seperate module.
             for (var i in obj.scanTable) { obj.scanTable[i].present = false; }
             if (err == null && docs.length > 0) {
                 for (var i in docs) {
-                    var doc = docs[i];
-                    var host = doc.host.toLowerCase();
-                    if ((host != '127.0.0.1') && (host != '::1') && (host != 'localhost')) { // Don't scan localhost
+                    var doc = docs[i], host = doc.host.toLowerCase();
+                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost')) {
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == undefined) {
                             var tag = obj.nextTag++;
                             obj.scanTableTags[tag] = obj.scanTable[doc._id] = scaninfo = { nodeinfo: doc, present: true, tag: tag, state: 0 };
+                            //console.log('Scan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
                         } else {
                             scaninfo.present = true;
-                            if (scaninfo.state == 1) {
-                                var delta = Date.now() - scaninfo.lastpong;
-                                if (delta > PeriodicScanTimeout) { // More than 10 seconds without a response, mark the node as unknown state
-                                    scaninfo.state = 0;
-                                    obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
-                                }
+                            var delta = Date.now() - scaninfo.lastpong;
+                            //console.log('Rescan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
+                            if ((scaninfo.state == 1) && (delta >= PeriodicScanTimeout)) {
+                                // More than 2 minutes without a response, mark the node as unknown state
+                                scaninfo.state = 0;
+                                obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
+                            } else if ((scaninfo.tcp == null) && ((scaninfo.state == 0) || isNaN(delta) || (delta > PeriodicScanTime))) {
+                                // More than 30 seconds without a response, try TCP detection
+                                obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result, version) {
+                                    if (result == false) return;
+                                    tag.lastpong = Date.now();
+                                    if (tag.state == 0) {
+                                        tag.state = 1;
+                                        obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); // Report power state as "present" (7).
+                                        if (version != null) { obj.changeAmtState(tag.nodeinfo._id, version, 2, tag.nodeinfo.intelamt.tls); }
+                                    }
+                                });
                             }
                         }
                         // Start scanning this node
                         scaninfo.lastping = Date.now();
-                        obj.checkAmtPresence(doc.host, scaninfo.tag);
+                        obj.checkAmtPresence(host, scaninfo.tag);
                     }
                }
             }
@@ -146,8 +204,12 @@ module.exports.CreateAmtScanner = function (parent) {
         return true;
     }
 
-    // Check the presense of a specific Intel AMT computer
-    obj.checkAmtPresence = function (host, tag) {
+    // Check the presense of a specific Intel AMT computer using RMCP
+    obj.checkAmtPresence = function (host, tag) { obj.ResolveName(host, function (hostname, ip) { obj.checkAmtPresenceEx(ip, tag); }); }
+
+    // Check the presense of a specific Intel AMT computer using RMCP
+    obj.checkAmtPresenceEx = function (host, tag) {
+        if (host == null) return;
         var serverid = Math.floor(tag / 255);
         var servertag = (tag % 255);
         var packet = obj.buildRmcpPing(servertag);
@@ -206,7 +268,7 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.changeConnectState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
         //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
         //var provisioningStateStr = provisioningStates[provisioningState];
-        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPorts.join(', ') + '], tag: ' + tag);
+        //console.log('Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning at ' + rinfo.address + ', Open Ports: [' + openPort + '], tag: ' + tag);
         var scaninfo = obj.scanTableTags[tag];
         if (scaninfo != undefined) {
             scaninfo.lastpong = Date.now();
@@ -255,8 +317,8 @@ module.exports.CreateAmtScanner = function (parent) {
                 var change = false;
                 if (node.intelamt == undefined) { node.intelamt = {}; }
                 if (node.intelamt.tls != tls) { node.intelamt.tls = tls; change = true; changes.push(tls==1?'TLS':'NoTLS'); }
-                if (obj.compareAmtVersionStr(node.intelamt.ver, version)) { node.intelamt.ver = version; change = true; changes.push('Version ' + version); }
-                if (node.intelamt.state != provisioningState) { node.intelamt.state = provisioningState; change = true; changes.push('State'); }
+                if (obj.compareAmtVersionStr(node.intelamt.ver, version)) { node.intelamt.ver = version; change = true; changes.push('AMT Version ' + version); }
+                if (node.intelamt.state != provisioningState) { node.intelamt.state = provisioningState; change = true; changes.push('AMT State'); }
                 if (change == true) {
                     // Make the change in the database
                     obj.parent.db.Set(node);
@@ -285,6 +347,54 @@ module.exports.CreateAmtScanner = function (parent) {
         if ((newVerArr.length == 3) && (oldVerArr.length == 3) && (oldVerArr[2] != newVerArr[2])) return true;
         return false;
     }
+
+    // Check the presense of a specific Intel AMT computer using RMCP
+    obj.checkTcpPresence = function (host, port, scaninfo, func) { obj.ResolveName(host, function (hostname, ip) { obj.checkTcpPresenceEx(ip, port, scaninfo, func); }); }
+
+    // Check that we can connect TCP to a given port
+    obj.checkTcpPresenceEx = function (host, port, scaninfo, func) {
+        if (host == null) return;
+        //console.log('checkTcpPresence(' + host + ':' + port + ')');
+        try {
+            var client;
+            if (port == 16992) {
+                // Connect using TCP
+                client = new obj.net.Socket();
+                client.connect(port, host, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
+            } else {
+                // Connect using TLS, we will switch from default TLS to TLS1-only and back if we get a connection error to support older Intel AMT.
+                if (scaninfo.tlsoption == null) { scaninfo.tlsoption = 0; }
+                client = obj.tls.connect(port, host, scaninfo.tlsoption == 1 ? { secureProtocol: 'TLSv1_method', rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE } : { rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE }, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
+            }
+            client.scaninfo = scaninfo;
+            client.func = func;
+            client.port = port;
+            client.setTimeout(10000);
+            client.on('data', function (data) { var version = obj.getIntelAmtVersionFromHeaders(data.toString()); if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, version != null, version); } });
+            client.on('error', function () { if (this.scaninfo.tlsoption == 0) { this.scaninfo.tlsoption = 1; } else if (this.scaninfo.tlsoption == 1) { this.scaninfo.tlsoption = 0; } if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('timeout', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('close', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            client.on('end', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
+            scaninfo.tcp = client;
+        } catch (ex) { console.log(ex); }
+    }
+
+    // Return the Intel AMT version from the HTTP headers. Return null if nothing is found.
+    obj.getIntelAmtVersionFromHeaders = function (headers) {
+        if (headers == null || headers.length == 0) return null;
+        var lines = headers.split('\r\n');
+        for (var i in lines) {
+            // Look for the Intel AMT version
+            if (lines[i].substring(0, 46) == 'Server: Intel(R) Active Management Technology ') {
+                // We need to check that the Intel AMT version is correct, in the "a.b.c" format
+                var ver = lines[i].substring(46), splitver = ver.split('.');
+                if ((splitver.length == 3 || splitver.length == 4) && ('' + parseInt(splitver[0]) === splitver[0]) && ('' + parseInt(splitver[1]) === splitver[1]) && ('' + parseInt(splitver[2]) === splitver[2])) { return (splitver[0] + '.' + splitver[1] + '.' + splitver[2]); }
+            }
+        }
+        return null;
+    }
+
+    //console.log(obj.getIntelAmtVersionFromHeaders("HTTP/1.1 303 See Other\r\nLocation: /logon.htm\r\nContent-Length: 0\r\nServer: Intel(R) Active Management Technology 7.1.91\r\n\r\n"));
 
     return obj;
 }

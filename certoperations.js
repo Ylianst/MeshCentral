@@ -130,7 +130,7 @@ module.exports.CertificateOperations = function () {
     }
 
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
-    obj.GetMeshServerCertificate = function (directory, args, config, parent, func) {
+    obj.GetMeshServerCertificate = function (parent, args, config, func) {
         var certargs = args.cert;
         var mpscertargs = args.mpscert;
         var strongCertificate = (args.fastcert ? false : true);
@@ -138,68 +138,68 @@ module.exports.CertificateOperations = function () {
         // commonName, country, organization
         
         // If the certificates directory does not exist, create it.
-        if (!obj.dirExists(directory)) { obj.fs.mkdirSync(directory); }
+        if (!obj.dirExists(parent.datapath)) { obj.fs.mkdirSync(parent.datapath); }
         var r = {}, rcount = 0;
         
         // If the root certificate already exist, load it
-        if (obj.fileExists(directory + '/root-cert-public.crt') && obj.fileExists(directory + '/root-cert-private.key')) {
-            var rootCertificate = obj.fs.readFileSync(directory + '/root-cert-public.crt', 'utf8');
-            var rootPrivateKey = obj.fs.readFileSync(directory + '/root-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('root-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('root-cert-private.key'))) {
+            var rootCertificate = obj.fs.readFileSync(parent.getConfigFilePath('root-cert-public.crt'), 'utf8');
+            var rootPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('root-cert-private.key'), 'utf8');
             r.root = { cert: rootCertificate, key: rootPrivateKey };
             rcount++;
         }
 
         if (args.tlsoffload == true) {
             // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
-            if (obj.fileExists(directory + '/webserver-cert-public.crt')) {
-                var webCertificate = obj.fs.readFileSync(directory + '/webserver-cert-public.crt', 'utf8');
+            if (obj.fileExists(parent.getConfigFilePath('webserver-cert-public.crt'))) {
+                var webCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-cert-public.crt'), 'utf8');
                 r.web = { cert: webCertificate };
                 rcount++;
             }
         } else {
             // If the web certificate already exist, load it. Load both certificate and private key
-            if (obj.fileExists(directory + '/webserver-cert-public.crt') && obj.fileExists(directory + '/webserver-cert-private.key')) {
-                var webCertificate = obj.fs.readFileSync(directory + '/webserver-cert-public.crt', 'utf8');
-                var webPrivateKey = obj.fs.readFileSync(directory + '/webserver-cert-private.key', 'utf8');
+            if (obj.fileExists(parent.getConfigFilePath('webserver-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('webserver-cert-private.key'))) {
+                var webCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-cert-public.crt'), 'utf8');
+                var webPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('webserver-cert-private.key'), 'utf8');
                 r.web = { cert: webCertificate, key: webPrivateKey };
                 rcount++;
             }
         }
         
         // If the mps certificate already exist, load it
-        if (obj.fileExists(directory + '/mpsserver-cert-public.crt') && obj.fileExists(directory + '/mpsserver-cert-private.key')) {
-            var mpsCertificate = obj.fs.readFileSync(directory + '/mpsserver-cert-public.crt', 'utf8');
-            var mpsPrivateKey = obj.fs.readFileSync(directory + '/mpsserver-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('mpsserver-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('mpsserver-cert-private.key'))) {
+            var mpsCertificate = obj.fs.readFileSync(parent.getConfigFilePath('mpsserver-cert-public.crt'), 'utf8');
+            var mpsPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('mpsserver-cert-private.key'), 'utf8');
             r.mps = { cert: mpsCertificate, key: mpsPrivateKey };
             rcount++;
         }
         
         // If the agent certificate already exist, load it
-        if (obj.fileExists(directory + '/agentserver-cert-public.crt') && obj.fileExists(directory + '/agentserver-cert-private.key')) {
-            var agentCertificate = obj.fs.readFileSync(directory + '/agentserver-cert-public.crt', 'utf8');
-            var agentPrivateKey = obj.fs.readFileSync(directory + '/agentserver-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('agentserver-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('agentserver-cert-private.key'))) {
+            var agentCertificate = obj.fs.readFileSync(parent.getConfigFilePath('agentserver-cert-public.crt'), 'utf8');
+            var agentPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('agentserver-cert-private.key'), 'utf8');
             r.agent = { cert: agentCertificate, key: agentPrivateKey };
             rcount++;
         }
 
         // If the console certificate already exist, load it
-        if (obj.fileExists(directory + '/amtconsole-cert-public.crt') && obj.fileExists(directory + '/agentserver-cert-private.key')) {
-            var amtConsoleCertificate = obj.fs.readFileSync(directory + '/amtconsole-cert-public.crt', 'utf8');
-            var amtConsolePrivateKey = obj.fs.readFileSync(directory + '/amtconsole-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('amtconsole-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('agentserver-cert-private.key'))) {
+            var amtConsoleCertificate = obj.fs.readFileSync(parent.getConfigFilePath('amtconsole-cert-public.crt'), 'utf8');
+            var amtConsolePrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('amtconsole-cert-private.key'), 'utf8');
             r.console = { cert: amtConsoleCertificate, key: amtConsolePrivateKey };
             rcount++;
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
-        if (obj.fileExists(directory + '/swarmserver-cert-public.crt') && obj.fileExists(directory + '/swarmserver-cert-private.key')) {
-            var swarmServerCertificate = obj.fs.readFileSync(directory + '/swarmserver-cert-public.crt', 'utf8');
-            var swarmServerPrivateKey = obj.fs.readFileSync(directory + '/swarmserver-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('swarmserver-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('swarmserver-cert-private.key'))) {
+            var swarmServerCertificate = obj.fs.readFileSync(parent.getConfigFilePath('swarmserver-cert-public.crt'), 'utf8');
+            var swarmServerPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('swarmserver-cert-private.key'), 'utf8');
             r.swarmserver = { cert: swarmServerCertificate, key: swarmServerPrivateKey };
         }
 
         // If the swarm server root certificate exist, load it (This is an optional certificate)
-        if (obj.fileExists(directory + '/swarmserverroot-cert-public.crt')) {
-            var swarmServerRootCertificate = obj.fs.readFileSync(directory + '/swarmserverroot-cert-public.crt', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('swarmserverroot-cert-public.crt'))) {
+            var swarmServerRootCertificate = obj.fs.readFileSync(parent.getConfigFilePath('swarmserverroot-cert-public.crt'), 'utf8');
             r.swarmserverroot = { cert: swarmServerRootCertificate };
         }
 
@@ -208,8 +208,8 @@ module.exports.CertificateOperations = function () {
             var caok, caindex = 1, calist = [];
             do {
                 caok = false;
-                if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
-                    var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
+                if (obj.fileExists(parent.getConfigFilePath('webserver-cert-chain' + caindex + '.crt'))) {
+                    var caCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-cert-chain' + caindex + '.crt'), 'utf8');
                     calist.push(caCertificate);
                     caok = true;
                 }
@@ -243,23 +243,23 @@ module.exports.CertificateOperations = function () {
                 var dnsname = config.domains[i].dns;
                 if (args.tlsoffload == true) {
                     // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
-                    if (obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt')) {
-                        r.dns[i] = { cert: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-public.crt', 'utf8') };
+                    if (obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'))) {
+                        r.dns[i] = { cert: obj.fs.readFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'), 'utf8') };
                         config.domains[i].certs = r.dns[i];
                     } else {
                         console.log('WARNING: File "webserver-' + i + '-cert-public.crt" missing, domain "' + i + '" will not work correctly.');
                     }
                 } else {
                     // If the web certificate already exist, load it. Load both certificate and private key
-                    if (obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt') && obj.fileExists(directory + '/webserver-' + i + '-cert-private.key')) {
-                        r.dns[i] = { cert: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-public.crt', 'utf8'), key: obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-private.key', 'utf8') };
+                    if (obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-private.key'))) {
+                        r.dns[i] = { cert: obj.fs.readFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'), 'utf8'), key: obj.fs.readFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-private.key'), 'utf8') };
                         config.domains[i].certs = r.dns[i];
                         // If CA certificates are present, load them
                         var caok, caindex = 1, calist = [];
                         do {
                             caok = false;
-                            if (obj.fileExists(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt')) {
-                                var caCertificate = obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt', 'utf8');
+                            if (obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-chain' + caindex + '.crt'))) {
+                                var caCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-chain' + caindex + '.crt'), 'utf8');
                                 calist.push(caCertificate);
                                 caok = true;
                             }
@@ -283,6 +283,9 @@ module.exports.CertificateOperations = function () {
             // Fetch the name of the server
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.CommonName = webCertificate.subject.getField('CN').value;
+            r.CommonNames = [ r.CommonName.toLowerCase() ];
+            var altNames = webCertificate.getExtension('subjectAltName')
+            if (altNames) { for (var i in altNames.altNames) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
             r.RootName = rootCertificate.subject.getField('CN').value;
 
@@ -294,14 +297,14 @@ module.exports.CertificateOperations = function () {
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates
-            if ((r.CommonName == commonName) && (xcountry == country) && (xorganization == organization) && (r.AmtMpsName == mpsCommonName)) {
+            if ((r.CommonNames.indexOf(commonName.toLowerCase()) >= 0) && (r.AmtMpsName == mpsCommonName)) {
                 // Certificate matches what we want, keep it.
                 if (func != undefined) { func(r); } return r;
             } else {
                 // Check what certificates we really need to re-generate.
-                if ((r.CommonName != commonName) || (xcountry != country) || (xorganization != organization)) { forceWebCertGen = 1; }
+                if ((r.CommonNames.indexOf(commonName.toLowerCase()) < 0)) { forceWebCertGen = 1; }
                 if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
-            } 
+            }
         }
         console.log('Generating certificates, may take a few minutes...');
         parent.updateServerState('state', 'generatingcertificates');
@@ -323,8 +326,8 @@ module.exports.CertificateOperations = function () {
             rootCertAndKey = obj.GenerateRootCertificate(true, 'MeshCentralRoot', null, null, strongCertificate);
             rootCertificate = obj.pki.certificateToPem(rootCertAndKey.cert);
             rootPrivateKey = obj.pki.privateKeyToPem(rootCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/root-cert-public.crt', rootCertificate);
-            obj.fs.writeFileSync(directory + '/root-cert-private.key', rootPrivateKey);
+            obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public.crt'), rootCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-private.key'), rootPrivateKey);
         } else {
             // Keep the root certificate we have
             rootCertAndKey = { cert: obj.pki.certificateFromPem(r.root.cert), key: obj.pki.privateKeyFromPem(r.root.key) };
@@ -340,8 +343,8 @@ module.exports.CertificateOperations = function () {
             webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, strongCertificate);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
             webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/webserver-cert-public.crt', webCertificate);
-            obj.fs.writeFileSync(directory + '/webserver-cert-private.key', webPrivateKey);
+            obj.fs.writeFileSync(parent.getConfigFilePath('webserver-cert-public.crt'), webCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('webserver-cert-private.key'), webPrivateKey);
         } else {
             // Keep the console certificate we have
             webCertAndKey = { cert: obj.pki.certificateFromPem(r.web.cert), key: obj.pki.privateKeyFromPem(r.web.key) };
@@ -356,8 +359,8 @@ module.exports.CertificateOperations = function () {
             agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer', null, strongCertificate);
             agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
             agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/agentserver-cert-public.crt', agentCertificate);
-            obj.fs.writeFileSync(directory + '/agentserver-cert-private.key', agentPrivateKey);
+            obj.fs.writeFileSync(parent.getConfigFilePath('agentserver-cert-public.crt'), agentCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('agentserver-cert-private.key'), agentPrivateKey);
         } else {
             // Keep the mesh agent server certificate we have
             agentCertAndKey = { cert: obj.pki.certificateFromPem(r.agent.cert), key: obj.pki.privateKeyFromPem(r.agent.key) };
@@ -372,8 +375,8 @@ module.exports.CertificateOperations = function () {
             mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, mpsCommonName, mpsCountry, mpsOrganization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/mpsserver-cert-public.crt', mpsCertificate);
-            obj.fs.writeFileSync(directory + '/mpsserver-cert-private.key', mpsPrivateKey);
+            obj.fs.writeFileSync(parent.getConfigFilePath('mpsserver-cert-public.crt'), mpsCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('mpsserver-cert-private.key'), mpsPrivateKey);
         } else {
             // Keep the console certificate we have
             mpsCertAndKey = { cert: obj.pki.certificateFromPem(r.mps.cert), key: obj.pki.privateKeyFromPem(r.mps.key) };
@@ -388,8 +391,8 @@ module.exports.CertificateOperations = function () {
             consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: 'extKeyUsage', clientAuth: true, '2.16.840.1.113741.1.2.1': true, '2.16.840.1.113741.1.2.2': true, '2.16.840.1.113741.1.2.3': true }, false); // Intel AMT Remote, Agent and Activation usages
             consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
             consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
-            obj.fs.writeFileSync(directory + '/amtconsole-cert-public.crt', consoleCertificate);
-            obj.fs.writeFileSync(directory + '/amtconsole-cert-private.key', consolePrivateKey);
+            obj.fs.writeFileSync(parent.getConfigFilePath('amtconsole-cert-public.crt'), consoleCertificate);
+            obj.fs.writeFileSync(parent.getConfigFilePath('amtconsole-cert-private.key'), consolePrivateKey);
         } else {
             // Keep the console certificate we have
             consoleCertAndKey = { cert: obj.pki.certificateFromPem(r.console.cert), key: obj.pki.privateKeyFromPem(r.console.key) };
@@ -406,13 +409,13 @@ module.exports.CertificateOperations = function () {
                 var dnsname = config.domains[i].dns;
                 if (args.tlsoffload != true) {
                     // If the web certificate does not exist, create it
-                    if ((obj.fileExists(directory + '/webserver-' + i + '-cert-public.crt') == false) || (obj.fileExists(directory + '/webserver-' + i + '-cert-private.key') == false)) {
+                    if ((obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt')) == false) || (obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-private.key')) == false)) {
                         console.log('Generating HTTPS certificate for ' + i + '...');
                         var xwebCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, dnsname, country, organization, null, strongCertificate);
                         var xwebCertificate = obj.pki.certificateToPem(xwebCertAndKey.cert);
                         var xwebPrivateKey = obj.pki.privateKeyToPem(xwebCertAndKey.key);
-                        obj.fs.writeFileSync(directory + '/webserver-' + i + '-cert-public.crt', xwebCertificate);
-                        obj.fs.writeFileSync(directory + '/webserver-' + i + '-cert-private.key', xwebPrivateKey);
+                        obj.fs.writeFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'), xwebCertificate);
+                        obj.fs.writeFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-private.key'), xwebPrivateKey);
                         r.dns[i] = { cert: xwebCertificate, key: xwebPrivateKey };
                         config.domains[i].certs = r.dns[i];
 
@@ -420,8 +423,8 @@ module.exports.CertificateOperations = function () {
                         var caok, caindex = 1, calist = [];
                         do {
                             caok = false;
-                            if (obj.fileExists(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt')) {
-                                var caCertificate = obj.fs.readFileSync(directory + '/webserver-' + i + '-cert-chain' + caindex + '.crt', 'utf8');
+                            if (obj.fileExists(parent.getConfigFilePath('webserver-' + i + '-cert-chain' + caindex + '.crt'))) {
+                                var caCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-chain' + caindex + '.crt'), 'utf8');
                                 calist.push(caCertificate);
                                 caok = true;
                             }
@@ -434,15 +437,15 @@ module.exports.CertificateOperations = function () {
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
-        if (obj.fileExists(directory + '/swarmserver-cert-public.crt') && obj.fileExists(directory + '/swarmserver-cert-private.key')) {
-            var swarmServerCertificate = obj.fs.readFileSync(directory + '/swarmserver-cert-public.crt', 'utf8');
-            var swarmServerPrivateKey = obj.fs.readFileSync(directory + '/swarmserver-cert-private.key', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('swarmserver-cert-public.crt')) && obj.fileExists(parent.getConfigFilePath('swarmserver-cert-private.key'))) {
+            var swarmServerCertificate = obj.fs.readFileSync(parent.getConfigFilePath('swarmserver-cert-public.crt'), 'utf8');
+            var swarmServerPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath('swarmserver-cert-private.key'), 'utf8');
             r.swarmserver = { cert: swarmServerCertificate, key: swarmServerPrivateKey };
         }
 
         // If the swarm server root certificate exist, load it (This is an optional certificate)
-        if (obj.fileExists(directory + '/swarmserverroot-cert-public.crt')) {
-            var swarmServerRootCertificate = obj.fs.readFileSync(directory + '/swarmserverroot-cert-public.crt', 'utf8');
+        if (obj.fileExists(parent.getConfigFilePath('swarmserverroot-cert-public.crt'))) {
+            var swarmServerRootCertificate = obj.fs.readFileSync(parent.getConfigFilePath('swarmserverroot-cert-public.crt'), 'utf8');
             r.swarmserverroot = { cert: swarmServerRootCertificate };
         }
 
@@ -451,8 +454,8 @@ module.exports.CertificateOperations = function () {
             var caok, caindex = 1, calist = [];
             do {
                 caok = false;
-                if (obj.fileExists(directory + '/webserver-cert-chain' + caindex + '.crt')) {
-                    var caCertificate = obj.fs.readFileSync(directory + '/webserver-cert-chain' + caindex + '.crt', 'utf8');
+                if (obj.fileExists(parent.getConfigFilePath('webserver-cert-chain' + caindex + '.crt'))) {
+                    var caCertificate = obj.fs.readFileSync(parent.getConfigFilePath('webserver-cert-chain' + caindex + '.crt'), 'utf8');
                     calist.push(caCertificate);
                     caok = true;
                 }
@@ -481,7 +484,16 @@ module.exports.CertificateOperations = function () {
         if (acceleratorCreateCount > 0) {
             acceleratorCreateCount--;
             var accelerator = fork(program, [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-            accelerator.on('message', function (message) { this.func(message); if (pendingAccelerator.length > 0) { accelerator.send(pendingAccelerator.shift()); } else { freeAccelerators.push(this); } });
+            accelerator.accid = acceleratorCreateCount;
+            accelerator.on('message', function (message) {
+                this.func(this.tag, message);
+                delete this.tag;
+                if (pendingAccelerator.length > 0) {
+                    var x = pendingAccelerator.shift();
+                    if (x.tag) { this.tag = x.tag; delete x.tag; }
+                    accelerator.send(x);
+                } else { freeAccelerators.push(this); }
+            });
             accelerator.send({ action: 'setState', certs: obj.acceleratorCertStore });
             return accelerator;
         }
@@ -496,21 +508,22 @@ module.exports.CertificateOperations = function () {
     }
 
     // Perform any RSA signature, just pass in the private key and data.
-    obj.acceleratorPerformSignature = function (privatekey, data, func) {
+    obj.acceleratorPerformSignature = function (privatekey, data, tag, func) {
         if (acceleratorTotalCount <= 1) {
             // No accelerators available
             if (typeof privatekey == 'number') { privatekey = obj.acceleratorCertStore[privatekey].key; }
             const sign = obj.crypto.createSign('SHA384');
             sign.end(new Buffer(data, 'binary'));
-            func(sign.sign(privatekey).toString('binary'));
+            func(tag, sign.sign(privatekey).toString('binary'));
         } else {
             var acc = obj.getAccelerator();
             if (acc == null) {
                 // Add to pending accelerator workload
-                pendingAccelerator.push({ action: 'sign', key: privatekey, data: data });
+                pendingAccelerator.push({ action: 'sign', key: privatekey, data: data, tag: tag });
             } else {
                 // Send to accelerator now
                 acc.func = func;
+                acc.tag = tag;
                 acc.send({ action: 'sign', key: privatekey, data: data });
             }
         }

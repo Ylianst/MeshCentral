@@ -17,24 +17,25 @@
 // Just run with --mongodb [connectionstring], where the connection string is documented here: https://docs.mongodb.com/manual/reference/connection-string/
 // The default collection is "meshcentral", but you can override it using --mongodbcol [collection]
 //
-module.exports.CreateDB = function (args, datapath) {
+module.exports.CreateDB = function (parent) {
     var obj = {};
     obj.path = require('path');
+    obj.parent = parent;
     obj.identifier = null;
 
-    if (args.mongodb) {
+    if (obj.parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 2;
         var Datastore = require('mongojs');
-        var db = Datastore(args.mongodb);
+        var db = Datastore(obj.parent.args.mongodb);
         var dbcollection = 'meshcentral';
-        if (args.mongodbcol) { dbcollection = args.mongodbcol; }
+        if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
         obj.file = db.collection(dbcollection);
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
         var Datastore = require('nedb');
-        obj.file = new Datastore({ filename: obj.path.join(datapath, 'meshcentral.db'), autoload: true });
+        obj.file = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true });
         obj.file.persistence.setAutocompactionInterval(3600);
     }
     
@@ -92,13 +93,15 @@ module.exports.CreateDB = function (args, datapath) {
     obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, func); }
     obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, { type: 0 }, func); }
     obj.Remove = function (id) { obj.file.remove({ _id: id }); }
+    obj.RemoveNode = function (id) { obj.file.remove({ node: id }, { multi: true }); }
     obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); }
     obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); }
     obj.InsertMany = function (data, func) { obj.file.insert(data, func); }
     obj.StoreEvent = function (ids, source, event) { obj.file.insert(event); }
     obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func) } }
     obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } }
-    obj.RemoveMesh = function (id) { obj.file.remove({ mesh: id }, { multi: true }); obj.file.remove({ _id: id }); }
+    obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, nodeid: nodeid }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.file.find({ type: 'event', domain: domain, nodeid: nodeid }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } }
+    obj.RemoveMesh = function (id) { obj.file.remove({ mesh: id }, { multi: true }); obj.file.remove({ _id: id }); obj.file.remove({ _id: 'nt' + id }); }
     obj.RemoveAllEvents = function (domain) { obj.file.remove({ type: 'event', domain: domain }, { multi: true }); }
     obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); }
     obj.DeleteDomain = function (domain, func) { obj.file.remove({ domain: domain }, { multi: true }, func); }

@@ -72,27 +72,27 @@
                                     </div>
                                     <table>
                                         <tr>
-                                            <td align=right width=100>Username:</td>
+                                            <td id="nuUser" align=right width=100>Username:</td>
                                             <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                                         </tr>
                                         <tr>
-                                            <td align=right width=100>Email:</td>
+                                            <td id="nuEmail" align=right width=100>Email:</td>
                                             <td><input id=aemail type=text name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
                                         </tr>
                                         <tr>
-                                            <td align=right>Password:</td>
+                                            <td id="nuPass1" align=right>Password:</td>
                                             <td><input id=apassword1 type=password name=password1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3) onkeyup=validateCreate(3,event) /></td>
                                         </tr>
                                         <tr>
-                                            <td align=right>Password:</td>
+                                            <td id="nuPass2" align=right>Password:</td>
                                             <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
                                         </tr>
                                         <tr>
-                                            <td align=right>Password Hint:</td>
+                                            <td id="nuHint" align=right>Password Hint:</td>
                                             <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5) onkeyup=validateCreate(5,event) /></td>
                                         </tr>
                                         <tr id=newAccountPass title="Enter the account creation token">
-                                            <td align=right>Creation Token:</td>
+                                            <td id="nuToken" align=right>Creation Token:</td>
                                             <td><input id=anewaccountpass type=password name=anewaccountpass autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(6) onkeyup=validateCreate(6,event) /></td>
                                         </tr>
                                         <tr>
@@ -169,9 +169,9 @@
     </div>
     <script>
         var passhint = "{{{passhint}}}";
-        var newAccountPass = {{{newAccountPass}}};
-        var emailCheck = {{{emailcheck}}};
-        var features = {{{features}}};
+        var newAccountPass = parseInt('{{{newAccountPass}}}');
+        var emailCheck = parseInt('{{{emailcheck}}}');
+        var features = parseInt('{{{features}}}');
 
         function startup() {
             if ((features & 32) == 0) {
@@ -185,7 +185,7 @@
             center();
             validateLogin();
             validateCreate();
-            if ('{{loginmode}}' != '') { go({{loginmode}}); } else { go(1); }
+            if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
             QV('newAccountDiv', '{{{newAccount}}}' != '0' );
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));
@@ -215,20 +215,29 @@
         }
 
         function validateLogin(box, e) {
-            var ok = (Q('username').value.length > 0 && Q('password').value.length > 0);
+            var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
             QE('loginButton', ok);
             setDialogMode(0);
-            if ((e != null) && (e.keyCode == 13)) {
-                if (box == 1) { Q('password').focus(); }
-                if (box == 2) { Q('loginButton').click(); }
-            }
+            if ((e != null) && (e.keyCode == 13)) { if (box == 1) { Q('password').focus(); } else if (box == 2) { Q('loginButton').click(); } }
             if (e != null) { haltEvent(e); }
         }
 
         function validateCreate(box,e) {
             setDialogMode(0);
-            var ok = ((Q('ausername').value.length > 0) && (checkEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
-            if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
+            var userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1);
+            var emailok = (validateEmail(Q('aemail').value) == true);
+            var pass1ok = (Q('apassword1').value.length > 0);
+            var pass2ok = (Q('apassword2').value.length > 0) && (Q('apassword2').value == Q('apassword1').value);
+            var newAccOk = (newAccountPass == 0) || (Q('anewaccountpass').value.length > 0);
+            var ok = (userok && emailok && pass1ok && pass2ok && newAccOk);
+
+            // Color the fields
+            QS('nuUser').color = userok?'black':'#7b241c';
+            QS('nuEmail').color = emailok?'black':'#7b241c';
+            QS('nuPass1').color = pass1ok?'black':'#7b241c';
+            QS('nuPass2').color = pass2ok?'black':'#7b241c';
+            QS('nuToken').color = newAccOk?'black':'#7b241c';
+
             QE('createButton', ok);
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');
@@ -243,36 +252,20 @@
                 if (box == 2) { Q('apassword1').focus(); }
                 if (box == 3) { Q('apassword2').focus(); }
                 if (box == 4) { Q('apasswordhint').focus(); }
-                if (box == 5) {
-                    if (newAccountPass == 1) {
-                        Q('anewaccountpass').focus();
-                    } else {
-                        Q('createButton').click();
-                    }
-                }
-                if (box == 6) {
-                    Q('createButton').click();
-                }
+                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { Q('createButton').click(); } }
+                if (box == 6) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
         }
 
         function validateReset(e) {
             setDialogMode(0);
-            var x = checkEmail(Q('remail').value);
+            var x = validateEmail(Q('remail').value);
             QE('eresetButton', x);
             if ((e != null) && (e.keyCode == 13) && (x == true)) {
                 Q('eresetButton').click();
             }
             if (e != null) { haltEvent(e); }
-        }
-
-        // Return true is the input string looks like an email address
-        function checkEmail(str) {
-            var x = str.split('@');
-            var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
-            if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
-            return ok;
         }
 
         // Return a password strength score
@@ -328,6 +321,7 @@
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
+        function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
 
     </script>
 </body>

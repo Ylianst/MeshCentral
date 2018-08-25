@@ -103,7 +103,7 @@ function _PutObjToBodyXml(resuri, putObj) {
 }
 
 // This is a drop-in replacement to _turnToXml() that works without xml parser dependency.
-Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : null); } });
+try { Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : null); } }); } catch (ex) { }
 function _treeBuilder() {
     this.tree = [];
     this.push = function (element) { this.tree.push(element); };

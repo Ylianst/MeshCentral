@@ -18,7 +18,7 @@ function createMeshCore(agent) {
     var obj = {};
     
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    obj.meshCoreInfo = "MeshCore v4";
+    obj.meshCoreInfo = "MeshCore v5";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
     var meshServerConnectionState = 0;
     var tunnels = {};
@@ -112,13 +112,9 @@ function createMeshCore(agent) {
         try {
             getIpLocationDataExInProgress = true;
             getIpLocationDataExCounts[0]++;
-            http.request({
-                host: 'ipinfo.io', // TODO: Use a HTTP proxy if needed!!!!
-                port: 80,
-                path: 'http://ipinfo.io/json', // Use this service to get our geolocation
-                headers: { Host: "ipinfo.io" }
-            },
-                function (resp) {
+            var options = http.parseUri("http://ipinfo.io/json");
+            options.method = 'GET';
+            http.request(options, function (resp) {
                 if (resp.statusCode == 200) {
                     var geoData = '';
                     resp.data = function (geoipdata) { geoData += geoipdata; };
@@ -372,11 +368,12 @@ function createMeshCore(agent) {
                             break;
                         }
                         case 'pskill': {
-                            sendConsoleText(JSON.stringify(data));
+                            //sendConsoleText(JSON.stringify(data));
                             try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
                             break;
                         }
                     }
+                    break;
                 }
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
@@ -401,6 +398,11 @@ function createMeshCore(agent) {
                     getIpLocationData(function (location) { mesh.SendCommand({ "action": "iplocation", "type": "publicip", "value": location }); });
                     break;
                 }
+                case 'toast': {
+                    // Display a toast message
+                    if (data.title && data.msg) { require('toaster').Toast(data.title, data.msg); }
+                    break;
+                }
             }
         }
     }
@@ -421,7 +423,6 @@ function createMeshCore(agent) {
             // List all the drives in the root, or the root itself
             var results = null;
             try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
-            //console.log('a', objToString(results, 0, ' '));
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     var drive = { n: results[i].name, t: 1 };
@@ -432,14 +433,14 @@ function createMeshCore(agent) {
         } else {
             // List all the files and folders in this path
             if (reqpath == '') { reqpath = '/'; }
-            var xpath = obj.path.join(reqpath, '*');
-            var results = null;
-            
+            var results = null, xpath = obj.path.join(reqpath, '*');
+            //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
             try { results = fs.readdirSync(xpath); } catch (e) { }
             if (results != null) {
                 for (var i = 0; i < results.length; ++i) {
                     if ((results[i] != '.') && (results[i] != '..')) {
                         var stat = null, p = obj.path.join(reqpath, results[i]);
+                        //if (process.platform == "win32") { p = p.split('/').join('\\'); }
                         try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
                         if ((stat != null) && (stat != undefined)) {
                             if (stat.isDirectory() == true) {
@@ -520,12 +521,11 @@ function createMeshCore(agent) {
 
         // Clean up WebSocket
         this.removeAllListeners('data');
-        delete this;
     }
     function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
     function onTunnelData(data) {
         //console.log("OnTunnelData");
-        //sendConsoleText('OnTunnelData, ' +  data.length + ', ' + typeof data + ', ' + data);
+        //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
         
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {
@@ -570,19 +570,28 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
                     if (process.platform != 'win32') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
-                } else if (this.httprequest.protocol == 2) {
+                } else if (this.httprequest.protocol == 2)
+                {
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
+
+                    // Display a toast message
+                    //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Started.');
+
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
                         this.unpipe(this.httprequest.desktop.kvm);
                         this.httprequest.desktop.kvm.unpipe(this);
-                        if (this.desktop.kvm.connectionCount == 0) { this.httprequest.desktop.kvm.end(); }
+                        if (this.desktop.kvm.connectionCount == 0) {
+                            // Display a toast message
+                            //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.');
+                            this.httprequest.desktop.kvm.end();
+                        }
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                     this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -743,7 +752,7 @@ function createMeshCore(agent) {
     function onTunnelWebRTCControlData(data) {
         if (typeof data != 'string') return;
         var obj;
-        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON on WebRTC'); return; }
+        try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON on WebRTC: ' + data); return; }
         if (obj.type == 'close') {
             //sendConsoleText('Tunnel #' + this.xrtc.websocket.tunnel.index + ' WebRTC control close');
             try { this.close(); } catch (e) { }
@@ -755,10 +764,26 @@ function createMeshCore(agent) {
     function onTunnelControlData(data, ws) {
         var obj;
         if (ws == null) { ws = this; }
-        if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON'); return; } }
+        if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
         else if (typeof data == 'object') { obj = data; } else { return; }
         //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
         //console.log('onTunnelControlData: ' + JSON.stringify(data));
+
+        if (obj.action) {
+            switch (obj.action) {
+                case 'lock': {
+                    // Lock the current user out of the desktop
+                    try {
+                        if (process.platform == 'win32') {
+                            var child = require('child_process');
+                            child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
+                        }
+                    } catch (e) { }
+                    break;
+                }
+            }
+            return;
+        }
 
         if (obj.type == 'close') {
             // We received the close on the websocket
@@ -788,7 +813,7 @@ function createMeshCore(agent) {
             } else if (ws.httprequest.protocol == 2) { // Desktop
                 // Switch the user input from websocket to webrtc at this point.
                 ws.unpipe(ws.httprequest.desktop.kvm);
-                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1 }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
                 ws.resume(); // Resume the websocket to keep receiving control data
             }
             ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
@@ -816,7 +841,9 @@ function createMeshCore(agent) {
                 this.websocket.rtcchannel.on('end', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');*/ });
                 this.websocket.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate we are ready for WebRTC switch-over.
             });
-            ws.write({ type: 'answer', ctrlChannel: '102938', sdp: ws.webrtc.setOffer(obj.sdp) });
+            var sdp = null;
+            try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
+            if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
         }
     }
 
@@ -836,7 +863,18 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock.';
+                    break;
+                }
+                case 'toast': {
+                    if (process.platform == 'win32') {
+                        if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
+                            require('toaster').Toast('MeshCentral', args['_'][0]);
+                            response = 'ok';
+                        }
+                    } else {
+                        response = 'Only supported on Windows.';
+                    }
                     break;
                 }
                 case 'setdebug': {
@@ -1092,6 +1130,15 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                case 'lsx': { // Show list of files and folders
+                    response = objToString(getDirectoryInfo(args['_'][0]), 0, ' ', true);
+                    break;
+                }
+                case 'lock': { // Lock the current user out of the desktop
+                    if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); response = 'Ok'; }
+                    else { response = 'Not supported on the platform'; }
+                    break;
+                }
                 case 'amt': { // Show Intel AMT status
                     getAmtInfo(function (state) {
                         var resp = 'Intel AMT not detected.';
@@ -1226,7 +1273,7 @@ function createMeshCore(agent) {
                 var intelamt = {}, p = false;
                 if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; p = true; }
                 if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; p = true; }
-                if (meinfo.flags) { intelamt.flags = meinfo.Flags; p = true; }
+                if (meinfo.Flags) { intelamt.flags = meinfo.Flags; p = true; }
                 if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; p = true; }
                 if (meinfo.UUID) { intelamt.uuid = meinfo.UUID; p = true; }
                 if (p == true) { r.intelamt = intelamt }
@@ -1265,16 +1312,18 @@ function createMeshCore(agent) {
     // Get Intel AMT information using MEI
     function getAmtInfo(func) {
         if (amtMei == null || amtMeiConnected != 2) { if (func != null) { func(null); } return; }
-        amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
-        amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
-        amtMei.getVersion(function (val) { amtMeiTmpState.Versions = {}; for (var version in val.Versions) { amtMeiTmpState.Versions[val.Versions[version].Description] = val.Versions[version].Version; } });
-        amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
-        amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
-        amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
-        amtMei.getControlMode(function (result) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } });
-        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
-        //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
-        amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
+        try {
+            amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+            amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
+            amtMei.getVersion(function (val) { amtMeiTmpState.Versions = {}; for (var version in val.Versions) { amtMeiTmpState.Versions[val.Versions[version].Description] = val.Versions[version].Version; } });
+            amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
+            amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
+            amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
+            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
+            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
+            //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
+            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
+        } catch (e) { if (func != null) { func(null); } return; }
     }
     
     // Called on MicroLMS Intel AMT user notification
@@ -1306,11 +1355,16 @@ function createMeshCore(agent) {
             var lme_heci = require('amt-lme');
             amtLmsState = 1;
             amtLms = new lme_heci();
-            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; });
-            amtLms.on('connect', function () { amtLmsState = 2; });
-            amtLms.on('notify', function (data, options, str) {
-                if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
-                handleAmtNotification(data);
+            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; obj.setupMeiOsAdmin(null, 1); });
+            amtLms.on('connect', function () { amtLmsState = 2; obj.setupMeiOsAdmin(null, 2); });
+            //amtLms.on('bind', function (map) { });
+            amtLms.on('notify', function (data, options, str, code) {
+                if (code == 'iAMT0052-3') {
+                    kvmGetData();
+                } else {
+                    //if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
+                    handleAmtNotification(data);
+                }
             });
         } catch (e) { amtLmsState = -1; amtLms = null; }
 
@@ -1339,11 +1393,259 @@ function createMeshCore(agent) {
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
     }
-    
+
+
+    //
+    // KVM Data Channel
+    //
+
+    obj.setupMeiOsAdmin = function(func, state) {
+        amtMei.getLocalSystemAccount(function (x) {
+            var transport = require('amt-wsman-duk');
+            var wsman = require('amt-wsman');
+            var amt = require('amt');
+            oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
+            obj.osamtstack = new amt(oswsstack);
+            if (func) { func(state); }
+            //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
+            //obj.osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
+            //*************************************
+            // Setup KVM data channel if this is Intel AMT 12 or above
+            amtMei.getVersion(function (x) {
+                var amtver = null;
+                try { for (var i in x.Versions) { if (x.Versions[i].Description == 'AMT') amtver = parseInt(x.Versions[i].Version.split('.')[0]); } } catch (e) { }
+                if ((amtver != null) && (amtver >= 12)) {
+                    obj.kvmGetData('skip'); // Clear any previous data, this is a dummy read to about handling old data.
+                    obj.kvmTempTimer = setInterval(function () { obj.kvmGetData(); }, 2000); // Start polling for KVM data.
+                    obj.kvmSetData(JSON.stringify({ action: 'restart', ver: 1 })); // Send a restart command to advise the console if present that MicroLMS just started.
+                }
+            });
+        });
+    }
+
+    obj.kvmGetData = function(tag) {
+        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelRead(obj.kvmDataGetResponse, tag);
+    }
+
+    obj.kvmDataGetResponse = function (stack, name, response, status, tag) {
+        if ((tag != 'skip') && (status == 200) && (response.Body.ReturnValue == 0)) {
+            var val = null;
+            try { val = Buffer.from(response.Body.DataMessage, 'base64').toString(); } catch (e) { return }
+            if (val != null) { obj.kvmProcessData(response.Body.RealmsBitmap, response.Body.MessageId, val); }
+        }
+    }
+
+    var webRtcDesktop = null;
+    obj.kvmProcessData = function (realms, messageId, val) {
+        var data = null;
+        try { data = JSON.parse(val) } catch (e) { }
+        if ((data != null) && (data.action)) {
+            if (data.action == 'present') { obj.kvmSetData(JSON.stringify({ action: 'present', ver: 1, platform: process.platform })); }
+            if (data.action == 'offer') {
+                webRtcDesktop = {};
+                var rtc = require('ILibWebRTC');
+                webRtcDesktop.webrtc = rtc.createConnection();
+                webRtcDesktop.webrtc.on('connected', function () { });
+                webRtcDesktop.webrtc.on('disconnected', function () { webRtcCleanUp(); });
+                webRtcDesktop.webrtc.on('dataChannel', function (rtcchannel) {
+                    webRtcDesktop.rtcchannel = rtcchannel;
+                    webRtcDesktop.kvm = mesh.getRemoteDesktopStream();
+                    webRtcDesktop.kvm.pipe(webRtcDesktop.rtcchannel, { dataTypeSkip: 1, end: false });
+                    webRtcDesktop.rtcchannel.on('end', function () { obj.webRtcCleanUp(); });
+                    webRtcDesktop.rtcchannel.on('data', function (x) { obj.kvmCtrlData(this, x); });
+                    webRtcDesktop.rtcchannel.pipe(webRtcDesktop.kvm, { dataTypeSkip: 1, end: false });
+                    //webRtcDesktop.kvm.on('end', function () { console.log('WebRTC DataChannel closed2'); webRtcCleanUp(); });
+                    //webRtcDesktop.rtcchannel.on('data', function (data) { console.log('WebRTC data: ' + data); });
+                });
+                obj.kvmSetData(JSON.stringify({ action: 'answer', ver: 1, sdp: webRtcDesktop.webrtc.setOffer(data.sdp) }));
+            }
+        }
+    }
+
+    // Polyfill path.join
+    var path = {
+        join: function () {
+            var x = [];
+            for (var i in arguments) {
+                var w = arguments[i];
+                if (w != null) {
+                    while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
+                    if (i != 0) { while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } }
+                    x.push(w);
+                }
+            }
+            if (x.length == 0) return '/';
+            return x.join('/');
+        }
+    };
+
+    // Process KVM control channel data
+    obj.kvmCtrlData = function(channel, cmd) {
+        if (cmd.length > 0 && cmd.charCodeAt(0) != 123) {
+            // This is upload data
+            if (this.fileupload != null) {
+                cmd = Buffer.from(cmd, 'base64');
+                var header = cmd.readUInt32BE(0);
+                if ((header == 0x01000000) || (header == 0x01000001)) {
+                    fs.writeSync(this.fileupload.fp, cmd.slice(4));
+                    channel.write({ action: 'upload', sub: 'ack', reqid: this.fileupload.reqid });
+                    if (header == 0x01000001) { fs.closeSync(this.fileupload.fp); this.fileupload = null; } // Close the file
+                }
+            }
+            return;
+        }
+        //console.log('KVM Ctrl Data', cmd);
+        //sendConsoleText('KVM Ctrl Data: ' + cmd);
+
+        try { cmd = JSON.parse(cmd); } catch (ex) { console.error('Invalid JSON: ' + cmd); return; }
+        if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
+        switch (cmd.action) {
+            case 'ping': {
+                // This is a keep alive
+                channel.write({ action: 'pong' });
+                break;
+            }
+            case 'lock': {
+                // Lock the current user out of the desktop
+                if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); }
+                break;
+            }
+            case 'ls': {
+                /*
+                // Close the watcher if required
+                var samepath = ((this.httprequest.watcher != undefined) && (cmd.path == this.httprequest.watcher.path));
+                if ((this.httprequest.watcher != undefined) && (samepath == false)) {
+                    //console.log('Closing watcher: ' + this.httprequest.watcher.path);
+                    //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
+                    delete this.httprequest.watcher;
+                }
+                */
+
+                // Send the folder content to the browser
+                var response = getDirectoryInfo(cmd.path);
+                if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
+                channel.write(response);
+
+                /*
+                // Start the directory watcher
+                if ((cmd.path != '') && (samepath == false)) {
+                    var watcher = fs.watch(cmd.path, onFileWatcher);
+                    watcher.tunnel = this.httprequest;
+                    watcher.path = cmd.path;
+                    this.httprequest.watcher = watcher;
+                    //console.log('Starting watcher: ' + this.httprequest.watcher.path);
+                }
+                */
+                break;
+            }
+            case 'mkdir': {
+                // Create a new empty folder
+                fs.mkdirSync(cmd.path);
+                break;
+            }
+            case 'rm': {
+                // Remove many files or folders
+                for (var i in cmd.delfiles) {
+                    var fullpath = path.join(cmd.path, cmd.delfiles[i]);
+                    try { fs.unlinkSync(fullpath); } catch (e) { console.log(e); }
+                }
+                break;
+            }
+            case 'rename': {
+                // Rename a file or folder
+                try { fs.renameSync(path.join(cmd.path, cmd.oldname), path.join(cmd.path, cmd.newname)); } catch (e) { console.log(e); }
+                break;
+            }
+            case 'download': {
+                // Download a file, to browser
+                var sendNextBlock = 0;
+                if (cmd.sub == 'start') { // Setup the download
+                    if (this.filedownload != null) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                    this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
+                    try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                    if (this.filedownload) { channel.write({ action: 'download', sub: 'start', id: cmd.id }); }
+                } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
+                    if (cmd.sub == 'startack') { sendNextBlock = 8; } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
+                }
+                // Send the next download block(s)
+                while (sendNextBlock > 0) {
+                    sendNextBlock--;
+                    var buf = new Buffer(4096);
+                    var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
+                    this.filedownload.ptr += len;
+                    if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                    channel.write(buf.slice(0, len + 4).toString('base64')); // Write as Base64
+                }
+                break;
+            }
+            case 'upload': {
+                // Upload a file, from browser
+                if (cmd.sub == 'start') { // Start the upload
+                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); }
+                    if (!cmd.path || !cmd.name) break;
+                    this.fileupload = { reqid: cmd.reqid };
+                    var filepath = path.join(cmd.path, cmd.name);
+                    try { this.fileupload.fp = fs.openSync(filepath, 'wbN'); } catch (e) { }
+                    if (this.fileupload.fp) { channel.write({ action: 'upload', sub: 'start', reqid: this.fileupload.reqid }); } else { this.fileupload = null; channel.write({ action: 'upload', sub: 'error', reqid: this.fileupload.reqid }); }
+                }
+                else if (cmd.sub == 'cancel') { // Stop the upload
+                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); this.fileupload = null; }
+                }
+                break;
+            }
+            case 'copy': {
+                // Copy a bunch of files from scpath to dspath
+                for (var i in cmd.names) {
+                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                    if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                }
+                break;
+            }
+            case 'move': {
+                // Move a bunch of files from scpath to dspath
+                for (var i in cmd.names) {
+                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                    if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                }
+                break;
+            }
+        }
+    }
+
+    obj.webRtcCleanUp = function() {
+        if (webRtcDesktop == null) return;
+        if (webRtcDesktop.rtcchannel) {
+            try { webRtcDesktop.rtcchannel.close(); } catch (e) { }
+            try { webRtcDesktop.rtcchannel.removeAllListeners('data'); } catch (e) { }
+            try { webRtcDesktop.rtcchannel.removeAllListeners('end'); } catch (e) { }
+            delete webRtcDesktop.rtcchannel;
+        }
+        if (webRtcDesktop.webrtc) {
+            try { webRtcDesktop.webrtc.close(); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('connected'); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('disconnected'); } catch (e) { }
+            try { webRtcDesktop.webrtc.removeAllListeners('dataChannel'); } catch (e) { }
+            delete webRtcDesktop.webrtc;
+        }
+        if (webRtcDesktop.kvm) {
+            try { webRtcDesktop.kvm.end(); } catch (e) { }
+            delete webRtcDesktop.kvm;
+        }
+        webRtcDesktop = null;
+    }
+
+    obj.kvmSetData = function(x) {
+        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelWrite(Buffer.from(x).toString('base64'), function () { });
+    }
+
     return obj;
 }
 
-var xexports = null;
+//
+// Module startup
+//
+
+var xexports = null, mainMeshCore = null;
 try { xexports = module.exports; } catch (e) { }
 
 if (xexports != null) {
@@ -1351,5 +1653,6 @@ if (xexports != null) {
     module.exports.createMeshCore = createMeshCore;
 } else {
     // If we are not running in NodeJS, launch the core
-    createMeshCore().start(null);
+    mainMeshCore = createMeshCore();
+    mainMeshCore.start(null);
 }

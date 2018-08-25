@@ -16,9 +16,9 @@ module.exports.CreateMeshScanner = function (parent) {
     obj.servers4 = {};
     obj.servers6 = {};
     obj.mainTimer = null;
-    var periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
-    var membershipIPv4 = '239.255.255.235';
-    var membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
+    const periodicScanTime = (60000 * 20); // Interval between scans, 20 minutes.
+    const membershipIPv4 = '239.255.255.235';
+    const membershipIPv6 = 'FF02:0:0:0:0:0:0:FE';
     obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' }).toUpperCase();
     obj.error = 0;
 
@@ -61,13 +61,11 @@ module.exports.CreateMeshScanner = function (parent) {
                     if (server4.xxlocal != '*') { bindOptions.address = server4.xxlocal; }
                     server4.bind(bindOptions, function () {
                         try {
-                            this.setBroadcast(true);
-                            this.setMulticastTTL(128);
-                            this.addMembership(membershipIPv4);
+                            var doscan = true;
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv4); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
-                            obj.performScan(this);
-                            obj.performScan(this);
+                            if (doscan == true) { obj.performScan(this); obj.performScan(this); }
                         } catch (e) { console.log(e); }
                     });
                     obj.servers4[localAddress] = server4;
@@ -94,13 +92,11 @@ module.exports.CreateMeshScanner = function (parent) {
                     if (server6.xxlocal != '*') { bindOptions.address = server6.xxlocal; }
                     server6.bind(bindOptions, function () {
                         try {
-                            this.setBroadcast(true);
-                            this.setMulticastTTL(128);
-                            this.addMembership(membershipIPv6);
+                            var doscan = true;
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv6); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
-                            obj.performScan(this);
-                            obj.performScan(this);
+                            if (doscan == true) { obj.performScan(this); obj.performScan(this); }
                         } catch (e) { console.log(e); }
                     });
                     obj.servers6[localAddress] = server6;

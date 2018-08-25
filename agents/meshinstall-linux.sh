@@ -46,12 +46,12 @@ CheckInstallAgent() {
 #      echo "Detecting computer type..."
       machinetype=$( uname -m )
       machineid=0
-      if [ $machinetype == 'x86_64' ]
+      if [ $machinetype == 'x86_64' ] || [ $machinetype == 'amd64' ]
       then
 #       Linux x86, 64 bit
         machineid=6
       fi
-      if [ $machinetype == 'x86' ]
+      if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ]
       then
 #       Linux x86, 32 bit
         machineid=5

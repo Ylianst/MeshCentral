@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+var AgentConnectCount = 0;
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     var obj = {};
@@ -27,9 +29,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentCoreCheck = 0;
     obj.agentInfo;
     obj.agentUpdate = null;
-    var agentUpdateBlockSize = 65520;
+    const agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     obj.useSHA386 = false;
+    obj.agentConnectCount = ++AgentConnectCount;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
     ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
@@ -38,8 +41,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Disconnect this agent
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')');  } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (arg == 3) { obj.authenticated = -1; } // Don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
@@ -48,6 +51,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Other clean up may be needed here
         if (obj.unauth) { delete obj.unauth; }
         if (obj.agentUpdate != null) { obj.fs.close(obj.agentUpdate.fd); obj.agentUpdate = null; }
+        if ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) { // This is a temporary agent, remote it
+            // Delete this node including network interface information and events
+            obj.db.Remove(obj.dbNodeKey); // Remove node with that id
+            obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
+            obj.db.Remove('nt' + obj.dbNodeKey); // Remove notes
+            obj.db.RemoveNode(obj.dbNodeKey); // Remove all entries with node:id
+
+            // Event node deletion
+            obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: obj.domain.id, nolog: 1 })
+
+            // Disconnect all connections if needed
+            var state = obj.parent.parent.GetConnectivityState(obj.dbNodeKey);
+            if ((state != null) && (state.connectivity != null)) {
+                if ((state.connectivity & 1) != 0) { obj.parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
+                if ((state.connectivity & 2) != 0) { obj.parent.parent.mpsserver.close(obj.parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
+            }
+        }
+        delete obj.nodeid;
     }
 
     // When data is received from the mesh agent web socket
@@ -56,7 +77,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
 
         if (obj.authenticated == 2) { // We are authenticated
-            if (msg.charCodeAt(0) == 123) { processAgentData(msg); }
+            if ((obj.agentUpdate == null) && (msg.charCodeAt(0) == 123)) { processAgentData(msg); } // Only process JSON messages if meshagent update is not in progress
             if (msg.length < 2) return;
             var cmdid = obj.common.ReadShort(msg, 0);
             if (cmdid == 11) { // MeshCommand_CoreModuleHash
@@ -91,7 +112,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
                     if (agenthash != obj.agentExeInfo.hash) {
                         // Mesh agent update required
-                        console.log('Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc);
+                        if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                         obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                             if (err) { return console.error(err); }
                             obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: new Buffer(agentUpdateBlockSize + 4), fd: fd };
@@ -164,18 +185,23 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 obj.agentnonce = msg.substring(50);
-                if (obj.useSwarmCert == true) {
-                    // Perform the hash signature using older swarm server certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, function (signature) {
-                        // Send back our certificate + signature
-                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.swarmCertificateAsn1.length) + obj.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
-                    });
-                } else {
-                    // Perform the hash signature using the server agent certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, function (signature) {
-                        // Send back our certificate + signature
-                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.parent.agentCertificateAsn1.length) + obj.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
-                    });
+
+                // Check if we got the agent auth confirmation
+                if ((obj.receivedCommands & 8) == 0) {
+                    // If we did not get an indication that the agent already validated this server, send the server signature.
+                    if (obj.useSwarmCert == true) {
+                        // Perform the hash signature using older swarm server certificate
+                        obj.parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                            // Send back our certificate + signature
+                            obj2.send(obj2.common.ShortToStr(2) + obj2.common.ShortToStr(obj2.parent.swarmCertificateAsn1.length) + obj2.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
+                        });
+                    } else {
+                        // Perform the hash signature using the server agent certificate
+                        obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                            // Send back our certificate + signature
+                            obj2.send(obj2.common.ShortToStr(2) + obj.common.ShortToStr(obj2.parent.agentCertificateAsn1.length) + obj2.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                        });
+                    }
                 }
 
                 // Check the agent signature if we can
@@ -221,6 +247,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.computerName = msg.substring(72, 72 + computerNameLen);
                 obj.dbMeshKey = 'mesh/' + obj.domain.id + '/' + obj.meshid;
                 completeAgentConnection();
+            } else if (cmd == 4) {
+                if ((msg.length < 2) || ((obj.receivedCommands & 8) != 0)) return;
+                obj.receivedCommands += 8; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
+                // Agent already authenticated the server, wants to skip the server signature - which is great for server performance.
             } else if (cmd == 5) {
                 // ServerID. Agent is telling us what serverid it expects. Useful if we have many server certificates.
                 if ((msg.substring(2, 34) == obj.parent.swarmCertificateHash256) || (msg.substring(2, 50) == obj.parent.swarmCertificateHash384)) { obj.useSwarmCert = true; }
@@ -232,8 +262,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });
-    // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
+    ws.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } obj.close(0); });
+    // obj.ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
@@ -242,115 +272,125 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
-        if (obj.authenticated =! 1 || obj.meshid == null) return;
+        if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection) return;
+        obj.pendingCompleteAgentConnection = true;
+
         // Check that the mesh exists
-        obj.db.Get(obj.dbMeshKey, function (err, meshes) {
-            if (meshes.length == 0) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
-            var mesh = meshes[0];
-            if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if (mesh == null) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
 
-            // Check that the node exists
-            obj.db.Get(obj.dbNodeKey, function (err, nodes) {
-                var device;
+        // Check that the node exists
+        obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+            var device;
 
-                // Mark when we connected to this agent
-                obj.connectTime = Date.now();
-                if (nodes.length == 0) {
-                    // This node does not exist, create it.
-                    device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
-                    obj.db.Set(device);
+            // Mark when we connected to this agent
+            obj.connectTime = Date.now();
+            if (nodes.length == 0) {
+                // This node does not exist, create it.
+                device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+                obj.db.Set(device);
 
-                    // Event the new node
+                // Event the new node
+                if (obj.agentInfo.capabilities & 0x20) {
+                    // This is a temporary agent, don't log.
+                    obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 })
+                } else {
                     var change = 'Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name;
                     obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: change, domain: domain.id })
+                }
+            } else {
+                // Device already exists, look if changes has occured
+                device = nodes[0];
+                if (device.agent == null) {
+                    device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
                 } else {
-                    // Device already exists, look if changes has occured
-                    device = nodes[0];
-                    if (device.agent == null) {
-                        device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
-                    } else {
-                        var changes = [], change = 0, log = 0;
-                        if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
-                        if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
-                        if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                        if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
-                        if (change == 1) {
-                            obj.db.Set(device);
+                    var changes = [], change = 0, log = 0;
+                    if (device.rname != obj.agentInfo.computerName) { device.rname = obj.agentInfo.computerName; change = 1; changes.push('computer name'); }
+                    if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
+                    if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
+                    if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
+                    if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
+                    if (change == 1) {
+                        obj.db.Set(device);
 
-                            // Event the node change
-                            var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
-                            if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
-                            var device2 = obj.common.Clone(device);
-                            if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                            event.node = device;
-                            obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
-                        }
+                        // If this is a temporary device, don't log changes
+                        if (obj.agentInfo.capabilities & 0x20) { log = 0; }
+
+                        // Event the node change
+                        var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
+                        if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
+                        var device2 = obj.common.Clone(device);
+                        if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                        event.node = device;
+                        obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                     }
                 }
+            }
 
-                // Check if this agent is already connected
-                var dupAgent = obj.parent.wsagents[obj.dbNodeKey];
-                obj.parent.wsagents[obj.dbNodeKey] = obj;
-                if (dupAgent) {
-                    // Close the duplicate agent
-                    obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ')');
-                    dupAgent.close(3);
+            // Check if this agent is already connected
+            var dupAgent = obj.parent.wsagents[obj.dbNodeKey];
+            obj.parent.wsagents[obj.dbNodeKey] = obj;
+            if (dupAgent) {
+                // Close the duplicate agent
+                if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ')'); }
+                dupAgent.close(3);
+            } else {
+                // Indicate the agent is connected
+                obj.parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);
+            }
+
+            // We are done, ready to communicate with this agent
+            delete obj.pendingCompleteAgentConnection;
+            obj.authenticated = 2;
+
+            // Command 4, inform mesh agent that it's authenticated.
+            obj.send(obj.common.ShortToStr(4));
+
+            // Check the mesh core, if the agent is capable of running one
+            if ((obj.agentInfo.capabilities & 16) != 0) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
+
+            // Check if we need to make an native update check
+            obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
+
+            // Check if we already have IP location information for this node
+            obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
+                if (iplocs.length == 1) {
+                    // We have a location in the database for this remote IP
+                    var iploc = nodes[0], x = {};
+                    if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
+                        x.publicip = iploc.ip;
+                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
+                        ChangeAgentLocationInfo(x);
+                    }
                 } else {
-                    // Indicate the agent is connected
-                    obj.parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);
-                }
-
-                // We are done, ready to communicate with this agent
-                obj.authenticated = 2;
-
-                // Command 4, inform mesh agent that it's authenticated.
-                obj.send(obj.common.ShortToStr(4));
-
-                // Check the mesh core, if the agent is capable of running one
-                if ((obj.agentInfo.capabilities & 16) != 0) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
-
-                // Check if we need to make an native update check
-                obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-                if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
-
-                // Check if we already have IP location information for this node
-                obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
-                    if (iplocs.length == 1) {
-                        // We have a location in the database for this remote IP
-                        var iploc = nodes[0], x = {};
-                        if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
-                            x.publicip = iploc.ip;
-                            x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
-                            ChangeAgentLocationInfo(x);
-                        }
+                    // Check if we need to ask for the IP location
+                    var doIpLocation = 0;
+                    if (device.iploc == null) {
+                        doIpLocation = 1;
                     } else {
-                        // Check if we need to ask for the IP location
-                        var doIpLocation = 0;
-                        if (device.iploc == null) {
-                            doIpLocation = 1;
+                        var loc = device.iploc.split(',');
+                        if (loc.length < 3) {
+                            doIpLocation = 2;
                         } else {
-                            var loc = device.iploc.split(',');
-                            if (loc.length < 3) {
-                                doIpLocation = 2;
-                            } else {
-                                var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
-                                t.setDate(t.getDate() + 20);
-                                if (t < now) { doIpLocation = 3; }
-                            }
-                        }
-
-                        // If we need to ask for IP location, see if we have the quota to do it.
-                        if (doIpLocation > 0) {
-                            obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
-                                if (ipLocationLimitor.value > 0) {
-                                    ipLocationLimitor.value--;
-                                    obj.db.Set(ipLocationLimitor);
-                                    obj.send(JSON.stringify({ action: 'iplocation' }));
-                                }
-                            });
+                            var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
+                            t.setDate(t.getDate() + 20);
+                            if (t < now) { doIpLocation = 3; }
                         }
                     }
-                });
+
+                    // If we need to ask for IP location, see if we have the quota to do it.
+                    if (doIpLocation > 0) {
+                        obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                            if (ipLocationLimitor.value > 0) {
+                                ipLocationLimitor.value--;
+                                obj.db.Set(ipLocationLimitor);
+                                obj.send(JSON.stringify({ action: 'iplocation' }));
+                            }
+                        });
+                    }
+                }
             });
         });
     }
@@ -376,7 +416,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.agentnonce;
         delete obj.unauth;
         if (obj.unauthsign) delete obj.unauthsign;
-        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ').');
+        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ').');
         obj.authenticated = 1;
         return true;
     }
@@ -385,7 +425,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function processAgentData(msg) {
         var str = msg.toString('utf8');
         if (str[0] == '{') {
-            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str); return; } // If the command can't be parsed, ignore it.
             switch (command.action) {
                 case 'msg':
                     {
@@ -431,13 +471,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
                                     for (var i in sessions) { sessions[i].send(JSON.stringify(command)); }
                                 }
+
+                                if (obj.parent.parent.multiServer != null) {
+                                    // TODO: Add multi-server support
+                                }
                             }
                         } else { // Route this command to the mesh
                             command.nodeid = obj.dbNodeKey;
                             var cmdstr = JSON.stringify(command);
                             for (var userid in obj.parent.wssessions) { // Find all connected users for this mesh and send the message
                                 var user = obj.parent.users[userid];
-                                if (user) {
+                                if ((user != null) && (user.links != null)) {
                                     var rights = user.links[obj.dbMeshKey];
                                     if (rights != null) { // TODO: Look at what rights are needed for message routing
                                         var sessions = obj.parent.wssessions[userid];
@@ -529,81 +573,81 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (command.caps == null || command.caps == null) { command.caps = 0; } else { if (typeof command.caps != 'number') command.caps = 0; }
 
         // Check that the mesh exists
-        obj.db.Get(obj.dbMeshKey, function (err, meshes) {
-            if (meshes.length != 1) return;
-            var mesh = meshes[0];
-            // Get the node and change it if needed
-            obj.db.Get(obj.dbNodeKey, function (err, nodes) {
-                if (nodes.length != 1) return;
-                var device = nodes[0];
-                if (device.agent) {
-                    var changes = [], change = 0;
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if (mesh == null) return;
 
-                    // Check if anything changes
-                    if (command.name && (command.name != device.name)) { change = 1; device.name = command.name; changes.push('name'); }
-                    if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
-                    if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
-                    if (command.intelamt) {
-                        if (!device.intelamt) { device.intelamt = {}; }
-                        if (device.intelamt.ver != command.intelamt.ver) { device.intelamt.ver = command.intelamt.ver; change = 1; changes.push('AMT version'); }
-                        if (device.intelamt.state != command.intelamt.state) { device.intelamt.state = command.intelamt.state; change = 1; changes.push('AMT state'); }
-                        if (device.intelamt.flags != command.intelamt.flags) { device.intelamt.flags = command.intelamt.flags; change = 1; changes.push('AMT flags'); }
-                        if (device.intelamt.host != command.intelamt.host) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
-                        if (device.intelamt.uuid != command.intelamt.uuid) { device.intelamt.uuid = command.intelamt.uuid; change = 1; changes.push('AMT uuid'); }
-                    }
-                    if (mesh.mtype == 2) {
-                        if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
-                        // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
-                    }
+        // Get the node and change it if needed
+        obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+            if (nodes.length != 1) return;
+            var device = nodes[0];
+            if (device.agent) {
+                var changes = [], change = 0;
 
-                    // If there are changes, save and event
-                    if (change == 1) {
-                        obj.db.Set(device);
-
-                        // Event the node change
-                        var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
-                        var device2 = obj.common.Clone(device);
-                        if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                        event.node = device;
-                        obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
-                    }
+                // Check if anything changes
+                if (command.name && (command.name != device.name)) { change = 1; device.name = command.name; changes.push('name'); }
+                if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
+                if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
+                if (command.intelamt) {
+                    if (!device.intelamt) { device.intelamt = {}; }
+                    if ((command.intelamt.ver != null) && (device.intelamt.ver != command.intelamt.ver)) { device.intelamt.ver = command.intelamt.ver; change = 1; changes.push('AMT version'); }
+                    if ((command.intelamt.state != null) && (device.intelamt.state != command.intelamt.state)) { device.intelamt.state = command.intelamt.state; change = 1; changes.push('AMT state'); }
+                    if ((command.intelamt.flags != null) && (device.intelamt.flags != command.intelamt.flags)) { device.intelamt.flags = command.intelamt.flags; change = 1; changes.push('AMT flags'); }
+                    if ((command.intelamt.host != null) && (device.intelamt.host != command.intelamt.host)) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
+                    if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { device.intelamt.uuid = command.intelamt.uuid; change = 1; changes.push('AMT uuid'); }
                 }
-            });
+                if (mesh.mtype == 2) {
+                    if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
+                    // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
+                }
+
+                // If there are changes, save and event
+                if (change == 1) {
+                    obj.db.Set(device);
+
+                    // Event the node change
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
+                    if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                    var device2 = obj.common.Clone(device);
+                    if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                    event.node = device;
+                    obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
+                }
+            }
         });
     }
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {
-        if ((command == null) || (command == null)) return; // Safety, should never happen.
+        if ((command == null) || (command == null)) { return; } // Safety, should never happen.
 
         // Check that the mesh exists
-        obj.db.Get(obj.dbMeshKey, function (err, meshes) {
-            if (meshes.length != 1) return;
-            var mesh = meshes[0];
-            // Get the node and change it if needed
-            obj.db.Get(obj.dbNodeKey, function (err, nodes) {
-                if (nodes.length != 1) return;
-                var device = nodes[0];
-                if (device.agent) {
-                    var changes = [], change = 0;
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if (mesh == null) return;
 
-                    // Check if anything changes
-                    if ((command.publicip) && (device.publicip != command.publicip)) { device.publicip = command.publicip; change = 1; changes.push('public ip'); }
-                    if ((command.iploc) && (device.iploc != command.iploc)) { device.iploc = command.iploc; change = 1; changes.push('ip location'); }
+        // Get the node and change it if needed
+        obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+            if (nodes.length != 1) { return; }
+            var device = nodes[0];
+            if (device.agent) {
+                var changes = [], change = 0;
 
-                    // If there are changes, save and event
-                    if (change == 1) {
-                        obj.db.Set(device);
+                // Check if anything changes
+                if ((command.publicip) && (device.publicip != command.publicip)) { device.publicip = command.publicip; change = 1; changes.push('public ip'); }
+                if ((command.iploc) && (device.iploc != command.iploc)) { device.iploc = command.iploc; change = 1; changes.push('ip location'); }
 
-                        // Event the node change
-                        var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
-                        var device2 = obj.common.Clone(device);
-                        if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                        event.node = device;
-                        obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
-                    }
+                // If there are changes, save and event
+                if (change == 1) {
+                    obj.db.Set(device);
+
+                    // Event the node change
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
+                    if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                    var device2 = obj.common.Clone(device);
+                    if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
+                    event.node = device;
+                    obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
-            });
+            }
         });
     }
 

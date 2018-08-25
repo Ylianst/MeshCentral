@@ -35,14 +35,6 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _tscreen = [];
     var _VTUNDERLINE = 1;
     var _VTREVERSE = 2;
-    // ###BEGIN###{Terminal-Enumation-All}
-    var _utf8accumulator = 0;
-    var _utf8accumulatorCount = 0;
-    // ###END###{Terminal-Enumation-All}
-    // ###BEGIN###{Terminal-Enumation-UTF8}
-    var _utf8accumulator = 0;
-    var _utf8accumulatorCount = 0;
-    // ###END###{Terminal-Enumation-UTF8}
 
     obj.Start = function () { }
 
@@ -60,7 +52,15 @@ var CreateAmtRemoteTerminal = function (divid) {
 
     obj.xxStateChange = function(newstate) { }
 
-    obj.ProcessData = function (str) { if (obj.capture != null) obj.capture += str; _ProcessVt100EscString(str); obj.TermDraw(); }
+    obj.ProcessData = function (str) {
+        // ###BEGIN###{Terminal-Enumation-UTF8}
+        //str = decode_utf8(str);
+        // ###END###{Terminal-Enumation-UTF8}
+        // ###BEGIN###{Terminal-Enumation-All}
+        if (obj.terminalEmulation == 0) { str = decode_utf8(str); }
+        // ###END###{Terminal-Enumation-All}
+        if (obj.capture != null) obj.capture += str; _ProcessVt100EscString(str); obj.TermDraw();
+    }
 
     function _ProcessVt100EscString(str) { for (var i = 0; i < str.length; i++) _ProcessVt100EscChar(String.fromCharCode(str.charCodeAt(i)), str.charCodeAt(i)); }
 
@@ -363,48 +363,11 @@ var CreateAmtRemoteTerminal = function (divid) {
 
     function _ProcessVt100Char(c) {
         if (c == '\0' || c.charCodeAt() == 7) return; // Ignore null & bell
-
         var ch = c.charCodeAt();
 
         // ###BEGIN###{Terminal-Enumation-All}
         // UTF8 Terminal
-        if (obj.terminalEmulation == 0) {
-            // VT100 - UTF-8 emulation
-            var fallout = true;
-            if ((ch & 0x80) == 0) {
-                // Sub 127 char.
-                _utf8accumulator = ch;
-                _utf8accumulatorCount = 0;
-                fallout = false;
-            }
-            else if ((ch & 0xE0) == 0xC0) {
-                // 2 byte char
-                _utf8accumulator = (ch & 0x1F);
-                _utf8accumulatorCount = 1;
-                fallout = true;
-            }
-            else if ((ch & 0xF0) == 0xE0) {
-                // 3 byte char
-                _utf8accumulator = (ch & 0x0F);
-                _utf8accumulatorCount = 2;
-                fallout = true;
-            }
-            else if ((ch & 0xC0) == 0x80) {
-                if (_utf8accumulatorCount > 0) {
-                    _utf8accumulator = (_utf8accumulator << 6);
-                    _utf8accumulator += (ch & 0x3F);
-                    _utf8accumulatorCount--;
-                    fallout = (_utf8accumulatorCount != 0);
-                }
-                else {
-                    _utf8accumulator = 0;
-                    _utf8accumulatorCount = 0;
-                    fallout = true;
-                }
-            }
-            if (fallout == true) return;
-            c = String.fromCharCode(_utf8accumulator);
-        } else if (obj.terminalEmulation == 1) {
+        if (obj.terminalEmulation == 1) {
             // ANSI - Extended ASCII emulation.
             if ((ch & 0x80) != 0) { c = String.fromCharCode(AsciiToUnicode[ch & 0x7F]); }
         } else if (obj.terminalEmulation == 2) {
@@ -413,52 +376,14 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
         // ###END###{Terminal-Enumation-All}
 
-        // ###BEGIN###{Terminal-Enumation-UTF8}
-        // VT100 - UTF-8 emulation
-        var fallout = true;
-        if ((ch & 0x80) == 0) {
-            // Sub 127 char.
-            _utf8accumulator = ch;
-            _utf8accumulatorCount = 0;
-            fallout = false;
-        }
-        else if ((ch & 0xE0) == 0xC0) {
-            // 2 byte char
-            _utf8accumulator = (ch & 0x1F);
-            _utf8accumulatorCount = 1;
-            fallout = true;
-        }
-        else if ((ch & 0xF0) == 0xE0) {
-            // 3 byte char
-            _utf8accumulator = (ch & 0x0F);
-            _utf8accumulatorCount = 2;
-            fallout = true;
-        }
-        else if ((ch & 0xC0) == 0x80) {
-            if (_utf8accumulatorCount > 0) {
-                _utf8accumulator = (_utf8accumulator << 6);
-                _utf8accumulator += (ch & 0x3F);
-                _utf8accumulatorCount--;
-                fallout = (_utf8accumulatorCount != 0);
-            }
-            else {
-                _utf8accumulator = 0;
-                _utf8accumulatorCount = 0;
-                fallout = true;
-            }
-        }
-        if (fallout == true) return;
-        c = String.fromCharCode(_utf8accumulator);
-        // ###END###{Terminal-Enumation-UTF8}
-
         // ###BEGIN###{Terminal-Enumation-ASCII}
         // ANSI - Extended ASCII emulation.
-        if ((ch & 0x80) != 0) { c = String.fromCharCode(AsciiToUnicode[ch & 0x7F]); }
+        //if ((ch & 0x80) != 0) { c = String.fromCharCode(AsciiToUnicode[ch & 0x7F]); }
         // ###END###{Terminal-Enumation-ASCII}
 
         // ###BEGIN###{Terminal-Enumation-Intel}
         // ANSI - Intel Extended ASCII emulation.
-        if ((ch & 0x80) != 0) { c = String.fromCharCode(AsciiToUnicodeIntel[ch & 0x7F]); }
+        //if ((ch & 0x80) != 0) { c = String.fromCharCode(AsciiToUnicodeIntel[ch & 0x7F]); }
         // ###END###{Terminal-Enumation-Intel}
 
         //if (ch < 32 && ch != 10 && ch != 13) alert(ch);

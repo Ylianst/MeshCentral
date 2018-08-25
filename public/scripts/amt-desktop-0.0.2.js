@@ -550,17 +550,13 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         return obj.haltEvent(e);
     }
 
-    obj.sendkey = function (k, d) { obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
+    obj.sendkey = function (k, d) {
+        if (typeof k == 'object') { for (var i in k) { obj.sendkey(k[i][0], k[i][1]); } }
+        else { obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
+    }
 
     obj.SendCtrlAltDelMsg = function () { obj.sendcad(); }
-    obj.sendcad = function () {
-        obj.sendkey(0xFFE3, 1); // Control
-        obj.sendkey(0xFFE9, 1); // Alt
-        obj.sendkey(0xFFFF, 1); // Delete
-        obj.sendkey(0xFFFF, 0); // Delete
-        obj.sendkey(0xFFE9, 0); // Alt
-        obj.sendkey(0xFFE3, 0); // Control
-    }
+    obj.sendcad = function () { obj.sendkey([[0xFFE3, 1], [0xFFE9, 1], [0xFFFF, 1], [0xFFFF, 0], [0xFFE9, 0], [0xFFE3, 0]]); } // Control down, Alt down, Delete down, Delete up , Alt up , Control up
 
     var _MouseInputGrab = false;
     var _KeyInputGrab = false;
