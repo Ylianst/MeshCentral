@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a Intel AMT Scanner object
 module.exports.CreateAmtScanner = function (parent) {
     var obj = {};
@@ -68,11 +70,10 @@ module.exports.CreateAmtScanner = function (parent) {
         rangeinfo.server.on('listening', () => {
             for (var i = rangeinfo.min; i <= rangeinfo.max; i++) { rangeinfo.server.send(obj.rpacket, 623, obj.IPv4NumToStr(i)); }
         });
-        rangeinfo.timer = setTimeout(function () {
+        rangeinfo.timer = setTimeout(function () { // ************************* USER OF OUTER VARS!!!!!!!!!!!!!!!
             obj.parent.DispatchEvent(['*', userid], obj, { action: 'scanamtdevice', range: rangeinfo.range, results: rangeinfo.results, nolog: 1 });
             rangeinfo.server.close();
             delete rangeinfo.server;
-            delete rangeinfo;
         }, 3000);
         return true;
     }

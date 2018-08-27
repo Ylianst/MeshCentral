@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshMain = function (parent) {
     var obj = {};

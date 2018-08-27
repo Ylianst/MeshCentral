@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 module.exports.CertificateOperations = function () {
     var obj = {};
 

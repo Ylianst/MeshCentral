@@ -6,7 +6,7 @@
 * @version v0.0.1
 */
 
-"use strict";
+'use strict';
 
 /*
 class SerialTunnel extends require('stream').Duplex {
@@ -153,13 +153,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.app.engine('handlebars', obj.exphbs({})); // defaultLayout: 'main'
     obj.app.set('view engine', 'handlebars');
     obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
-    obj.app.use(obj.session({
-        name: 'xid', // Recommanded security practice to not use the default cookie name
-        httpOnly: true,
-        keys: [ obj.args.sessionkey ], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-        secure: (obj.args.notls != true), // Use this cookie only over TLS
-        maxAge: (obj.args.sessiontime * 60 * 1000) // 24 hours
-    }));
+    if (obj.args.sessiontime != null) {
+        obj.app.use(obj.session({
+            name: 'xid', // Recommanded security practice to not use the default cookie name
+            httpOnly: true,
+            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+            secure: (obj.args.notls != true), // Use this cookie only over TLS
+            maxAge: (obj.args.sessiontime * 60 * 1000) // Number of minutes
+        }));
+    } else {
+        obj.app.use(obj.session({
+            name: 'xid', // Recommanded security practice to not use the default cookie name
+            httpOnly: true,
+            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+            secure: (obj.args.notls != true) // Use this cookie only over TLS
+        }));
+    }
 
     // Session-persisted message middleware
     obj.app.use(function (req, res, next) {

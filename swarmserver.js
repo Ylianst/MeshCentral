@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a legacy Swarm Server server object
 module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     var obj = {};

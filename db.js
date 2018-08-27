@@ -6,6 +6,8 @@
 * @version v0.0.2
 */
 
+'use strict';
+
 //
 // Construct Meshcentral database object
 //

@@ -6,6 +6,8 @@
 * @version v0.0.3
 */
 
+'use strict';
+
 const crypto = require('crypto');
 const common = require('./common.js');
 

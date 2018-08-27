@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // This module is only called when MeshCentral is running as a Windows service.
 // In this case, we don't want to start a child process, so we launch directly without arguments.
 require('./meshcentral.js').mainStart({ "launch": true });

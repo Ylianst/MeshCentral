@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a Intel AMT MPS server object
 module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var obj = {};

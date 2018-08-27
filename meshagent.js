@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 var AgentConnectCount = 0;
 
 // Construct a MeshAgent object, called upon connection
@@ -423,9 +425,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Process incoming agent JSON data
     function processAgentData(msg) {
-        var str = msg.toString('utf8');
+        var str = msg.toString('utf8'), command = null;
         if (str[0] == '{') {
-            try { command = JSON.parse(str) } catch (e) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str) } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
+            if (typeof command != 'object') { return; }
             switch (command.action) {
                 case 'msg':
                     {

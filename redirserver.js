@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // ExpressJS login sample
 // https://github.com/expressjs/express/blob/master/examples/auth/index.js
 

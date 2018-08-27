@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     var obj = {};
     obj.ws = ws;

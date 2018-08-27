@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a Mesh Multi-Server object. This is used for MeshCentral-to-MeshCentral communication.
 module.exports.CreateMultiServer = function (parent, args) {
     var obj = {};

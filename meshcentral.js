@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
 
@@ -420,7 +422,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.args.nousers == true) && (obj.args.userallowedip == null)) { obj.args.userallowedip = "::1,127.0.0.1"; }
 
                 // Set the session length to 60 minutes if not set and set a random key if needed
-                if ((obj.args.sessiontime == null) || (typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1)) { obj.args.sessiontime = 60; }
+                if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
                 if (!obj.args.sessionkey) { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
 
                 // Start eh web server and if needed, the redirection web server.
@@ -594,7 +596,6 @@ function CreateMeshCentralServer(config, args) {
             }
         }
         if ((fromPeerServer == null) && (obj.multiServer != null) && ((typeof event != 'object') || (event.nopeers != 1))) { obj.multiServer.DispatchEvent(ids, source, event); }
-        delete targets;
     }
 
     // Get the connection state of a node
@@ -742,6 +743,7 @@ function CreateMeshCentralServer(config, args) {
 
         if (obj.multiServer == null) {
             // Single server mode
+            var eventConnectChange = 0;
 
             // Remove the agent connection from the nodes connection list
             var state = obj.connectivityByNode[nodeid];
@@ -1082,7 +1084,7 @@ function CreateMeshCentralServer(config, args) {
             if ((name != null) && (meshServerState[name] != val)) { if ((val == null) && (meshServerState[name] != null)) { delete meshServerState[name]; changed = true; } else { if (meshServerState[name] != val) { meshServerState[name] = val; changed = true; } } }
             if (changed == false) return;
         }
-        r = 'time=' + Date.now() + '\r\n';
+        var r = 'time=' + Date.now() + '\r\n';
         for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
         obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r);
     }
@@ -1173,7 +1175,6 @@ function InstallModules(modules, func) {
 function InstallModule(modulename, func, tag1, tag2) {
     try {
         var module = require(modulename);
-        delete module;
     } catch (e) {
         console.log('Installing ' + modulename + '...');
         var child_process = require('child_process');
