@@ -6,6 +6,8 @@
 * @version v0.0.2
 */
 
+'use strict';
+
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
         const greenlock = require('greenlock');;

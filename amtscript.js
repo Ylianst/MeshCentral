@@ -6,6 +6,8 @@
 * @version v0.1.0e
 */
 
+'use strict';
+
 module.exports.CreateAmtScriptEngine = function () {
     var o = {};
 

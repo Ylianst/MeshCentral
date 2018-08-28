@@ -746,6 +746,7 @@
         </div>
     </div>
     <script type="text/javascript">
+        'use strict';
         var args;
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
@@ -1268,7 +1269,8 @@
                                 var node = nodes[index];
                                 if (currentNode == node) {
                                     if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); }
-                                    delete currentNode; // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
+                                    currentNode = null;
+                                    // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
                                 nodes.splice(index, 1);
                                 updateDevices();
@@ -1502,6 +1504,8 @@
         function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
 
         var deviceHeaderId = 0;
+        var deviceHeaderTotal = 0;
+        var deviceHeadersTitles = {};
         var deviceHeaderCount;
         var deviceHeaders = {};
         var oldviewmode = 0;
@@ -3035,7 +3039,7 @@
                 QH('p10html3', x);
 
                 // Set the node power state
-                powerstate = PowerStateStr(node.state);
+                var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
@@ -3414,7 +3418,7 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); delete desktop; desktopNode = null; desktop = null; }
+            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
@@ -3522,7 +3526,6 @@
             } else {
                 // Disconnect and clean up the remote desktop
                 desktop.Stop();
-                delete desktop;
                 desktopNode = desktop = null;
             }
         }
@@ -3538,7 +3541,6 @@
                 case 0:
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
-                    delete desktop;
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('termdisplays', false);
@@ -3787,7 +3789,7 @@
         var terminalNode;
         function setupTerminal() {
             // Setup the terminal
-            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); delete terminal; terminal = null; }
+            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
             terminalNode = currentNode;
             updateTerminalButtons();
         }
@@ -3831,7 +3833,6 @@
                     xterminal.m.TermDraw();
                     if (terminal != null) {
                         terminal.Stop();
-                        delete terminal;
                         terminal = null;
                     }
                     break;
@@ -3872,7 +3873,6 @@
             } else {
                 //QH('Term', '');
                 terminal.Stop();
-                delete terminal;
                 terminal = null;
             }
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
@@ -3930,7 +3930,7 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); delete files; files = null; }
+            if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -3947,7 +3947,7 @@
                     QH('p13currentpath', '');
                     QE('p13FolderUp', false);
                     p13setActions();
-                    if (files != null) { files.Stop(); delete files; files = null; }
+                    if (files != null) { files.Stop(); files = null; }
                     break;
                 case 3:
                     p13targetpath = '';
@@ -3978,13 +3978,11 @@
             } else {
                 //QH('Term', '');
                 files.Stop();
-                delete files;
                 files = null;
             }
             p13clipboard = p13clipboardFolder = null;
             p13clipboardCut = 0;
             p13updateClipview();
-            p13oldlinkpath = null;
         }
 
         var p13filetree = null;
@@ -4022,7 +4020,6 @@
             return checkedNames;
         }
 
-        //var p13oldlinkpath = null;
         function p13updateFiles(checkedNames) {
             var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>Root</a>', fullPath = 'Root';
 

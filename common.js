@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 const crypto = require('crypto');
 
 // Binary encoding and decoding functions

@@ -6,6 +6,8 @@
 * @version v0.0.1
 */
 
+'use strict';
+
 // Construct a Mesh Scanner object
 // TODO: We need once "server4" and "server6" per interface, or change the default multicast interface as we send.
 module.exports.CreateMeshScanner = function (parent) {
@@ -27,9 +29,9 @@ module.exports.CreateMeshScanner = function (parent) {
         var ipv4 = ['*'], ipv6 = ['*']; // Bind to IN_ADDR_ANY always
         var interfaces = require('os').networkInterfaces();
         for (var i in interfaces) {
-            var interface = interfaces[i];
-            for (var j in interface) {
-                var interface2 = interface[j];
+            var xinterface = interfaces[i];
+            for (var j in xinterface) {
+                var interface2 = xinterface[j];
                 if ((interface2.mac != '00:00:00:00:00:00') && (interface2.internal == false)) {
                     if (interface2.family == 'IPv4') { ipv4.push(interface2.address); }
                     if (interface2.family == 'IPv6') { ipv6.push(interface2.address + '%' + i); }

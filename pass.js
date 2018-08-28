@@ -1,5 +1,7 @@
 // check out https://github.com/tj/node-pwd
 
+'use strict';
+
 // Module dependencies.
 const crypto = require('crypto');
 

@@ -513,12 +513,17 @@
     </div>
     <iframe name="fileUploadFrame" style=display:none></iframe>
     <script>
+        'use strict';
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
+        var sessionTime = parseInt("{{{sessiontime}}}");
+        var domain = "{{{domain}}}";
+        var domainUrl = "{{{domainurl}}}";
         var meshserver = null;
         var xdr = null;
         var serverinfo = null;
         var nodes = [];
+        var meshes = {};
         var filetree = {};
         var userinfo = null;
         var serverinfo = null;
@@ -544,7 +549,7 @@
             go(1);
 
             // Connect to the mesh server
-            meshserver = MeshServerCreateControl("{{{domainurl}}}");
+            meshserver = MeshServerCreateControl(domainUrl);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
             meshserver.Start();
@@ -667,7 +672,7 @@
                     switch (message.event.action) {
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 updateMeshes();
                                 updateDevices();
@@ -688,7 +693,7 @@
                                 meshes[message.event.meshid].links = message.event.links;
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()] == null) {
+                                if (meshes[message.event.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()] == null) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -753,7 +758,8 @@
                                 var node = nodes[index];
                                 if (currentNode == node) {
                                     if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); }
-                                    delete currentNode; // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
+                                    currentNode = null;
+                                    // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
                                 nodes.splice(index, 1);
                                 updateDevices();
@@ -831,7 +837,7 @@
                         }
                         case 'login': {
                             // Update the last login time
-                            if (users != null && users['user/{{{domain}}}/' + message.event.username.toLowerCase()]) { users['user/{{{domain}}}/' + message.event.username.toLowerCase()].login = message.event.time; }
+                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) { users['user/' + domain + '/' + message.event.username.toLowerCase()].login = message.event.time; }
                             break;
                         }
                         case 'notify': {
@@ -917,7 +923,7 @@
 
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
-            var x = "<form action='{{{domainurl}}}deleteaccount' method=post><table style=margin-left:10px><tr>";
+            var x = "<form action='" + domainUrl + "deleteaccount' method=post><table style=margin-left:10px><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
@@ -931,7 +937,7 @@
 
         function account_showChangePassword() {
             if (xxdialogMode) return;
-            var x = "<form action='{{{domainurl}}}changepassword' method=post><table style=margin-left:10px><tr>";
+            var x = "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:10px><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
             x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
             x += "</tr><tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
@@ -991,7 +997,7 @@
                 count++;
 
                 // Mesh rights
-                var meshrights = meshes[i].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
                 var rights = 'Partial Rights';
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
@@ -1003,7 +1009,7 @@
                 r += '</div></div>';
             }
 
-            meshcount = count;
+            //meshcount = count;
             QH('p3meshes', r);
             QV('p3noMeshFound', count == 0);
         }
@@ -1282,7 +1288,7 @@
             // Go thru the list of nodes and display them
             for (var i in nodes) {
                 if (nodes[i].v == false) continue;
-                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
                 if (meshlinks == null) continue;
                 var meshrights = meshlinks.rights;
 
@@ -1353,7 +1359,7 @@
             // Display all empty meshes, we need to do this because users can add devices to these at any time.
             if (sort == 0) {
                 for (var i in meshes) {
-                    var mesh = meshes[i], meshlink = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+                    var mesh = meshes[i], meshlink = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
                     if (meshlink != null) {
                         var meshrights = meshlink.rights;
                         if (displayedMeshes[mesh._id] == null) {
@@ -1414,7 +1420,7 @@
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
             deviceHeaders["DevxHeader" + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
             var title = '';
-            for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
+            for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
             deviceHeaderId++;
             deviceHeaderCount = {};
@@ -1437,7 +1443,7 @@
 
         function getNodeRights(nodeid) {
             var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
-            return mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            return mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
         }
 
         var currentDevicePanel = 0;
@@ -1452,7 +1458,7 @@
             if (node == null) { goBack(); }
             var mesh = meshes[node.meshid];
             if (mesh == null) { goBack(); }
-            var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -1580,7 +1586,7 @@
                 QH('p10html3', x);
 
                 // Set the node power state
-                powerstate = PowerStateStr(node.state);
+                var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Agent connected">Mesh Agent</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; } else
@@ -1624,7 +1630,7 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var meshrights = meshes[currentNode.meshid].links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
             var y = '<select id=d2deviceop style=float:right;width:170px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
@@ -1767,7 +1773,7 @@
         function p10showiconselector() {
             if (xxdialogMode) return;
             var mesh = meshes[currentNode.meshid];
-            var meshrights = mesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             if ((meshrights & 4) == 0) return;
 
             var x = '<table align=center><td>';
@@ -1822,7 +1828,7 @@
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50 };
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); delete desktop; desktopNode = null; desktop = null; }
+            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
@@ -1905,7 +1911,6 @@
             } else {
                 // Disconnect and clean up the remote desktop
                 desktop.Stop();
-                delete desktop;
                 desktopNode = desktop = null;
             }
         }
@@ -1921,7 +1926,6 @@
                 case 0:
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
-                    delete desktop;
                     desktopNode = desktop = null;
                     QV('termdisplays', false);
                     if (fullscreen == true) { deskToggleFull(); }
@@ -2143,7 +2147,7 @@
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); delete files; files = null; }
+            if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -2160,7 +2164,7 @@
                     QH('p13currentpath', '');
                     QE('p13FolderUp', false);
                     p13setActions();
-                    if (files != null) { files.Stop(); delete files; files = null; }
+                    if (files != null) { files.Stop(); files = null; }
                     break;
                 case 3:
                     p13targetpath = '';
@@ -2191,13 +2195,11 @@
             } else {
                 //QH('Term', '');
                 files.Stop();
-                delete files;
                 files = null;
             }
             p13clipboard = p13clipboardFolder = null;
             p13clipboardCut = 0;
             p13updateClipview();
-            p13oldlinkpath = null;
         }
 
         var p13filetree = null;
@@ -2236,7 +2238,6 @@
             return checkedNames;
         }
 
-        //var p13oldlinkpath = null;
         function p13updateFiles(checkedNames) {
             var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>Root</a>', fullPath = 'Root';
 
@@ -2574,7 +2575,7 @@
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
-            var meshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT group';
             if (currentMesh.mtype == 2) meshtype = 'Mesh agent group';
 
@@ -2587,7 +2588,7 @@
             //x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
-            var currentMeshLinks = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()];
+            var currentMeshLinks = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a></div>'; }
 
             /*
@@ -2699,7 +2700,7 @@
         }
 
         function p20validateAddMeshUserDialog() {
-            var meshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
@@ -2730,7 +2731,7 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links['user/{{{domain}}}/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
+            var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
                 if ((meshrights &   1) != 0) r += ', Edit Mesh';
                 if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
@@ -2745,7 +2746,7 @@
             if (r == '') { r = 'No Rights'; }
             var buttons = 1, x = addHtmlValue('User', userid.split('/')[2]);
             x += addHtmlValue('Permissions', r);
-            if ((('user/{{{domain}}}/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+            if ((('user/' + domain + '/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
         }
 

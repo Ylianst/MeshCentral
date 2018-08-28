@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+'use strict';
+
 const exeJavaScriptGuid = 'B996015880544A19B7F7E9BE44914C18';
 const exeMeshPolicyGuid = 'B996015880544A19B7F7E9BE44914C19';
 
