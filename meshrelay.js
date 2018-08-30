@@ -6,7 +6,12 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     var obj = {};
@@ -23,9 +28,10 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Relay: Soft disconnect (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Relay: Hard disconnect (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
-    }
+    };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
+        var rights;
         if (command.nodeid == null) return false;
         var user = obj.parent.users[userid];
         if (user == null) return false;
@@ -37,7 +43,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
             var agent = obj.parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                var rights = user.links[agent.dbMeshKey];
+                rights = user.links[agent.dbMeshKey];
                 if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     command.sessionid = ws.sessionId;   // Set the session id, required for responses.
                     command.rights = rights.rights;     // Add user rights flags to the message
@@ -50,7 +56,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
                 var routing = obj.parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    var rights = user.links[routing.meshid];
+                    rights = user.links[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
                         command.rights = rights.rights;         // Add user rights flags to the message
@@ -61,7 +67,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
             }
         }
         return false;
-    }
+    };
 
     if (req.query.auth == null) {
         // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.
@@ -160,7 +166,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
                 // Wait for other relay connection
                 ws.pause(); // Hold traffic until the other connection
                 parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
-                obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ') ' + (obj.authenticated?'Authenticated':'') );
+                obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
                 if (parent.parent.multiServer != null) {
@@ -213,6 +219,6 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
             obj.id = null;
         }
     });
-    
+
     return obj;
-}
+};

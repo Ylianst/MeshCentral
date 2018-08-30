@@ -6,7 +6,12 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
@@ -27,7 +32,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
-    }
+    };
 
     // Convert a mesh path array into a real path on the server side
     function meshPathToRealPath(meshpath, user) {
@@ -52,22 +57,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
     // 
     function copyFile(src, dest, func, tag) {
-		//var ss = obj.fs.createReadStream(src, { flags: 'rb' });
+        //var ss = obj.fs.createReadStream(src, { flags: 'rb' });
         //var ds = obj.fs.createWriteStream(dest, { flags: 'wb' });
         var ss = obj.fs.createReadStream(src);
         var ds = obj.fs.createWriteStream(dest);
         ss.fs = obj.fs;
-		ss.pipe(ds);
+        ss.pipe(ds);
         ds.ss = ss;
         /*
 		if (!this._copyStreams) { this._copyStreams = {}; this._copyStreamID = 0; }
 		ss.id = this._copyStreamID++;
 		this._copyStreams[ss.id] = ss;
         */
-		if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
-		else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
-        ds.on('close', function() { /*delete this.ss.fs._copyStreams[this.ss.id];*/ func(tag); });
-	};
+        if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
+        else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
+        ds.on('close', function () { /*delete this.ss.fs._copyStreams[this.ss.id];*/ func(tag); });
+    }
 
     try {
         // Check if the user is logged in
@@ -83,7 +88,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         obj.parent.wssessions2[ws.sessionId] = obj.ws;
         if (!obj.parent.wssessions[user._id]) { obj.parent.wssessions[user._id] = [ws]; } else { obj.parent.wssessions[user._id].push(obj.ws); }
         if (obj.parent.parent.multiServer == null) {
-            obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[user._id].length, nolog: 1, domain: obj.domain.id })
+            obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[user._id].length, nolog: 1, domain: obj.domain.id });
         } else {
             obj.parent.recountSessions(obj.ws.sessionId); // Recount sessions
         }
@@ -101,14 +106,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     else { ws.send(JSON.stringify({ action: 'event', event: event })); }
                 } catch (e) { }
             }
-        }
+        };
 
         user.subscriptions = obj.parent.subscribe(user._id, ws);   // Subscribe to events
         obj.ws._socket.setKeepAlive(true, 240000);                 // Set TCP keep alive
 
         // When data is received from the web socket
         ws.on('message', function (msg) {
-            var command, user = obj.parent.users[req.session.userid];
+            var command, user = obj.parent.users[req.session.userid], i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
             try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
             if ((user == null) || (obj.common.validateString(command.action, 3, 32) == false)) return; // User must be set and action must be a string between 3 and 32 chars
 
@@ -118,7 +123,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Request a list of all meshes this user as rights to
                         var docs = [];
-                        for (var i in user.links) { if (obj.parent.meshes[i]) { docs.push(obj.parent.meshes[i]); } }
+                        for (i in user.links) { if (obj.parent.meshes[i]) { docs.push(obj.parent.meshes[i]); } }
                         ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag }));
                         break;
                     }
@@ -127,10 +132,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         var links = [];
                         if (command.meshid == null) {
                             // Request a list of all meshes this user as rights to
-                            for (var i in user.links) { links.push(i); }
+                            for (i in user.links) { links.push(i); }
                         } else {
                             // Request list of all nodes for one specific meshid
-                            var meshid = command.meshid;
+                            meshid = command.meshid;
                             if (obj.common.validateString(meshid, 0, 128) == false) return;
                             if (meshid.split('/').length == 0) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                             if (user.links[meshid] != null) { links.push(meshid); }
@@ -139,7 +144,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // Request a list of all nodes
                         obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', function (err, docs) {
                             var r = {};
-                            for (var i in docs) {
+                            for (i in docs) {
                                 // Add the connection state
                                 var state = obj.parent.parent.GetConnectivityState(docs[i]._id);
                                 if (state) {
@@ -150,7 +155,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 }
 
                                 // Compress the meshid's
-                                var meshid = docs[i].meshid;
+                                meshid = docs[i].meshid;
                                 if (!r[meshid]) { r[meshid] = []; }
                                 delete docs[i].meshid;
 
@@ -171,7 +176,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         obj.db.getPowerTimeline(command.nodeid, function (err, docs) {
                             if (err == null && docs.length > 0) {
                                 var timeline = [], time = null, previousPower;
-                                for (var i in docs) {
+                                for (i in docs) {
                                     var doc = docs[i];
                                     if (time == null) {
                                         // First element
@@ -228,14 +233,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if (path == null) break;
 
                             if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) { try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { } } // Create a new folder
-                            else if (command.fileop == 'delete') { if (obj.common.validateArray(command.delfiles, 1) == false) return; for (var i in command.delfiles) { if (obj.common.IsFilenameValid(command.delfiles[i]) == true) { var fullpath = path + "/" + command.delfiles[i]; try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } } } } } // Delete
+                            else if (command.fileop == 'delete') { if (obj.common.validateArray(command.delfiles, 1) == false) return; for (i in command.delfiles) { if (obj.common.IsFilenameValid(command.delfiles[i]) == true) { var fullpath = path + "/" + command.delfiles[i]; try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } } } } } // Delete
                             else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
                             else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                                 if (obj.common.validateArray(command.names, 1) == false) return;
                                 var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                                 if (scpath == null) break;
                                 // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
-                                for (var i in command.names) {
+                                for (i in command.names) {
                                     var s = obj.path.join(scpath, command.names[i]), d = obj.path.join(path, command.names[i]);
                                     sendUpdate = false;
                                     copyFile(s, d, function (op) { if (op != null) { obj.fs.unlink(op, function () { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
@@ -319,7 +324,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // Delete all events
                         if (user.siteadmin != 0xFFFFFFFF) break;
                         obj.db.RemoveAllEvents(domain.id);
-                        obj.parent.parent.DispatchEvent(['*', 'server-global'], obj, { action: 'clearevents', nolog: 1, domain: domain.id })
+                        obj.parent.parent.DispatchEvent(['*', 'server-global'], obj, { action: 'clearevents', nolog: 1, domain: domain.id });
                         break;
                     }
                 case 'users':
@@ -327,7 +332,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // Request a list of all users
                         if ((user.siteadmin & 2) == 0) break;
                         var docs = [];
-                        for (var i in obj.parent.users) {
+                        for (i in obj.parent.users) {
                             if ((obj.parent.users[i].domain == domain.id) && (obj.parent.users[i].name != '~')) {
                                 var userinfo = obj.common.Clone(obj.parent.users[i]);
                                 delete userinfo.hash;
@@ -403,10 +408,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((user.siteadmin & 2) == 0) break;
                         if (obj.parent.parent.multiServer == null) {
                             // No peering, use simple session counting
-                            for (var i in obj.parent.wssessions) { if (obj.parent.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.parent.wssessions[i].length; } }
+                            for (i in obj.parent.wssessions) { if (obj.parent.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.parent.wssessions[i].length; } }
                         } else {
                             // We have peer servers, use more complex session counting
-                            for (var userid in obj.parent.sessionsCount) { if (userid.split('/')[1] == domain.id) { wssessions[userid] = obj.parent.sessionsCount[userid]; } }
+                            for (i in obj.parent.sessionsCount) { if (i.split('/')[1] == domain.id) { wssessions[i] = obj.parent.sessionsCount[i]; } }
                         }
                         ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); // wssessions is: userid --> count
                         break;
@@ -422,15 +427,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                         // Remove all the mesh links to this user
                         if (deluser.links != null) {
-                            for (var meshid in deluser.links) {
+                            for (meshid in deluser.links) {
                                 // Get the mesh
-                                var mesh = obj.parent.meshes[meshid];
+                                mesh = obj.parent.meshes[meshid];
                                 if (mesh) {
                                     // Remove user from the mesh
                                     if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; obj.parent.db.Set(mesh); }
                                     // Notify mesh change
-                                    var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
-                                    obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                    change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                    obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, { etype: 'mesh', username: user.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
                                 }
                             }
                         }
@@ -446,7 +451,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                         obj.db.Remove(deluserid);
                         delete obj.parent.users[deluserid];
-                        obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id })
+                        obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
                         obj.parent.parent.DispatchEvent([deluserid], obj, 'close');
 
                         break;
@@ -474,7 +479,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 if (newuser2.subscriptions) { delete newuser2.subscriptions; }
                                 if (newuser2.salt) { delete newuser2.salt; }
                                 if (newuser2.hash) { delete newuser2.hash; }
-                                obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: newuser2, action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id })
+                                obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: newuser2, action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
                             });
                         }
                         break;
@@ -483,12 +488,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Edit a user account, may involve changing email or administrator permissions
                         if (((user.siteadmin & 2) != 0) || (user.name == command.name)) {
-                            var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.parent.users[chguserid], change = 0;
+                            var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.parent.users[chguserid];
+                            change = 0;
                             if (chguser) {
                                 if (obj.common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
                                 if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                                 if (obj.common.validateInt(command.quota, 0) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
-                                if ((user.siteadmin == 0xFFFFFFFF) && obj.common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1 }
+                                if ((user.siteadmin == 0xFFFFFFFF) && obj.common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
                                 if (change == 1) {
                                     obj.db.SetUser(chguser);
                                     obj.parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
@@ -500,7 +506,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     delete userinfo.domain;
                                     delete userinfo.subscriptions;
                                     delete userinfo.passtype;
-                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id })
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
                                 }
                                 if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
                                     obj.parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
@@ -534,11 +540,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                         // Get the list of sessions for this user
                         var sessions = obj.parent.wssessions[command.userid];
-                        if (sessions != null) { for (var i in sessions) { sessions[i].send(JSON.stringify(notification)); } }
+                        if (sessions != null) { for (i in sessions) { sessions[i].send(JSON.stringify(notification)); } }
 
                         if (obj.parent.parent.multiServer != null) {
                             // TODO: Add multi-server support
                         }
+                        break;
                     }
                 case 'serverversion':
                     {
@@ -564,10 +571,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((command.meshtype == 1) || (command.meshtype == 2)) {
                             // Create a type 1 agent-less Intel AMT mesh.
                             obj.parent.crypto.randomBytes(48, function (err, buf) {
-                                var meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                                var links = {}
+                                meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                var links = {};
                                 links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
-                                var mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
+                                mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
                                 obj.db.Set(obj.common.escapeLinksFieldName(mesh));
                                 obj.parent.meshes[meshid] = mesh;
                                 obj.parent.parent.AddEventDispatch([meshid], ws);
@@ -575,7 +582,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 user.links[meshid] = { rights: 0xFFFFFFFF };
                                 user.subscriptions = obj.parent.subscribe(user._id, ws);
                                 obj.db.SetUser(user);
-                                obj.parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id })
+                                obj.parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id });
                             });
                         }
                         break;
@@ -586,17 +593,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                         obj.db.Get(command.meshid, function (err, meshes) {
                             if (meshes.length != 1) return;
-                            var mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
+                            mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
 
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
                             if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                             // Fire the removal event first, because after this, the event will not route
-                            obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id })
+                            obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id });
 
                             // Remove all user links to this mesh
-                            for (var i in meshes) {
+                            for (i in meshes) {
                                 var links = meshes[i].links;
                                 for (var j in links) {
                                     var xuser = obj.parent.users[j];
@@ -608,8 +615,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                             // Delete all files on the server for this mesh
                             try {
-                                var meshpath = getServerRootFilePath(mesh);
-                                if (meshpath != null) { deleteFolderRec(meshpath); }
+                                var meshpath = obj.parent.getServerRootFilePath(mesh);
+                                if (meshpath != null) { obj.parent.deleteFolderRec(meshpath); }
                             } catch (e) { }
 
                             obj.parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
@@ -622,7 +629,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Change the name or description of a mesh
                         if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                        var mesh = obj.parent.meshes[command.meshid], change = '';
+                        mesh = obj.parent.meshes[command.meshid];
+                        change = '';
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) return;
@@ -630,7 +638,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                             if ((obj.common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Mesh name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
                             if ((obj.common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Mesh "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                            if (change != '') { obj.db.Set(obj.common.escapeLinksFieldName(mesh)); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }) }
+                            if (change != '') { obj.db.Set(obj.common.escapeLinksFieldName(mesh)); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }); }
                         }
                         break;
                     }
@@ -648,7 +656,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         }
 
                         // Get the mesh
-                        var mesh = obj.parent.meshes[command.meshid], change = '';
+                        mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
@@ -665,8 +673,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
-                            var change = 'Added user ' + newuser.name + ' to mesh ' + mesh.name;
-                            obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                            obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id });
                         }
                         break;
                     }
@@ -677,7 +684,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                         // Get the mesh
-                        var mesh = obj.parent.meshes[command.meshid];
+                        mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
@@ -701,8 +708,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                                 // Notify mesh change
-                                var change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
-                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id })
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from mesh ' + mesh.name, domain: domain.id });
                             }
                         }
                         break;
@@ -723,7 +729,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((obj.parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
 
                         // Get the mesh
-                        var mesh = obj.parent.meshes[command.meshid];
+                        mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             if (mesh.mtype != 1) return; // This operation is only allowed for mesh type 1, Intel AMT agentless mesh.
 
@@ -733,15 +739,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Create a new nodeid
                             obj.parent.crypto.randomBytes(48, function (err, buf) {
                                 // create the new node
-                                var nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');;
+                                nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                                 var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
                                 obj.db.Set(device);
 
                                 // Event the new node
                                 var device2 = obj.common.Clone(device);
                                 delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                var change = 'Added device ' + command.devicename + ' to mesh ' + mesh.name;
-                                obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', username: user.name, action: 'addnode', node: device2, msg: change, domain: domain.id })
+                                obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', username: user.name, action: 'addnode', node: device2, msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
                             });
                         }
                         break;
@@ -763,8 +768,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
 
-                        for (var i in command.nodeids) {
-                            var nodeid = command.nodeids[i];
+                        for (i in command.nodeids) {
+                            nodeid = command.nodeids[i];
                             if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                             if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
@@ -774,7 +779,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
-                                var mesh = obj.parent.meshes[node.meshid];
+                                mesh = obj.parent.meshes[node.meshid];
                                 if (mesh) {
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
@@ -786,8 +791,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                     // Event node deletion
-                                    var change = 'Removed device ' + node.name + ' from mesh ' + mesh.name;
-                                    obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: change, domain: domain.id })
+                                    obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from mesh ' + mesh.name, domain: domain.id });
 
                                     // Disconnect all connections if needed
                                     var state = obj.parent.parent.GetConnectivityState(nodeid);
@@ -807,8 +811,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         // TODO: We can optimize this a lot.
                         // - We should get a full list of all MAC's to wake first.
                         // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
-                        for (var i in command.nodeids) {
-                            var nodeid = command.nodeids[i], wakeActions = 0;
+                        for (i in command.nodeids) {
+                            nodeid = command.nodeids[i];
+                            var wakeActions = 0;
                             if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                             if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                                 // Get the device
@@ -817,7 +822,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     var node = nodes[0];
 
                                     // Get the mesh for this device
-                                    var mesh = obj.parent.meshes[node.meshid];
+                                    mesh = obj.parent.meshes[node.meshid];
                                     if (mesh) {
 
                                         // Check if this user has rights to do this
@@ -835,10 +840,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                                                     // Get the list of mesh this user as access to
                                                     var targetMeshes = [];
-                                                    for (var i in user.links) { targetMeshes.push(i); }
+                                                    for (i in user.links) { targetMeshes.push(i); }
 
                                                     // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
-                                                    for (var i in obj.parent.wsagents) {
+                                                    for (i in obj.parent.wsagents) {
                                                         var agent = obj.parent.wsagents[i];
                                                         if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
                                                             //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
@@ -862,8 +867,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 case 'poweraction':
                     {
                         if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                        for (var i in command.nodeids) {
-                            var nodeid = command.nodeids[i], powerActions = 0;
+                        for (i in command.nodeids) {
+                            nodeid = command.nodeids[i];
+                            var powerActions = 0;
                             if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                             if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                                 // Get the device
@@ -872,7 +878,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     var node = nodes[0];
 
                                     // Get the mesh for this device
-                                    var mesh = obj.parent.meshes[node.meshid];
+                                    mesh = obj.parent.meshes[node.meshid];
                                     if (mesh) {
 
                                         // Check if this user has rights to do this
@@ -899,8 +905,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                         if (obj.common.validateString(command.title, 1, 512) == false) break; // Check title
                         if (obj.common.validateString(command.msg, 1, 4096) == false) break; // Check message
-                        for (var i in command.nodeids) {
-                            var nodeid = command.nodeids[i], powerActions = 0;
+                        for (i in command.nodeids) {
+                            nodeid = command.nodeids[i];
+                            var powerActions = 0;
                             if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                             if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                                 // Get the device
@@ -909,7 +916,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     var node = nodes[0];
 
                                     // Get the mesh for this device
-                                    var mesh = obj.parent.meshes[node.meshid];
+                                    mesh = obj.parent.meshes[node.meshid];
                                     if (mesh) {
 
                                         // Check if this user has rights to do this
@@ -940,7 +947,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var node = nodes[0];
 
                             // Get the mesh for this device
-                            var mesh = obj.parent.meshes[node.meshid];
+                            mesh = obj.parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
@@ -968,13 +975,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             var node = nodes[0];
 
                             // Get the mesh for this device
-                            var mesh = obj.parent.meshes[node.meshid];
+                            mesh = obj.parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                                 // Ready the node change event
-                                var changes = [], change = 0, event = { etype: 'node', username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
+                                var changes = [], event = { etype: 'node', username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
+                                change = 0;
                                 event.msg = ": ";
 
                                 // If we are in WAN-only mode, host is not used
@@ -1041,7 +1049,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                             data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                                             obj.parent.sendMeshAgentCore(user, domain, command.nodeid, data);
                                         }
-                                    })
+                                    });
                                 }
                             }
                         } else {
@@ -1071,7 +1079,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                         obj.db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                             if (nodes.length == 1) {
-                                var meshlinks = user.links[nodes[0].meshid];
+                                meshlinks = user.links[nodes[0].meshid];
                                 if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_REMOTECONTROL != 0)) {
                                     // Add a user authentication cookie to a url
                                     var cookieContent = { userid: user._id, domainid: user.domain };
@@ -1093,7 +1101,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                         // Get the mesh
-                        var mesh = obj.parent.meshes[command.meshid];
+                        mesh = obj.parent.meshes[command.meshid];
                         if (mesh) {
                             if (mesh.mtype != 2) return; // This operation is only allowed for mesh type 2, agent mesh
 
@@ -1118,7 +1126,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // Check if this user has rights on this id to set notes
                             obj.db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                                 if (nodes.length == 1) {
-                                    var meshlinks = user.links[nodes[0].meshid];
+                                    meshlinks = user.links[nodes[0].meshid];
                                     if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_SETNOTES != 0)) {
                                         // Set the id's notes
                                         if (obj.common.validateString(command.notes, 1) == false) {
@@ -1131,7 +1139,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             });
                         } else if (idtype == 'mesh') {
                             // Get the mesh for this device
-                            var mesh = obj.parent.meshes[command.id];
+                            mesh = obj.parent.meshes[command.id];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
@@ -1170,7 +1178,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
-                                var mesh = obj.parent.meshes[node.meshid];
+                                mesh = obj.parent.meshes[node.meshid];
                                 if (mesh) {
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
@@ -1184,7 +1192,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             });
                         } else if (idtype == 'mesh') {
                             // Get the mesh for this device
-                            var mesh = obj.parent.meshes[command.id];
+                            mesh = obj.parent.meshes[command.id];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
@@ -1223,7 +1231,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     var user = obj.parent.users[ws.userid];
                     if (user) {
                         if (obj.parent.parent.multiServer == null) {
-                            obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[ws.userid].length, nolog: 1, domain: obj.domain.id })
+                            obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[ws.userid].length, nolog: 1, domain: obj.domain.id });
                         } else {
                             obj.parent.recountSessions(ws.sessionId); // Recount sessions
                         }
@@ -1241,7 +1249,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         var httpport = ((obj.args.aliasport != null) ? obj.args.aliasport : obj.args.port);
 
         // Build server information object
-        var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: obj.parent.parent.mailserver != null }
+        var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: obj.parent.parent.mailserver != null };
         if (obj.args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
 
         // Send server information
@@ -1259,7 +1267,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         var r = {}, dir = obj.fs.readdirSync(path);
         for (var i in dir) {
             var f = { t: 3, d: 111 };
-            var stat = obj.fs.statSync(path + '/' + dir[i])
+            var stat = obj.fs.statSync(path + '/' + dir[i]);
             if ((stat.mode & 0x004000) == 0) { f.s = stat.size; f.d = stat.mtime.getTime(); } else { f.t = 2; f.f = readFilesRec(path + '/' + dir[i]); }
             r[dir[i]] = f;
         }
@@ -1316,7 +1324,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
     }
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
-    function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
     return obj;
-}
+};

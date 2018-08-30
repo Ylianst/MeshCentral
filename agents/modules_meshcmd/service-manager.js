@@ -109,29 +109,16 @@ function serviceManager()
             }
             return admin;
         };
+        this.getProgramFolder = function getProgramFolder() {
+            if (require('os').arch() == 'x64') { // 64 bit Windows
+                if (this.GM.PointerSize == 4) { return process.env['ProgramFiles(x86)']; } // 32 Bit App
+                return process.env['ProgramFiles']; // 64 bit App
+            }
+            return process.env['ProgramFiles']; // 32 bit Windows
+        };
         this.getServiceFolder = function getServiceFolder()
         {
-            var destinationFolder = null;
-            if (require('os').arch() == 'x64')
-            {
-                // 64 bit Windows
-                if (this.GM.PointerSize == 4)
-                {
-                    // 32 Bit App
-                    destinationFolder = process.env['ProgramFiles(x86)'];
-                }
-                else
-                {
-                    // 64 bit App
-                    destinationFolder = process.env['ProgramFiles'];
-                }
-            }
-            else
-            {
-                // 32 bit Windows
-                destinationFolder = process.env['ProgramFiles'];
-            }
-            return (destinationFolder + '\\mesh');
+            return this.getProgramFolder() + '\\mesh';
         };
 
         this.enumerateService = function () {

@@ -6,7 +6,12 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 // Construct a legacy Swarm Server server object
 module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
@@ -18,7 +23,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     obj.legacyAgentConnections = {};
     obj.migrationAgents = {};
     const common = require('./common.js');
-    const net = require('net');
+    //const net = require('net');
     const tls = require('tls');
     const forge = require('node-forge');
 
@@ -115,7 +120,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         USERAUTH2: 1031,           // Authenticate a user to the swarm server (Uses SHA1 SALT)
         GUESTREMOTEDESKTOP: 2001,  // Guest usage: Remote Desktop
         GUESTWEBRTCMESH: 2002      // Guest usage: WebRTC Mesh
-    }
+    };
 
     obj.server = tls.createServer({ key: certificates.swarmserver.key, cert: certificates.swarmserver.cert, requestCert: true }, onConnection);
     obj.server.listen(args.swarmport, function () { console.log('MeshCentral Legacy Swarm Server running on ' + certificates.CommonName + ':' + args.swarmport + '.'); obj.parent.updateServerState('swarm-port', args.swarmport); }).on('error', function (err) { console.error('ERROR: MeshCentral Swarm Server server port ' + args.swarmport + ' is not available.'); if (args.exactports) { process.exit(); } });
@@ -146,11 +151,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         socket.setEncoding('binary');
         socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
         Debug(1, 'SWARM:New legacy agent connection');
-        
+
         socket.addListener("data", function (data) {
             if (args.swarmdebug) { var buf = new Buffer(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
             socket.tag.accumulator += data;
-            
+
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
@@ -214,7 +219,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                     Debug(3, 'Swarm:GETSTATE');
                     if (len < 12) break;
                     var statecmd = common.ReadInt(data, 0);
-                    var statesync = common.ReadInt(data, 4);
+                    //var statesync = common.ReadInt(data, 4);
                     switch (statecmd) {
                         case 6: { // Ask for agent block
                             if (socket.tag.update != null) {
@@ -247,14 +252,14 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             }
             return len;
         }
-        
+
         socket.addListener("close", function () {
             Debug(1, 'Swarm:Connection closed');
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
             if (socket.pingTimer != null) { clearInterval(socket.pingTimer); delete socket.pingTimer; }
         });
-        
+
         socket.addListener("error", function () {
             //console.log("Swarm Error: " + socket.remoteAddress);
         });
@@ -311,19 +316,19 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             console.log(e);
         }
         return null;
-    }
+    };
 
     // Disconnect legacy agent connection
     obj.close = function (socket) {
         try { socket.close(); } catch (e) { }
         try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
         obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
-    }
+    };
 
-    obj.SendCommand = function(socket, cmdid, data) {
+    obj.SendCommand = function (socket, cmdid, data) {
         if (data == null) { data = ''; }
         Write(socket, common.ShortToStr(cmdid) + common.ShortToStr(data.length + 4) + data);
-    }
+    };
 
     function Write(socket, data) {
         if (args.swarmdebug) {
@@ -335,7 +340,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             socket.write(new Buffer(data, "binary"));
         }
     }
-    
+
     // Debug
     function Debug(lvl) {
         if (lvl > obj.parent.debugLevel) return;
@@ -348,4 +353,4 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     }
 
     return obj;
-}
+};

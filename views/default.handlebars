@@ -2251,9 +2251,8 @@
             var boundingBox = null;
             for (var i in nodes) {
                 try {
-                    var loc = map_parseNodeLoc(nodes[i]);
-                    var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
-                    if ((typeof loc == 'object') && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
+                    var loc = map_parseNodeLoc(nodes[i]), feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
+                    if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
                         var lat = loc[0], lon = loc[1], type = loc[2];
                         if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
                         if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
@@ -2311,7 +2310,7 @@
             if (node.wifiloc) { loc = node.wifiloc; t = 2; }
             if (node.gpsloc) { loc = node.gpsloc; t = 3; }
             if (node.userloc) { loc = node.userloc; t = 4; }
-            if ((loc == null) || (typeof loc != 'string')) return;
+            if ((loc == null) || (typeof loc != 'string')) return null;
             loc = loc.split(',');
             if (t == 1) {
                 // If this is IP location, randomize the position a little.
@@ -2450,12 +2449,14 @@
             }
 
             // Since this is IP address location, add some fixed randomness to the location. Avoid pin pile-up.
-            var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1];
-
-            if ((lat != feature.get('lat')) || (lon != feature.get('lon'))) { // Update lat and lon if changed
-                feature.set('lat', lat); feature.set('lon', lon);
-                var modifiedCoordinates = ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326','EPSG:3857');
-                feature.getGeometry().setCoordinates(modifiedCoordinates);
+            var loc = map_parseNodeLoc(node);
+            if (loc != null) {
+                var lat = loc[0], lon = loc[1];
+                if ((lat != feature.get('lat')) || (lon != feature.get('lon'))) { // Update lat and lon if changed
+                    feature.set('lat', lat); feature.set('lon', lon);
+                    var modifiedCoordinates = ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326', 'EPSG:3857');
+                    feature.getGeometry().setCoordinates(modifiedCoordinates);
+                }
             }
 
             if (node.name != feature.get('name') ) {  feature.set('name', node.name); } // Update name
