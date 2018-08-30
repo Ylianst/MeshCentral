@@ -1,6 +1,21 @@
+/*
+Copyright 2018 Intel Corporation
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-function parseServiceStatus(token) {
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+function parseServiceStatus(token)
+{
     var j = {};
     var serviceType = token.Deref(0, 4).IntVal;
     j.isFileSystemDriver = ((serviceType & 0x00000002) == 0x00000002);
@@ -8,7 +23,8 @@ function parseServiceStatus(token) {
     j.isSharedProcess = ((serviceType & 0x00000020) == 0x00000020);
     j.isOwnProcess = ((serviceType & 0x00000010) == 0x00000010);
     j.isInteractive = ((serviceType & 0x00000100) == 0x00000100);
-    switch (token.Deref((1 * 4), 4).toBuffer().readUInt32LE()) {
+    switch (token.Deref((1 * 4), 4).toBuffer().readUInt32LE())
+    {
         case 0x00000005:
             j.state = 'CONTINUE_PENDING';
             break;
@@ -33,7 +49,8 @@ function parseServiceStatus(token) {
     }
     var controlsAccepted = token.Deref((2 * 4), 4).toBuffer().readUInt32LE();
     j.controlsAccepted = [];
-    if ((controlsAccepted & 0x00000010) == 0x00000010) {
+    if ((controlsAccepted & 0x00000010) == 0x00000010)
+    {
         j.controlsAccepted.push('SERVICE_CONTROL_NETBINDADD');
         j.controlsAccepted.push('SERVICE_CONTROL_NETBINDREMOVE');
         j.controlsAccepted.push('SERVICE_CONTROL_NETBINDENABLE');
@@ -51,8 +68,11 @@ function parseServiceStatus(token) {
     return (j);
 }
 
-function serviceManager() {
-    if (process.platform == 'win32') {
+function serviceManager()
+{
+    this._ObjectID = 'service-manager';
+    if (process.platform == 'win32') 
+    {
         this.GM = require('_GenericMarshal');
         this.proxy = this.GM.CreateNativeProxy('Advapi32.dll');
         this.proxy.CreateMethod('OpenSCManagerA');
@@ -78,21 +98,40 @@ function serviceManager() {
             var AdministratorsGroup = this.GM.CreatePointer();
             var admin = false;
 
-            if (this.proxy.AllocateAndInitializeSid(NTAuthority, 2, 32, 544, 0, 0, 0, 0, 0, 0, AdministratorsGroup).Val != 0) {
+            if (this.proxy.AllocateAndInitializeSid(NTAuthority, 2, 32, 544, 0, 0, 0, 0, 0, 0, AdministratorsGroup).Val != 0)
+            {
                 var member = this.GM.CreateInteger();
-                if (this.proxy.CheckTokenMembership(0, AdministratorsGroup.Deref(), member).Val != 0) {
+                if (this.proxy.CheckTokenMembership(0, AdministratorsGroup.Deref(), member).Val != 0)
+                {
                     if (member.toBuffer().readUInt32LE() != 0) { admin = true; }
                 }
                 this.proxy.FreeSid(AdministratorsGroup.Deref());
             }
             return admin;
         };
-        this.getProgramFolder = function getProgramFolder() {
-            if ((require('os').arch() == 'x64') && (this.GM.PointerSize == 4)) { return process.env['ProgramFiles(x86)']; } // 64 bit Windows with 32 Bit App
-            return process.env['ProgramFiles']; // All other cases: 32 bit Windows or 64 bit App
-        };
-        this.getServiceFolder = function getServiceFolder() {
-            return getProgramFolder() + '\\Open Source\\MeshCmd';
+        this.getServiceFolder = function getServiceFolder()
+        {
+            var destinationFolder = null;
+            if (require('os').arch() == 'x64')
+            {
+                // 64 bit Windows
+                if (this.GM.PointerSize == 4)
+                {
+                    // 32 Bit App
+                    destinationFolder = process.env['ProgramFiles(x86)'];
+                }
+                else
+                {
+                    // 64 bit App
+                    destinationFolder = process.env['ProgramFiles'];
+                }
+            }
+            else
+            {
+                // 32 bit Windows
+                destinationFolder = process.env['ProgramFiles'];
+            }
+            return (destinationFolder + '\\mesh');
         };
 
         this.enumerateService = function () {
@@ -105,7 +144,9 @@ function serviceManager() {
             var resumeHandle = this.GM.CreatePointer();
             //var services = this.proxy.CreateVariable(262144);
             var success = this.proxy.EnumServicesStatusExA(handle, 0, 0x00000030, 0x00000003, 0x00, 0x00, bytesNeeded, servicesReturned, resumeHandle, 0x00);
-            if (bytesNeeded.IntVal <= 0) { throw('Error enumerating services'); }
+            if (bytesNeeded.IntVal <= 0) {
+                throw ('error enumerating services');
+            }
             var sz = bytesNeeded.IntVal;
             var services = this.GM.CreateVariable(sz);
             this.proxy.EnumServicesStatusExA(handle, 0, 0x00000030, 0x00000003, services, sz, bytesNeeded, servicesReturned, resumeHandle, 0x00);
@@ -131,7 +172,7 @@ function serviceManager() {
             var ptr = this.GM.CreatePointer();
             var bytesNeeded = this.GM.CreateVariable(ptr._size);
             var handle = this.proxy.OpenSCManagerA(0x00, 0x00, 0x0001 | 0x0004 | 0x0020 | 0x0010);
-            if (handle.Val == 0) { throw('Could not open ServiceManager'); }
+            if (handle.Val == 0) { throw ('could not open ServiceManager'); }
             var h = this.proxy.OpenServiceA(handle, serviceName, 0x0004 | 0x0020 | 0x0010 | 0x00010000);
             if (h.Val != 0) {
                 var success = this.proxy.QueryServiceStatusEx(h, 0, 0, 0, bytesNeeded);
@@ -156,48 +197,51 @@ function serviceManager() {
                             }
                         }
                         else {
-                            throw ('Cannot call ' + this.name + '.stop(), when current state is: ' + this.status.state);
+                            throw ('cannot call ' + this.name + '.stop(), when current state is: ' + this.status.state);
                         }
                     }
                     retVal.start = function () {
                         if (this.status.state == 'STOPPED') {
                             var success = this._proxy.StartServiceA(this._service, 0, 0);
-                            if (success == 0) { throw (this.name + '.start() failed'); }
-                        } else {
-                            throw ('Cannot call ' + this.name + '.start(), when current state is: ' + this.status.state);
+                            if (success == 0) {
+                                throw (this.name + '.start() failed');
+                            }
+                        }
+                        else {
+                            throw ('cannot call ' + this.name + '.start(), when current state is: ' + this.status.state);
                         }
                     }
                     return (retVal);
-                } else {
+                }
+                else {
 
                 }
             }
 
             this.proxy.CloseServiceHandle(handle);
-            throw ('Could not find service: ' + name);
+            throw ('could not find service: ' + name);
         }
     }
-    this.installService = function installService(options) {
-        if (process.platform == 'win32') {
-            if (!this.isAdmin()) { throw ('Installing as Service, requires administrator permissions.'); }
+    this.installService = function installService(options)
+    {
+        if (process.platform == 'win32')
+        {
+            if (!this.isAdmin()) { throw ('Installing as Service, requires admin'); }
 
             // Before we start, we need to copy the binary to the right place
-            var folder = this.getProgramFolder() + '\\Open Source';
-            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); } // Create the "Open Source" folder
-            folder += '\\MeshCmd';
-            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); } // Create the "MeshCmd" folder
+            var folder = this.getServiceFolder();
+            if (!require('fs').existsSync(folder)) { require('fs').mkdirSync(folder); }
             require('fs').copyFileSync(options.servicePath, folder + '\\' + options.name + '.exe');
             options.servicePath = folder + '\\' + options.name + '.exe';
-            console.log('Installing to "' + options.servicePath + '"');
 
             var servicePath = this.GM.CreateVariable('"' + options.servicePath + '"');
             var handle = this.proxy.OpenSCManagerA(0x00, 0x00, 0x0002);
-            if (handle.Val == 0) { throw ('Error opening SCManager'); }
+            if (handle.Val == 0) { throw ('error opening SCManager'); }
             var serviceName = this.GM.CreateVariable(options.name);
             var displayName = this.GM.CreateVariable(options.name);
             var allAccess = 0x000F01FF;
             var serviceType;
-
+            
 
             switch (options.startType) {
                 case 'BOOT_START':
@@ -235,11 +279,13 @@ function serviceManager() {
             this.proxy.CloseServiceHandle(handle);
             return (this.getService(options.name));
         }
-        if (process.platform == 'linux') {
-            switch (this.getServiceType()) {
+        if(process.platform == 'linux')
+        {
+            switch (this.getServiceType())
+            {
                 case 'init':
                     require('fs').copyFileSync(options.servicePath, '/etc/init.d/' + options.name);
-                    console.log('Copying ' + options.servicePath);
+                    console.log('copying ' + options.servicePath);
                     var m = require('fs').statSync('/etc/init.d/' + options.name).mode;
                     m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP);
                     require('fs').chmodSync('/etc/init.d/' + options.name, m);
@@ -274,25 +320,40 @@ function serviceManager() {
             }
         }
     }
-    this.uninstallService = function uninstallService(name) {
+    this.uninstallService = function uninstallService(name)
+    {
         if (typeof (name) == 'object') { name = name.name; }
-        if (process.platform == 'win32') {
-            if (!this.isAdmin()) { throw ('Uninstalling a service, requires administrator permissions.'); }
+        if (process.platform == 'win32')
+        {
+            if (!this.isAdmin()) { throw ('Uninstalling a service, requires admin'); }
 
             var service = this.getService(name);
-            if (service.status.state == undefined || service.status.state == 'STOPPED') {
-                if (this.proxy.DeleteService(service._service) == 0) {
+            if (service.status.state == undefined || service.status.state == 'STOPPED')
+            {
+                if (this.proxy.DeleteService(service._service) == 0)
+                {
                     throw ('Uninstall Service for: ' + name + ', failed with error: ' + this.proxy2.GetLastError());
-                } else {
-                    try { require('fs').unlinkSync(this.getServiceFolder() + '\\' + name + '.exe'); } catch (e) { }
+                }
+                else
+                {
+                    try
+                    {
+                        require('fs').unlinkSync(this.getServiceFolder() + '\\' + name + '.exe');
+                    }
+                    catch(e)
+                    {
+                    }
                 }
             }
-            else {
+            else
+            {
                 throw ('Cannot uninstall service: ' + name + ', because it is: ' + service.status.state);
             }
         }
-        else if (process.platform == 'linux') {
-            switch (this.getServiceType()) {
+        else if(process.platform == 'linux')
+        {
+            switch (this.getServiceType())
+            {
                 case 'init':
                     this._update = require('child_process').execFile('/bin/sh', ['sh'], { type: require('child_process').SpawnTypes.TERM });
                     this._update._svcname = name;
@@ -300,7 +361,11 @@ function serviceManager() {
                         try {
                             require('fs').unlinkSync('/etc/init.d/' + this._svcname);
                             console.log(this._svcname + ' uninstalled');
-                        } catch (e) { console.log(this._svcname + ' could not be uninstalled'); }
+
+                        }
+                        catch (e) {
+                            console.log(this._svcname + ' could not be uninstalled')
+                        }
                         process.exit();
                     });
                     this._update.stdout.on('data', function (chunk) { });
@@ -316,7 +381,10 @@ function serviceManager() {
                             require('fs').unlinkSync('/usr/local/mesh/' + this._svcname);
                             require('fs').unlinkSync('/lib/systemd/system/' + this._svcname + '.service');
                             console.log(this._svcname + ' uninstalled');
-                        } catch (e) { console.log(this._svcname + ' could not be uninstalled'); }
+                        }
+                        catch (e) {
+                            console.log(this._svcname + ' could not be uninstalled')
+                        }
                         process.exit();
                     });
                     this._update.stdout.on('data', function (chunk) { });
@@ -329,9 +397,11 @@ function serviceManager() {
             }
         }
     }
-    if (process.platform == 'linux') {
-        this.getServiceType = function getServiceType() {
-            return (require('processManager').getProcessInfo(1).Name);
+    if(process.platform == 'linux')
+    {
+        this.getServiceType = function getServiceType()
+        {
+            return (require('process-manager').getProcessInfo(1).Name);
         };
     }
 }

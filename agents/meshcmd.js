@@ -1532,7 +1532,7 @@ if (serviceName == null) {
 if (serviceInstall == 0) {
     run(process.argv);
 } else {
-    var serviceHost = require('serviceHost');
+    var serviceHost = require('service-host');
     var meshcmdService = new serviceHost({ name: serviceName, startType: 'AUTO_START' });
 
     // Called when the background service is started.

@@ -16,9 +16,27 @@ limitations under the License.
 
 function UserSessions()
 {
-    this._ObjectID = 'UserSessions';
+    this._ObjectID = 'user-sessions';
+    require('events').EventEmitter.call(this, true).createEvent('changed');
 
-    if (process.platform == 'win32') {
+    this.enumerateUsers = function enumerateUsers()
+    {
+        var promise = require('promise');
+        var p = new promise(function (res, rej)
+        {
+            this.__resolver = res;
+            this.__rejector = rej;
+        });
+        p.__handler = function __handler(users)
+        {
+            p.__resolver(users);
+        };
+        this.Current(p.__handler);
+        return (p);
+    }
+
+    if (process.platform == 'win32')
+    {
         this._marshal = require('_GenericMarshal');
         this._kernel32 = this._marshal.CreateNativeProxy('Kernel32.dll');
         this._kernel32.CreateMethod('GetLastError');
@@ -77,7 +95,7 @@ function UserSessions()
             return (retVal);
         };
 
-        this.Current = function Current()
+        this.Current = function Current(cb)
         {
             var retVal = {};
             var pinfo = this._marshal.CreatePointer();
@@ -102,36 +120,152 @@ function UserSessions()
 
             this._wts.WTSFreeMemory(pinfo.Deref());
 
-            Object.defineProperty(retVal, 'connected', { value: showActiveOnly(retVal) });
+            Object.defineProperty(retVal, 'Active', { value: showActiveOnly(retVal) });
+            if (cb) { cb(retVal); }
             return (retVal);
         };
     }
     else
     {
-        this.Current = function Current()
+        this.Self = function Self()
+        {
+            var promise = require('promise');
+            var p = new promise(function (res, rej)
+            {
+                this.__resolver = res; this.__rejector = rej;
+                this.__child = require('child_process').execFile('/usr/bin/id', ['id', '-u']);
+                this.__child.promise = this;
+                this.__child.stdout._txt = '';
+                this.__child.stdout.on('data', function (chunk) { this._txt += chunk.toString(); });
+                this.__child.on('exit', function (code)
+                {
+                    try
+                    {
+                        parseInt(this.stdout._txt);
+                    }
+                    catch (e)
+                    {
+                        this.promise.__rejector('invalid uid');
+                        return;
+                    }
+
+                    var id = parseInt(this.stdout._txt);
+                    this.promise.__resolver(id);
+                });
+            });
+            return (p);
+        };
+        this.Current = function Current(cb)
         {
             var retVal = {};
-            var emitterUtils = require('events').inherits(retVal);
-            emitterUtils.createEvent('logon');
+            retVal._ObjectID = 'UserSession'
+            Object.defineProperty(retVal, '_callback', { value: cb });
+            Object.defineProperty(retVal, '_child', { value: require('child_process').execFile('/usr/bin/last', ['last', '-f', '/var/run/utmp']) });
 
-            retVal._child = require('child_process').execFile('/usr/bin/last', ['last', '-f', '/var/run/utmp']);
             retVal._child.Parent = retVal;
             retVal._child._txt = '';
             retVal._child.on('exit', function (code)
             {
                 var lines = this._txt.split('\n');
                 var sessions = [];
+                var users = {};
+
                 for(var i in lines)
                 {
                     if (lines[i])
                     {
-                        console.log(getTokens(lines[i]));
-                        var user = lines[i].substring(0, lines[i].indexOf(' '));
-                        sessions.push(user);
+                        var tokens = getTokens(lines[i]);
+                        var s = { Username: tokens[0], SessionId: tokens[1] }
+                        if (tokens[3].includes('still logged in'))
+                        {
+                            s.State = 'Active';
+                        }
+                        else
+                        {
+                            s.LastActive = tokens[3];
+                        }
+
+                        sessions.push(s);
                     }
                 }
                 sessions.pop();
-                console.log(sessions);
+
+
+                var usernames = {};
+                var promises = [];
+
+                for (var i in sessions)
+                {
+                    if (sessions[i].Username != 'reboot')
+                    {
+                        users[sessions[i].SessionId] = sessions[i];
+                        if(usernames[sessions[i].Username] == null)
+                        {
+                            usernames[sessions[i].Username] = -1;
+                        }
+                    }
+                }
+
+                try
+                {
+                    require('promise');
+                }
+                catch(e)
+                {
+                    Object.defineProperty(users, 'Active', { value: showActiveOnly(users) });
+                    if (this.Parent._callback) { this.Parent._callback.call(this.Parent, users); }
+                    return;
+                }
+
+                var promise = require('promise');
+                for (var n in usernames)
+                {
+                    var p = new promise(function (res, rej)
+                    {
+                        this.__username = n;
+                        this.__resolver = res; this.__rejector = rej;
+                        this.__child = require('child_process').execFile('/usr/bin/id', ['id', '-u', n]);
+                        this.__child.promise = this;
+                        this.__child.stdout._txt = '';
+                        this.__child.stdout.on('data', function (chunk) { this._txt += chunk.toString(); });
+                        this.__child.on('exit', function (code)
+                        {
+                            try
+                            {
+                                parseInt(this.stdout._txt);
+                            }
+                            catch(e)
+                            {
+                                this.promise.__rejector('invalid uid');
+                                return;
+                            }
+
+                            var id = parseInt(this.stdout._txt);
+                            this.promise.__resolver(id);
+                        });
+                    });
+                    promises.push(p);
+                }
+                promise.all(promises).then(function (plist)
+                {
+                    // Done
+                    var table = {};
+                    for(var i in plist)
+                    {
+                        table[plist[i].__username] = plist[i]._internal.completedArgs[0];
+                    }
+                    for(var i in users)
+                    {
+                        users[i].uid = table[users[i].Username];
+                    }
+                    Object.defineProperty(users, 'Active', { value: showActiveOnly(users) });
+                    if (retVal._callback) { retVal._callback.call(retVal, users); }
+                }, function (reason)
+                {
+                    // Failed
+                    Object.defineProperty(users, 'Active', { value: showActiveOnly(users) });
+                    if (retVal._callback) { retVal._callback.call(retVal, users); }
+                });
             });
             retVal._child.stdout.Parent = retVal._child;
             retVal._child.stdout.on('data', function (chunk) { this.Parent._txt += chunk.toString(); });
@@ -145,7 +279,7 @@ function showActiveOnly(source)
     var retVal = [];
     for (var i in source)
     {
-        if (source[i].State == 'Active' || source[i].State == 'Connected')
+        if (source[i].State == 'Active')
         {
             retVal.push(source[i]);
         }
@@ -159,8 +293,13 @@ function getTokens(str)
 
     columns.push(str.substring(0, (i=str.indexOf(' '))));
     while (str[++i] == ' ');
-    columns.push(str.substring(i, str.substring(i).indexOf(' ') + i));
-    
+    columns.push(str.substring(i, (i=str.substring(i).indexOf(' ') + i)));
+    while (str[++i] == ' ');
+    columns.push(str.substring(i, (i=str.substring(i).indexOf(' ') + i)));
+    while (str[++i] == ' ');
+    var status = str.substring(i).trim();
+    columns.push(status);
+
     return (columns);
 }
 

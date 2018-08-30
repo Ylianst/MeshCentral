@@ -71,7 +71,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     // Once the main web server is started, call this to hookup additional handlers
     obj.hookMainWebServer = function (certs) {
         obj.certificates = certs;
-        for (var i = 0; i < parent.config.domains.length; i++) {
+        for (var i in parent.config.domains) {
             if (parent.config.domains[i].dns != null) { continue; }
             var url = parent.config.domains[i].url;
             obj.app.post(url + "amtevents.ashx", obj.parent.webserver.handleAmtEventRequest);
@@ -82,7 +82,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
 
     // Setup all HTTP redirection handlers
     //obj.app.set("etag", false);
-    for (var i = 0; i < parent.config.domains; i++) {
+    for (var i in parent.config.domains) {
         if (parent.config.domains[i].dns != null) { continue; }
         var url = parent.config.domains[i].url;
         obj.app.get(url, performRedirection);

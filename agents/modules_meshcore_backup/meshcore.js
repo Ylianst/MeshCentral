@@ -14,59 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
-function borderController()
-{
-    this.container = null;
-    this.Start = function Start(user)
-    {
-        if (this.container == null) {
-            if (process.platform == 'win32') {
-                this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.SessionId });
-            }
-            else {
-                this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.uid });
-            }
-            this.container.addModule('monitor-info', getJSModule('monitor-info'));
-            this.container.addModule('monitor-border', getJSModule('monitor-border'));
-            this.container.addModule('promise', getJSModule('promise'));
-            this.container.ExecuteString("var border = require('monitor-border'); border.Start();");
-        }
-    }
-    this.Stop = function Stop()
-    {
-        if (this.container != null)
-        {
-            this._container = this.container;
-            this._container.parent = this;
-            this.container = null;
-
-            this._container.once('exit', function () { this.parent._container = null; });
-            this._container.exit();
-        }
-    }
-}
-
 function createMeshCore(agent) {
     var obj = {};
-    
-    require('events').EventEmitter.call(obj, true).createEvent('loggedInUsers_Updated');
-    obj.on('loggedInUsers_Updated', function ()
-    {
-        var users = []
-        for(var i = 0; i < obj.loggedInUsers.length; ++i)
-        {
-            users.push((obj.loggedInUsers[i].Domain ? (obj.loggedInUsers[i].Domain + '\\') : '') + obj.loggedInUsers[i].Username);
-        }
-        sendConsoleText('LogOn Status Changed. Active Users => [' + users.join(', ') + ']');
-    });
-    obj.borderManager = new borderController();
     
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     obj.meshCoreInfo = "MeshCore v5";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
-    obj.loggedInUsers = [];
-
     var meshServerConnectionState = 0;
     var tunnels = {};
     var lastSelfInfo = null;
@@ -910,36 +863,9 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, border.';
+                    response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock.';
                     break;
                 }
-                case 'border':
-                    {
-                        if ((args['_'].length == 1) && (args['_'][0] == 'on')) {
-                            if (obj.loggedInUsers.length > 0) {
-                                obj.borderManager.Start(obj.loggedInUsers[0]);
-                                response = 'Border blinking is on.';
-                            } else {
-                                response = 'Cannot turn on border blinking, no logged in users.';
-                            }
-                        } else if ((args['_'].length == 1) && (args['_'][0] == 'off')) {
-                            obj.borderManager.Stop();
-                            response = 'Border blinking is off.';
-                        } else {
-                            response = 'Proper usage: border "on|off"'; // Display correct command usage
-                        }
-                    }
-                    break;
-                case 'users':
-                    {
-                        var retList = [];
-                        for(var i = 0; i < obj.loggedInUsers.length; ++i)
-                        {
-                            retList.push((obj.loggedInUsers[i].Domain ? (obj.loggedInUsers[i].Domain + '\\') : '') + obj.loggedInUsers[i].Username);
-                        }
-                        response = 'Active Users => [' + retList.join(', ') + ']';
-                    }
-                    break;
                 case 'toast': {
                     if (process.platform == 'win32') {
                         if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
@@ -952,8 +878,8 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'setdebug': {
-                    if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = Disabled, 1 = StdOut, 2 = This Console, * = All Consoles, 4 = WebLog, 8 = Logfile'; } // Display usage
-                    else { if (args['_'][0] == '*') { console.setDestination(2); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
+                    if (args['_'].length < 1) { response = 'Proper usage: setdebug (target), 0 = StdOut, 1 = This Console, * = All Consoles, 2 = WebLog, 3 = Disabled'; } // Display usage
+                    else { if (args['_'][0] == '*') { console.setDestination(1); } else { console.setDestination(parseInt(args['_'][0]), sessionid); } }
                     break;
                 }
                 case 'ps': {
@@ -1447,16 +1373,6 @@ function createMeshCore(agent) {
             sendPeriodicServerUpdate(true); // Send the server update
         }
 
-        require('user-sessions').on('changed', function onUserSessionChanged()
-        {
-            require('user-sessions').enumerateUsers().then(function (users)
-            {
-                obj.loggedInUsers = users.Active;
-                obj.emit('loggedInUsers_Updated');
-            });
-        });
-
-        require('user-sessions').emit('changed');
         //console.log('Stopping.');
         //process.exit();
     }
