@@ -1016,8 +1016,9 @@
                 case 'nodes': {
                     nodes = [];
                     for (var m in message.nodes) {
+                        if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
                         for (var n in message.nodes[m]) {
-                            if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
+                            if (message.nodes[m][n]._id == null) { console.log('Invalid node (' + n + '): ' + JSON.stringify(message.nodes)); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
                             message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
@@ -2253,9 +2254,7 @@
                     var loc = map_parseNodeLoc(nodes[i]);
                     var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
                     if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
-                        lat = loc[0];
-                        lon = loc[1];
-                        var type = loc[2];
+                        var lat = loc[0], lon = loc[1], type = loc[2];
                         if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
                         if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
                     } else {
@@ -2373,7 +2372,7 @@
                         var coord = feature.getGeometry().getCoordinates();
                         // map_cm_popup.setPosition(evt.coordinate);
                         map_cm_popup.setPosition(coord);
-                        featid = feature.getId();
+                        var featid = feature.getId();
                         if (featid) {
                             QH('xmap-info-window', feature.get('name'));
                         } else {
@@ -2387,7 +2386,7 @@
                 });
 
                 // Initialize context menu for openlayers
-                contextmenu = new ContextMenu({
+                var contextmenu = new ContextMenu({
                     width: 160,
                     defaultItems: false, // defaultItems are Zoom In/Zoom Out
                     items: contextmenu_items
@@ -2411,7 +2410,8 @@
                 if (xxmap.contextmenu == null) { xxmap.contextmenu = contextmenu; }
                 xxmap.map.addControl(xxmap.contextmenu);
                 //addMeshOptions(); // Adds Mesh names to mesh dropdown
-            } catch (e) {
+            } catch (ex) {
+                console.log(ex);
                 QV('viewselectmapoption', false);
                 xxmap = null;
             }
@@ -5709,7 +5709,7 @@
 
         // Remove one notification
         function notificationDelete(id) {
-            var j = -1; e = Q('notifyx' + id);
+            var j = -1, e = Q('notifyx' + id);
             if (e != null) {
                 for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
                 if (j != -1) {

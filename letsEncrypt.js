@@ -6,12 +6,17 @@
 * @version v0.0.2
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
-        const greenlock = require('greenlock');;
-        const path = require('path');
+        const greenlock = require('greenlock');
 
         var obj = {};
         obj.parent = parent;
@@ -42,8 +47,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
             challengeType: 'http-01',
             agreeToTerms: leAgree,
             debug: obj.parent.args.debug > 0
-        }
-        if (obj.parent.args.debug == null) { greenlockargs.log = function (debug) { } } // If not in debug mode, ignore all console output from greenlock (makes things clean).
+        };
+        if (obj.parent.args.debug == null) { greenlockargs.log = function (debug) { }; } // If not in debug mode, ignore all console output from greenlock (makes things clean).
         obj.le = greenlock.create(greenlockargs);
 
         // Hook up GreenLock to the redirection server
@@ -61,7 +66,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
             obj.leDomains = [certs.CommonName];
             if (obj.parent.config.letsencrypt.names != null) {
                 if (typeof obj.parent.config.letsencrypt.names == 'string') { obj.parent.config.letsencrypt.names = obj.parent.config.letsencrypt.names.split(','); }
-                obj.parent.config.letsencrypt.names.map(function (s) { return s.trim() }); // Trim each name
+                obj.parent.config.letsencrypt.names.map(function (s) { return s.trim(); }); // Trim each name
                 if ((typeof obj.parent.config.letsencrypt.names != 'object') || (obj.parent.config.letsencrypt.names.length == null)) { console.log("ERROR: Let's Encrypt names must be an array in config.json."); func(certs); return; }
                 obj.leDomains = obj.parent.config.letsencrypt.names;
                 obj.leDomains.sort(); // Sort the array so it's always going to be in the same order.
@@ -106,7 +111,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     console.error("ERROR: Let's encrypt error: ", err);
                 });
             });
-        }
+        };
 
         // Check if we need to renew the certificate, call this every day.
         obj.checkRenewCertificate = function () {
@@ -116,8 +121,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
             obj.le.renew({ duplicate: false, domains: obj.leDomains, email: obj.parent.config.letsencrypt.email }, obj.leResults).then(function (xresults) {
                 obj.parent.performServerCertUpdate(); // Reset the server, TODO: Reset all peers
             }, function (err) { }); // If we can't renew, ignore.
-        }
+        };
 
-    } catch (e) { console.error(e); return null; } // Unable to start Let's Encrypt
-    return obj;
-}
+        return obj;
+    } catch (e) { console.error(e); } // Unable to start Let's Encrypt
+    return null;
+};

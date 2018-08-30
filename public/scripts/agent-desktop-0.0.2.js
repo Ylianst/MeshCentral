@@ -159,7 +159,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessScreenMsg = function (width, height) {
-        //obj.Debug("ScreenSize: " + width + " x " + height);
+        if (obj.debugmode == 1) { console.log("ScreenSize: " + width + " x " + height); }
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
@@ -190,7 +190,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             cmdmsg = str.substring(4, cmdsize);
             X = ((cmdmsg.charCodeAt(0) & 0xFF) << 8) + (cmdmsg.charCodeAt(1) & 0xFF);
             Y = ((cmdmsg.charCodeAt(2) & 0xFF) << 8) + (cmdmsg.charCodeAt(3) & 0xFF);
-            //if (obj.debugmode == 1) { console.log("X=" + X + " Y=" + Y); }
+            if (obj.debugmode == 1) { console.log("CMD" + command + " at X=" + X + " Y=" + Y); }
         }
 
         switch (command) {

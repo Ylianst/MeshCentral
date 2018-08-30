@@ -14,7 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
 const exeJavaScriptGuid = 'B996015880544A19B7F7E9BE44914C18';
 const exeMeshPolicyGuid = 'B996015880544A19B7F7E9BE44914C19';
@@ -59,7 +65,7 @@ module.exports.streamExeWithJavaScript = function (options) {
     } else {
         throw ('js content not specified');
     }
-}
+};
 
 
 // Changes a Windows Executable to add the MSH inside of it.
@@ -144,7 +150,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
         });
         options.destinationStream.sourceStream.pipe(options.destinationStream, { end: false });
     }
-}
+};
 
 
 // Return information about this executable
@@ -157,6 +163,7 @@ module.exports.parseWindowsExecutable = function (exePath) {
     var dosHeader = Buffer.alloc(64);
     var ntHeader = Buffer.alloc(24);
     var optHeader;
+    var numRVA;
 
     // Read the DOS header
     bytesRead = fs.readSync(fd, dosHeader, 0, 64, 0);
@@ -185,7 +192,6 @@ module.exports.parseWindowsExecutable = function (exePath) {
     // Read the optional header
     optHeader = Buffer.alloc(ntHeader.readUInt16LE(20));
     bytesRead = fs.readSync(fd, optHeader, 0, optHeader.length, dosHeader.readUInt32LE(60) + 24);
-    var numRVA = undefined;
 
     retVal.CheckSumPos = dosHeader.readUInt32LE(60) + 24 + 64;
     retVal.SizeOfCode = optHeader.readUInt32LE(4);
@@ -223,7 +229,7 @@ module.exports.parseWindowsExecutable = function (exePath) {
     }
     fs.closeSync(fd);
     return (retVal);
-}
+};
 
 
 //
@@ -254,8 +260,7 @@ module.exports.hashExecutableFile = function (options) {
     // Setup initial state
     options.state = { endIndex: 0, checkSumIndex: 0, tableIndex: 0, stats: fs.statSync(options.sourcePath) };
 
-    if (options.platform == 'win32')
-    {
+    if (options.platform == 'win32') {
         if (options.peinfo.CertificateTableAddress != 0) { options.state.endIndex = options.peinfo.CertificateTableAddress; }
         options.state.tableIndex = options.peinfo.CertificateTableSizePos - 4;
         options.state.checkSumIndex = options.peinfo.CheckSumPos;
@@ -299,4 +304,4 @@ module.exports.hashExecutableFile = function (options) {
         options.state.source = fs.createReadStream(options.sourcePath, { flags: 'r', start: 0, end: options.state.endIndex - 1 });
         options.state.source.pipe(options.targetStream);
     }
-}
+};

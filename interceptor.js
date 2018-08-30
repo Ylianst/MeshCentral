@@ -6,29 +6,35 @@
 * @version v0.0.3
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
-const crypto = require('crypto');
-const common = require('./common.js');
+const crypto = require("crypto");
+const common = require("./common.js");
 
 var HttpInterceptorAuthentications = {};
-var RedirInterceptorAuthentications = {};
+//var RedirInterceptorAuthentications = {};
 
 // Construct a HTTP interceptor object
 module.exports.CreateHttpInterceptor = function (args) {
     var obj = {};
-    
+
     // Create a random hex string of a given length
-    obj.randomValueHex = function (len) { return crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len); }
+    obj.randomValueHex = function (len) { return crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len); };
 
     obj.args = args;
     obj.amt = { acc: "", mode: 0, count: 0, error: false };  // mode: 0:Header, 1:LengthBody, 2:ChunkedBody, 3:UntilClose
     obj.ws = { acc: "", mode: 0, count: 0, error: false, authCNonce: obj.randomValueHex(10), authCNonceCount: 1 };
     obj.blockAmtStorage = false;
-    
+
     // Private method
-    obj.Debug = function (msg) { console.log(msg); }
-    
+    obj.Debug = function (msg) { console.log(msg); };
+
     // Process data coming from Intel AMT
     obj.processAmtData = function (data) {
         obj.amt.acc += data; // Add data to accumulator
@@ -39,13 +45,14 @@ module.exports.CreateHttpInterceptor = function (args) {
             data += obj.processAmtDataEx();
         } while (datalen != data.length); // Process as much data as possible
         return data;
-    }
-    
+    };
+
     // Process data coming from AMT in the accumulator
     obj.processAmtDataEx = function () {
+        var i, r, headerend;
         if (obj.amt.mode == 0) { // Header Mode
             // Decode the HTTP header
-            var headerend = obj.amt.acc.indexOf('\r\n\r\n');
+            headerend = obj.amt.acc.indexOf('\r\n\r\n');
             if (headerend < 0) return "";
             var headerlines = obj.amt.acc.substring(0, headerend).split('\r\n');
             obj.amt.acc = obj.amt.acc.substring(headerend + 4);
@@ -53,7 +60,7 @@ module.exports.CreateHttpInterceptor = function (args) {
             var headers = headerlines.slice(1);
             obj.amt.headers = {};
             obj.amt.mode = 3; // UntilClose
-            for (var i in headers) {
+            for (i in headers) {
                 var j = headers[i].indexOf(':');
                 if (j > 0) {
                     var v1 = headers[i].substring(0, j).trim().toLowerCase();
@@ -73,46 +80,46 @@ module.exports.CreateHttpInterceptor = function (args) {
                     }
                 }
             }
-            
+
             // Reform the HTTP header
-            var r = obj.amt.directive.join(' ') + '\r\n';
-            for (var i in obj.amt.headers) { r += (i + ': ' + obj.amt.headers[i] + '\r\n'); }
+            r = obj.amt.directive.join(' ') + '\r\n';
+            for (i in obj.amt.headers) { r += (i + ': ' + obj.amt.headers[i] + '\r\n'); }
             r += '\r\n';
             return r;
         } else if (obj.amt.mode == 1) { // Length Body Mode
             // Send the body of content-length size
             var rl = obj.amt.count;
             if (rl < obj.amt.acc.length) rl = obj.amt.acc.length;
-            var r = obj.amt.acc.substring(0, rl);
+            r = obj.amt.acc.substring(0, rl);
             obj.amt.acc = obj.amt.acc.substring(rl);
             obj.amt.count -= rl;
             if (obj.amt.count == 0) { obj.amt.mode = 0; }
             return r;
         } else if (obj.amt.mode == 2) { // Chunked Body Mode
             // Send data one chunk at a time
-            var headerend = obj.amt.acc.indexOf('\r\n');
+            headerend = obj.amt.acc.indexOf('\r\n');
             if (headerend < 0) return "";
             var chunksize = parseInt(obj.amt.acc.substring(0, headerend), 16);
             if ((chunksize == 0) && (obj.amt.acc.length >= headerend + 4)) {
                 // Send the ending chunk (NOTE: We do not support trailing headers)
-                var r = obj.amt.acc.substring(0, headerend + 4);
+                r = obj.amt.acc.substring(0, headerend + 4);
                 obj.amt.acc = obj.amt.acc.substring(headerend + 4);
                 obj.amt.mode = 0;
                 return r;
             } else if ((chunksize > 0) && (obj.amt.acc.length >= (headerend + 4 + chunksize))) {
                 // Send a chunk
-                var r = obj.amt.acc.substring(0, headerend + chunksize + 4);
+                r = obj.amt.acc.substring(0, headerend + chunksize + 4);
                 obj.amt.acc = obj.amt.acc.substring(headerend + chunksize + 4);
                 return r;
             }
         } else if (obj.amt.mode == 3) { // Until Close Mode
-            var r = obj.amt.acc;
+            r = obj.amt.acc;
             obj.amt.acc = "";
             return r;
         }
         return "";
-    }
-    
+    };
+
     // Process data coming from the Browser
     obj.processBrowserData = function (data) {
         obj.ws.acc += data; // Add data to accumulator
@@ -123,13 +130,14 @@ module.exports.CreateHttpInterceptor = function (args) {
             data += obj.processBrowserDataEx();
         } while (datalen != data.length); // Process as much data as possible
         return data;
-    }
-    
+    };
+
     // Process data coming from the Browser in the accumulator
     obj.processBrowserDataEx = function () {
+        var i, r, headerend;
         if (obj.ws.mode == 0) { // Header Mode
             // Decode the HTTP header
-            var headerend = obj.ws.acc.indexOf('\r\n\r\n');
+            headerend = obj.ws.acc.indexOf('\r\n\r\n');
             if (headerend < 0) return "";
             var headerlines = obj.ws.acc.substring(0, headerend).split('\r\n');
             obj.ws.acc = obj.ws.acc.substring(headerend + 4);
@@ -139,7 +147,7 @@ module.exports.CreateHttpInterceptor = function (args) {
             var headers = headerlines.slice(1);
             obj.ws.headers = {};
             obj.ws.mode = 3; // UntilClose
-            for (var i in headers) {
+            for (i in headers) {
                 var j = headers[i].indexOf(':');
                 if (j > 0) {
                     var v1 = headers[i].substring(0, j).trim().toLowerCase();
@@ -159,14 +167,14 @@ module.exports.CreateHttpInterceptor = function (args) {
                     }
                 }
             }
-            
+
             // Insert authentication
             if (obj.args.user && obj.args.pass && HttpInterceptorAuthentications[obj.args.host + ':' + obj.args.port]) {
                 // We have authentication data, lets use it.
                 var AuthArgs = obj.GetAuthArgs(HttpInterceptorAuthentications[obj.args.host + ':' + obj.args.port]);
                 var hash = obj.ComputeDigesthash(obj.args.user, obj.args.pass, AuthArgs.realm, obj.ws.directive[0], obj.ws.directive[1], AuthArgs.qop, AuthArgs.nonce, obj.ws.authCNonceCount, obj.ws.authCNonce);
                 var authstr = 'Digest username="' + obj.args.user + '",realm="' + AuthArgs.realm + '",nonce="' + AuthArgs.nonce + '",uri="' + obj.ws.directive[1] + '",qop=' + AuthArgs.qop + ',nc=' + obj.ws.authCNonceCount + ',cnonce="' + obj.ws.authCNonce + '",response="' + hash + '"';
-                if (AuthArgs.opaque) { authstr += ',opaque="' + AuthArgs.opaque + '"'}
+                if (AuthArgs.opaque) { authstr += (',opaque="' + AuthArgs.opaque + '"'); }
                 obj.ws.headers.authorization = authstr;
                 obj.ws.authCNonceCount++;
             } else {
@@ -175,27 +183,27 @@ module.exports.CreateHttpInterceptor = function (args) {
             }
 
             // Reform the HTTP header
-            var r = obj.ws.directive.join(' ') + '\r\n';
-            for (var i in obj.ws.headers) { r += (i + ': ' + obj.ws.headers[i] + '\r\n'); }
+            r = obj.ws.directive.join(' ') + '\r\n';
+            for (i in obj.ws.headers) { r += (i + ': ' + obj.ws.headers[i] + '\r\n'); }
             r += '\r\n';
             return r;
         } else if (obj.ws.mode == 1) { // Length Body Mode
             // Send the body of content-length size
             var rl = obj.ws.count;
             if (rl < obj.ws.acc.length) rl = obj.ws.acc.length;
-            var r = obj.ws.acc.substring(0, rl);
+            r = obj.ws.acc.substring(0, rl);
             obj.ws.acc = obj.ws.acc.substring(rl);
             obj.ws.count -= rl;
             if (obj.ws.count == 0) { obj.ws.mode = 0; }
             return r;
         } else if (obj.amt.mode == 2) { // Chunked Body Mode
             // Send data one chunk at a time
-            var headerend = obj.amt.acc.indexOf('\r\n');
+            headerend = obj.amt.acc.indexOf('\r\n');
             if (headerend < 0) return "";
             var chunksize = parseInt(obj.amt.acc.substring(0, headerend), 16);
             if (isNaN(chunksize)) { // TODO: Check this path
                 // Chunk is not in this batch, move one
-                var r = obj.amt.acc.substring(0, headerend + 2);
+                r = obj.amt.acc.substring(0, headerend + 2);
                 obj.amt.acc = obj.amt.acc.substring(headerend + 2);
                 // Peek if we next is the end of chunked transfer
                 headerend = obj.amt.acc.indexOf('\r\n');
@@ -206,24 +214,24 @@ module.exports.CreateHttpInterceptor = function (args) {
                 return r;
             } else if (chunksize == 0 && obj.amt.acc.length >= headerend + 4) {
                 // Send the ending chunk (NOTE: We do not support trailing headers)
-                var r = obj.amt.acc.substring(0, headerend + 4);
+                r = obj.amt.acc.substring(0, headerend + 4);
                 obj.amt.acc = obj.amt.acc.substring(headerend + 4);
                 obj.amt.mode = 0;
                 return r;
             } else if (chunksize > 0 && obj.amt.acc.length >= headerend + 4) {
                 // Send a chunk
-                var r = obj.amt.acc.substring(0, headerend + chunksize + 4);
+                r = obj.amt.acc.substring(0, headerend + chunksize + 4);
                 obj.amt.acc = obj.amt.acc.substring(headerend + chunksize + 4);
                 return r;
             }
         } else if (obj.ws.mode == 3) { // Until Close Mode
-            var r = obj.ws.acc;
+            r = obj.ws.acc;
             obj.ws.acc = "";
             return r;
         }
         return "";
-    }
-    
+    };
+
     // Parse authentication values from the HTTP header
     obj.GetAuthArgs = function (authheader) {
         var authargs = {};
@@ -233,42 +241,42 @@ module.exports.CreateHttpInterceptor = function (args) {
             var i = argstr.indexOf('=');
             var k = argstr.substring(0, i).trim().toLowerCase();
             var v = argstr.substring(i + 1).trim();
-            if (v.substring(0,1) == '\"') { v = v.substring(1, v.length - 1); }
+            if (v.substring(0, 1) == '\"') { v = v.substring(1, v.length - 1); }
             if (i > 0) authargs[k] = v;
         }
         return authargs;
-    }
-    
+    };
+
     // Compute the MD5 digest hash for a set of values
     obj.ComputeDigesthash = function (username, password, realm, method, path, qop, nonce, nc, cnonce) {
         var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest("hex");
         var ha2 = crypto.createHash('md5').update(method + ":" + path).digest("hex");
         return crypto.createHash('md5').update(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2).digest("hex");
-    }
-    
+    };
+
     return obj;
-}
+};
 
 
 // Construct a redirection interceptor object
 module.exports.CreateRedirInterceptor = function (args) {
     var obj = {};
-    
+
     // Create a random hex string of a given length
-    obj.randomValueHex = function (len) { return crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len); }
+    obj.randomValueHex = function (len) { return crypto.randomBytes(Math.ceil(len / 2)).toString('hex').slice(0, len); };
 
     obj.args = args;
-    obj.amt = { acc: "", mode: 0, count: 0, error: false, direct: false};
-    obj.ws = { acc: "", mode: 0, count: 0, error: false, direct: false, authCNonce: obj.randomValueHex(10), authCNonceCount: 1  };
-    
+    obj.amt = { acc: "", mode: 0, count: 0, error: false, direct: false };
+    obj.ws = { acc: "", mode: 0, count: 0, error: false, direct: false, authCNonce: obj.randomValueHex(10), authCNonceCount: 1 };
+
     obj.RedirectCommands = { StartRedirectionSession: 0x10, StartRedirectionSessionReply: 0x11, EndRedirectionSession: 0x12, AuthenticateSession: 0x13, AuthenticateSessionReply: 0x14 };
     obj.StartRedirectionSessionReplyStatus = { SUCCESS: 0, TYPE_UNKNOWN: 1, BUSY: 2, UNSUPPORTED: 3, ERROR: 0xFF };
     obj.AuthenticationStatus = { SUCCESS: 0, FALIURE: 1, NOTSUPPORTED: 2 };
     obj.AuthenticationType = { QUERY: 0, USERPASS: 1, KERBEROS: 2, BADDIGEST: 3, DIGEST: 4 };
 
     // Private method
-    obj.Debug = function (msg) { console.log(msg); }
-    
+    obj.Debug = function (msg) { console.log(msg); };
+
     // Process data coming from Intel AMT
     obj.processAmtData = function (data) {
         obj.amt.acc += data; // Add data to accumulator
@@ -276,10 +284,11 @@ module.exports.CreateRedirInterceptor = function (args) {
         var datalen = 0;
         do { datalen = data.length; data += obj.processAmtDataEx(); } while (datalen != data.length); // Process as much data as possible
         return data;
-    }
-    
+    };
+
     // Process data coming from AMT in the accumulator
     obj.processAmtDataEx = function () {
+        var r;
         if (obj.amt.acc.length == 0) return "";
         if (obj.amt.direct == true) {
             var data = obj.amt.acc;
@@ -294,7 +303,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                         if (obj.amt.acc.length < 13) return "";
                         var oemlen = obj.amt.acc.charCodeAt(12);
                         if (obj.amt.acc.length < 13 + oemlen) return "";
-                        var r = obj.amt.acc.substring(0, 13 + oemlen);
+                        r = obj.amt.acc.substring(0, 13 + oemlen);
                         obj.amt.acc = obj.amt.acc.substring(13 + oemlen);
                         return r;
                     }
@@ -306,7 +315,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                     if (obj.amt.acc.length < 9 + l) return "";
                     var authstatus = obj.amt.acc.charCodeAt(1);
                     var authType = obj.amt.acc.charCodeAt(4);
-                    
+
                     if (authType == obj.AuthenticationType.DIGEST && authstatus == obj.AuthenticationStatus.FALIURE) {
                         // Grab and keep all authentication parameters
                         var realmlen = obj.amt.acc.charCodeAt(9);
@@ -322,7 +331,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                         obj.amt.direct = true;
                     }
 
-                    var r = obj.amt.acc.substring(0, 9 + l);
+                    r = obj.amt.acc.substring(0, 9 + l);
                     obj.amt.acc = obj.amt.acc.substring(9 + l);
                     return r;
                 }
@@ -333,8 +342,8 @@ module.exports.CreateRedirInterceptor = function (args) {
             }
         }
         return "";
-    }
-    
+    };
+
     // Process data coming from the Browser
     obj.processBrowserData = function (data) {
         obj.ws.acc += data; // Add data to accumulator
@@ -342,10 +351,11 @@ module.exports.CreateRedirInterceptor = function (args) {
         var datalen = 0;
         do { datalen = data.length; data += obj.processBrowserDataEx(); } while (datalen != data.length); // Process as much data as possible
         return data;
-    }
-    
+    };
+
     // Process data coming from the Browser in the accumulator
     obj.processBrowserDataEx = function () {
+        var r;
         if (obj.ws.acc.length == 0) return "";
         if (obj.ws.direct == true) {
             var data = obj.ws.acc;
@@ -355,13 +365,13 @@ module.exports.CreateRedirInterceptor = function (args) {
             switch (obj.ws.acc.charCodeAt(0)) {
                 case obj.RedirectCommands.StartRedirectionSession: {
                     if (obj.ws.acc.length < 8) return "";
-                    var r = obj.ws.acc.substring(0, 8);
+                    r = obj.ws.acc.substring(0, 8);
                     obj.ws.acc = obj.ws.acc.substring(8);
                     return r;
                 }
                 case obj.RedirectCommands.EndRedirectionSession: {
                     if (obj.ws.acc.length < 4) return "";
-                    var r = obj.ws.acc.substring(0, 4);
+                    r = obj.ws.acc.substring(0, 4);
                     obj.ws.acc = obj.ws.acc.substring(4);
                     return r;
                 }
@@ -369,7 +379,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                     if (obj.ws.acc.length < 9) return "";
                     var l = common.ReadIntX(obj.ws.acc, 5);
                     if (obj.ws.acc.length < 9 + l) return "";
-                    
+
                     var authType = obj.ws.acc.charCodeAt(4);
                     if (authType == obj.AuthenticationType.DIGEST && obj.args.user && obj.args.pass) {
                         var authurl = "/RedirectionService";
@@ -379,10 +389,10 @@ module.exports.CreateRedirInterceptor = function (args) {
                             var nc = obj.ws.authCNonceCount;
                             obj.ws.authCNonceCount++;
                             var digest = obj.ComputeDigesthash(obj.args.user, obj.args.pass, obj.amt.digestRealm, "POST", authurl, obj.amt.digestQOP, obj.amt.digestNonce, nc, obj.ws.authCNonce);
-                            
+
                             // Replace this authentication digest with a server created one
                             // We have everything we need to authenticate
-                            var r = String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x04);
+                            r = String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x04);
                             r += common.IntToStrX(obj.args.user.length + obj.amt.digestRealm.length + obj.amt.digestNonce.length + authurl.length + obj.ws.authCNonce.length + nc.toString().length + digest.length + obj.amt.digestQOP.length + 8);
                             r += String.fromCharCode(obj.args.user.length);         // Username Length
                             r += obj.args.user;                                     // Username
@@ -400,13 +410,13 @@ module.exports.CreateRedirInterceptor = function (args) {
                             r += digest;                                            // Response
                             r += String.fromCharCode(obj.amt.digestQOP.length);     // QOP Length
                             r += obj.amt.digestQOP;                                 // QOP
-                            
+
                             obj.ws.acc = obj.ws.acc.substring(9 + l); // Don't relay the original message
                             return r;
                         } else {
                             // Replace this authentication digest with a server created one
                             // Since we don't have authentication parameters, fill them in with blanks to get an error back what that info.
-                            var r = String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x04);
+                            r = String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x04);
                             r += common.IntToStrX(obj.args.user.length + authurl.length + 8);
                             r += String.fromCharCode(obj.args.user.length);
                             r += obj.args.user;
@@ -418,7 +428,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                         }
                     }
 
-                    var r = obj.ws.acc.substring(0, 9 + l);
+                    r = obj.ws.acc.substring(0, 9 + l);
                     obj.ws.acc = obj.ws.acc.substring(9 + l);
                     return r;
                 }
@@ -429,14 +439,14 @@ module.exports.CreateRedirInterceptor = function (args) {
             }
         }
         return "";
-    }
-    
+    };
+
     // Compute the MD5 digest hash for a set of values
     obj.ComputeDigesthash = function (username, password, realm, method, path, qop, nonce, nc, cnonce) {
         var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest("hex");
         var ha2 = crypto.createHash('md5').update(method + ":" + path).digest("hex");
         return crypto.createHash('md5').update(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2).digest("hex");
-    }
+    };
 
     return obj;
-}
+};

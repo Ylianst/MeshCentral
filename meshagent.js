@@ -6,7 +6,13 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
 var AgentConnectCount = 0;
 
@@ -29,7 +35,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.receivedCommands = 0;
     obj.connectTime = null;
     obj.agentCoreCheck = 0;
-    obj.agentInfo;
+    obj.agentInfo = null;
     obj.agentUpdate = null;
     const agentUpdateBlockSize = 65520;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
@@ -39,7 +45,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
     // Send a message to the mesh agent
-    obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
+    obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } };
 
     // Disconnect this agent
     obj.close = function (arg) {
@@ -61,7 +67,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.db.RemoveNode(obj.dbNodeKey); // Remove all entries with node:id
 
             // Event node deletion
-            obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: obj.domain.id, nolog: 1 })
+            obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: obj.domain.id, nolog: 1 });
 
             // Disconnect all connections if needed
             var state = obj.parent.parent.GetConnectivityState(obj.dbNodeKey);
@@ -71,7 +77,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         }
         delete obj.nodeid;
-    }
+    };
 
     // When data is received from the mesh agent web socket
     ws.on('message', function (msg) {
@@ -296,37 +302,33 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Event the new node
                 if (obj.agentInfo.capabilities & 0x20) {
                     // This is a temporary agent, don't log.
-                    obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 })
+                    obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
                 } else {
-                    var change = 'Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name;
-                    obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: change, domain: domain.id })
+                    obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
                 }
             } else {
                 // Device already exists, look if changes has occured
                 device = nodes[0];
-                if (device.agent == null) {
-                    device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1;
-                } else {
-                    var changes = [], change = 0, log = 0;
-                    if (device.rname != obj.agentInfo.computerName) { device.rname = obj.agentInfo.computerName; change = 1; changes.push('computer name'); }
-                    if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
-                    if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
-                    if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                    if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
-                    if (change == 1) {
-                        obj.db.Set(device);
+                var changes = [], change = 0, log = 0;
+                if (device.agent == null) { device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1; }
+                if (device.rname != obj.agentInfo.computerName) { device.rname = obj.agentInfo.computerName; change = 1; changes.push('computer name'); }
+                if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
+                if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
+                if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
+                if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
+                if (change == 1) {
+                    obj.db.Set(device);
 
-                        // If this is a temporary device, don't log changes
-                        if (obj.agentInfo.capabilities & 0x20) { log = 0; }
+                    // If this is a temporary device, don't log changes
+                    if (obj.agentInfo.capabilities & 0x20) { log = 0; }
 
-                        // Event the node change
-                        var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
-                        if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
-                        var device2 = obj.common.Clone(device);
-                        if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                        event.node = device;
-                        obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
-                    }
+                    // Event the node change
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
+                    if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
+                    var device2 = obj.common.Clone(device);
+                    if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                    event.node = device;
+                    obj.parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
 
@@ -425,9 +427,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Process incoming agent JSON data
     function processAgentData(msg) {
+        var i;
         var str = msg.toString('utf8'), command = null;
         if (str[0] == '{') {
-            try { command = JSON.parse(str) } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str); } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
             if (typeof command != 'object') { return; }
             switch (command.action) {
                 case 'msg':
@@ -441,7 +444,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domain.id)) {
                                 // Check if this user has rights to get this message
                                 //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
-                                
+
                                 // See if the session is connected. If so, go ahead and send this message to the target node
                                 var ws = obj.parent.wssessions2[command.sessionid];
                                 if (ws != null) {
@@ -472,7 +475,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 if (sessions != null) {
                                     command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
                                     delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
-                                    for (var i in sessions) { sessions[i].send(JSON.stringify(command)); }
+                                    for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
                                 }
 
                                 if (obj.parent.parent.multiServer != null) {
@@ -487,9 +490,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 if ((user != null) && (user.links != null)) {
                                     var rights = user.links[obj.dbMeshKey];
                                     if (rights != null) { // TODO: Look at what rights are needed for message routing
-                                        var sessions = obj.parent.wssessions[userid];
+                                        var xsessions = obj.parent.wssessions[userid];
                                         // Send the message to all users on this server
-                                        for (var i in sessions) { try { sessions[i].send(cmdstr); } catch (e) { } }
+                                        for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
                                     }
                                 }
                             }
@@ -530,7 +533,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if ((command.type == 'publicip') && (command.value != null) && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
                             var x = {};
                             x.publicip = command.value.ip;
-                            x.iploc = command.value.loc + ',' + (Math.floor(Date.now() / 1000) );
+                            x.iploc = command.value.loc + ',' + (Math.floor(Date.now() / 1000));
                             ChangeAgentLocationInfo(x);
                             command.value._id = 'iploc_' + command.value.ip;
                             command.value.type = 'iploc';
@@ -559,7 +562,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Event node deletion
                                 var change = 'Migrated device ' + node.name;
-                                obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain })
+                                obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain });
                             }
                         });
                         break;
@@ -678,4 +681,4 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     return obj;
-}
+};
