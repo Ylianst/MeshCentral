@@ -187,7 +187,7 @@ module.exports.CertificateOperations = function () {
 
         // Look for domains that have DNS names and load their certificates
         r.dns = {};
-        for (i = 0; i < config.domains.length; i++) {
+        for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 if (args.tlsoffload === true) {
@@ -353,7 +353,7 @@ module.exports.CertificateOperations = function () {
         r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
 
         // Look for domains with DNS names that have no certificates and generated them.
-        for (i = 0; i < config.domains.length; i++) {
+        for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 if (args.tlsoffload != true) {
