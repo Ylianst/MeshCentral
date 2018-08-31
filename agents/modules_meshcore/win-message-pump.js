@@ -19,7 +19,7 @@ var WM_QUIT =  0x0012;
 
 function WindowsMessagePump(options)
 {
-    this._ObjectID = 'WindowsMessagePump';
+    this._ObjectID = 'win-message-pump';
     this._options = options;
     var emitterUtils = require('events').inherits(this);
     emitterUtils.createEvent('hwnd');
@@ -29,11 +29,10 @@ function WindowsMessagePump(options)
 
     this._child = require('ScriptContainer').Create({ processIsolation: 0 });
     this._child.MessagePump = this;
-    this._child.prependListener('~', function _childFinalizer() { this.MessagePump.emit('exit', 0); console.log('calling stop'); this.MessagePump.stop(); });
+    this._child.prependListener('~', function _childFinalizer() { this.MessagePump.emit('exit', 0); this.MessagePump.stop(); });
     this._child.once('exit', function onExit(code) { this.MessagePump.emit('exit', code); });
     this._child.once('ready', function onReady()
     {
-        console.log('child ready');
         var execString = 
         "var m = require('_GenericMarshal');\
         var h = null;\
@@ -110,7 +109,6 @@ function WindowsMessagePump(options)
     {
         if(this._child && this._child._hwnd)
         {
-            console.log('posting WM_QUIT');
             var marshal = require('_GenericMarshal');
             var User32 = marshal.CreateNativeProxy('User32.dll');
             User32.CreateMethod('PostMessageA');

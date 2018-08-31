@@ -4981,11 +4981,19 @@
             p5setActions();
         }
 
+        function getNiceSize(bytes) {
+            if (bytes <= 0) return 'Storage limit exceed';
+            if (bytes < 2048) return bytes + ' bytes remaining';
+            if (bytes < 2097152) return Math.round(bytes / 1024) + ' kilobytes remaining';
+            if (bytes < 2147483648) return Math.round(bytes / 1024 / 1024) + ' megabytes remaining';
+            return Math.round(bytes / 1024 / 1024 / 1024) + ' gigabytes remaining';
+        }
+
         function p5getQuotabar(f) {
             while (f.t > 1 && f.t != 4) { f = f.parent; }
             if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
-            var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
-            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+            var tf = Math.floor(f.s / 1024), tq = (f.maxbytes - f.s);
+            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1 ? 's' : '') + ". " + (Math.floor(f.maxbytes / 1024 / 1024)) + 'k maxinum">' + getNiceSize(tq) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
@@ -5057,13 +5065,14 @@
                 names.push(file.name);
                 sizes.push(file.size);
                 types.push(file.type);
-                reader.onload = function(event) {
+                reader.onload = function (event) {
+                    console.log(event.target.result.length);
                     datas.push(event.target.result);
                     if (--readercount == 0) {
                         Q('p5fileDragName').value = names.join('*');
                         Q('p5fileDragSize').value = sizes.join('*');
                         Q('p5fileDragType').value = types.join('*');
-                        Q('p5fileDragData').value = datas.join('*');
+                        Q('p5fileDragData').value = datas.join('*'); // TODO: This will not work for large files!!! *****************
                         Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
                         Q('p5loginSubmit2').click();
                     }

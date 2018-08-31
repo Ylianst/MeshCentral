@@ -1204,6 +1204,10 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 // Load the really basic modules
 var meshserver = null;
 function mainStart(args) {
+    // Check the NodeJS is version 6 or better.
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
+
+    // Check for any missing modules.
     InstallModules(['minimist'], function () {
         // Get the server configuration
         var config = getConfig();

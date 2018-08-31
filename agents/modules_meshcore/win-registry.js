@@ -35,7 +35,7 @@ var KEY_DATA_TYPES =
 
 function windows_registry()
 {
-    this._ObjectId = 'windows_registry';
+    this._ObjectId = 'win-registry';
     this._marshal = require('_GenericMarshal');
     this._AdvApi = this._marshal.CreateNativeProxy('Advapi32.dll');
     this._AdvApi.CreateMethod('RegCreateKeyExA');
