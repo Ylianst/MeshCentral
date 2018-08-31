@@ -6,7 +6,13 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
 const crypto = require('crypto');
 var certStore = null;

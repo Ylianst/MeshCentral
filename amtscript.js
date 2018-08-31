@@ -6,7 +6,12 @@
 * @version v0.1.0e
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 module.exports.CreateAmtScriptEngine = function () {
     var o = {};
@@ -284,14 +289,14 @@ module.exports.CreateAmtScriptEngine = function () {
             if (obj.state == 1 && obj.ip >= obj.script.length) { obj.state = 0; obj.stop(); }
             if (obj.onStep) obj.onStep(obj);
             return obj;
-        }
+        };
 
         obj.xxStepDialogOk = function (button) {
             obj.variables['DialogSelect'] = button;
             obj.state = 1;
             obj.dialog = false;
             if (obj.onStep) obj.onStep(obj);
-        }
+        };
 
         // ###BEGIN###{**ClosureAdvancedMode}
         obj.xxWsmanReturnFix = function (x) {
@@ -301,7 +306,7 @@ module.exports.CreateAmtScriptEngine = function () {
             if (x.Responses) { x['Responses'] = x.Responses; delete x.Responses; }
             if (x.Response) { x['Response'] = x.Response; delete x.Response; }
             if (x.ReturnValueStr) { x['ReturnValueStr'] = x.ReturnValueStr; delete x.ReturnValueStr; }
-        }
+        };
         // ###END###{**ClosureAdvancedMode}
 
         obj.xxWsmanReturn = function (stack, name, responses, status) {
@@ -320,34 +325,34 @@ module.exports.CreateAmtScriptEngine = function () {
             obj.setVar('wsman_result_str', ((httpErrorTable[status]) ? (httpErrorTable[status]) : ('Error #' + status)));
             obj.state = 1;
             if (obj.onStep) obj.onStep(obj);
-        }
+        };
 
         // ###BEGIN###{Certificates}
         obj.xxSignWithDummyCaReturn = function (cert) {
             obj.setVar('signed_cert', btoa(_arrayBufferToString(cert)));
             obj.state = 1;
             if (obj.onStep) obj.onStep(obj);
-        }
+        };
         // ###END###{Certificates}
 
-        obj.toString = function (x) { if (typeof x == 'object') return JSON.stringify(x); return x; }
+        obj.toString = function (x) { if (typeof x == 'object') return JSON.stringify(x); return x; };
 
         obj.reset();
         return obj;
     }
     */
 
-    ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); }
-    ReadShortX = function (v, p) { return (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); }
-    ReadInt = function (v, p) { return (v.charCodeAt(p) * 0x1000000) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); } // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
-    ReadIntX = function (v, p) { return (v.charCodeAt(p + 3) * 0x1000000) + (v.charCodeAt(p + 2) << 16) + (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); }
-    ShortToStr = function (v) { return String.fromCharCode((v >> 8) & 0xFF, v & 0xFF); }
-    ShortToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); }
-    IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); }
-    IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); }
+    var ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); };
+    var ReadShortX = function (v, p) { return (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); };
+    var ReadInt = function (v, p) { return (v.charCodeAt(p) * 0x1000000) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); }; // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
+    var ReadIntX = function (v, p) { return (v.charCodeAt(p + 3) * 0x1000000) + (v.charCodeAt(p + 2) << 16) + (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); };
+    var ShortToStr = function (v) { return String.fromCharCode((v >> 8) & 0xFF, v & 0xFF); };
+    var ShortToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); };
+    var IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+    var IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
 
     // Argument types: 0 = Variable, 1 = String, 2 = Integer, 3 = Label
-    o.script_compile = function(script, onmsg) {
+    o.script_compile = function (script, onmsg) {
         var r = '', scriptlines = script.split('\n'), labels = {}, labelswap = [], swaps = [];
         // Go thru each script line and encode it
         for (var i in scriptlines) {
@@ -392,11 +397,11 @@ module.exports.CreateAmtScriptEngine = function () {
             r = r.substr(0, position) + IntToStr(target) + r.substr(position + 4);
         }
         return IntToStr(0x247D2945) + ShortToStr(1) + r;
-    }
+    };
 
     // Decompile the script, intended for debugging only
-    o.script_decompile = function(binary, onecmd) {
-        var r = '', ptr = 6, labelcount = 0, labels = {};
+    o.script_decompile = function (binary, onecmd) {
+        var r = '', ptr = 6, labels = {};
         if (onecmd >= 0) {
             ptr = onecmd; // If we are decompiling just one command, set the ptr to that command.
         } else {
@@ -413,7 +418,7 @@ module.exports.CreateAmtScriptEngine = function () {
             var argcount = ReadShort(binary, ptr + 4);
             var argptr = ptr + 6;
             var argstr = '';
-            if (!(onecmd >= 0)) r += ":label" + (ptr - 6) + "\n";
+            if (!(onecmd >= 0)) { r += ":label" + (ptr - 6) + "\n"; }
             // Loop on each argument, moving forward by the argument length each time
             for (var i = 0; i < argcount; i++) {
                 var arglen = ReadShort(binary, argptr);
@@ -451,7 +456,7 @@ module.exports.CreateAmtScriptEngine = function () {
             if (line[0] != ':') { r += line + '\n'; } else { if (labels[line]) { r += line + '\n'; } }
         }
         return r;
-    }
+    };
 
     // Convert the list of blocks into a script that can be compiled
     o.script_blocksToScript = function (script_BuildingBlocks, script_BlockScript) {
@@ -467,7 +472,7 @@ module.exports.CreateAmtScriptEngine = function () {
             if (script_BuildingBlocks['_end']) { script += '##### Ending Block #####\r\n' + script_BuildingBlocks['_end']['code'] + '\r\nHighlightBlock\r\n'; }
         }
         return script;
-    }
+    };
 
     return o;
-}
+};

@@ -6,7 +6,12 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 // This module is only called when MeshCentral is running as a Windows service.
 // In this case, we don't want to start a child process, so we launch directly without arguments.

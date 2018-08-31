@@ -927,7 +927,7 @@
 
         // Poll the server, if it responds, refresh the page.
         function serverPoll() {
-            xdr = null;
+            var xdr = null;
             try { xdr = new XDomainRequest(); } catch (e) { }
             if (!xdr) xdr = new XMLHttpRequest();
             xdr.open("HEAD", window.location.href);
@@ -1016,8 +1016,9 @@
                 case 'nodes': {
                     nodes = [];
                     for (var m in message.nodes) {
+                        if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
                         for (var n in message.nodes[m]) {
-                            if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
+                            if (message.nodes[m][n]._id == null) { console.log('Invalid node (' + n + '): ' + JSON.stringify(message.nodes)); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
                             message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
@@ -2290,12 +2291,9 @@
             var boundingBox = null;
             for (var i in nodes) {
                 try {
-                    var loc = map_parseNodeLoc(nodes[i]);
-                    var feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
+                    var loc = map_parseNodeLoc(nodes[i]), feature = xxmap.markersSource.getFeatureById(nodes[i]._id);
                     if ((loc != null) && ((nodes[i].meshid == selectedMesh) || (selectedMesh == null))) { // Draw markers for devices with locations
-                        lat = loc[0];
-                        lon = loc[1];
-                        var type = loc[2];
+                        var lat = loc[0], lon = loc[1], type = loc[2];
                         if (boundingBox == null) { boundingBox = [ lat, lon, lat, lon, 0 ]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
                         if (feature == null) { addFeature(nodes[i]); boundingBox[4] = 1; } else { updateFeature(nodes[i], feature); feature.setStyle(markerStyle(nodes[i], loc[2])); } // Update Feature
                     } else {
@@ -2352,7 +2350,7 @@
             if (node.wifiloc) { loc = node.wifiloc; t = 2; }
             if (node.gpsloc) { loc = node.gpsloc; t = 3; }
             if (node.userloc) { loc = node.userloc; t = 4; }
-            if ((loc == null) || (typeof loc != 'string')) return;
+            if ((loc == null) || (typeof loc != 'string')) return null;
             loc = loc.split(',');
             if (t == 1) {
                 // If this is IP location, randomize the position a little.
@@ -2413,7 +2411,7 @@
                         var coord = feature.getGeometry().getCoordinates();
                         // map_cm_popup.setPosition(evt.coordinate);
                         map_cm_popup.setPosition(coord);
-                        featid = feature.getId();
+                        var featid = feature.getId();
                         if (featid) {
                             QH('xmap-info-window', feature.get('name'));
                         } else {
@@ -2427,7 +2425,7 @@
                 });
 
                 // Initialize context menu for openlayers
-                contextmenu = new ContextMenu({
+                var contextmenu = new ContextMenu({
                     width: 160,
                     defaultItems: false, // defaultItems are Zoom In/Zoom Out
                     items: contextmenu_items
@@ -2451,7 +2449,8 @@
                 if (xxmap.contextmenu == null) { xxmap.contextmenu = contextmenu; }
                 xxmap.map.addControl(xxmap.contextmenu);
                 //addMeshOptions(); // Adds Mesh names to mesh dropdown
-            } catch (e) {
+            } catch (ex) {
+                console.log(ex);
                 QV('viewselectmapoption', false);
                 xxmap = null;
             }
@@ -2490,12 +2489,14 @@
             }
 
             // Since this is IP address location, add some fixed randomness to the location. Avoid pin pile-up.
-            var loc = map_parseNodeLoc(node); lat = loc[0]; lon = loc[1];
-
-            if ((lat != feature.get('lat')) || (lon != feature.get('lon'))) { // Update lat and lon if changed
-                feature.set('lat', lat); feature.set('lon', lon);
-                var modifiedCoordinates = ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326','EPSG:3857');
-                feature.getGeometry().setCoordinates(modifiedCoordinates);
+            var loc = map_parseNodeLoc(node);
+            if (loc != null) {
+                var lat = loc[0], lon = loc[1];
+                if ((lat != feature.get('lat')) || (lon != feature.get('lon'))) { // Update lat and lon if changed
+                    feature.set('lat', lat); feature.set('lon', lon);
+                    var modifiedCoordinates = ol.proj.transform([parseFloat(lon), parseFloat(lat)], 'EPSG:4326', 'EPSG:3857');
+                    feature.getGeometry().setCoordinates(modifiedCoordinates);
+                }
             }
 
             if (node.name != feature.get('name') ) {  feature.set('name', node.name); } // Update name
@@ -5750,7 +5751,7 @@
 
         // Remove one notification
         function notificationDelete(id) {
-            var j = -1; e = Q('notifyx' + id);
+            var j = -1, e = Q('notifyx' + id);
             if (e != null) {
                 for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
                 if (j != -1) {

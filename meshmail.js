@@ -6,7 +6,13 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*xjslint node: true */
+/*xjslint plusplus: true */
+/*xjslint maxlen: 256 */
+/*jshint node: true */
+/*jshint strict: false */
+/*jshint esversion: 6 */
+"use strict";
 
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshMain = function (parent) {
@@ -61,7 +67,7 @@ module.exports.CreateMeshMain = function (parent) {
     const accountInviteMailText = '[[[SERVERNAME]]] - Agent Installation Invitation\r\n\r\nUser [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting you install a remote management agent. WARNING: This will allow the requester to take control of your computer. If you wish to do this, click on the following link to download the agent: [[[CALLBACKURL]]]\r\nIf you do not know about this request, please ignore this mail.\r\n';
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
-    function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
 
     // Setup mail server
@@ -81,8 +87,8 @@ module.exports.CreateMeshMain = function (parent) {
             url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + domain.dns + ':' + obj.parent.args.port + domain.url;
         }
         if (options) {
-            if (options.cookie != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'checkmail?c=' + options.cookie) }
-            if (options.meshid != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'meshagents?id=3&meshid=' + options.meshid.split('/')[2] + '&tag=mailto:' + EscapeHtml(email)) }
+            if (options.cookie != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'checkmail?c=' + options.cookie); }
+            if (options.meshid != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'meshagents?id=3&meshid=' + options.meshid.split('/')[2] + '&tag=mailto:' + EscapeHtml(email)); }
         }
         return text.split('[[[USERNAME]]]').join(username).split('[[[SERVERURL]]]').join(url).split('[[[SERVERNAME]]]').join(domain.title);
     }
@@ -91,7 +97,7 @@ module.exports.CreateMeshMain = function (parent) {
     obj.sendMail = function (to, subject, text, html) {
         obj.pendingMails.push({ to: to, from: parent.config.smtp.from, subject: subject, text: text, html: html });
         sendNextMail();
-    }
+    };
 
     // Send account check mail
     obj.sendAccountCheckMail = function (domain, username, email) {
@@ -99,7 +105,7 @@ module.exports.CreateMeshMain = function (parent) {
         var cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 1 }, obj.mailCookieEncryptionKey);
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountCheckSubject, domain, username, email), text: mailReplacements(accountCheckMailText, domain, username, email, { cookie: cookie }), html: mailReplacements(accountCheckMailHtml, domain, username, email, { cookie: cookie }) });
         sendNextMail();
-    }
+    };
 
     // Send account reset mail
     obj.sendAccountResetMail = function (domain, username, email) {
@@ -107,14 +113,14 @@ module.exports.CreateMeshMain = function (parent) {
         var cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountResetSubject, domain, username, email), text: mailReplacements(accountResetMailText, domain, username, email, { cookie: cookie }), html: mailReplacements(accountResetMailHtml, domain, username, email, { cookie: cookie }) });
         sendNextMail();
-    }
+    };
 
     // Send agent invite mail
     obj.sendAgentInviteMail = function (domain, username, email, meshid) {
         if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName == 'un-configured')) return; // If the server name is not set, can't do this.
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountInviteSubject, domain, username, email), text: mailReplacements(accountInviteMailText, domain, username, email, { meshid: meshid }), html: mailReplacements(accountInviteMailHtml, domain, username, email, { meshid: meshid }) });
         sendNextMail();
-    }
+    };
 
     // Send out the next mail in the pending list
     function sendNextMail() {
@@ -139,7 +145,7 @@ module.exports.CreateMeshMain = function (parent) {
     }
 
     // Send out the next mail in the pending list
-    obj.verify = function() {
+    obj.verify = function () {
         obj.smtpServer.verify(function (err, info) {
             if (err == null) {
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');
@@ -147,7 +153,7 @@ module.exports.CreateMeshMain = function (parent) {
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err));
             }
         });
-    }
+    };
 
     // Load the cookie encryption key from the database
     obj.parent.db.Get('MailCookieEncryptionKey', function (err, docs) {
@@ -161,5 +167,5 @@ module.exports.CreateMeshMain = function (parent) {
         }
     });
 
-	return obj;
-}
+    return obj;
+};

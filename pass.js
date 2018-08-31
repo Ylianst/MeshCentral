@@ -1,6 +1,11 @@
 // check out https://github.com/tj/node-pwd
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 // Module dependencies.
 const crypto = require('crypto');

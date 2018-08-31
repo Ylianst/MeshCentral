@@ -6,7 +6,12 @@
 * @version v0.0.1
 */
 
-'use strict';
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 // Construct a Intel AMT Scanner object
 module.exports.CreateAmtScanner = function (parent) {
@@ -37,7 +42,7 @@ module.exports.CreateAmtScanner = function (parent) {
         var packet = new Buffer(obj.common.hex2rstr('06000006000011BE80000000'), 'ascii');
         packet[9] = tag;
         return packet;
-    }
+    };
 
     // Start scanning for local network Intel AMT computers
     obj.start = function () {
@@ -45,7 +50,7 @@ module.exports.CreateAmtScanner = function (parent) {
         obj.performScan();
         obj.mainTimer = setInterval(obj.performScan, PeriodicScanTime);
         return obj;
-    }
+    };
 
     // Stop scanning for local network Intel AMT computers
     obj.stop = function () {
@@ -53,7 +58,7 @@ module.exports.CreateAmtScanner = function (parent) {
         for (var i in obj.servers) { obj.servers[i].close(); } // Stop all servers
         obj.servers = {};
         if (obj.mainTimer != null) { clearInterval(obj.mainTimer); obj.mainTimer = null; }
-    }
+    };
 
     // Scan for Intel AMT computers using network multicast
     obj.performRangeScan = function (userid, rangestr) {
@@ -76,7 +81,7 @@ module.exports.CreateAmtScanner = function (parent) {
             delete rangeinfo.server;
         }, 3000);
         return true;
-    }
+    };
 
     // Parse range, used to parse "ip", "ip/mask" or "ip-ip" notation.
     // Return the start and end value of the scan
@@ -95,19 +100,19 @@ module.exports.CreateAmtScanner = function (parent) {
         x = obj.parseIpv4Addr(range);
         if (x == null) return null;
         return { min: x, max: x };
-    }
+    };
 
     // Parse IP address. Takes a 
     obj.parseIpv4Addr = function (addr) {
         var x = addr.split('.');
         if (x.length == 4) { return (parseInt(x[0]) << 24) + (parseInt(x[1]) << 16) + (parseInt(x[2]) << 8) + (parseInt(x[3]) << 0); }
         return null;
-    }
+    };
 
     // IP address number to string
     obj.IPv4NumToStr = function (num) {
         return ((num >> 24) & 0xFF) + '.' + ((num >> 16) & 0xFF) + '.' + ((num >> 8) & 0xFF) + '.' + (num & 0xFF);
-    }
+    };
 
     /*
     // Sample we could use to optimize DNS resolving, may not be needed at all.
@@ -144,14 +149,14 @@ module.exports.CreateAmtScanner = function (parent) {
             }
         });
         return r;
-    }
+    };
     */
 
     obj.ResolveName = function (hostname, func) {
         if ((hostname == '127.0.0.1') || (hostname == '::1') || (hostname == 'localhost')) { func(hostname, null); } // Don't scan localhost
         if (obj.net.isIP(hostname) > 0) { func(hostname, hostname); return; } // This is an IP address, already resolved.
         obj.dns.lookup(hostname, function (err, address, family) { if (err == null) { func(hostname, address); } else { func(hostname, null); } });
-    }
+    };
 
     // Look for all Intel AMT computers that may be locally reachable and poll their presence
     obj.performScan = function () {
@@ -178,6 +183,7 @@ module.exports.CreateAmtScanner = function (parent) {
                             } else if ((scaninfo.tcp == null) && ((scaninfo.state == 0) || isNaN(delta) || (delta > PeriodicScanTime))) {
                                 // More than 30 seconds without a response, try TCP detection
                                 obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result, version) {
+                                    // TODO: It is bad that "obj" is being accessed within this function.
                                     if (result == false) return;
                                     tag.lastpong = Date.now();
                                     if (tag.state == 0) {
@@ -192,7 +198,7 @@ module.exports.CreateAmtScanner = function (parent) {
                         scaninfo.lastping = Date.now();
                         obj.checkAmtPresence(host, scaninfo.tag);
                     }
-               }
+                }
             }
             for (var i in obj.scanTable) {
                 if (obj.scanTable[i].present == false) {
@@ -203,10 +209,10 @@ module.exports.CreateAmtScanner = function (parent) {
             }
         });
         return true;
-    }
+    };
 
     // Check the presense of a specific Intel AMT computer using RMCP
-    obj.checkAmtPresence = function (host, tag) { obj.ResolveName(host, function (hostname, ip) { obj.checkAmtPresenceEx(ip, tag); }); }
+    obj.checkAmtPresence = function (host, tag) { obj.ResolveName(host, function (hostname, ip) { obj.checkAmtPresenceEx(ip, tag); }); };
 
     // Check the presense of a specific Intel AMT computer using RMCP
     obj.checkAmtPresenceEx = function (host, tag) {
@@ -221,20 +227,20 @@ module.exports.CreateAmtScanner = function (parent) {
             server.on('error', (err) => { });
             server.on('message', (data, rinfo) => { obj.parseRmcpPacket(data, rinfo, serverid, obj.changeConnectState, null); });
             server.on('listening', () => {
-                obj.pendingSends.push([ server, packet, host ]);
+                obj.pendingSends.push([server, packet, host]);
                 if (obj.pendingSendTimer == null) { obj.pendingSendTimer = setInterval(obj.sendPendingPacket, 10); }
             });
             server.bind(0);
             obj.servers[serverid] = server;
         } else {
             // Use existing server
-            obj.pendingSends.push([ server, packet, host ]);
+            obj.pendingSends.push([server, packet, host]);
             if (obj.pendingSendTimer == null) { obj.pendingSendTimer = setInterval(obj.sendPendingPacket, 10); }
         }
-    }
+    };
 
     // Send a pending RMCP packet
-    obj.sendPendingPacket = function() {
+    obj.sendPendingPacket = function () {
         try {
             var p = obj.pendingSends.shift();
             if (p != undefined) {
@@ -245,7 +251,7 @@ module.exports.CreateAmtScanner = function (parent) {
                 obj.pendingSendTimer = null;
             }
         } catch (e) { }
-    }
+    };
 
     // Parse RMCP packet
     obj.parseRmcpPacket = function (data, rinfo, serverid, func, user) {
@@ -256,14 +262,14 @@ module.exports.CreateAmtScanner = function (parent) {
             var minorVersion = data[18] & 0x0F;
             var majorVersion = (data[18] >> 4) & 0x0F;
             var provisioningState = data[19] & 0x03; // Pre = 0, In = 1, Post = 2
-            
+
             var openPort = (data[16] * 256) + data[17];
             var dualPorts = ((data[19] & 0x04) != 0) ? true : false;
             var openPorts = [openPort];
             if (dualPorts == true) { openPorts = [16992, 16993]; }
             if (provisioningState <= 2) { func(tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user); }
         }
-    }
+    };
 
     // Use the RMCP packet to change the computer state
     obj.changeConnectState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
@@ -282,21 +288,21 @@ module.exports.CreateAmtScanner = function (parent) {
                 obj.changeAmtState(scaninfo.nodeinfo._id, scaninfo.nodeinfo.intelamt.ver, provisioningState, scaninfo.nodeinfo.intelamt.tls);
             }
         }
-    }
+    };
 
-	// Use the RMCP packet to change the computer state
-	obj.reportMachineState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
-	    //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
-	    //var provisioningStateStr = provisioningStates[provisioningState];
-	    //console.log(rinfo.address + ': Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning, Open Ports: [' + openPorts.join(', ') + ']');
+    // Use the RMCP packet to change the computer state
+    obj.reportMachineState = function (tag, minorVersion, majorVersion, provisioningState, openPort, dualPorts, rinfo, user) {
+        //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
+        //var provisioningStateStr = provisioningStates[provisioningState];
+        //console.log(rinfo.address + ': Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning, Open Ports: [' + openPorts.join(', ') + ']');
         obj.dns.reverse(rinfo.address, function (err, hostname) {
             if ((err != undefined) && (hostname != undefined)) {
-	            user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: hostname[0] };
-	        } else {
-	            user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: rinfo.address };
-	        }
-	    });
-	}
+                user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: hostname[0] };
+            } else {
+                user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: rinfo.address };
+            }
+        });
+    };
 
     // Change Intel AMT information in the database and event the changes
     obj.changeAmtState = function (nodeid, version, provisioningState, tls) {
@@ -317,7 +323,7 @@ module.exports.CreateAmtScanner = function (parent) {
                 // Make the change & save
                 var change = false;
                 if (node.intelamt == undefined) { node.intelamt = {}; }
-                if (node.intelamt.tls != tls) { node.intelamt.tls = tls; change = true; changes.push(tls==1?'TLS':'NoTLS'); }
+                if (node.intelamt.tls != tls) { node.intelamt.tls = tls; change = true; changes.push(tls == 1 ? 'TLS' : 'NoTLS'); }
                 if (obj.compareAmtVersionStr(node.intelamt.ver, version)) { node.intelamt.ver = version; change = true; changes.push('AMT Version ' + version); }
                 if (node.intelamt.state != provisioningState) { node.intelamt.state = provisioningState; change = true; changes.push('AMT State'); }
                 if (change == true) {
@@ -333,7 +339,7 @@ module.exports.CreateAmtScanner = function (parent) {
                 }
             });
         });
-    }
+    };
 
     // Return true if we should change the Intel AMT version number
     obj.compareAmtVersionStr = function (oldVer, newVer) {
@@ -347,10 +353,10 @@ module.exports.CreateAmtScanner = function (parent) {
         if (newVerArr.length > oldVerArr.length) return true;
         if ((newVerArr.length == 3) && (oldVerArr.length == 3) && (oldVerArr[2] != newVerArr[2])) return true;
         return false;
-    }
+    };
 
     // Check the presense of a specific Intel AMT computer using RMCP
-    obj.checkTcpPresence = function (host, port, scaninfo, func) { obj.ResolveName(host, function (hostname, ip) { obj.checkTcpPresenceEx(ip, port, scaninfo, func); }); }
+    obj.checkTcpPresence = function (host, port, scaninfo, func) { obj.ResolveName(host, function (hostname, ip) { obj.checkTcpPresenceEx(ip, port, scaninfo, func); }); };
 
     // Check that we can connect TCP to a given port
     obj.checkTcpPresenceEx = function (host, port, scaninfo, func) {
@@ -378,7 +384,7 @@ module.exports.CreateAmtScanner = function (parent) {
             client.on('end', function () { if (this.scaninfo.tcp != null) { delete this.scaninfo.tcp; try { this.destroy(); } catch (ex) { } this.func(this.scaninfo, false); } });
             scaninfo.tcp = client;
         } catch (ex) { console.log(ex); }
-    }
+    };
 
     // Return the Intel AMT version from the HTTP headers. Return null if nothing is found.
     obj.getIntelAmtVersionFromHeaders = function (headers) {
@@ -393,9 +399,9 @@ module.exports.CreateAmtScanner = function (parent) {
             }
         }
         return null;
-    }
+    };
 
     //console.log(obj.getIntelAmtVersionFromHeaders("HTTP/1.1 303 See Other\r\nLocation: /logon.htm\r\nContent-Length: 0\r\nServer: Intel(R) Active Management Technology 7.1.91\r\n\r\n"));
 
     return obj;
-}
+};
