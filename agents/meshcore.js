@@ -15,41 +15,41 @@ limitations under the License.
 */
 
 
-function borderController()
-{
-    this.container = null;
-    this.Start = function Start(user)
-    {
-        if (this.container == null) {
-            if (process.platform == 'win32') {
-                this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.SessionId });
-            }
-            else {
-                this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.uid });
-            }
-            this.container.addModule('monitor-info', getJSModule('monitor-info'));
-            this.container.addModule('monitor-border', getJSModule('monitor-border'));
-            this.container.addModule('promise', getJSModule('promise'));
-            this.container.ExecuteString("var border = require('monitor-border'); border.Start();");
-        }
-    }
-    this.Stop = function Stop()
-    {
-        if (this.container != null)
-        {
-            this._container = this.container;
-            this._container.parent = this;
-            this.container = null;
 
-            this._container.once('exit', function () { this.parent._container = null; });
-            this._container.exit();
-        }
-    }
-}
 
 function createMeshCore(agent) {
     var obj = {};
     
+    function borderController() {
+        this.container = null;
+        this.Start = function Start(user) {
+            if (this.container == null) {
+                if (process.platform == 'win32') {
+                    this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.SessionId });
+                }
+                else {
+                    this.container = require('ScriptContainer').Create({ processIsolation: 1, sessionId: user.uid });
+                }
+                this.container.parent = this;
+                this.container.addModule('monitor-info', getJSModule('monitor-info'));
+                this.container.addModule('monitor-border', getJSModule('monitor-border'));
+                this.container.addModule('promise', getJSModule('promise'));
+                this.container.once('exit', function (code) { sendConsoleText('Border Process Exited with code: ' + code); this.parent.container = this.parent._container = null; });
+                this.container.ExecuteString("var border = require('monitor-border'); border.Start();");
+            }
+        }
+        this.Stop = function Stop() {
+            if (this.container != null) {
+                this._container = this.container;
+                this._container.parent = this;
+                this.container = null;
+
+                this._container.exit();
+            }
+        }
+    }
+
+
     require('events').EventEmitter.call(obj, true).createEvent('loggedInUsers_Updated');
     obj.on('loggedInUsers_Updated', function ()
     {
@@ -1457,6 +1457,8 @@ function createMeshCore(agent) {
         });
 
         require('user-sessions').emit('changed');
+        require('user-sessions').on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
+        require('user-sessions').on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
         //console.log('Stopping.');
         //process.exit();
     }

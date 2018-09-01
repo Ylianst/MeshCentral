@@ -14,10 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+var NOTIFY_FOR_THIS_SESSION = 0;
+var NOTIFY_FOR_ALL_SESSIONS = 1;
+var WM_WTSSESSION_CHANGE = 0x02B1;
+var WTS_CONSOLE_CONNECT         = (0x1);
+var WTS_CONSOLE_DISCONNECT      = (0x2);
+var WTS_REMOTE_CONNECT          = (0x3);
+var WTS_REMOTE_DISCONNECT       = (0x4);
+var WTS_SESSION_LOGON           = (0x5);
+var WTS_SESSION_LOGOFF          = (0x6);
+var WTS_SESSION_LOCK            = (0x7);
+var WTS_SESSION_UNLOCK          = (0x8);
+var WTS_SESSION_REMOTE_CONTROL  = (0x9);
+var WTS_SESSION_CREATE          = (0xA);
+var WTS_SESSION_TERMINATE       = (0xB);
+
 function UserSessions()
 {
     this._ObjectID = 'user-sessions';
-    require('events').EventEmitter.call(this, true).createEvent('changed');
+    require('events').EventEmitter.call(this, true)
+        .createEvent('changed')
+        .createEvent('locked')
+        .createEvent('unlocked');
 
     this.enumerateUsers = function enumerateUsers()
     {
@@ -37,12 +55,15 @@ function UserSessions()
 
     if (process.platform == 'win32')
     {
+        this._serviceHooked = false;
         this._marshal = require('_GenericMarshal');
         this._kernel32 = this._marshal.CreateNativeProxy('Kernel32.dll');
         this._kernel32.CreateMethod('GetLastError');
         this._wts = this._marshal.CreateNativeProxy('Wtsapi32.dll');
         this._wts.CreateMethod('WTSEnumerateSessionsA');
         this._wts.CreateMethod('WTSQuerySessionInformationA');
+        this._wts.CreateMethod('WTSRegisterSessionNotification');
+        this._wts.CreateMethod('WTSUnRegisterSessionNotification');
         this._wts.CreateMethod('WTSFreeMemory');
         this.SessionStates = ['Active', 'Connected', 'ConnectQuery', 'Shadow', 'Disconnected', 'Idle', 'Listening', 'Reset', 'Down', 'Init'];
         this.InfoClass =
@@ -124,9 +145,52 @@ function UserSessions()
             if (cb) { cb(retVal); }
             return (retVal);
         };
+
+        this._immediate = setImmediate(function (self)
+        {
+            if (self._serviceHooked) { return; } // If we were hooked by a service, we won't need to do anything further
+
+            // We need to spin up a message pump, and fetch a window handle
+            var message_pump = require('win-message-pump');
+            self._messagepump = new message_pump({ filter: WM_WTSSESSION_CHANGE });
+            self._messagepump.on('exit', function (code) { self._wts.WTSUnRegisterSessionNotification(self.hwnd); });
+            self._messagepump.on('hwnd', function (h)
+            {
+                self.hwnd = h;
+                // Now that we have a window handle, we can register it to receive Windows Messages
+                self._wts.WTSRegisterSessionNotification(self.hwnd, NOTIFY_FOR_ALL_SESSIONS);
+            });
+            self._messagepump.on('message', function (msg)
+            {
+                if (msg.message == WM_WTSSESSION_CHANGE)
+                {
+                    switch(msg.wparam)
+                    {
+                        case WTS_SESSION_LOCK:
+                            self.enumerateUsers().then(function (users)
+                            {
+                                if (users[msg.lparam]) { self.emit('locked', users[msg.lparam]); }
+                            });
+                            break;
+                        case WTS_SESSION_UNLOCK:
+                            self.enumerateUsers().then(function (users)
+                            {
+                                if (users[msg.lparam]) { self.emit('unlocked', users[msg.lparam]); }
+                            });
+                            break;
+                    }
+                }
+            });
+        }, this);
     }
     else
     {
+        this._linuxWatcher = require('fs').watch('/var/run/utmp');
+        this._linuxWatcher.user_session = this;
+        this._linuxWatcher.on('change', function (a, b)
+        {
+            this.user_session.emit('changed');
+        });
         this.Self = function Self()
         {
             var promise = require('promise');
@@ -277,13 +341,26 @@ function UserSessions()
 function showActiveOnly(source)
 {
     var retVal = [];
+    var unique = {};
+    var usernames = [];
+    var tmp;
+
     for (var i in source)
     {
         if (source[i].State == 'Active')
         {
             retVal.push(source[i]);
+            tmp = (source[i].Domain ? (source[i].Domain + '\\') : '') + source[i].Username;
+            if (!unique[tmp]) { unique[tmp] = tmp;}
         }
     }
+
+    for (var i in unique)
+    {
+        usernames.push(i);
+    }
+
+    Object.defineProperty(retVal, 'usernames', { value: usernames });
     return (retVal);
 }
 function getTokens(str)

@@ -33,7 +33,7 @@ module.exports.CertificateOperations = function () {
 
     // Create a self-signed certificate
     obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization, strong) {
-        var keys = obj.pki.rsa.generateKeyPair((strong === true) ? 3072 : 2048);
+        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
@@ -42,8 +42,8 @@ module.exports.CertificateOperations = function () {
         cert.validity.notAfter = new Date();
         cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 30);
         if (addThumbPrintToName === true) { commonName += "-" + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: "hex" }).substring(0, 6); }
-        if (country === undefined) { country = "unknown"; }
-        if (organization === undefined) { organization = "unknown"; }
+        if (country == null) { country = "unknown"; }
+        if (organization == null) { organization = "unknown"; }
         var attrs = [{ name: "commonName", value: commonName }, { name: "organizationName", value: organization }, { name: "countryName", value: country }];
         cert.setSubject(attrs);
         cert.setIssuer(attrs);
@@ -56,7 +56,7 @@ module.exports.CertificateOperations = function () {
 
     // Issue a certificate from a root
     obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization, extKeyUsage, strong) {
-        var keys = obj.pki.rsa.generateKeyPair((strong === true) ? 3072 : 2048);
+        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
@@ -66,8 +66,8 @@ module.exports.CertificateOperations = function () {
         cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 30);
         if (addThumbPrintToName === true) { commonName += "-" + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: "hex" }).substring(0, 6); }
         var attrs = [{ name: "commonName", value: commonName }];
-        if (country != undefined) { attrs.push({ name: "countryName", value: country }); }
-        if (organization != undefined) { attrs.push({ name: "organizationName", value: organization }); }
+        if (country != null) { attrs.push({ name: "countryName", value: country }); }
+        if (organization != null) { attrs.push({ name: "organizationName", value: organization }); }
         cert.setSubject(attrs);
         cert.setIssuer(rootcert.cert.subject.attributes);
 
@@ -187,7 +187,7 @@ module.exports.CertificateOperations = function () {
 
         // Look for domains that have DNS names and load their certificates
         r.dns = {};
-        for (i = 0; i < config.domains.length; i++) {
+        for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 if (args.tlsoffload === true) {
@@ -268,7 +268,7 @@ module.exports.CertificateOperations = function () {
         }
 
         var rootCertAndKey, rootCertificate, rootPrivateKey, rootName;
-        if (r.root === undefined) {
+        if (r.root == null) {
             // If the root certificate does not exist, create one
             console.log("Generating root certificate...");
             rootCertAndKey = obj.GenerateRootCertificate(true, "MeshCentralRoot", null, null, strongCertificate);
@@ -353,7 +353,7 @@ module.exports.CertificateOperations = function () {
         r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
 
         // Look for domains with DNS names that have no certificates and generated them.
-        for (i = 0; i < config.domains.length; i++) {
+        for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 if (args.tlsoffload != true) {

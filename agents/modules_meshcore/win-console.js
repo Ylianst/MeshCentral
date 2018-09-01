@@ -37,7 +37,7 @@ function WindowsConsole()
 {
     if (process.platform == 'win32')
     {
-        this._ObjectID = 'WindowsConsole';
+        this._ObjectID = 'win-console';
         this._Marshal = require('_GenericMarshal');
         this._kernel32 = this._Marshal.CreateNativeProxy("kernel32.dll");
         this._user32 = this._Marshal.CreateNativeProxy("user32.dll");
@@ -102,7 +102,7 @@ function WindowsConsole()
             if (options.szInfoTitle) { Buffer.from(options.szInfoTitle).copy(szInfoTitle.toBuffer()); }
 
 
-            var MessagePump = require('win-messagepump');
+            var MessagePump = require('win-message-pump');
             retVal = { _ObjectID: 'WindowsConsole.TrayIcon', MessagePump: new MessagePump(options) };
             var retValEvents = require('events').inherits(retVal);
             retValEvents.createEvent('ToastClicked');

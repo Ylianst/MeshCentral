@@ -104,7 +104,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Perform hash on web certificate and agent certificate
     obj.webCertificateHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
     obj.webCertificateHashs = { '': obj.webCertificateHash };
-    for (i in obj.parent.config.domains) { if (obj.parent.config.domains[i].dns != null) { obj.webCertificateHashs[i] = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.config.domains[i].certs.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }); } }
+    for (var i in obj.parent.config.domains) { if (obj.parent.config.domains[i].dns != null) { obj.webCertificateHashs[i] = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.config.domains[i].certs.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }); } }
     obj.webCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
     obj.agentCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -935,15 +935,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (objid.startsWith('user/')) {
             var user = obj.users[objid];
             if (user == null) return 0;
+            if (user.siteadmin == 0xFFFFFFFF) return null; // Administrators have no user limit
             if ((user.quota != null) && (typeof user.quota == 'number')) { return user.quota; }
-            if ((domain != null) && (domain.userQuota != null) && (typeof domain.userQuota == 'number')) { return domain.userQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on user accounts
+            if ((domain != null) && (domain.userquota != null) && (typeof domain.userquota == 'number')) { return domain.userquota; }
+            return null; // By default, the user will have no limit
         } else if (objid.startsWith('mesh/')) {
             var mesh = obj.meshes[objid];
             if (mesh == null) return 0;
             if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
-            if ((domain != null) && (domain.meshQuota != null) && (typeof domain.meshQuota == 'number')) { return domain.meshQuota; }
-            return 1048576; // By default, the server will have a 1 meg limit on mesh accounts
+            if ((domain != null) && (domain.meshquota != null) && (typeof domain.meshquota == 'number')) { return domain.meshquota; }
+            return null; // By default, the mesh will have no limit
         }
         return 0;
     };
@@ -997,12 +998,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var multiparty = require('multiparty');
         var form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
-            if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { res.sendStatus(404); return; }
+            if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ res.sendStatus(404); return; }
             var xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0]));
             if (xfile == null) { res.sendStatus(404); return; }
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
-            if (totalsize < xfile.quota) { // Check if the quota is not already broken
+            if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
                 if (fields.name != null) {
                     // Upload method where all the file data is within the fields.
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
@@ -1010,7 +1011,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         for (var i = 0; i < names.length; i++) {
                             if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
                             var filedata = new Buffer(datas[i].split(',')[1], 'base64');
-                            if ((totalsize + filedata.length) < xfile.quota) { // Check if quota would not be broken if we add this file
+                            if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
                                 // Create the user folder if needed
                                 (function (fullpath, filename, filedata) {
                                     obj.fs.mkdir(xfile.fullpath, function () {
@@ -1027,7 +1028,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // More typical upload method, the file data is in a multipart mime post.
                     for (var i in files.files) {
                         var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
-                        if (obj.common.IsFilenameValid(file.originalFilename) && ((totalsize + file.size) < xfile.quota)) { // Check if quota would not be broken if we add this file
+                        if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
                             obj.fs.rename(file.path, fpath, function () {
                                 obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                             });
