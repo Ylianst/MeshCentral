@@ -128,10 +128,25 @@ module.exports.CreateMeshScanner = function (parent) {
     // Start scanning for local network Mesh Agents
     obj.start = function () {
         if (obj.server4 != null) return;
+
+        // Setup the local discovery values
+        var name = 'MeshCentral';
+        try { name = obj.parent.config.domains[''].title; } catch (ex) { }
+        try { name = obj.parent.args.localdiscovery.name; } catch (ex) { }
+        var info = 'Beta2';
+        try { info = obj.parent.config.domains[''].title2; } catch (ex) { }
+        try { info = obj.parent.args.localdiscovery.info; } catch (ex) { }
+
+        // Build the IPv4 response
         var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
+        obj.multicastPacket4x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
+
+        // Build the IPv6 response
         url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
+        obj.multicastPacket6x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
+
         setupServers();
         obj.mainTimer = setInterval(obj.performScan, periodicScanTime);
         return obj;
@@ -164,6 +179,9 @@ module.exports.CreateMeshScanner = function (parent) {
         if ((msg.length == 96) && (msg.toString('ascii') == obj.agentCertificateHashHex)) {
             if (server.xxtype == 4) { try { server.send(obj.multicastPacket4, 0, obj.multicastPacket4.length, info.port, info.address); } catch (e) { } }
             if (server.xxtype == 6) { try { server.send(obj.multicastPacket6, 0, obj.multicastPacket6.length, info.port, info.address); } catch (e) { } }
+        } else if (msg.toString('ascii') == 'MeshServerScan') {
+            if (server.xxtype == 4) { try { server.send(obj.multicastPacket4x, 0, obj.multicastPacket4x.length, info.port, info.address); } catch (e) { } }
+            if (server.xxtype == 6) { try { server.send(obj.multicastPacket6x, 0, obj.multicastPacket6x.length, info.port, info.address); } catch (e) { } }
         }
     }
 
