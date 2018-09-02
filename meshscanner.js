@@ -140,11 +140,13 @@ module.exports.CreateMeshScanner = function (parent) {
         // Build the IPv4 response
         var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
+        if (parent.certificates.CommonName != "un-configured") { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
         obj.multicastPacket4x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         // Build the IPv6 response
         url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
+        if (parent.certificates.CommonName != "un-configured") { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
         obj.multicastPacket6x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         setupServers();

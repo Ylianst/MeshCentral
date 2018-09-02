@@ -14,7 +14,8 @@
     "_AllowFraming": true,
     "_WebRTC": false,
     "_ClickOnce": false,
-    "_UserAllowedIP" : "127.0.0.1,::1,192.168.0.100"
+    "_UserAllowedIP": "127.0.0.1,::1,192.168.0.100",
+    "_LocalDiscovery": { "name": "Local server name", "info": "Information about this server" }
   },
   "_domains": {
     "": {
