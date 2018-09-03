@@ -1,12 +1,12 @@
 FROM node:stretch
-MAINTAINER Lawrence Stubbs <technoexpressnet@gmail.com>
+LABEL Lawrence Stubbs <technoexpressnet@gmail.com>
+
+RUN apt-get -y install mongodb sudo
 
 COPY startmeshcentral.sh /
 RUN adduser --quiet meshserver \
     && mkdir -p /home/meshserver/meshcentral-data \
     && chmod +x /startmeshcentral.sh 
-
-#RUN apt-get install -y mongodb
 
 COPY package.json /home/meshserver/
 COPY config.json /home/meshserver/meshcentral-data/
