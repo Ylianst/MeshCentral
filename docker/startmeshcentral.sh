@@ -52,10 +52,20 @@ if [ -f "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" ]; then
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" meshcentral-data/webserver-cert-public.crt
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/privkey1.pem" meshcentral-data/mpsserver-cert-private.key 
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" meshcentral-data/mpsserver-cert-public.crt
-	node node_modules/meshcentral/meshcentral.js
-elif ! [ -f meshcentral-data/agentserver-cert-private.key ] ;then 
+fi
+
+if ! [ -f meshcentral-data/agentserver-cert-private.key ] && [ "$DB" != "netdb" ]; then 
+    if ! [ -f mongodbready ];then
+        node meshcentral --dbexport
+        node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
+        touch mongodbready
+    fi
 	node node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
-else
+else 
+    if ! [ -f mongodbready ] && [ "$DB" != "netdb" ];then
+        node meshcentral --dbexport
+        node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
+        touch mongodbready
+    fi
 	node node_modules/meshcentral/meshcentral.js
 fi
- 
