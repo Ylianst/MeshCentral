@@ -9,8 +9,6 @@ export DB
 export MONGODB
 export MONGODBCOL
 
-#service mongod start
-
 su - meshserver
 cd /home/meshserver/
 npm install github:techno-express/MeshCentral
@@ -39,8 +37,14 @@ else
     sed -i "s#\"host\": \"smtp.host.ltd\",#\"host\": \"$HOSTNAME\",#" meshcentral-data/config.json    
 fi
 
-if [ "$DB" != "netdb" ];then
-    sed -i "s#\"settings\": {#\"settings\": {\n\t\"MongoDb\": \"$MONGODB\",\n\t\"MongoDbCol\": \"$MONGODBCOL\",#" meshcentral-data/config.json   
+if [ "$DB" != "netdb" ]; then
+    if ! [ -f mongodbready ];then
+        sed -i "s#\"settings\": {#\"settings\": {\n\t\"MongoDb\": \"$MONGODB\",\n\t\"MongoDbCol\": \"$MONGODBCOL\",#" meshcentral-data/config.json   
+        node meshcentral --dbexport
+        node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
+        touch mongodbready
+    fi
+    service mongod start
 fi
 
 if [ -f "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" ]; then
@@ -54,18 +58,8 @@ if [ -f "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" ]; then
     ln -sf "/etc/letsencrypt/archive/$HOSTNAME/cert1.pem" meshcentral-data/mpsserver-cert-public.crt
 fi
 
-if ! [ -f meshcentral-data/agentserver-cert-private.key ] && [ "$DB" != "netdb" ]; then 
-    if ! [ -f mongodbready ];then
-        node meshcentral --dbexport
-        node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
-        touch mongodbready
-    fi
+if ! [ -f meshcentral-data/agentserver-cert-private.key ]; then 
 	node node_modules/meshcentral/meshcentral.js --cert $HOSTNAME
 else 
-    if ! [ -f mongodbready ] && [ "$DB" != "netdb" ];then
-        node meshcentral --dbexport
-        node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
-        touch mongodbready
-    fi
 	node node_modules/meshcentral/meshcentral.js
 fi
