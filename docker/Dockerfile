@@ -1,7 +1,8 @@
 FROM node:stretch
 LABEL Lawrence Stubbs <technoexpressnet@gmail.com>
 
-RUN apt-get -y install mongodb sudo
+RUN apt-get update \
+    && apt-get -y install mongodb sudo
 
 COPY startmeshcentral.sh /
 RUN adduser --quiet meshserver \
