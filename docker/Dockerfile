@@ -21,6 +21,8 @@ ENV MPSPORT 4443
 ENV EMAIL mail@
 ENV HOST host.ltd
 ENV SMTP smtp.host.ltd
+ENV USER smtp@user
+ENV PASS smtppass!
 ENV DB netdb
 ENV MONGODB "mongodb://127.0.0.1:27017/meshcentral"
 ENV MONGODBCOL "meshcentral"

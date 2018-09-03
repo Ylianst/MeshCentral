@@ -5,6 +5,8 @@ export MPSPORT
 export EMAIL
 export HOST
 export SMTP
+export USER
+export PASS
 export DB
 export MONGODB
 export MONGODBCOL
@@ -35,6 +37,14 @@ if [ "$SMTP" != 'smtp.host.ltd' ]; then
     sed -i "s#\"host\": \"smtp.host.ltd\",#\"host\": \"$SMTP\",#" meshcentral-data/config.json
 else
     sed -i "s#\"host\": \"smtp.host.ltd\",#\"host\": \"$HOSTNAME\",#" meshcentral-data/config.json    
+fi
+
+if [ "$USER" != 'smtp@user' ] || [ "$PASS" != 'smtppass!' ]; then
+    sed -i "s#\"user\": \"smtp@user\",#\"user\": \"$USER\",#" meshcentral-data/config.json
+    sed -i "s#\"pass\": \"smtppass!\",#\"pass\": \"$PASS\",#" meshcentral-data/config.json
+else
+    sed -i "s#\"user\": \"smtp@user\",#\"user\": \"\",#" meshcentral-data/config.json
+    sed -i "s#\"pass\": \"smtppass!\",#\"pass\": \"\",#" meshcentral-data/config.json  
 fi
 
 if [ "$DB" != "netdb" ]; then
