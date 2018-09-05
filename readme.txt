@@ -166,3 +166,7 @@ License
 -------
 
 This software is licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+[![Build Status](https://travis-ci.org/techno-express/MeshCentral.svg?branch=master)](https://travis-ci.org/techno-express/MeshCentral)
+[![Coverage Status](https://coveralls.io/repos/github/techno-express/MeshCentral/badge.svg?branch=master)](https://coveralls.io/github/techno-express/MeshCentral?branch=master)
+[![Dependencies Status](http://img.shields.io/david/techno-express/MeshCentral.svg)](https://david-dm.org/techno-express/MeshCentral)

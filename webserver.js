@@ -1629,7 +1629,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.dns != null) return domain.dns;
         return obj.certificates.CommonName;
     }
-
+    
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         var domain = checkUserIpAddress(req, res);
@@ -1664,7 +1664,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
         res.send(meshsettings);
     };
-
+    
+    // Handle a request to download a mesh sfx agent 
+    obj.handleMeshSfxAgentRequest = function (req, res) { 
+        var domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        
+        obj.db.Get('mesh/' + domain.id + '/' + req.query.id, function (err, meshes) {
+            if (meshes.length != 1) { res.sendStatus(401); return; }
+            var mesh = meshes[0];
+            
+            if (req.query.invite == null) {
+                // Check if this user has rights to do this, if this isn't an email agent request
+                var user = obj.users[req.session.userid];
+                if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)){ res.sendStatus(401); return; }
+            }
+            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+            
+            if ((req.query.id != null) && (req.query.idx != null)) {
+            // Send a specific mesh sfx agent back
+                var sfxagentname = ''; 
+                var sfxagentpath = '';
+                var f = req.query.idx;
+                if (f == 1) { sfxagentname = mesh.filename; sfxagentpath = mesh.path; } 
+                if (f == 2) { sfxagentname = mesh.filename2; sfxagentpath = mesh.path2; }                 
+                if (sfxagentpath == null) { res.sendStatus(404); return; }            
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + sfxagentname });
+                res.sendFile(sfxagentpath);
+            } 
+        });
+    };
+    
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
         res.removeHeader("X-Powered-By");
@@ -1722,6 +1752,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
         obj.app.ws(url + 'control.ashx', function (ws, req) { try { var domain = checkUserIpAddress(ws, req); if (domain != null) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); } } catch (e) { console.log(e); } });
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
+        obj.app.get(url + 'meshsfxagents', obj.handleMeshSfxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
         obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
         obj.app.post(url + 'uploadfile.ashx', handleUploadFile);

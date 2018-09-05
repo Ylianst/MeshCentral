@@ -1,0 +1,24 @@
+{
+    "settings": {
+        "Port": 443,
+        "RedirPort": 80,
+        "MpsPort": 4443,
+        "AllowLoginToken": true,
+        "AllowFraming": true,
+        "WebRTC": true
+        },
+    "letsencrypt": {
+        "email": "mail@",
+        "names": "host.ltd,smtp.host.ltd",
+        "rsaKeySize": 3072,
+        "production": true
+        },
+    "smtp": {
+        "host": "smtp.host.ltd",
+        "port": 25,
+        "from": "mail@",
+        "user": "smtp@user",
+        "pass": "smtppass!",
+        "tls": true
+        }
+}
