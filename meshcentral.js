@@ -460,9 +460,8 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup email server
                 if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
-                    obj.mailserver = require('./meshmail.js').CreateMeshMain(obj);
+                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
-                    //obj.mailserver.sendMail('ylian.saint-hilaire@intel.com', 'Test Subject', 'This is a sample test', 'This is a <b>sample</b> html test');
                 }
 
                 // Start periodic maintenance

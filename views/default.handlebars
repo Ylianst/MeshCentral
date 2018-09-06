@@ -1842,7 +1842,7 @@
             if (mesh.mtype == 2) {
                 r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
                 if (features & 64) {
-                    r += ' <a style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent." onclick=inviteAgentToMesh(\"' + mesh._id + '\")>Invite</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent on this mesh." onclick=inviteAgentToMesh(\"' + mesh._id + '\")>Invite</a>';
                 }
             }
             return r;
@@ -1965,8 +1965,11 @@
             if (xxdialogMode) return;
             var mesh = meshes[meshid];
             var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
-            x += addHtmlValue('E-Mail', '<input id=agentInviteEmail style=width:240px onkeyup=validateAgentInvite()></input>');
-            setDialogMode(2, "Invite Mesh Agent", 3, performAgentInvite, x, meshid);
+            x += addHtmlValue('Name (optional)', '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
+            x += addHtmlValue('Email', '<input id=agentInviteEmail style=width:230px placeholder="example@email.com" onkeyup=validateAgentInvite()></input>');
+            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=1>Windows</option><option value=0>Windows or Linux</option><option value=2>Linux</option></select>');
+            x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
+            setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             validateAgentInvite();
         }
 
@@ -1975,7 +1978,7 @@
         }
 
         function performAgentInvite(button, meshid) {
-            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value });
+            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value, name: Q('agentInviteName').value, os: Q('agentInviteNameOs').value, msg: Q('agentInviteMessage').value });
         }
 
         function addAgentToMesh(meshid) {
@@ -4561,7 +4564,7 @@
 
         function account_showChangeEmail() {
             if (xxdialogMode) return;
-            var x = "Change your account e-mail address here.<br /><br />";
+            var x = "Change your account email address here.<br /><br />";
             x += addHtmlValue('Email', '<input id=dp2email style=width:230px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
             setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
@@ -4737,6 +4740,9 @@
                 }
                 if (currentMesh.mtype == 2) {
                     x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new computer to this mesh by installing the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
+                    if (features & 64) {
+                        x += '<a onclick=inviteAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Invite someone to install the mesh agent on this mesh."><img src=images/icon-addnew.png border=0 height=12 width=12> Invite</a>';
+                    }
                 }
             }
 

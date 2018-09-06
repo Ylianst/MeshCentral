@@ -15,7 +15,7 @@
 "use strict";
 
 // Construct a MeshAgent object, called upon connection
-module.exports.CreateMeshMain = function (parent) {
+module.exports.CreateMeshMail = function (parent) {
     var obj = {};
     obj.pendingMails = [];
     obj.parent = parent;
@@ -35,9 +35,9 @@ module.exports.CreateMeshMain = function (parent) {
     const accountResetMailText = '[[[SERVERNAME]]] - Account Reset\r\n\r\nHi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process: [[[CALLBACKURL]]]\r\nIf you did not initiate this request, please ignore this mail.\r\n';
 
     // Default account invite mail
-    const accountInviteSubject = '[[[SERVERNAME]]] - Agent Installation Invitation';
-    const accountInviteMailHtml = '<div style="font-family:Arial,Helvetica,sans-serif"><table style="background-color:#003366;color:lightgray;width:100%" cellpadding=8><tr><td><b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Agent Installation</b></td></tr></table><p>User [[[USERNAME]]] on server <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting that you install a remote management agent. WARNING: this will allow the requester to <u>take control of your computer</u>. If you wish to do this, click on the following link to download the agent.</p><p style="margin-left:30px"><a href="[[[CALLBACKURL]]]">Click here to download the MeshAgent for Windows.</a></p>If you did not know about this request, please ignore this mail.</div>';
-    const accountInviteMailText = '[[[SERVERNAME]]] - Agent Installation Invitation\r\n\r\nUser [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting you install a remote management agent. WARNING: This will allow the requester to take control of your computer. If you wish to do this, click on the following link to download the agent: [[[CALLBACKURL]]]\r\nIf you do not know about this request, please ignore this mail.\r\n';
+    const accountInviteSubject = '[[[SERVERNAME]]] - Invitation';
+    const accountInviteMailHtml = '<div style="font-family:Arial,Helvetica,sans-serif"><table style="background-color:#003366;color:lightgray;width:100%" cellpadding=8><tr><td><b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Agent Installation</b></td></tr></table><p>[[[INTROHTML]]]User [[[USERNAME]]] on server <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting you to download the following software to start the remote control session.</p>[[[MSGHTML]]][[[AGENTHTML]]]<p>If you did not initiate this request, please ignore this mail.</p>Best regards,<br>[[[USERNAME]]]<br></div>';
+    const accountInviteMailText = '[[[SERVERNAME]]] - Agent Installation Invitation\r\n\r\n[[[INTROTEXT]]]User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting you to download the following software to start the remote control session. [[[MSGTEXT]]][[[AGENTTEXT]]]If you did not initiate this request, please ignore this mail.\r\n\r\nBest regards,\r\n[[[USERNAME]]]\r\n';
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
@@ -59,10 +59,25 @@ module.exports.CreateMeshMain = function (parent) {
             url = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + domain.dns + ':' + obj.parent.args.port + domain.url;
         }
         if (options) {
-            if (options.cookie != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'checkmail?c=' + options.cookie); }
-            if (options.meshid != null) { text = text.split('[[[CALLBACKURL]]]').join(url + 'meshagents?id=3&meshid=' + options.meshid.split('/')[2] + '&tag=mailto:' + EscapeHtml(email)); }
+            if (options.cookie == null) { options.cookie = ''; }
+            if (options.agentlinkhtml == null) { options.agentlinkhtml = ''; }
+            if (options.agentlinktext == null) { options.agentlinktext = ''; }
+            if (options.meshid == null) { options.meshid = ''; }
+            if (options.introtext == null) { options.introtext = ''; }
+            if (options.introhtml == null) { options.introhtml = ''; }
+            if (options.msgtext == null) { options.msgtext = ''; }
+            if (options.msghtml == null) { options.msghtml = ''; }
+
+            text = text.split('[[[CALLBACKURL]]]').join(url + 'checkmail?c=' + options.cookie);
+            text = text.split('[[[AGENTHTML]]]').join(options.agentlinkhtml);
+            text = text.split('[[[AGENTTEXT]]]').join(options.agentlinktext);
+            text = text.split('[[[MESHID]]]').join(options.meshid);
+            text = text.split('[[[INTROTEXT]]]').join(options.introtext);
+            text = text.split('[[[INTROHTML]]]').join(options.introhtml);
+            text = text.split('[[[MSGTEXT]]]').join(options.msgtext);
+            text = text.split('[[[MSGHTML]]]').join(options.msghtml);            
         }
-        return text.split('[[[USERNAME]]]').join(username).split('[[[SERVERURL]]]').join(url).split('[[[SERVERNAME]]]').join(domain.title);
+        return text.split('[[[USERNAME]]]').join(username).split('[[[SERVERURL]]]').join(url).split('[[[SERVERNAME]]]').join(domain.title).split('[[[EMAIL]]]').join(EscapeHtml(email)).split('[[[URL]]]').join(url);
     }
 
     // Send a mail
@@ -88,9 +103,25 @@ module.exports.CreateMeshMain = function (parent) {
     };
 
     // Send agent invite mail
-    obj.sendAgentInviteMail = function (domain, username, email, meshid) {
+    obj.sendAgentInviteMail = function (domain, username, email, meshid, name, os, msg) {
         if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName == 'un-configured')) return; // If the server name is not set, can't do this.
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(accountInviteSubject, domain, username, email), text: mailReplacements(accountInviteMailText, domain, username, email, { meshid: meshid }), html: mailReplacements(accountInviteMailHtml, domain, username, email, { meshid: meshid }) });
+        var options = { meshid: meshid.split('/')[2] };
+        var agentLinkHtml = '';
+        var agentLinkText = '';
+        if (os == 0 || os == 1) { // All OS or Windows
+            agentLinkHtml += '<p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHID]]]&tag=mailto:[[[EMAIL]]]">Click here to download the MeshAgent for Windows.</a></p>';
+            agentLinkText += 'For Windows, nagivate to the following link to complete the process:\r\n\r\n[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHID]]]&tag=mailto:[[[EMAIL]]]\r\n\r\n';
+        }
+        if (os == 0 || os == 2) { // All OS or Linux
+            agentLinkHtml += '<p>For Linux, cut & paste the following in a terminal to install the agent:<br/><pre style="margin-left:30px">wget -q [[[SERVERURL]]]/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHID]]]\'</pre></p>';
+            agentLinkText += 'For Linux, cut & paste the following in a terminal to install the agent:\r\n\r\nwget -q [[[SERVERURL]]]/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHID]]]\'\r\n\r\n';
+        }
+        options.agentlinkhtml = agentLinkHtml;
+        options.agentlinktext = agentLinkText;
+        if ((name != null) && (name != '')) { options.introtext = 'Hello ' + name + ',\r\n\r\n'; options.introhtml = '<p>Hello ' + name + ',</p>'; }
+        if ((msg != null) && (msg != '')) { options.msgtext = '\r\n\r\nMessage: ' + msg + '\r\n\r\n'; options.msghtml = '<p>Message: <b>' + msg + '</b></p>'; }
+        var mail = { to: email, from: parent.config.smtp.from, subject: mailReplacements(accountInviteSubject, domain, username, email), text: mailReplacements(accountInviteMailText, domain, username, email, options), html: mailReplacements(accountInviteMailHtml, domain, username, email, options) };
+        obj.pendingMails.push(mail);
         sendNextMail();
     };
 
