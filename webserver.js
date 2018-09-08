@@ -1630,6 +1630,87 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return obj.certificates.CommonName;
     }
 
+    // Create a OSX mesh agent installer
+    obj.handleMeshOsxAgentRequest = function (req, res) {
+        var domain = checkUserIpAddress(req, res);
+        if ((domain == null) || (req.query.id == null)) { res.sendStatus(404); return; }
+
+        // If required, check if this user has rights to do this
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); console.log('2'); return; }
+
+        // Send a specific mesh agent back
+        var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
+        if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); console.log('3'); return; }
+
+        // We are going to embed the .msh file into the Windows executable (signed or not).
+        // First, fetch the mesh object to build the .msh file
+        var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.meshid];
+        if (mesh == null) { res.sendStatus(401); return; }
+
+        // If required, check if this user has rights to do this
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+            var user = obj.users[req.session.userid];
+            var escUserId = obj.common.escapeFieldName(user._id);
+            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); console.log('4');  return; }
+            if (domain.id != mesh.domain) { res.sendStatus(401); console.log('5');  return; }
+        }
+
+        var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+
+        // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += "/";
+        var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+        if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+
+        // Setup the response output
+        var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
+        archive.on('error', function (err) { throw err; });
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename=MeshAgent-' + mesh.name + '.zip' });
+        archive.pipe(res);
+
+        // Opens the "MeshAgentOSXPackager.zip"
+        var yauzl = require("yauzl");
+        yauzl.open(obj.path.join(__dirname, 'agents', 'MeshAgentOSXPackager.zip'), { lazyEntries: true }, function (err, zipfile) {
+            if (err) { res.sendStatus(500); return; }
+            zipfile.readEntry();
+            zipfile.on("entry", function (entry) {
+                if (/\/$/.test(entry.fileName)) {
+                    // Skip all folder entries
+                    zipfile.readEntry();
+                } else {
+                    if (entry.fileName == 'Mesh Agent.mpkg/Contents/distribution.dist') {
+                        // This is a special file entry, we need to fix it.
+                        zipfile.openReadStream(entry, function (err, readStream) {
+                            readStream.on("data", function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
+                            readStream.on("end", function () {
+                                var welcomemsg = 'Welcome to the MeshCentral agent for OSX\\\n\\\nThis installer will install the mesh agent for "' + mesh.name + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to info.meshcentral.com.\\\n\\\nThis software is provided under Apache 2.0 license.\\\n';
+                                var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
+                                archive.append(readStream.xxdata.toString().split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName });
+                                zipfile.readEntry();
+                            });
+                        });
+                    } else {
+                        // Normal file entry
+                        zipfile.openReadStream(entry, function (err, readStream) {
+                            if (err) { throw err; }
+                            archive.append(readStream, { name: entry.fileName });
+                            readStream.on('end', function () { zipfile.readEntry(); });
+                        });
+                    }
+                }
+            });
+            zipfile.on("end", function () {
+                archive.file(argentInfo.path, { name: "Mesh Agent.mpkg/Contents/Packages/meshagent.pkg/Contents/MeshAgent" });
+                archive.append(meshsettings, { name: "Mesh Agent.mpkg/Contents/Packages/meshagent.pkg/Contents/MeshAgent.msh" });
+                archive.finalize();
+            });
+        });
+    }
+
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         var domain = checkUserIpAddress(req, res);
@@ -1722,6 +1803,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
         obj.app.ws(url + 'control.ashx', function (ws, req) { try { var domain = checkUserIpAddress(ws, req); if (domain != null) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); } } catch (e) { console.log(e); } });
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
+        obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
         obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
         obj.app.post(url + 'uploadfile.ashx', handleUploadFile);

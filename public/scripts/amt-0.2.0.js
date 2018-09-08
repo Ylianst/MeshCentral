@@ -1,5 +1,5 @@
 /**
-* @fileoverview Intel(r) AMT Communication StackXX
+* @fileoverview Intel(r) AMT Communication Stack
 * @author Ylian Saint-Hilaire
 * @version v0.2.0b
 */

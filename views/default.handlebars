@@ -1984,7 +1984,8 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid], x = '';
-            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Windows (UnInstall)</option><option value=3>Linux (UnInstall)</option></select>') + '<hr>';
+            //x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
+            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
 
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
@@ -1997,6 +1998,11 @@
             // Linux agent install
             x += "<div id=agins_linux style=display:none>To add a computer to " + EscapeHtml(mesh.name) + " run the following command. Root credentials will be needed.<br />";
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
+            x += "</div>";
+
+            // OSX agent install
+            x += "<div id=agins_osx style=display:none>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and install it the computer to manage. This agent installer has server and mesh information embedded within it.<br /><br />";
+            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit)</a>');
             x += "</div>";
 
             // Windows agent uninstall
@@ -2030,8 +2036,9 @@
             var v = Q('aginsSelect').value;
             QV('agins_windows', v == 0);
             QV('agins_linux', v == 1);
-            QV('agins_windows_un', v == 2);
-            QV('agins_linux_un', v == 3);
+            QV('agins_osx', v == 2);
+            QV('agins_windows_un', v == 3);
+            QV('agins_linux_un', v == 4);
         }
 
         function validateDeviceToMesh() {
@@ -5060,35 +5067,49 @@
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
 
         function p5fileDragDrop(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             QV('bigfail', false);
             QV('bigok', false);
             //QV('p5fileCatchAllInput', false);
-            if (e.dataTransfer == null || e.dataTransfer.files.length == 0 || filetreelocation.length == 0) return;
-            var names = [], sizes = [], types = [], datas = [], readercount = e.dataTransfer.files.length;
-            for (var i = 0; i < e.dataTransfer.files.length; i++) {
-                var reader = new FileReader(), file = e.dataTransfer.files[i];
-                names.push(file.name);
-                sizes.push(file.size);
-                types.push(file.type);
-                reader.onload = function (event) {
-                    console.log(event.target.result.length);
-                    datas.push(event.target.result);
-                    if (--readercount == 0) {
-                        Q('p5fileDragName').value = names.join('*');
-                        Q('p5fileDragSize').value = sizes.join('*');
-                        Q('p5fileDragType').value = types.join('*');
-                        Q('p5fileDragData').value = datas.join('*'); // TODO: This will not work for large files!!! *****************
-                        Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
-                        Q('p5loginSubmit2').click();
+
+            // For Chrome & Firefox
+            var error = 0;
+            p5uploadFile(); // Display the the dialog box
+            try { Q('p5uploadinput').files = e.dataTransfer.files; } catch (ex) { error = 1; } // Set the files in the dialog box
+            if (error == 0) { p5uploadFileEx(); } // Press the submit button
+            setDialogMode(0); // Close the dialog box
+
+            // For IE browser - This will not work with very large files
+            if (error == 1) {
+                if (e.dataTransfer == null || e.dataTransfer.files.length == 0 || filetreelocation.length == 0) return;
+                var names = [], sizes = [], types = [], datas = [], readercount = e.dataTransfer.files.length, totalSize = 0;
+                for (var i = 0; i < e.dataTransfer.files.length; i++) { totalSize += e.dataTransfer.files[i].size; }
+                if (totalSize > 1300000) { p5uploadFile(); return; } // File is too large, not sure what the real maximum is.
+                for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                    var reader = new FileReader(), file = e.dataTransfer.files[i];
+                    names.push(file.name);
+                    sizes.push(file.size);
+                    types.push(file.type);
+                    reader.onload = function (event) {
+                        datas.push(event.target.result);
+                        if (--readercount == 0) {
+                            Q('p5fileDragName').value = names.join('*');
+                            Q('p5fileDragSize').value = sizes.join('*');
+                            Q('p5fileDragType').value = types.join('*');
+                            Q('p5fileDragData').value = datas.join('*'); // This will not work for large files, there is a limit on the data size in a field.
+                            Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
+                            Q('p5loginSubmit2').click();
+                        }
                     }
+                    reader.readAsDataURL(file);
                 }
-                reader.readAsDataURL(file);
             }
         }
 
         var p5dragtimer = null;
         function p5fileDragOver(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             if (p5dragtimer != null) { clearTimeout(p5dragtimer); p5dragtimer = null; }
             var ac = true; // TODO: Set to true if we can accept the file
@@ -5099,6 +5120,7 @@
         }
 
         function p5fileDragLeave(e) {
+            if (xxdialogMode) return;
             haltEvent(e);
             if (e.target.id != "p5filetable") {
                 QV('bigfail', false);
