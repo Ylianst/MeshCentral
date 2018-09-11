@@ -1522,7 +1522,7 @@
             QV('NoMeshesPanel', meshcount == 0);
             QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
             QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0) && (view < 4));
-            if ((meshcount == 0) || (nodes.length == 0)) { view = 1; }
+            if ((meshcount == 0) || (nodes.length == 0)) { view = 1; sort = 0; }
             if (view == 4) {
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
                 // TODO
@@ -3711,7 +3711,6 @@
             if (Q('DeskTools').nodeid != message.nodeid) return;
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
-            console.log(processes);
             if (processes != null) {
                 for (var pid in processes) { p.push( { p:parseInt(pid), c:processes[pid].cmd, d:processes[pid].cmd.toLowerCase(), u: processes[pid].user } ); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }

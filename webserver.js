@@ -653,7 +653,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.users[req.session.userid] = { type: 'user', _id: req.session.userid, name: '~', email: '~', domain: domain.id, siteadmin: 0xFFFFFFFF };
                 obj.db.SetUser(obj.users[req.session.userid]);
             }
-        } else if (obj.args.user && (!req.session || !req.session.userid) && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+        } else if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
             // If a default user is active, setup the session here.
             if (req.session && req.session.loginmode) { delete req.session.loginmode; }
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();

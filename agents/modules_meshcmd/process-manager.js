@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// JavaScript source code
 var GM = require('_GenericMarshal');
 
+// Used on Windows and Linux to get information about running processes
 function processManager() {
-    this._ObjectID = 'processManager';
+    this._ObjectID = 'process-manager'; // Used for debugging, allows you to get the object type at runtime.
+    
+    // Setup the platform specific calls.
     switch (process.platform) {
         case 'win32':
             this._kernel32 = GM.CreateNativeProxy('kernel32.dll');
@@ -32,12 +34,16 @@ function processManager() {
             break;
         default:
             throw (process.platform + ' not supported');
+            break;
     }
+    
+    // Return a object of: pid -> process information.
     this.getProcesses = function getProcesses(callback) {
         switch (process.platform) {
-            default:
+            default: // This is not a supported platform.
                 throw ('Enumerating processes on ' + process.platform + ' not supported');
-            case 'win32':
+                break;
+            case 'win32': // Windows processes
                 var retVal = {};
                 var h = this._kernel32.CreateToolhelp32Snapshot(2, 0);
                 var info = GM.CreateVariable(304);
@@ -49,7 +55,7 @@ function processManager() {
                 }
                 if (callback) { callback.apply(this, [retVal]); }
                 break;
-            case 'linux':
+            case 'linux': // Linux processes
                 if (!this._psp) { this._psp = {}; }
                 var p = this._childProcess.execFile("/bin/ps", ["ps", "-uxa"], { type: this._childProcess.SpawnTypes.TERM });
                 this._psp[p.pid] = p;
@@ -68,8 +74,8 @@ function processManager() {
                             if (i == 0 && tokens[x]) { key[tokens[x]] = keyi++; }
                             if (i > 0 && tokens[x]) { tokenList.push(tokens[x]); }
                         }
-                        if ((i > 0) && (tokenList[key.PID])) {
-                            retVal[tokenList[key.PID]] = { user: tokenList[key.USER], cmd: tokenList[key.COMMAND] };
+                        if (i > 0) {
+                            if (tokenList[key.PID]) { retVal[tokenList[key.PID]] = { user: tokenList[key.USER], cmd: tokenList[key.COMMAND] }; }
                         }
                     }
                     if (this.callback) {
@@ -81,18 +87,23 @@ function processManager() {
                 break;
         }
     };
+    
+    // Get information about a specific process on Linux
     this.getProcessInfo = function getProcessInfo(pid) {
         switch (process.platform) {
             default:
                 throw ('getProcessInfo() not supported for ' + process.platform);
+                break;
             case 'linux':
-                var status = require('fs').readFileSync('/proc/' + pid + '/status'), info = {}, lines = status.toString().split('\n');
+                var status = require('fs').readFileSync('/proc/' + pid + '/status');
+                var info = {}, lines = status.toString().split('\n');
                 for (var i in lines) {
                     var tokens = lines[i].split(':');
                     if (tokens.length > 1) { tokens[1] = tokens[1].trim(); }
                     info[tokens[0]] = tokens[1];
                 }
                 return (info);
+                break;
         }
     };
 }
