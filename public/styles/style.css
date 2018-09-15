@@ -170,6 +170,72 @@ a {
     border: none;
 }
 
+.lbbutton {
+    width:74px;
+    height:74px;
+    border-radius:5px;
+    background-color:white;
+    margin-left:8px;
+    margin-top:8px;
+    position:relative;
+    cursor:pointer;
+    opacity:0.5;
+}
+
+.lbbutton:hover {
+    opacity:1;
+}
+
+.lbbuttonsel {
+    opacity:0.9;
+}
+
+.lbbuttonsel2 {
+    width:82px;
+    border-radius:5px 0px 0px 5px;
+    opacity:1;
+}
+
+.lb1 {
+    background: url(../images/leftbar-62.png) -0px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
+.lb2 {
+    background: url(../images/leftbar-62.png) -75px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
+.lb3 {
+    background: url(../images/leftbar-62.png) -150px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
+.lb4 {
+    background: url(../images/leftbar-62.png) -225px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
+.lb5 {
+    background: url(../images/leftbar-62.png) -294px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
 .m0  { background : url(../images/images16.png)  -32px 0px; height : 16px; width : 16px; border:none; float:left }
 .m1  { background : url(../images/images16.png)  -16px 0px; height : 16px; width : 16px; border:none; float:left }
 .m2  { background : url(../images/images16.png)  -96px 0px; height : 16px; width : 16px; border:none; float:left }

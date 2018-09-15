@@ -28,7 +28,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>MeshCentral</title>
 </head>
-<body onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none">
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu" style="display: none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1)"><b>Information</b></div>
@@ -62,56 +62,82 @@
             </div>
             <p id="logoutControl">{{{logoutControl}}}</p>
         </div>
-        <div id=topbarmaster>
-            <div id=topbar class=noselect style=display:none>
-                <div>
+        <div id="page_leftbar" style="height:calc(100vh - 66px);width:90px;position:absolute;z-index:1000;background:#113962;background:linear-gradient(to bottom, #104893 0%,#113962 100%);color:white;display:none">
+            <div style="height:16px"></div>
+            <div id=LeftMenuMyDevices class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1)>
+                <div class="lb2" style="position:absolute;top:6px;left:6px"></div>
+            </div>
+            <div id=LeftMenuMyAccount class="lbbutton" title="My Account" onclick=go(2)>
+                <div class="lb1" style="position:absolute;top:6px;left:6px"></div>
+            </div>
+            <div id=LeftMenuMyEvents class="lbbutton" title="My Events" onclick=go(3)>
+                <div class="lb3" style="position:absolute;top:6px;left:6px"></div>
+            </div>
+            <div id=LeftMenuMyFiles class="lbbutton" title="My Files" onclick=go(5)>
+                <div class="lb4" style="position:absolute;top:6px;left:6px"></div>
+            </div>
+            <div id=LeftMenuMyUsers class="lbbutton" title="My Users" onclick=go(4)>
+                <div class="lb5" style="position:absolute;top:6px;left:6px"></div>
+            </div>
+        </div>
+        <div id="page_content" style="max-height:calc(100vh - 130px)">
+            <div id=topbarmaster>
+                <div id=topbar class=noselect style=display:none>
                     <div>
-                        <table style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(1)>My Devices</td>
-                                <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(2)>My Account</td>
-                                <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
-                                <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
-                                <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
-                                <td class=style3 style="text-align:right;height:24px"><span title="Toggle full width" style="cursor:pointer;opacity:0.2" onclick="toggleFullScreen(1)">&harr;</span>&nbsp;</td>
-                            </tr>
-                        </table>
-                        <div id=MainSubMenuSpan style=display:none>
-                            <table id=MainSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                        <div style="position:relative">
+                            <div style="position:absolute;top:3px;right:6px">
+                                <span title="Toggle full width" style="cursor:pointer;color:white" onclick="toggleFullScreen(1)">&harr;</span>
+                            </div>
+                            <table id=MainMenuSpan style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
-                                    <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
-                                    <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
-                                    <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
-                                    <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
-                                    <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(16)>Events</td>
-                                    <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
-                                    <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
-                                    <td class=style3 style=height:24px>&nbsp;</td>
+                                    <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(1)>My Devices</td>
+                                    <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(2)>My Account</td>
+                                    <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
+                                    <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
+                                    <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
+                                    <td class=style3 style="text-align:right;height:24px">&nbsp;</td>
                                 </tr>
                             </table>
-                        </div>
-                        <div id=MeshSubMenuSpan style=display:none>
-                            <table id=MeshSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
-                                <tr>
-                                    <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
-                                    <td class=style3 style=height:24px>&nbsp;</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div id=UserSubMenuSpan style=display:none>
-                            <table id=UserSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
-                                <tr>
-                                    <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(30)>General</td>
-                                    <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(31)>Events</td>
-                                    <td class=style3 style=height:24px>&nbsp;</td>
-                                </tr>
-                            </table>
+                            <div id=MainSubMenuSpan style=display:none>
+                                <table id=MainSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
+                                        <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
+                                        <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
+                                        <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
+                                        <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(16)>Events</td>
+                                        <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
+                                        <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
+                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id=MeshSubMenuSpan style=display:none>
+                                <table id=MeshSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
+                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id=UserSubMenuSpan style=display:none>
+                                <table id=UserSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(30)>General</td>
+                                        <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(31)>Events</td>
+                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id=UserDummyMenuSpan style=display:none>
+                                <table id=UserDummyMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                    <tr><td class=style3 style="text-align:right;height:24px">&nbsp;</td></tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="page_content" style="max-height:calc(100vh - 138px)">
             <div id="column_l">
                 <div id=p0 style=display:none>
                     <div id=p0message style=margin:50px;text-align:center>Server disconnected, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
@@ -182,8 +208,8 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="xdevices" style="max-height:calc(100vh - 242px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch"></div>
-                    <div id="xdevicesmap" style="height:500px;width:100%;overflow:hidden;position:relative">
+                    <div id="xdevices" style="max-height:calc(100vh - 239px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch"></div>
+                    <div id="xdevicesmap" style="height:calc(100vh - 239px);width:100%;overflow:hidden;position:relative">
                         <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
                             <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
                                 <div id=xmapSearchClose style=float:right;padding:5px;cursor:pointer onclick=mapCloseSearchWindow()><b>X</b></div>
@@ -195,7 +221,7 @@
                     </div>
                     <div id="xmap-info-window" style="text-shadow: 0px 0px 15px #FFF"></div>
                 </div>
-                <div id=p2 style=display:none>
+                <div id=p2 style="display:none">
                     <h1>My Account</h1>
                     <div id="p2AccountActions">
                         <p><strong><img alt="" width=150 height=103 src=images/mainaccount.png style=margin-bottom:10px;margin-right:20px;float:right />Account actions</strong></p>
@@ -239,7 +265,7 @@
                             <div class="h2" style="height:100%;float:right;">&nbsp;</div>
                         </div>
                     </div>
-                    <div id=p3events style="max-height:600px;overflow-y:scroll"></div>
+                    <div id=p3events style="height:calc(100vh - 243px);overflow-y:scroll"></div>
                 </div>
                 <div id=p4 style=display:none>
                     <h1>My Users</h1>
@@ -256,11 +282,11 @@
                             <div class=h2 style="height:100%;float:right">&nbsp;</div>
                         </div>
                     </div>
-                    <div id="p3users" style="max-height:600px;overflow-y:auto"></div>
+                    <div id="p3users" style="max-height:calc(100vh - 243px);overflow-y:auto"></div>
                 </div>
                 <div id=p5 style=display:none>
                     <h1>My Files</h1>
-                    <table id="p5toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
+                    <table id="p5toolbar" style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
                                 <div id="p5rightOfButtons" style="float:right;margin-top:3px"></div>
@@ -293,7 +319,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id="p5filetable" style="width:100%;height:500px;overflow:auto;-webkit-user-select:none;position:relative">
+                    <div id="p5filetable" style="width:100%;height:calc(100vh - 294px);overflow:auto;-webkit-user-select:none;position:relative">
                         <!--
                         <form id=p5fileCatchAll method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
                             <input type=file id=p5fileCatchAllInput name=files style="position:absolute;left:0;width:100%;top:0;bottom:0;opacity:0;display:none" onchange="p5fileCatchAllInputChanged(event)" />
@@ -310,7 +336,7 @@
                         <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td></tr>
                     </table>
                 </div>
-                <div id=p10 style=display:none>
+                <div id=p10 style="display:none">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
@@ -410,7 +436,7 @@
                         </tr>
                     </table>
                 </div>
-                <div id=p12 style=display:none>
+                <div id=p12 style="display:none">
                     <div id="p12title"><h1>Terminal - <span id=p12deviceName></span></h1></div>
                     <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
                         <div class="icon2" style="float:left;margin:7px"></div>
@@ -513,7 +539,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id="p13filetable" style="width:100%;height:500px;overflow:auto;-webkit-user-select:none">
+                    <div id="p13filetable" style="width:100%;height:calc(100vh - 346px);overflow:auto;-webkit-user-select:none">
                         <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
                         <div id="p13bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
                         <span id="p13files"></span>
@@ -524,7 +550,7 @@
                 </div>
                 <div id=p14 style=display:none>
                     <div id="p14title"><h1>Intel&reg; AMT - <span id=p14deviceName></span></h1></div>
-                    <iframe id=p14iframe style="width:100%;height:650px;border:0;overflow:hidden" src="/commander.htm"></iframe>
+                    <iframe id=p14iframe style="width:100%;height:calc(100vh - 242px);border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style=display:none>
                     <div id="p15title"><h1>Console - <span id=p15deviceName></span></h1></div>
@@ -544,8 +570,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="background:black;text-align:center;height:500px;position:relative">
-                                <div id=p15agentConsole style="background:black;margin:0;padding:0;color:lightgray;width:100%;max-width:930px;height:100%;text-align:left;overflow-y:scroll"><pre id=p15agentConsoleText></pre></div>
+                            <td id=p15agentConsole style="background:black;margin:0;padding:0;color:lightgray;width:100%;height:calc(100vh - 296px);max-height:500px;position:relative">
+                                <pre id=p15agentConsoleText style="position:absolute;margin:0;padding:0;top:0;bottom:0;left:0;right:0;overflow-y:scroll;overflow-x:auto"></pre>
                             </td>
                         </tr>
                         <tr>
@@ -583,9 +609,9 @@
                             <div class=h2 style=height:100%;float:right>&nbsp;</div>
                         </div>
                     </div>
-                    <div id=p16events style="max-height:600px;overflow-y:scroll"></div>
+                    <div id=p16events style="max-height:calc(100vh - 267px);overflow-y:auto"></div>
                 </div>
-                <div id=p20 style=display:none>
+                <div id=p20 style="display:none">
                     <img id=MainMeshImage src="images/mesh-200.png" style=border-width:0px;height:200px;width:200px;float:right>
                     <h1><span id=p20meshName></span> - General</h1>
                     <p id=p20info></p>
@@ -629,7 +655,7 @@
                             <div class="h2" style="height:100%;float:right;">&nbsp;</div>
                         </div>
                     </div>
-                    <div id=p31events style="max-height:600px;overflow-y:scroll"></div>
+                    <div id=p31events style="max-height:calc(100vh - 267px);overflow-y:scroll"></div>
                 </div>
                 <br id="column_l_bottomgap" />
             </div>
@@ -784,8 +810,9 @@
         var debugmode = false;
         var clickOnce = (((features & 256) != 0) && detectClickOnce());
         var attemptWebRTC = ((features & 128) != 0);
-        var webPageFullScreen = getstore('webPageFullScreen', false);;
+        var webPageFullScreen = getstore('webPageFullScreen', true);
         if (webPageFullScreen == 'false') { webPageFullScreen = false; }
+        if (webPageFullScreen == 'true') { webPageFullScreen = true; }
 
         function startup() {
             if ((features & 32) == 0) {
@@ -885,17 +912,41 @@
                 QS('container')['border-right'] = '1px solid #b7b7b7';
                 QS('container')['border-left'] = '1px solid #b7b7b7';
                 QS('container')['min-width'] = '960px';
-                //QS('column_l').padding = '0 15px';
+                QS('container')['overflow'] = '';
                 QS('column_l').width = '930px';
+                QS('column_l').height = '';
+                QS('column_l')['margin-left'] = '';
+                QS('column_l')["overflow-y"] = '';
+                QS('column_l')["max-height"] = (xxcurrentView >= 10) ? 'calc(100vh - 159px)' : 'calc(100vh - 135px)';
+                QS('container').position = '';
+                QS('page_content').position = '';
+                QV('MainMenuSpan', true);
+                QV('UserDummyMenuSpan', false);
+                QV('page_leftbar', false);
             } else {
+                QS('container').position = 'absolute';
                 QS('container').width = '100%';
+                QS('container').top = '0px';
+                QS('container').bottom = '0px';
                 QS('container')['border-right'] = '0';
                 QS('container')['border-left'] = '0';
                 QS('container')['min-width'] = '700px';
-                //QS('column_l').padding = '0';
+                QS('container')['overflow'] = 'hidden';
+                QS('page_content').position = 'absolute';
+                QS('page_content').top = '66px';
+                QS('page_content').left = '90px';
+                QS('page_content').right = '0px';
+                QS('page_content').bottom = '0px';
+                QS('column_l').height = 'calc(100vh - 135px)';
                 QS('column_l').width = 'calc(100% - 30px)';
+                QS('column_l')["overflow-y"] = 'auto';
+                QS('column_l')["max-height"] = 'calc(100vh - 135px)';
+                QV('MainMenuSpan', false);
+                QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
+                QV('page_leftbar', true);
             }
             drawDeviceTimeline();
+            QV('body', true);
         }
 
         function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
@@ -1682,7 +1733,7 @@
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
                 if ((view < 3) && (sort == 0) && (meshcount > 0)) { r += '<a onclick=account_createMesh() title="Create a new group of computers." style=cursor:pointer>Add Mesh</a>&nbsp'; }
                 r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a></div>';
-                r += '</div>';
+                r += '</div><br/>';
 
                 QH('xdevices', r);
                 deviceHeaderSet();
@@ -3578,12 +3629,21 @@
             QV('column_l_bottomgap', !fullscreen);
             QV('idx_deskFullBtn2', fullscreen);
             QV('deskFullBtn', !fullscreen);
+            QV('page_leftbar', !fullscreen);
             if (fullscreen) {
+                QS('column_l').width = '930px';
+                QS('column_l').height = '';
+                QS('column_l')['margin-left'] = '';
+                QS('column_l')['overflow-y'] = '';
+                QS('container').position = '';
+                QS('page_content').position = '';
+                QV('MainMenuSpan', true);
                 QS('container').width = '100%';
                 QS('container')['border-right'] = '0';
                 QS('container')['border-left'] = '0';
                 QS('column_l').padding = '0';
                 QS('column_l').width = '100%';
+                QS('column_l')["max-height"] = '';
             } else {
                 QS('container').width = '960px';
                 QS('container')['border-right'] = '1px solid #b7b7b7';
@@ -4358,7 +4418,7 @@
                 var time = new Date(event.time);
                 if (time.toLocaleDateString() != dateHeader) {
                     if (dateHeader != null) x += '</table>';
-                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt colspan=4>' + time.toLocaleDateString() + '</td></tr>';
                     dateHeader = time.toLocaleDateString();
                 }
                 var icon = 'si3';
@@ -4367,10 +4427,7 @@
 
                 var msg = event.msg.split('(R)').join('&reg;');
                 //if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
-                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
-                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                x += '<div style=font-size:14px><span style=width:300px>' + time.toLocaleTimeString() + ' - ' + msg + '</span></div></div></td></tr>';
+                x += '<tr><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -5149,7 +5206,7 @@
                 var time = new Date(event.time);
                 if (time.toLocaleDateString() != dateHeader) {
                     if (dateHeader != null) x += '</table>';
-                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
                     dateHeader = time.toLocaleDateString();
                 }
                 var icon = 'si3';
@@ -5158,10 +5215,7 @@
 
                 var msg = event.msg.split('(R)').join('&reg;');
                 if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
-                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
-                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                x += '<div style=font-size:14px><span style=width:300px>' + time.toLocaleTimeString() + ' - ' + msg + '</span></div></div></td></tr>';
+                x += '<tr><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -5194,6 +5248,7 @@
 
         function updateUsers() {
             QV('MainMenuMyUsers', (users != null) && ((features & 4) == 0));
+            QV('LeftMenuMyUsers', (users != null) && ((features & 4) == 0));
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
             // Sort the list of user id's
@@ -5830,13 +5885,49 @@
             for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
+            // Remove left bar selection
+            var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers'];
+            for (var i in leftBarItems) { Q(leftBarItems[i]).classList.remove('lbbuttonsel', 'lbbuttonsel2'); }
+
+            // My Devices
             QV('topbar', x != 0);
             if (x >= 10 && x < 20) { QS('MainMenuMyDevices').backgroundColor = "#606060"; } else { QS('MainMenuMyDevices').backgroundColor = ((x == 1) ? "#003366" : "#808080"); }
+            if (x == 1 || (x >= 10 && x < 20)) { Q('LeftMenuMyDevices').classList.add('lbbuttonsel'); }
+            if (x == 1) { Q('LeftMenuMyDevices').classList.add('lbbuttonsel2'); }
+
+            // My Account
             if (x >= 20 && x < 30) { QS('MainMenuMyAccount').backgroundColor = "#606060"; } else { QS('MainMenuMyAccount').backgroundColor = ((x == 2) ? "#003366" : "#808080"); }
+            if (x == 2 || (x >= 20 && x < 30)) { Q('LeftMenuMyAccount').classList.add('lbbuttonsel'); }
+            if (x == 2) { Q('LeftMenuMyAccount').classList.add('lbbuttonsel2'); }
+
+            // My Events
             QS('MainMenuMyEvents').backgroundColor = ((x == 3) ? "#003366" : "#808080");
+            if (x == 3) { Q('LeftMenuMyEvents').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+
+            // My Users
             if (x >= 30 && x < 40) { QS('MainMenuMyUsers').backgroundColor = "#606060"; } else { QS('MainMenuMyUsers').backgroundColor = ((x == 4) ? "#003366" : "#808080"); }
+            if (x == 4 || (x >= 30 && x < 40)) { Q('LeftMenuMyUsers').classList.add('lbbuttonsel'); }
+            if (x == 4) { Q('LeftMenuMyUsers').classList.add('lbbuttonsel2'); }
+
+            // My Files
             QS('MainMenuMyFiles').backgroundColor = ((x == 5) ? "#003366" : "#808080");
+            if (x == 5) { Q('LeftMenuMyFiles').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+
+            // column_l max-height
+            if (webPageFullScreen) {
+                QS('column_l')["max-height"] = 'calc(100vh - 135px)';
+            } else {
+                QS('column_l')["max-height"] = (x >= 10) ? 'calc(100vh - 159px)' : 'calc(100vh - 135px)';
+            }
+            if ((x == 0) && (webPageFullScreen)) {
+                QS('page_content').position = '';
+                QV('page_leftbar', false);
+                QS('column_l').height = 'calc(100vh - 110px)';
+                QS('column_l')["max-height"] = '';
+            }
+
             QV('MainSubMenuSpan', x >= 10 && x < 20);
+            QV('UserDummyMenuSpan', (x < 10) && webPageFullScreen);
             QS('MainDev').backgroundColor = ((x == 10) ? "#003366" : "#808080");
             QS('MainDevDesktop').backgroundColor = ((x == 11) ? "#003366" : "#808080");
             QS('MainDevTerminal').backgroundColor = ((x == 12) ? "#003366" : "#808080");

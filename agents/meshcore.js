@@ -16,7 +16,8 @@ limitations under the License.
 
 function createMeshCore(agent) {
     var obj = {};
-    
+
+    /*
     function borderController() {
         this.container = null;
         this.Start = function Start(user) {
@@ -45,7 +46,7 @@ function createMeshCore(agent) {
             }
         }
     }
-
+    */
 
     require('events').EventEmitter.call(obj, true).createEvent('loggedInUsers_Updated');
     obj.on('loggedInUsers_Updated', function ()
@@ -57,7 +58,7 @@ function createMeshCore(agent) {
         }
         sendConsoleText('LogOn Status Changed. Active Users => [' + users.join(', ') + ']');
     });
-    obj.borderManager = new borderController();
+    //obj.borderManager = new borderController();
     
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     obj.meshCoreInfo = "MeshCore v5";
@@ -910,6 +911,7 @@ function createMeshCore(agent) {
                     response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, border.';
                     break;
                 }
+                    /*
                 case 'border':
                     {
                         if ((args['_'].length == 1) && (args['_'][0] == 'on')) {
@@ -927,6 +929,7 @@ function createMeshCore(agent) {
                         }
                     }
                     break;
+                    */
                 case 'users':
                     {
                         var retList = [];
