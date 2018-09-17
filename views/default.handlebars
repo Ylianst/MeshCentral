@@ -397,10 +397,10 @@
                             </td>
                         </tr>
                         <tr id=deskarea3>
-                            <td id=deskarea3x style=background:black;text-align:center;height:400px;position:relative>
-                                <div id=DeskFocus style="color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
-                                <div id=DeskParent>
-                                    <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                            <td id=deskarea3x style="background:black;text-align:center;position:relative;overflow:hidden">
+                                <div id=DeskFocus style="overflow:hidden;color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
+                                <div id=DeskParent style="overflow:hidden">
+                                    <canvas id=Desk width=640 height=480 style="overflow:hidden;width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                                 </div>
                                 <div id=DeskTools style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
                                     <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
@@ -946,6 +946,7 @@
                 QV('page_leftbar', true);
             }
             drawDeviceTimeline();
+            deskAdjust();
             QV('body', true);
         }
 
@@ -1777,13 +1778,13 @@
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
-                                QH('DeskParent', '<canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                                QH('DeskParent', '<canvas id="Desk" width="640" height="480" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                             } else {
                                 // This is a new device, create a canvas for it.
                                 var c = document.createElement('canvas');
                                 c.setAttribute('id', 'kvmid_' + shortid);
                                 c.setAttribute('width', 640);
-                                c.setAttribute('height', 200);
+                                c.setAttribute('height', 480);
                                 c.setAttribute('oncontextmenu', 'return false');
                                 c.setAttribute('style', 'background-color:black;width:' + vsize.x + 'px;height:' + vsize.y + 'px');
                                 c.setAttribute('onclick', 'toggleKvmDevice(\'' + id + '\')');
@@ -1797,6 +1798,7 @@
                         // If a device is no longer viewed, disconnect it.
                         if (multiDesktop[i].xxdelete == true) { multiDesktop[i].Stop(); delete multiDesktop[i]; }
                     }
+                    deskAdjust();
                 } else {
                     disconnectAllKvmFunction();
                     Q('autoConnectDesktopCheckbox').checked = false;
@@ -2611,7 +2613,7 @@
             }
             map_cm_nodemenu_items.forEach(function (item){
                 if (item.text == 'Zoom-in to extent' || item.text == 'Zoom-out to extent') { item.data = feature; }
-                else { item.data = feature.getId(); }
+                else { if (item != "-") { item.data = feature.getId(); } }
             });
             xxmap.contextmenu.extend(map_cm_nodemenu_items);
         }
@@ -3464,7 +3466,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    QH('DeskParent', '<canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                    QH('DeskParent', '<canvas id=Desk width=640 height=480 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -3473,6 +3475,7 @@
             }
             desktopNode = currentNode;
             updateDesktopButtons();
+            deskAdjust();
 
             // On some browsers like IE, we can't save screen shots. Hide the scheenshot/capture buttons.
             if (!Q('Desk')['toBlob']) { QV('deskSaveBtn', false); }
@@ -3653,6 +3656,7 @@
                 toggleFullScreen();
             }
             deskAdjust();
+            deskAdjust();
         }
 
         function deskToggleFocus() {
@@ -3679,10 +3683,11 @@
                 QS('Desk')['margin-top'] = x + 'px';
                 QS('Desk')['margin-bottom'] = x + 'px';
             } else {
+                var mw = 9999, mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (webPageFullScreen?276:290));
+                if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
                 document.documentElement.style.overflow = 'auto';
-                QS('deskarea3x').height = (desktop)?'40px':'400px';
-                QS('Desk')['max-height'] = null;
-                QS('Desk')['max-width'] = null;
+                QS('Desk')['max-height'] = mh + 'px';
+                QS('Desk')['max-width'] = mw + 'px';
                 QS('Desk')['margin-top'] = '0';
                 QS('Desk')['margin-bottom'] = '0';
             }
@@ -5874,7 +5879,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust(); drawDeviceTimeline(); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust(); deskAdjust(); drawDeviceTimeline(); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }

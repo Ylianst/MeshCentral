@@ -6,7 +6,81 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            color: black;
+            font-size: 13px;
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            background-color: #d3d9d6;
+        }
+
+        #container {
+            background-color: #fff;
+            margin: 0 auto;
+            border-top: 0;
+            border-right: 1px solid #b7b7b7;
+            border-bottom: 0;
+            border-left: 1px solid #b7b7b7;
+            padding: 0;
+        }
+
+        #masthead {
+            width: auto;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+            text-align: right;
+            background-color: #036;
+        }
+
+        #column_l {
+            position: relative;
+            float: left;
+            margin: 0;
+            padding: 0 15px;
+            background-color: #fff;
+        }
+
+        #footer {
+            clear: both;
+            overflow: auto;
+            width: 100%;
+            text-align: center;
+            background-color: #113962;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .style3 {
+            text-align: center;
+            color: white;
+            background-color: #808080;
+            font-weight: bold;
+        }
+
+        #footer {
+            clear: both;
+            overflow: auto;
+            width: 100%;
+            text-align: center;
+            background-color: #113962;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        #footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+            #footer a:hover {
+                color: #fff;
+                text-decoration: none;
+            }
+    </style>
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <title>MeshCentral - Login</title>
 </head>
@@ -21,16 +95,19 @@
                 <strong><font style="font-size:14px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
             </div>
         </div>
-        <div id=page_content style="max-height:calc(100vh-138px)">
+        <div id=page_content style="max-height:calc(100vh-108px)">
+            <div id=topbar class="noselect style3" style="height:24px;position:relative">
+                <div title="Toggle full width" style="cursor:pointer;color:white;position:absolute;top:3px;right:6px" onclick="toggleFullScreen(1)">&harr;</div>
+            </div>
             <div id=column_l>
                 <h1>Welcome</h1>
                 <p>Connect to your home or office devices from anywhere in the world using MeshCentral, the remote monitoring and management web site. You will need to download and install a special management agent on your computers. Once installed, each mesh enabled computer will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them, power them on and off and take control of them.</p>
-                <table style=width:100%>
+                <table id="centralTable" style=width:100%>
                     <tr>
-                        <td style=width:500px valign=top>
-                            <img alt="" height=310 src=images/mainwelcome.png width=359 style="margin-left:70px" />
+                        <td id="welcomeimage" align="center">
+                            <img alt="" height=310 src=images/mainwelcome.png width=359 />
                         </td>
-                        <td>
+                        <td align="center">
                             <div id=loginpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
                                 <form action="login" method=post>
                                     <div id=message1>
@@ -173,6 +250,10 @@
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var features = parseInt('{{{features}}}');
+        var webPageFullScreen = getstore('webPageFullScreen', true);
+        if (webPageFullScreen == 'false') { webPageFullScreen = false; }
+        if (webPageFullScreen == 'true') { webPageFullScreen = true; }
+        toggleFullScreen();
 
         function startup() {
             if ((features & 32) == 0) {
@@ -316,13 +397,58 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); }
+        // Toggle the web page to full screen
+        function toggleFullScreen(toggle) {
+            if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            if (webPageFullScreen == false) {
+                QS('container').width = '960px';
+                QS('container')["min-width"] = '960px';
+                QS('container')['border-right'] = '1px solid #b7b7b7';
+                QS('container')['border-left'] = '1px solid #b7b7b7';
+                QS('container')['overflow'] = 'hidden';
+                QS('column_l').height = '';
+                QS('column_l').width = '930px';
+                QS('column_l')["overflow-y"] = '';
+                QS('column_l')["max-height"] = 'calc(100vh - 111px)';
+                QS('column_l')["min-width"] = '';
+                QS('masthead')["width"] = '960px';
+            } else {
+                QS('container').width = '100%';
+                QS('container')['min-width'] = '';
+                QS('container')['border-right'] = '0';
+                QS('container')['border-left'] = '0';
+                QS('container')['overflow'] = 'hidden';
+                QS('column_l').height = 'calc(100vh - 135px)';
+                QS('column_l').width = '';
+                QS('column_l')["overflow-y"] = 'auto';
+                QS('column_l')["max-height"] = 'calc(100vh - 111px)';
+                QS('column_l')["min-width"] = '';
+                QS('masthead')["width"] = '100%';
+            }
+            QV('body', true);
+            center();
+        }
+
+        function center() {
+            var w = getDocWidth();
+            QS('dialog').left = ((((w - 400) / 2)) + "px");
+            QV('welcomeimage', (webPageFullScreen == false) || (w > 800));
+            if (webPageFullScreen == false) {
+                QS('centralTable')['margin-top'] = '';
+            } else {
+                var h = (Q('column_l').clientHeight / 2) - 250;
+                if (h < 0) h = 0;
+                QS('centralTable')['margin-top'] = h + 'px';
+            }
+        }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
         function validateEmail(v) { var emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; return emailReg.test(v); }
+        function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
+        function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
 
     </script>
 </body>
