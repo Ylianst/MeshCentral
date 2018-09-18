@@ -143,7 +143,12 @@
                     <div id=p0message style=margin:50px;text-align:center>Server disconnected, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
                 </div>
                 <div id=p1 style=display:none>
-                    <h1>My Devices</h1>
+                    <div style="float:right" id="devListToolbarViewIcons">
+                        <div id=devViewButton1 class="viewSelector" onclick=onDeviceViewChange(1) title="Columns"><div class="viewSelector1"></div></div>
+                        <div id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) title="List"><div class="viewSelector2"></div></div>
+                        <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
+                        <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
+                    </div><div><h1>My Devices</h1></div>
                     <div style=width:100%;height:24px;background-color:#d3d9d6>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
                         <div id=devListToolbar class=style14 style=height:100%;float:left>
@@ -155,7 +160,7 @@
                         <div id=kvmListToolbar class=style14 style=height:100%;float:left>
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" />AutoConnect&nbsp;
+                            <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                         </div>
                         <div id=devMapToolbar class=style14 style=height:100%;float:left>
@@ -163,10 +168,10 @@
                             <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
                             <input type=button id=refreshmap title="Reset map view" value=Reset style=margin-left:5px onclick=refreshMap(false,true) />
                         </div>
-                        <div class="auto-style1" style="height: 100%; float: right">
+                        <div class="auto-style1" style=height:100%;float:right>
                             <div style="height:100%;width:4px;float:right;background-color:#ffffff"></div>
                             <div class=h2 style="height:100%;float:right">&nbsp;</div>
-                            <div style=float:right id=devListToolbarView>
+                            <div style="float:right;display:none" id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
                                     <option value=1>Columns</option>
@@ -327,7 +332,7 @@
                             <input type=submit id=p5fileCatchAllSubmit style="display:none" />
                         </form>
                         -->
-                        <div id="p5PublicShare" style="display:none;width:100%;padding:4px;overflow:auto;-webkit-user-select:none;background-color:lightsteelblue">This files is shared publically, click "link" to get public url.</div>
+                        <div id="p5PublicShare" style="display:none;width:100%;overflow:auto;-webkit-user-select:none;background-color:lightsteelblue"><div style="padding:4px">This files is shared publically, click "link" to get public url.</div></div>
                         <div id="bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:20px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
                         <div id="bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:20px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
                         <span id="p5files"></span>
@@ -474,10 +479,13 @@
                         <tr>
                             <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
-                                    <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">&nbsp;
-                                    <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">&nbsp;&nbsp;
-                                    <select id="specialkeylist" onkeypress="return false"></select>
-                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />&nbsp;
+                                    <span id="terminalSettingsButtons" style="display:none">
+                                        <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
+                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
+                                        <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
+                                    </span>
+                                    <select id="specialkeylist" onkeypress="return false" style="margin-left:5px"></select>
+                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
                                 <div>
                                     &nbsp;
@@ -807,7 +815,7 @@
         var multiDesktopFilter = null;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
         var amtScanResults = null;
-        var debugmode = false;
+        var debugmode = 0;
         var clickOnce = (((features & 256) != 0) && detectClickOnce());
         var attemptWebRTC = ((features & 128) != 0);
         var webPageFullScreen = getstore('webPageFullScreen', true);
@@ -826,7 +834,7 @@
 
             // Check if we are in debug mode
             args = parseUriArgs();
-            debugmode = (args.debug == 1);
+            debugmode = args.debug;
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
@@ -874,6 +882,9 @@
             // Display the page devices
             onSortSelectChange();
             onSearchInputChanged();
+            for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
+            Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
+
 
             // Setup upload drag & drop
             Q('p5filetable').addEventListener("drop", p5fileDragDrop, false);
@@ -1464,7 +1475,10 @@
             return;
         }
 
-        function onDeviceViewChange() {
+        function onDeviceViewChange(i) {
+            if (i != null) { Q('viewselect').value = i; }
+            for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
+            Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
             putstore("deviceView", Q('viewselect').value);
             putstore("viewsize", Q('sizeselect').value);
             updateDevices();
@@ -1572,7 +1586,8 @@
             QV('devMapToolbar', view == 4);
             QV('devListToolbarSize', view == 3);
             QV('NoMeshesPanel', meshcount == 0);
-            QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
+            //QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
+            QV('devListToolbarViewIcons', (meshcount != 0) && (nodes.length > 0));
             QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0) && (view < 4));
             if ((meshcount == 0) || (nodes.length == 0)) { view = 1; sort = 0; }
             if (view == 4) {
@@ -1647,7 +1662,9 @@
                     var nodestate = NodeStateStr(nodes[i]);
                     if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<div id=devs style=display:inline-block;width:301px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
+                        var xw = Math.floor(Q('xdevices').clientWidth / 301);
+                        xw = 301 + Math.floor((Q('xdevices').clientWidth - (xw * 301)) / xw);
+                        r += '<div id=devs style=display:inline-block;width:' + xw + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (xw - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
                         r += '<tr><td><div id=devs class=bar18 style=height:18px;width:100%;font-size:medium>';
                         r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
@@ -1749,7 +1766,13 @@
 
                 // Take care of KVM surfaces in desktop view mode
                 if (view == 3) {
-                    var vsize = [{x:180,y:101}, {x:302,y:169}, {x:454,y:255}][Q('sizeselect').selectedIndex];
+                    // Figure out and adjust the size to fill the width of the div
+                    var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
+                    var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
+                    xw = realw + Math.floor((tw - (xw * realw)) / xw);
+                    vsize.y = vsize.y * (xw / vsize.x);
+                    vsize.x = xw;
+
                     for (var i in multiDesktop) { multiDesktop[i].xxdelete = true; }
                     for (var i in kvmDivs) {
                         var id = kvmDivs[i], shortid = id.split('/')[2], desk = multiDesktop[id];
@@ -2045,7 +2068,7 @@
             x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
             x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
             x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            if (debugmode == true) { x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
             // Linux agent install
@@ -3845,6 +3868,7 @@
             var hwonline = ((terminalNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton2h', hwonline);
 
+            // Key buttons
             QE('ctrlcbutton', termState);
             QE('ctrlxbutton', termState);
             QE('escbutton', termState);
@@ -3852,6 +3876,14 @@
             QE('pastebutton', termState);
             QE('specialkeylist', termState);
             QE('specialkeylistinput', termState);
+
+            // Terminal settings
+            QV('terminalSettingsButtons', (terminal) && (terminal.contype == 2));
+            if (terminal) {
+                Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+                Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
+                Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n')?'CR+LF':'LF';
+            }
         }
 
         // Called when the terminal state changes
@@ -3903,6 +3935,7 @@
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
                     terminal.m.terminalEmulation = 0;
+                    terminal.m.fxEmulation = 0;
                     Q('id_ttypebutton').value = terminalEmulations[0];
                 }
             } else {
@@ -3927,6 +3960,12 @@
             terminal.m.fxEmulation = (terminal.m.fxEmulation + 1) % 3;
             Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
             Q('id_tfxkeysbutton').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        function termToggleCr() {
+            if (!terminal || xxdialogMode) return;
+            if (terminal.m.lineFeed == '\n') { terminal.m.lineFeed = '\r\n'; } else { terminal.m.lineFeed = '\n'; }
+            Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n') ? 'CR+LF' : 'LF';
         }
 
         function termSendKey(key, id) {
@@ -4514,7 +4553,7 @@
                 if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
                 if (samenode == false) {
                     QH('p15agentConsoleText', consoleNode.consoleText);
-                    Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                 }
                 var online = ((consoleNode.conn & 1) != 0)?true:false;
                 QH('p15statetext', online?"Mesh Agent is online":"Mesh Agent is offline");
@@ -4541,7 +4580,7 @@
             var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(Q('p15consoleText').value) + '<br/></div>';
             Q('p15agentConsoleText').innerHTML += t;
             consoleNode.consoleText += t;
-            Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
+            Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
             Q('p15consoleText').value = '';
 
             // Send the command to the mesh agent
@@ -4563,7 +4602,7 @@
             if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
             if (consoleNode == node) {
                 Q('p15agentConsoleText').innerHTML += data;
-                Q('p15agentConsole').scrollTop = Q('p15agentConsole').scrollHeight;
+                Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
             }
         }
 
@@ -5879,7 +5918,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust(); deskAdjust(); drawDeviceTimeline(); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); deskAdjust(); deskAdjust(); drawDeviceTimeline(); updateDevicesEx(); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }

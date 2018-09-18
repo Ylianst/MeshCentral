@@ -14,10 +14,10 @@ var CreateAmtRemoteTerminal = function (divid) {
     obj.terminalEmulation = 1;
     // ###END###{Terminal-Enumation-All}
     obj.fxEmulation = 0;
+    obj.lineFeed = '\r\n';
 
     obj.width = 80; // 80 or 100
     obj.height = 25; // 25 or 30
-    obj.lineFeed = '\r\n';
 
     var _Terminal_CellHeight = 21;
     var _Terminal_CellWidth = 13;
@@ -414,6 +414,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                     _TermMoveUp(1);
                     _termy = (obj.height - 1);
                 }
+                if (obj.lineFeed = '\n') { _termx = 0; } // *** If we are in Linux mode, \n will also return the cursor to the first col
                 break;
             case '\r': // Carriage Return
                 _termx = 0;

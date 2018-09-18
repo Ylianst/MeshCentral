@@ -447,7 +447,6 @@ a {
 .e2 {
     float: left;
     height: 100%;
-    width: 201px;
     background-color: #c9c9c9;
 }
 
@@ -603,4 +602,58 @@ a {
     border-bottom: 1pt solid lightgray;
     padding-top: 4px;
     padding-bottom: 4px;
+}
+
+.viewSelector {
+    width:32px;
+    height:32px;
+    background-color:#DDD;
+    border-radius:3px;
+    float:left;
+    margin-left:5px;
+    cursor: pointer;
+    opacity: 0.3;
+}
+
+.viewSelectorSel {
+    background-color:#BBB;
+    opacity: 0.8;
+}
+
+    .viewSelector:hover {
+        opacity: 0.5;
+        background-color:#AAA;
+    }
+
+
+.viewSelector1 {
+    margin-left:2px;
+    margin-top:2px;
+    background: url(../images/views.png) -0px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector2 {
+    margin-left:2px;
+    margin-top:2px;
+    background: url(../images/views.png) -28px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector3 {
+    margin-left:2px;
+    margin-top:2px;
+    background: url(../images/views.png) -56px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector4 {
+    margin-left:2px;
+    margin-top:2px;
+    background: url(../images/views.png) -84px 0px;
+    height: 28px;
+    width: 28px;
 }

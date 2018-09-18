@@ -84,7 +84,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.send = function (x) {
-        //console.log("KSend(" + x.length + "): " + rstr2hex(x));
+        if (obj.debugmode > 1) { console.log("KSend(" + x.length + "): " + rstr2hex(x)); }
         obj.parent.send(x);
     }
 
@@ -159,7 +159,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessScreenMsg = function (width, height) {
-        if (obj.debugmode == 1) { console.log("ScreenSize: " + width + " x " + height); }
+        if (obj.debugmode > 0) { console.log("ScreenSize: " + width + " x " + height); }
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
@@ -178,19 +178,19 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessDataEx = function (str) {
+        if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2);
-        if ((cmdsize != str.length) && (obj.debugmode == 1)) { console.log(cmdsize, str.length, cmdsize == str.length); }
+        if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
         if (command >= 18) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; }
         if (cmdsize > str.length) { console.error("KVM invalid command size", cmdsize, str.length); return; }
         //meshOnDebug("KVM Command: " + command + " Len:" + cmdsize);
-        //if (obj.debugmode == 1) { console.log("KVM Command: " + command + " Len:" + cmdsize); }
 
         if (command == 3 || command == 4 || command == 7) {
             cmdmsg = str.substring(4, cmdsize);
             X = ((cmdmsg.charCodeAt(0) & 0xFF) << 8) + (cmdmsg.charCodeAt(1) & 0xFF);
             Y = ((cmdmsg.charCodeAt(2) & 0xFF) << 8) + (cmdmsg.charCodeAt(3) & 0xFF);
-            if (obj.debugmode == 1) { console.log("CMD" + command + " at X=" + X + " Y=" + Y); }
+            if (obj.debugmode > 0) { console.log("CMD" + command + " at X=" + X + " Y=" + Y); }
         }
 
         switch (command) {
