@@ -665,3 +665,11 @@ a {
     height: 28px;
     width: 28px;
 }
+
+.hoverButton {
+    opacity: 0.5;
+}
+
+    .hoverButton:hover {
+        opacity: 1;
+    }

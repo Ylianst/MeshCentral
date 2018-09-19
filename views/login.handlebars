@@ -80,6 +80,11 @@
                 color: #fff;
                 text-decoration: none;
             }
+
+        a {
+            color: #036;
+            text-decoration: underline;
+        }
     </style>
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <title>MeshCentral - Login</title>
@@ -101,13 +106,13 @@
             </div>
             <div id=column_l>
                 <h1>Welcome</h1>
-                <p>Connect to your home or office devices from anywhere in the world using MeshCentral, the remote monitoring and management web site. You will need to download and install a special management agent on your computers. Once installed, each mesh enabled computer will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them, power them on and off and take control of them.</p>
+                <p>Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</p>
                 <table id="centralTable" style=width:100%>
                     <tr>
-                        <td id="welcomeimage" align="center">
+                        <td id="welcomeimage" align="right">
                             <img alt="" height=310 src=images/mainwelcome.png width=359 />
                         </td>
-                        <td align="center">
+                        <td id="logincell" align="left">
                             <div id=loginpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
                                 <form action="login" method=post>
                                     <div id=message1>
@@ -432,7 +437,10 @@
         function center() {
             var w = getDocWidth();
             QS('dialog').left = ((((w - 400) / 2)) + "px");
-            QV('welcomeimage', (webPageFullScreen == false) || (w > 800));
+            var showimage = (webPageFullScreen == false) || (w > 800);
+            QV('welcomeimage', showimage);
+            Q('logincell').setAttribute('align', showimage?'left':'center');
+
             if (webPageFullScreen == false) {
                 QS('centralTable')['margin-top'] = '';
             } else {
