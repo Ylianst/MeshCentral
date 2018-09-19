@@ -363,7 +363,10 @@
                 </div>
                 <div id=p11 style=display:none>
                     <div id="p11title">
-                        <h1 id=p11deviceNameHeader>Desktop - <span id=p11deviceName></span></h1>
+                        <div id=p11deviceNameHeader>
+                            <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull() title="Full Screen"><div class="viewSelector5"></div></div></div>
+                            <h1>Desktop - <span id=p11deviceName></span></h1>
+                        </div>
                     </div>
                     <div id="p14warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showFeaturesDlg()">
                         <div class=icon2 style="float:left;margin:7px"></div>
@@ -380,7 +383,6 @@
                                     <span id="p14power"></span>&nbsp;
                                     <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
                                     <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
-                                    <input id="deskFullBtn" type="button" title="Toggle full screen mode" onkeypress="return false" onkeydown="return false" value="Full" onclick="deskToggleFull()" style="margin-right:3px">
                                     <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
                                     <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() style=margin-right:3px>
                                     <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
@@ -388,7 +390,7 @@
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
                                 </div>
                                 <div>
-                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;X</div>
+                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
                                     <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                                     <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
@@ -683,7 +685,7 @@
             </div>
             <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;display:none">
                 <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
-                    <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
+                    <div id=id_dialogclose style=float:right;padding:3px;margin-right:3px;cursor:pointer onclick=setDialogMode()>&#x2716;</div>
                     <div id=id_dialogtitle style=padding:5px></div>
                     <div style=width:100%;margin:6px></div>
                 </div>
@@ -957,8 +959,7 @@
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 QV('page_leftbar', true);
             }
-            drawDeviceTimeline();
-            deskAdjust();
+            center();
             QV('body', true);
         }
 
@@ -5951,7 +5952,7 @@
 
             // Remove left bar selection
             var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers'];
-            for (var i in leftBarItems) { Q(leftBarItems[i]).classList.remove('lbbuttonsel', 'lbbuttonsel2'); }
+            for (var i in leftBarItems) { Q(leftBarItems[i]).classList.remove('lbbuttonsel'); Q(leftBarItems[i]).classList.remove('lbbuttonsel2'); }
 
             // My Devices
             QV('topbar', x != 0);
