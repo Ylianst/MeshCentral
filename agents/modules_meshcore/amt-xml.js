@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+try { Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : undefined); } }); } catch (e) { }
+
+
 // Parse XML and return JSON
 module.exports.ParseWsman = function (xml) {
     try {
@@ -36,7 +39,7 @@ module.exports.ParseWsman = function (xml) {
         }
         return r;
     } catch (e) {
-        console.log("Unable to parse XML: " + xml);
+        console.error("Unable to parse XML: " + xml, e);
         return null;
     }
 }
@@ -103,7 +106,6 @@ function _PutObjToBodyXml(resuri, putObj) {
 }
 
 // This is a drop-in replacement to _turnToXml() that works without xml parser dependency.
-try { Object.defineProperty(Array.prototype, "peek", { value: function () { return (this.length > 0 ? this[this.length - 1] : null); } }); } catch (ex) { }
 function _treeBuilder() {
     this.tree = [];
     this.push = function (element) { this.tree.push(element); };

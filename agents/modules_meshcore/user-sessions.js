@@ -17,6 +17,13 @@ limitations under the License.
 var NOTIFY_FOR_THIS_SESSION = 0;
 var NOTIFY_FOR_ALL_SESSIONS = 1;
 var WM_WTSSESSION_CHANGE = 0x02B1;
+var WM_POWERBROADCAST = 0x218;
+var PBT_POWERSETTINGCHANGE = 0x8013;
+var PBT_APMSUSPEND = 0x4;
+var PBT_APMRESUMESUSPEND = 0x7;
+var PBT_APMRESUMEAUTOMATIC = 0x12;
+var PBT_APMPOWERSTATUSCHANGE = 0xA;
+
 var WTS_CONSOLE_CONNECT         = (0x1);
 var WTS_CONSOLE_DISCONNECT      = (0x2);
 var WTS_REMOTE_CONNECT          = (0x3);
@@ -28,6 +35,10 @@ var WTS_SESSION_UNLOCK          = (0x8);
 var WTS_SESSION_REMOTE_CONTROL  = (0x9);
 var WTS_SESSION_CREATE          = (0xA);
 var WTS_SESSION_TERMINATE       = (0xB);
+
+var GUID_ACDC_POWER_SOURCE;
+var GUID_BATTERY_PERCENTAGE_REMAINING;
+var GUID_CONSOLE_DISPLAY_STATE;
 
 function UserSessions()
 {
@@ -49,7 +60,15 @@ function UserSessions()
         {
             p.__resolver(users);
         };
-        this.Current(p.__handler);
+        try
+        {
+            this.Current(p.__handler);
+        }
+        catch(e)
+        {
+            p.__rejector(e);
+        }
+        p.parent = this;
         return (p);
     }
 
@@ -65,6 +84,29 @@ function UserSessions()
         this._wts.CreateMethod('WTSRegisterSessionNotification');
         this._wts.CreateMethod('WTSUnRegisterSessionNotification');
         this._wts.CreateMethod('WTSFreeMemory');
+        this._user32 = this._marshal.CreateNativeProxy('user32.dll');
+        this._user32.CreateMethod('RegisterPowerSettingNotification');
+        this._user32.CreateMethod('UnregisterPowerSettingNotification');
+        this._rpcrt = this._marshal.CreateNativeProxy('Rpcrt4.dll');
+        this._rpcrt.CreateMethod('UuidFromStringA');
+        this._rpcrt.StringToUUID = function StringToUUID(guid)
+        {
+            var retVal = StringToUUID.us._marshal.CreateVariable(16);
+            if(StringToUUID.us._rpcrt.UuidFromStringA(StringToUUID.us._marshal.CreateVariable(guid), retVal).Val == 0)
+            {
+                return (retVal);
+            }
+            else
+            {
+                throw ('Could not convert string to UUID');
+            }
+        }
+        this._rpcrt.StringToUUID.us = this;
+
+        GUID_ACDC_POWER_SOURCE = this._rpcrt.StringToUUID('5d3e9a59-e9D5-4b00-a6bd-ff34ff516548');
+        GUID_BATTERY_PERCENTAGE_REMAINING = this._rpcrt.StringToUUID('a7ad8041-b45a-4cae-87a3-eecbb468a9e1');
+        GUID_CONSOLE_DISPLAY_STATE = this._rpcrt.StringToUUID('6fe69556-704a-47a0-8f24-c28d936fda47');
+
         this.SessionStates = ['Active', 'Connected', 'ConnectQuery', 'Shadow', 'Disconnected', 'Idle', 'Listening', 'Reset', 'Down', 'Init'];
         this.InfoClass =
             {
@@ -146,45 +188,112 @@ function UserSessions()
             return (retVal);
         };
 
-        this._immediate = setImmediate(function (self)
-        {
-            if (self._serviceHooked) { return; } // If we were hooked by a service, we won't need to do anything further
 
-            // We need to spin up a message pump, and fetch a window handle
-            var message_pump = require('win-message-pump');
-            self._messagepump = new message_pump({ filter: WM_WTSSESSION_CHANGE });
-            self._messagepump.on('exit', function (code) { self._wts.WTSUnRegisterSessionNotification(self.hwnd); });
-            self._messagepump.on('hwnd', function (h)
+        // We need to spin up a message pump, and fetch a window handle
+        var message_pump = require('win-message-pump');
+        this._messagepump = new message_pump({ filter: WM_WTSSESSION_CHANGE }); this._messagepump.parent = this;     
+        this._messagepump.on('exit', function (code) { this.parent._wts.WTSUnRegisterSessionNotification(this.parent.hwnd); });
+        this._messagepump.on('hwnd', function (h)
+        {
+            this.parent.hwnd = h;
+
+            // Now that we have a window handle, we can register it to receive Windows Messages
+            this.parent._wts.WTSRegisterSessionNotification(this.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS);
+            this.parent._user32.ACDC_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
+            this.parent._user32.BATT_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
+            this.parent._user32.DISP_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0);
+        });
+        this._messagepump.on('message', function (msg)
+        {
+            switch(msg.message)
             {
-                self.hwnd = h;
-                // Now that we have a window handle, we can register it to receive Windows Messages
-                self._wts.WTSRegisterSessionNotification(self.hwnd, NOTIFY_FOR_ALL_SESSIONS);
-            });
-            self._messagepump.on('message', function (msg)
-            {
-                if (msg.message == WM_WTSSESSION_CHANGE)
-                {
+                case WM_WTSSESSION_CHANGE:
                     switch(msg.wparam)
                     {
                         case WTS_SESSION_LOCK:
-                            self.enumerateUsers().then(function (users)
+                            this.parent.enumerateUsers().then(function (users)
                             {
-                                if (users[msg.lparam]) { self.emit('locked', users[msg.lparam]); }
+                                if (users[msg.lparam]) { this.parent.emit('locked', users[msg.lparam]); }
                             });
                             break;
                         case WTS_SESSION_UNLOCK:
-                            self.enumerateUsers().then(function (users)
+                            this.parent.enumerateUsers().then(function (users)
                             {
-                                if (users[msg.lparam]) { self.emit('unlocked', users[msg.lparam]); }
+                                if (users[msg.lparam]) { this.parent.emit('unlocked', users[msg.lparam]); }
                             });
                             break;
+                        case WTS_SESSION_LOGON:
+                        case WTS_SESSION_LOGOFF:
+                            this.parent.emit('changed');
+                            break;
                     }
-                }
-            });
-        }, this);
+                    break;
+                case WM_POWERBROADCAST:
+                    switch(msg.wparam)
+                    {
+                        default:
+                            console.log('WM_POWERBROADCAST [UNKNOWN wparam]: ' + msg.wparam);
+                            break;
+                        case PBT_APMSUSPEND:
+                            require('power-monitor').emit('sx', 'SLEEP');
+                            break;
+                        case PBT_APMRESUMEAUTOMATIC:
+                            require('power-monitor').emit('sx', 'RESUME_NON_INTERACTIVE');
+                            break;
+                        case PBT_APMRESUMESUSPEND:
+                            require('power-monitor').emit('sx', 'RESUME_INTERACTIVE');
+                            break;
+                        case PBT_APMPOWERSTATUSCHANGE:
+                            require('power-monitor').emit('changed');
+                            break;
+                        case PBT_POWERSETTINGCHANGE:
+                            var lparam = this.parent._marshal.CreatePointer(Buffer.from(msg.lparam_hex, 'hex'));
+                            var data = lparam.Deref(20, lparam.Deref(16, 4).toBuffer().readUInt32LE(0)).toBuffer();
+                            switch(lparam.Deref(0, 16).toBuffer().toString('hex'))
+                            {
+                                case GUID_ACDC_POWER_SOURCE.Deref(0, 16).toBuffer().toString('hex'):
+                                    switch(data.readUInt32LE(0))
+                                    {
+                                        case 0:
+                                            require('power-monitor').emit('acdc', 'AC');
+                                            break;
+                                        case 1:
+                                            require('power-monitor').emit('acdc', 'BATTERY');
+                                            break;
+                                        case 2:
+                                            require('power-monitor').emit('acdc', 'HOT');
+                                            break;
+                                    }
+                                    break;
+                                case GUID_BATTERY_PERCENTAGE_REMAINING.Deref(0, 16).toBuffer().toString('hex'):
+                                    require('power-monitor').emit('batteryLevel', data.readUInt32LE(0));
+                                    break;
+                                case GUID_CONSOLE_DISPLAY_STATE.Deref(0, 16).toBuffer().toString('hex'):
+                                    switch(data.readUInt32LE(0))
+                                    {
+                                        case 0:
+                                            require('power-monitor').emit('display', 'OFF');
+                                            break;
+                                        case 1:
+                                            require('power-monitor').emit('display', 'ON');
+                                            break;
+                                        case 2:
+                                            require('power-monitor').emit('display', 'DIMMED');
+                                            break;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
     }
-    else
+    else if(process.platform == 'linux')
     {
+        var dbus = require('linux-dbus');
         this._linuxWatcher = require('fs').watch('/var/run/utmp');
         this._linuxWatcher.user_session = this;
         this._linuxWatcher.on('change', function (a, b)
@@ -335,6 +444,112 @@ function UserSessions()
             retVal._child.stdout.on('data', function (chunk) { this.Parent._txt += chunk.toString(); });
 
             return (retVal);
+        }
+        this._recheckLoggedInUsers = function _recheckLoggedInUsers()
+        {
+            this.enumerateUsers().then(function (u)
+            {
+
+                if (u.Active.length > 0)
+                {
+                    // There is already a user logged in, so we can monitor DBUS for lock/unlock
+                    if (this.parent._linux_lock_watcher != null && this.parent._linux_lock_watcher.uid != u.Active[0].uid)
+                    {
+                        delete this.parent._linux_lock_watcher;
+                    }
+                    this.parent._linux_lock_watcher = new dbus(process.env['XDG_CURRENT_DESKTOP'] == 'Unity' ? 'com.ubuntu.Upstart0_6' : 'org.gnome.ScreenSaver', u.Active[0].uid);
+                    this.parent._linux_lock_watcher.user_session = this.parent;
+                    this.parent._linux_lock_watcher.on('signal', function (s)
+                    {
+                        var p = this.user_session.enumerateUsers();
+                        p.signalData = s.data[0];
+                        p.then(function (u)
+                        {
+                            switch (this.signalData)
+                            {
+                                case true:
+                                case 'desktop-lock':
+                                    this.parent.emit('locked', u.Active[0]);
+                                    break;
+                                case false:
+                                case 'desktop-unlock':
+                                    this.parent.emit('unlocked', u.Active[0]);
+                                    break;
+                            }
+                        });
+                    });
+                }
+                else if (this.parent._linux_lock_watcher != null)
+                {
+                    delete this.parent._linux_lock_watcher;
+                }
+            });
+
+        };
+        this.on('changed', this._recheckLoggedInUsers); // For linux Lock/Unlock monitoring, we need to watch for LogOn/LogOff, and keep track of the UID.
+
+        
+        // First step, is to see if there is a user logged in:
+        this._recheckLoggedInUsers();
+    }
+    else if(process.platform == 'darwin')
+    {
+        this._idTable = function()
+        {
+            var table = {};
+            var child = require('child_process').execFile('/usr/bin/id', ['id']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n')[0].split(' ');
+            for (var i = 0; i < lines.length; ++i) {
+                var types = lines[i].split('=');
+                var tokens = types[1].split(',');
+                table[types[0]] = {};
+
+                for (var j in tokens) {
+                    var idarr = tokens[j].split('(');
+                    var id = idarr[0];
+                    var name = idarr[1].substring(0, idarr[1].length - 1).trim();
+                    table[types[0]][name] = id;
+                    table[types[0]][id] = name;
+                }
+            }
+            return (table);
+        }
+        this.Current = function (cb)
+        {
+            var users = {};
+            var table = this._idTable();
+            var child = require('child_process').execFile('/usr/bin/last', ['last']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            for (var i = 0; i < lines.length && lines[i].length > 0; ++i)
+            {
+                if (!users[lines[i].split(' ')[0]])
+                {
+                    try
+                    {
+                        users[lines[i].split(' ')[0]] = { Username: lines[i].split(' ')[0], State: lines[i].split('still logged in').length > 1 ? 'Active' : 'Inactive', uid: table.uid[lines[i].split(' ')[0]] };
+                    }
+                    catch(e)
+                    {}
+                }
+                else
+                {
+                    if(users[lines[i].split(' ')[0]].State != 'Active' && lines[i].split('still logged in').length > 1)
+                    {
+                        users[lines[i].split(' ')[0]].State = 'Active';
+                    }
+                }
+            }
+
+            Object.defineProperty(users, 'Active', { value: showActiveOnly(users) });
+            if (cb) { cb.call(this, users); }
         }
     }
 }

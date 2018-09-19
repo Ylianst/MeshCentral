@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;             // Our next channel identifier
 var lme_port_offset = 0;    // Debug: Set this to "-100" to bind to 16892 & 16893 and IN_ADDRANY. This is for LMS debugging.
@@ -37,6 +36,7 @@ var APF_CHANNEL_WINDOW_ADJUST = 93;
 var APF_CHANNEL_DATA = 94;
 var APF_CHANNEL_CLOSE = 97;
 var APF_PROTOCOLVERSION = 192;
+
 
 function lme_object() {
     this.ourId = ++lme_id;
@@ -379,14 +379,16 @@ function lme_heci(options) {
                     buffer.writeUInt32BE(0xFFFFFFFF, 13);       // Reserved
                     this.write(buffer);
 
-                    //var buffer = Buffer.alloc(17);
-                    //buffer.writeUInt8(APF_CHANNEL_OPEN_FAILURE, 0);
-                    //buffer.writeUInt32BE(channelSender, 1);     // Intel AMT sender channel
-                    //buffer.writeUInt32BE(2, 5);                 // Reason code
-                    //buffer.writeUInt32BE(0, 9);                 // Reserved
-                    //buffer.writeUInt32BE(0, 13);                // Reserved
-                    //this.write(buffer);
-                    //console.log('Sent APF_CHANNEL_OPEN_FAILURE', channelSender);
+                    /*
+                    var buffer = Buffer.alloc(17);
+                    buffer.writeUInt8(APF_CHANNEL_OPEN_FAILURE, 0);
+                    buffer.writeUInt32BE(channelSender, 1);     // Intel AMT sender channel
+                    buffer.writeUInt32BE(2, 5);                 // Reason code
+                    buffer.writeUInt32BE(0, 9);                 // Reserved
+                    buffer.writeUInt32BE(0, 13);                // Reserved
+                    this.write(buffer);
+                    console.log('Sent APF_CHANNEL_OPEN_FAILURE', channelSender);
+                    */
 
                     break;
             }

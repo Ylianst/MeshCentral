@@ -54,67 +54,100 @@ function monitorinfo()
     }
     else if(process.platform == 'linux')
     {
-        this._X11 = this._gm.CreateNativeProxy('libX11.so');
-        this._X11.CreateMethod('XChangeProperty');
-        this._X11.CreateMethod('XCloseDisplay');
-        this._X11.CreateMethod('XCreateGC');
-        this._X11.CreateMethod('XCreateWindow');
-        this._X11.CreateMethod('XCreateSimpleWindow');
-        this._X11.CreateMethod('XDefaultColormap');
-        this._X11.CreateMethod('XDefaultScreen');
-        this._X11.CreateMethod('XDrawLine');
-        this._X11.CreateMethod('XDisplayHeight');
-        this._X11.CreateMethod('XDisplayWidth');
-        this._X11.CreateMethod('XFetchName');
-        this._X11.CreateMethod('XFlush');
-        this._X11.CreateMethod('XFree');
-        this._X11.CreateMethod('XCreateGC');
-        this._X11.CreateMethod('XGetWindowProperty');
-        this._X11.CreateMethod('XInternAtom');
-        this._X11.CreateMethod('XMapWindow');
-        this._X11.CreateMethod({ method: 'XNextEvent', threadDispatch: true });
-        this._X11.CreateMethod('XOpenDisplay');
-        this._X11.CreateMethod('XRootWindow');
-        this._X11.CreateMethod('XScreenCount');
-        this._X11.CreateMethod('XScreenOfDisplay');
-        this._X11.CreateMethod('XSelectInput');
-        this._X11.CreateMethod('XSendEvent');
-        this._X11.CreateMethod('XSetForeground');
-        this._X11.CreateMethod('XSetFunction');
-        this._X11.CreateMethod('XSetLineAttributes');
-        this._X11.CreateMethod('XSetNormalHints');
-        this._X11.CreateMethod('XSetSubwindowMode');
- 
-        this._X11.CreateMethod('XBlackPixel');
-        this._X11.CreateMethod('XWhitePixel');     
-        
+        // First thing we need to do, is determine where the X11 libraries are
+        var fs = require('fs');
+        var files = fs.readdirSync('/usr/lib');
+        var files2;
+
+        /*
+        for (j in files)
+        {
+            if (files[j].split('libX11.so.').length > 1 && files[j].split('.').length == 3)
+            {
+                Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/'  + files[j] });
+            }
+            if (files[j].split('libXtst.so.').length > 1 && files[j].split('.').length == 3)
+            {
+                Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[j] });
+            }
+            if (files[j].split('libXext.so.').length > 1 && files[j].split('.').length == 3)
+            {
+                Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[j] });
+            }
+        }
+        */
+
+        for (var i in files)
+        {
+            try {
+                if (files[i].split('libX11.so.').length > 1 && files[i].split('.').length == 3) {
+                    Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] });
+                }
+                if (files[i].split('libXtst.so.').length > 1 && files[i].split('.').length == 3) {
+                    Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] });
+                }
+                if (files[i].split('libXext.so.').length > 1 && files[i].split('.').length == 3) {
+                    Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] });
+                }
+
+                if (files[i].split('-linux-').length > 1) {
+                    files2 = fs.readdirSync('/usr/lib/' + files[i]);
+                    for (j in files2) {
+                        if (files2[j].split('libX11.so.').length > 1 && files2[j].split('.').length == 3) {
+                            Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                        }
+                        if (files2[j].split('libXtst.so.').length > 1 && files2[j].split('.').length == 3) {
+                            Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                        }
+                        if (files2[j].split('libXext.so.').length > 1 && files2[j].split('.').length == 3) {
+                            Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                        }
+                    }
+                }
+            } catch (ex) { }
+        }
+        Object.defineProperty(this, 'kvm_x11_support', { value: (this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT)?true:false });
+
+        if (this.Location_X11LIB)
+        {
+            this._X11 = this._gm.CreateNativeProxy(this.Location_X11LIB);
+            this._X11.CreateMethod('XChangeProperty');
+            this._X11.CreateMethod('XCloseDisplay');
+            this._X11.CreateMethod('XCreateGC');
+            this._X11.CreateMethod('XCreateWindow');
+            this._X11.CreateMethod('XCreateSimpleWindow');
+            this._X11.CreateMethod('XDefaultColormap');
+            this._X11.CreateMethod('XDefaultScreen');
+            this._X11.CreateMethod('XDrawLine');
+            this._X11.CreateMethod('XDisplayHeight');
+            this._X11.CreateMethod('XDisplayWidth');
+            this._X11.CreateMethod('XFetchName');
+            this._X11.CreateMethod('XFlush');
+            this._X11.CreateMethod('XFree');
+            this._X11.CreateMethod('XCreateGC');
+            this._X11.CreateMethod('XGetWindowProperty');
+            this._X11.CreateMethod('XInternAtom');
+            this._X11.CreateMethod('XMapWindow');
+            this._X11.CreateMethod({ method: 'XNextEvent', threadDispatch: true });
+            this._X11.CreateMethod('XOpenDisplay');
+            this._X11.CreateMethod('XRootWindow');
+            this._X11.CreateMethod('XScreenCount');
+            this._X11.CreateMethod('XScreenOfDisplay');
+            this._X11.CreateMethod('XSelectInput');
+            this._X11.CreateMethod('XSendEvent');
+            this._X11.CreateMethod('XSetForeground');
+            this._X11.CreateMethod('XSetFunction');
+            this._X11.CreateMethod('XSetLineAttributes');
+            this._X11.CreateMethod('XSetNormalHints');
+            this._X11.CreateMethod('XSetSubwindowMode');
+
+            this._X11.CreateMethod('XBlackPixel');
+            this._X11.CreateMethod('XWhitePixel');
+        }
+
         this.isUnity = function isUnity()
         {
-            var ret = false;
-            var display = this._X11.XOpenDisplay(this._gm.CreateVariable(':0'));
-            var rootWindow = this._X11.XRootWindow(display, this._X11.XDefaultScreen(display));
-
-            var a = this._X11.XInternAtom(display, this._gm.CreateVariable('_NET_CLIENT_LIST'), 1);
-            var actualType = this._gm.CreateVariable(8);
-            var format = this._gm.CreateVariable(4);
-            var numItems = this._gm.CreateVariable(8);
-            var bytesAfter = this._gm.CreateVariable(8);
-            var data = this._gm.CreatePointer();
-
-            this._X11.XGetWindowProperty(display, rootWindow, a, 0, ~0, 0, 0, actualType, format, numItems, bytesAfter, data);
-            for (var i = 0; i < numItems.Deref(0, 4).toBuffer().readUInt32LE(0) ; ++i)
-            {
-                var w = data.Deref().Deref(i * 8, 8).Deref(8);
-                var name = this._gm.CreatePointer();
-                var ns = this._X11.XFetchName(display, w, name);
-                if (name.Deref().String == 'unity-launcher')
-                {
-                    ret = true;
-                    break;
-                }
-            }
-            this._X11.XCloseDisplay(display);
-            return (ret);
+            return (process.env['XDG_CURRENT_DESKTOP'] == 'Unity');
         }
 
         this.unDecorateWindow = function unDecorateWindow(display, window)

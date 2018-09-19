@@ -561,6 +561,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                         obj.parent.parent.performServerUpdate();
                         break;
                     }
+                case 'servererrors':
+                    {
+                        // Load the server error log
+                        if ((user.siteadmin & 16) == 0) break;
+                        obj.parent.parent.readEntireTextFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (data) { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } );
+                        break;
+                    }
+                case 'serverclearerrorlog':
+                    {
+                        // Clear the server error log
+                        if ((user.siteadmin & 16) == 0) break;
+                        obj.parent.parent.fs.unlink(obj.parent.parent.getConfigFilePath('mesherrors.txt'));
+                        break;
+                    }
                 case 'createmesh':
                     {
                         // Create mesh
@@ -1261,6 +1275,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         delete userinfo.hash;
         ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo }));
     } catch (e) { console.log(e); }
+
+    // Read entire file and return it in callback function
+    function readEntireTextFile(filepath, func) {
+        var called = false;
+        try {
+            obj.fs.open(filepath, 'r', function (err, fd) {
+                obj.fs.fstat(fd, function (err, stats) {
+                    var bufferSize = stats.size, chunkSize = 512, buffer = new Buffer(bufferSize), bytesRead = 0;
+                    while (bytesRead < bufferSize) {
+                        if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
+                        obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);
+                        bytesRead += chunkSize;
+                    }
+                    obj.fs.close(fd);
+                    called = true;
+                    func(buffer.toString('utf8', 0, bufferSize));
+                });
+            });
+        } catch (e) { if (called == false) { func(null); } }
+    }
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {

@@ -16,10 +16,32 @@ limitations under the License.
 
 var refTable = {};
 
+function event_switcher_helper(desired_callee, target)
+{
+    this._ObjectID = 'event_switcher';
+    this.func = function func()
+    {
+        var args = [];
+        for(var i in arguments)
+        {
+            args.push(arguments[i]);
+        }
+        return (func.target.apply(func.desired, args));
+    };
+    this.func.desired = desired_callee;
+    this.func.target = target;
+    this.func.self = this;
+}
+function event_switcher(desired_callee, target)
+{
+    return (new event_switcher_helper(desired_callee, target));
+}
+
 function Promise(promiseFunc)
 {
     this._ObjectID = 'promise';
-    this._internal = { promise: this, func: promiseFunc, completed: false, errors: false, completedArgs: [] };
+    this.promise = this;
+    this._internal = { _ObjectID: 'promise.internal', promise: this, func: promiseFunc, completed: false, errors: false, completedArgs: [] };
     require('events').EventEmitter.call(this._internal);
     this._internal.on('_eventHook', function (eventName, eventCallback)
     {
@@ -82,21 +104,21 @@ function Promise(promiseFunc)
     };
     this.catch = function(func)
     {
-        this._internal.once('settled', func);
+        this._internal.once('rejected', event_switcher(this, func).func);
     }
     this.finally = function (func)
     {
-        this._internal.once('settled', func);
+        this._internal.once('settled', event_switcher(this, func).func);
     };
     this.then = function (resolved, rejected)
     {
-        if (resolved) { this._internal.once('resolved', resolved); }
-        if (rejected) { this._internal.once('rejected', rejected); }
+        if (resolved) { this._internal.once('resolved', event_switcher(this, resolved).func); }
+        if (rejected) { this._internal.once('rejected', event_switcher(this, rejected).func); }
 
         var retVal = new Promise(function (r, j) { });
-
         this._internal.once('resolved', retVal._internal.resolver);
         this._internal.once('rejected', retVal._internal.rejector);
+        retVal.parentPromise = this;
         return (retVal);
     };
 

@@ -21,7 +21,18 @@ var RSMB = 1381190978;
 var memoryLocation = { 0x1: 'Other', 0x2: 'Unknown', 0x3: 'System Board', 0x4: 'ISA', 0x5: 'EISA', 0x6: 'PCI', 0x7: 'MCA', 0x8: 'PCMCIA', 0x9: 'Proprietary', 0xA: 'NuBus', 0xA0: 'PC-98/C20', 0xA1: 'PC-98/C24', 0xA2: 'PC-98/E', 0xA3: 'PC-98/LB' };
 var wakeReason = ['Reserved', 'Other', 'Unknown', 'APM Timer', 'Modem Ring', 'LAN', 'Power Switch', 'PCI', 'AC Power'];
 
-function SMBiosTables() {
+// Fill the left with zeros until the string is of a given length
+function zeroLeftPad(str, len)
+{
+    if ((len == null) && (typeof (len) != 'number')) { return null; }
+    if (str == null) str = ''; // If null, this is to generate zero leftpad string
+    var zlp = '';
+    for (var i = 0; i < len - str.length; i++) { zlp += '0'; }
+    return zlp + str;
+}
+
+function SMBiosTables()
+{
     this._ObjectID = 'SMBiosTable';
     if (process.platform == 'win32') {
         this._marshal = require('_GenericMarshal');
@@ -114,14 +125,14 @@ function SMBiosTables() {
             this.child = require('child_process').execFile('/usr/sbin/dmidecode', ['dmidecode', '-u']);
             this.child.SMBiosTable = this;
             this.child.ms = new MemoryStream();
-            this.child.ms.callback = callback
+            this.child.ms.callback = callback;
             this.child.ms.child = this.child;
             this.child.stdout.on('data', function (buffer) { this.parent.ms.write(buffer); });
             this.child.on('exit', function () { this.ms.end(); });
             this.child.ms.on('end', function () {
                 //console.log('read ' + this.buffer.length + ' bytes');
-                if (this.buffer.length < 300) { // TODO: Trap error message better that this.
-                    console.log('Not enough permission to read SMBiosTable');
+                if (this.buffer.length < 300) {
+                    //console.log('Not enough permission to read SMBiosTable');
                     if (this.callback) { this.callback.apply(this.child.SMBiosTable, []); }
                 }
                 else {
@@ -181,12 +192,21 @@ function SMBiosTables() {
         }
         return (retVal);
     };
-    this.systemInfo = function systemInfo(data) {
+    this.systemInfo = function systemInfo(data)
+    {
         if (!data) { throw ('no data'); }
         var retVal = { _ObjectID: 'SMBiosTables.systemInfo' };
-        if (data[1]) {
+        if (data[1])
+        {
             var si = data[1].peek();
-            retVal.uuid = si.slice(4, 20).toString('hex');
+            var uuid = si.slice(4, 20);
+
+            retVal.uuid = [zeroLeftPad(uuid.readUInt32LE(0).toString(16), 8),
+            zeroLeftPad(uuid.readUInt16LE(4).toString(16), 4),
+            zeroLeftPad(uuid.readUInt16LE(6).toString(16), 4),
+            zeroLeftPad(uuid.readUInt16BE(8).toString(16), 4),
+            zeroLeftPad(uuid.slice(10).toString('hex').toLowerCase(), 12)].join('-');
+
             retVal.wakeReason = wakeReason[si[20]];
         }
         return (retVal);

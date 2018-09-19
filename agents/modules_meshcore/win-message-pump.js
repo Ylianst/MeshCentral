@@ -58,7 +58,7 @@ function WindowsMessagePump(options)
         {\
             if(h==null || h.Val == xhwnd.Val)\
             {\
-                require('ScriptContainer').send({message: xmsg.Val, wparam: wparam.Val, lparam: lparam.Val});\
+                require('ScriptContainer').send({message: xmsg.Val, wparam: wparam.Val, lparam: lparam.Val, lparam_hex: lparam.pointerBuffer().toString('hex')});\
                 var retVal = u.DefWindowProcA(xhwnd, xmsg, wparam, lparam);\
                 return(retVal);\
             }\

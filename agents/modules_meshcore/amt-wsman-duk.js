@@ -30,7 +30,6 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
     obj.FailAllError = 0;               // Set this to non-zero to fail all AJAX calls with that error status, 999 causes responses to be silent.
     obj.digest = null;
     obj.RequestCount = 0;
-    obj.requests = {};
 
     if (arguments.length == 1 && typeof(arguments[0] == 'object'))
     {
@@ -90,12 +89,9 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
         }
         var request = { protocol: (obj.tls == 1 ? 'https:' : 'http:'), method: 'POST', host: obj.host, path: '/wsman', port: obj.port, rejectUnauthorized: false, checkServerIdentity: function (cert) { console.log('checkServerIdentity', JSON.stringify(cert)); } };
         var req = obj.digest.request(request);
-        req.reqid = obj.RequestCount++;
-        obj.requests[req.reqid] = req; // Keep a reference to the request object so it does not get disposed.
         //console.log('Request ' + (obj.RequestCount++));
-        req.on('error', function (e) { delete obj.requests[this.reqid]; obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
+        req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
         req.on('response', function (response) {
-            response.reqid = this.reqid;
             //console.log('Response: ' + response.statusCode);
             if (response.statusCode != 200) {
                 //console.log('ERR:' + JSON.stringify(response));
@@ -103,7 +99,7 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
             } else {
                 response.acc = '';
                 response.on('data', function (data2) { this.acc += data2; });
-                response.on('end', function () { delete obj.requests[this.reqid]; obj.gotNextMessages(response.acc, 'success', { status: response.statusCode }, [postdata, callback, tag]); });
+                response.on('end', function () { obj.gotNextMessages(response.acc, 'success', { status: response.statusCode }, [postdata, callback, tag]); });
             }
         });
 

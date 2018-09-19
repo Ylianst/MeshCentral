@@ -242,6 +242,7 @@
                         <a id="p2ServerActionsBackup" href="/backup.zip" target="_blank" style="cursor:pointer">Download server backup</a><br />
                         <a id="p2ServerActionsRestore" onclick="server_showRestoreDlg()" style="cursor:pointer">Restore server with backup</a><br />
                         <a id="p2ServerActionsVersion" onclick="server_showVersionDlg()" style="cursor:pointer">Check server version</a><br />
+                        <a id="p2ServerActionsErrors" onclick="server_showErrorsDlg()" style="cursor:pointer">Show server error log</a><br />
                     </p>
                     <br style=clear:both />
                     <strong>Administrative Meshes</strong>
@@ -1178,6 +1179,18 @@
                     }
                     break;
                 }
+                case 'servererrors': {
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
+                        if (message.data == null) {
+                            setDialogMode(2, "MeshCentral Server Errors", 1, null, 'Server has no error log.');
+                        } else {
+                            var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow:auto;line-height:160%;font-size:10px><pre>' + message.data + '<pre></div>';
+                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x + '<br /><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to clear error log.');
+                            server_showVersionDlgUpdate();
+                        }
+                    }
+                    break;
+                }
                 case 'events': {
                     if ((message.nodeid != null) && (message.nodeid == currentNode._id)) {
                         currentDeviceEvents = message.events;
@@ -1662,8 +1675,9 @@
                     var nodestate = NodeStateStr(nodes[i]);
                     if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        var xw = Math.floor(Q('xdevices').clientWidth / 301);
-                        xw = 301 + Math.floor((Q('xdevices').clientWidth - (xw * 301)) / xw);
+                        var realw = Q('xdevices').clientWidth - 30;
+                        var xw = Math.floor(realw / 301);
+                        xw = 301 + Math.floor((realw - (xw * 301)) / xw);
                         r += '<div id=devs style=display:inline-block;width:' + xw + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (xw - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
                         r += '<tr><td><div id=devs class=bar18 style=height:18px;width:100%;font-size:medium>';
@@ -1671,7 +1685,7 @@
                         r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                         r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\')><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
-                    } else if ((view == 3) && (nodes[i].conn & 1) && ((meshrights & 8) != 0)) {
+                    } else if ((view == 3) && (nodes[i].conn & 1) && ((meshrights & 8) != 0) && ((nodes[i].agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0)) {
                             r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11)>';
                             //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
@@ -3106,8 +3120,8 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0)) && (meshrights & 8));
-                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0)) && (meshrights & 8));
+                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8));
+                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8));
                 QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8));
                 QV('MainDevConsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
@@ -3512,12 +3526,12 @@
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
-            QV('connectbutton1span', (deskState == 0) && (mesh.mtype == 2));
+            QV('connectbutton1span', (deskState == 0) && (mesh.mtype == 2) && (currentNode.agent.caps & 1));
             QV('connectbutton1hspan', (deskState == 0) && ((currentNode.intelamt != null) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', (mesh.mtype == 2) && ((deskState == false) || (desktop.contype == 1)));
+            QV('d7meshkvm', (mesh.mtype == 2) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1)));
 
             // Enable buttons
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
@@ -3859,7 +3873,7 @@
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (mesh.mtype == 2));
+            QV('connectbutton2span', (termState == false) && (mesh.mtype == 2) && (currentNode.agent.caps & 2));
             QV('connectbutton2hspan', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Enable buttons
@@ -4814,6 +4828,14 @@
 
         function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
         function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
+
+        function server_showErrorsDlg() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "MeshCentral Errors", 1, null, "Loading...", 'MeshCentralServerErrors');
+            meshserver.send({ action: 'servererrors' });
+        }
+        function server_showErrorsDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
+        function server_showErrorsDlgEx() { meshserver.send({ action: 'serverclearerrorlog' }); }
 
         //
         // MY MESHS
@@ -5911,9 +5933,7 @@
         }
 
         function dialogclose(x) {
-            var f = xxdialogFunc;
-            var b = xxdialogButtons;
-            var t = xxdialogTag;
+            var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
             setDialogMode();
             if (((b & 8) || x) && f) f(x, t);
         }

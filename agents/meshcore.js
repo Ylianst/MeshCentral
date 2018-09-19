@@ -17,7 +17,6 @@ limitations under the License.
 function createMeshCore(agent) {
     var obj = {};
 
-    /*
     function borderController() {
         this.container = null;
         this.Start = function Start(user) {
@@ -46,7 +45,6 @@ function createMeshCore(agent) {
             }
         }
     }
-    */
 
     require('events').EventEmitter.call(obj, true).createEvent('loggedInUsers_Updated');
     obj.on('loggedInUsers_Updated', function ()
@@ -58,10 +56,10 @@ function createMeshCore(agent) {
         }
         sendConsoleText('LogOn Status Changed. Active Users => [' + users.join(', ') + ']');
     });
-    //obj.borderManager = new borderController();
+    obj.borderManager = new borderController();
     
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    obj.meshCoreInfo = "MeshCore v5";
+    obj.meshCoreInfo = "MeshCore v6";
     obj.meshCoreCapabilities = 14; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
     obj.loggedInUsers = [];
 
@@ -141,7 +139,10 @@ function createMeshCore(agent) {
         sha = require('SHA256Stream');
         mesh = require('MeshAgent');
         childProcess = require('child_process');
-        if (mesh.hasKVM == 1) { obj.meshCoreCapabilities |= 1; }
+        if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
+            // Check if this computer supports a desktop
+            try { if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) { obj.meshCoreCapabilities |= 1; } } catch (ex) { }
+        }
     } else {
         // Running in nodejs
         obj.meshCoreInfo += '-NodeJS';
@@ -911,7 +912,6 @@ function createMeshCore(agent) {
                     response = 'Available commands: help, info, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, border.';
                     break;
                 }
-                    /*
                 case 'border':
                     {
                         if ((args['_'].length == 1) && (args['_'][0] == 'on')) {
@@ -929,7 +929,6 @@ function createMeshCore(agent) {
                         }
                     }
                     break;
-                    */
                 case 'users':
                     {
                         var retList = [];
@@ -1023,11 +1022,14 @@ function createMeshCore(agent) {
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + obj.meshCoreInfo + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform Info: ' + process.platform + '.\r\nCapabilities: ' + obj.meshCoreCapabilities + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
-                    response += '\r\nModules: ' + addedModules.join(', ');
-                    response += '\r\nServerConnected: ' + mesh.isControlChannelConnected;
+                    response += '\r\nModules: ' + addedModules.join(', ') + '.';
+                    response += '\r\nServerConnected: ' + mesh.isControlChannelConnected + '.';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
-                    response += '\r\ServerState: ' + meshServerConnectionState + '.';
+                    response += '\r\nServerState: ' + meshServerConnectionState + '.';
+                    if (process.platform != 'win32') {
+                        response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.';
+                    }
                     break;
                 }
                 case 'selfinfo': { // Return self information block

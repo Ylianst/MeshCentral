@@ -202,9 +202,6 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_AgentPresenceWatchdog_RegisterAgent = function (callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "RegisterAgent", {}, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdog_AssertPresence = function (SequenceNumber, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertPresence", { "SequenceNumber": SequenceNumber }, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdog_AssertShutdown = function (SequenceNumber, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func, tag, pri, selectors); }
-    //obj.AMT_AgentPresenceWatchdog_RegisterAgent = function (callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "RegisterAgent", {}, callback_func); }
-    //obj.AMT_AgentPresenceWatchdog_AssertPresence = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertPresence", { "SequenceNumber": SequenceNumber }, callback_func); }
-    //obj.AMT_AgentPresenceWatchdog_AssertShutdown = function (SequenceNumber, callback_func) { obj.Exec("AMT_AgentPresenceWatchdog", "AssertShutdown", { "SequenceNumber": SequenceNumber }, callback_func); }
     obj.AMT_AgentPresenceWatchdog_AddAction = function (OldState, NewState, EventOnTransition, ActionSd, ActionEac, callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "AddAction", { "OldState": OldState, "NewState": NewState, "EventOnTransition": EventOnTransition, "ActionSd": ActionSd, "ActionEac": ActionEac }, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdog_DeleteAllActions = function (callback_func, tag, pri, selectors) { obj.Exec("AMT_AgentPresenceWatchdog", "DeleteAllActions", {}, callback_func, tag, pri, selectors); }
     obj.AMT_AgentPresenceWatchdogAction_GetActionEac = function (callback_func) { obj.Exec("AMT_AgentPresenceWatchdogAction", "GetActionEac", {}, callback_func); }
@@ -264,7 +261,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_MessageLog_FreezeLog = function (Freeze, callback_func) { obj.Exec("AMT_MessageLog", "FreezeLog", { "Freeze": Freeze }, callback_func); }
     obj.AMT_PublicKeyManagementService_AddCRL = function (Url, SerialNumbers, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddCRL", { "Url": Url, "SerialNumbers": SerialNumbers }, callback_func); }
     obj.AMT_PublicKeyManagementService_ResetCRLList = function (_method_dummy, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "ResetCRLList", { "_method_dummy": _method_dummy }, callback_func); }
-    obj.AMT_PublicKeyManagementService_AddCertificate = function (CertificateBlob, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddCertificate", { "CertificateBlob": CertificateBlob }, callback_func); }
+    obj.AMT_PublicKeyManagementService_AddCertificate = function (CertificateBlob, callback_func, tag) { obj.Exec("AMT_PublicKeyManagementService", "AddCertificate", { "CertificateBlob": CertificateBlob }, callback_func, tag); }
     obj.AMT_PublicKeyManagementService_AddTrustedRootCertificate = function (CertificateBlob, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddTrustedRootCertificate", { "CertificateBlob": CertificateBlob }, callback_func); }
     obj.AMT_PublicKeyManagementService_AddKey = function (KeyBlob, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "AddKey", { "KeyBlob": KeyBlob }, callback_func); }
     obj.AMT_PublicKeyManagementService_GeneratePKCS10Request = function (KeyPair, DNName, Usage, callback_func) { obj.Exec("AMT_PublicKeyManagementService", "GeneratePKCS10Request", { "KeyPair": KeyPair, "DNName": DNName, "Usage": Usage }, callback_func); }
@@ -275,7 +272,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_RemoteAccessService_AddMpServer = function (AccessInfo, InfoFormat, Port, AuthMethod, Certificate, Username, Password, CN, callback_func) { obj.Exec("AMT_RemoteAccessService", "AddMpServer", { "AccessInfo": AccessInfo, "InfoFormat": InfoFormat, "Port": Port, "AuthMethod": AuthMethod, "Certificate": Certificate, "Username": Username, "Password": Password, "CN": CN }, callback_func); }
     obj.AMT_RemoteAccessService_AddRemoteAccessPolicyRule = function (Trigger, TunnelLifeTime, ExtendedData, MpServer, callback_func) { obj.Exec("AMT_RemoteAccessService", "AddRemoteAccessPolicyRule", { "Trigger": Trigger, "TunnelLifeTime": TunnelLifeTime, "ExtendedData": ExtendedData, "MpServer": MpServer }, callback_func); }
     obj.AMT_RemoteAccessService_CloseRemoteAccessConnection = function (_method_dummy, callback_func) { obj.Exec("AMT_RemoteAccessService", "CloseRemoteAccessConnection", { "_method_dummy": _method_dummy }, callback_func); }
-    obj.AMT_SetupAndConfigurationService_CommitChanges = function (_method_dummy, callback_func) { obj.Exec("AMT_SetupAndConfigurationService", "CommitChanges", { "_method_dummy": _method_dummy }, callback_func); }
+    obj.AMT_SetupAndConfigurationService_CommitChanges = function (_method_dummy, callback_func, tag) { obj.Exec("AMT_SetupAndConfigurationService", "CommitChanges", { "_method_dummy": _method_dummy }, callback_func, tag); }
     obj.AMT_SetupAndConfigurationService_Unprovision = function (ProvisioningMode, callback_func) { obj.Exec("AMT_SetupAndConfigurationService", "Unprovision", { "ProvisioningMode": ProvisioningMode }, callback_func); }
     obj.AMT_SetupAndConfigurationService_PartialUnprovision = function (_method_dummy, callback_func) { obj.Exec("AMT_SetupAndConfigurationService", "PartialUnprovision", { "_method_dummy": _method_dummy }, callback_func); }
     obj.AMT_SetupAndConfigurationService_ResetFlashWearOutProtection = function (_method_dummy, callback_func) { obj.Exec("AMT_SetupAndConfigurationService", "ResetFlashWearOutProtection", { "_method_dummy": _method_dummy }, callback_func); }
@@ -292,6 +289,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_SystemPowerScheme_SetPowerScheme = function (callback_func, schemeInstanceId, tag) { obj.Exec("AMT_SystemPowerScheme", "SetPowerScheme", {}, callback_func, tag, 0, { "InstanceID": schemeInstanceId }); }
     obj.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch = function (callback_func, tag) { obj.Exec("AMT_TimeSynchronizationService", "GetLowAccuracyTimeSynch", {}, callback_func, tag); }
     obj.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch = function (Ta0, Tm1, Tm2, callback_func, tag) { obj.Exec("AMT_TimeSynchronizationService", "SetHighAccuracyTimeSynch", { "Ta0": Ta0, "Tm1": Tm1, "Tm2": Tm2 }, callback_func, tag); }
+    obj.AMT_TLSCredentialContext_Create = function AMT_TLSCredentialContext_Create(ElementInContext, ElementProvidingContext, callback_func, tag) { obj.Create("AMT_TLSCredentialContext", { "ElementInContext": ElementInContext, "ElementProvidingContext": ElementProvidingContext }, callback_func, tag); }
     obj.AMT_UserInitiatedConnectionService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func) { obj.Exec("AMT_UserInitiatedConnectionService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func); }
     obj.AMT_WebUIService_RequestStateChange = function (RequestedState, TimeoutPeriod, callback_func, tag) { obj.Exec("AMT_WebUIService", "RequestStateChange", { "RequestedState": RequestedState, "TimeoutPeriod": TimeoutPeriod }, callback_func, tag); }
     obj.AMT_WiFiPortConfigurationService_AddWiFiSettings = function (WiFiEndpoint, WiFiEndpointSettingsInput, IEEE8021xSettingsInput, ClientCredential, CACredential, callback_func) { obj.ExecWithXml("AMT_WiFiPortConfigurationService", "AddWiFiSettings", { "WiFiEndpoint": WiFiEndpoint, "WiFiEndpointSettingsInput": WiFiEndpointSettingsInput, "IEEE8021xSettingsInput": IEEE8021xSettingsInput, "ClientCredential": ClientCredential, "CACredential": CACredential }, callback_func); }
@@ -765,18 +763,18 @@ function AmtStackCreateService(wsmanStack) {
                     x['Initiator'] = 'KVM Default Port';
                     ptr = 5;
                 }
-                
+
                 // Read timestamp
                 TimeStamp = ReadInt(e, ptr);
                 x['Time'] = new Date((TimeStamp + (t.getTimezoneOffset() * 60)) * 1000);
                 ptr += 4;
-                
+
                 // Read network access
                 x['MCLocationType'] = e[ptr++];
                 var netlen = e[ptr++];
 
                 x['NetAddress'] = e.slice(ptr, ptr + netlen).toString();
-                
+
                 // Read extended data
                 ptr += netlen;
                 var exlen = e[ptr++];
@@ -990,7 +988,7 @@ function AmtStackCreateService(wsmanStack) {
     // Convert a byte array of SID into string
     function GetSidString(sid) {
         var r = "S-" + sid.charCodeAt(0) + "-" + sid.charCodeAt(7);
-        for (var i = 2; i < (sid.length / 4) ; i++) r += "-" + ReadIntX(sid, i * 4);
+        for (var i = 2; i < (sid.length / 4); i++) r += "-" + ReadIntX(sid, i * 4);
         return r;
     }
 
