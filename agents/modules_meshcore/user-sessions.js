@@ -199,9 +199,9 @@ function UserSessions()
 
             // Now that we have a window handle, we can register it to receive Windows Messages
             this.parent._wts.WTSRegisterSessionNotification(this.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS);
-            this.parent._user32.ACDC_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
-            this.parent._user32.BATT_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
-            this.parent._user32.DISP_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0);
+            //this.parent._user32.ACDC_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
+            //this.parent._user32.BATT_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
+            //this.parent._user32.DISP_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0); // Windows 8+ only, THIS WILL BLOCK ON WIN7
         });
         this._messagepump.on('message', function (msg)
         {

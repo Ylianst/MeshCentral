@@ -15,6 +15,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     // ###END###{Terminal-Enumation-All}
     obj.fxEmulation = 0;
     obj.lineFeed = '\r\n';
+    obj.debugmode = 0;
 
     obj.width = 80; // 80 or 100
     obj.height = 25; // 25 or 30
@@ -53,6 +54,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     obj.xxStateChange = function(newstate) { }
 
     obj.ProcessData = function (str) {
+        if (obj.debugmode == 2) { console.log("TRecv(" + str.length + "): " + rstr2hex(str)); }
         // ###BEGIN###{Terminal-Enumation-UTF8}
         //str = decode_utf8(str);
         // ###END###{Terminal-Enumation-UTF8}
@@ -480,8 +482,8 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
     }
 
-    obj.TermSendKeys = function(keys) { obj.parent.send(keys); }
-    obj.TermSendKey = function(key) { obj.parent.send(String.fromCharCode(key)); }
+    obj.TermSendKeys = function (keys) { if (obj.debugmode == 2) { if (obj.debugmode == 2) { console.log("TSend(" + keys.length + "): " + rstr2hex(keys)); } } obj.parent.send(keys); }
+    obj.TermSendKey = function (key) { if (obj.debugmode == 2) { if (obj.debugmode == 2) { console.log("TSend(1): " + rstr2hex(String.fromCharCode(key))); } } obj.parent.send(String.fromCharCode(key)); }
 
     function _TermMoveUp(linecount) {
         var x, y;

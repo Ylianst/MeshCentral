@@ -96,7 +96,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -372,6 +372,22 @@ function run(argv) {
             console.log(str + '.');
             exit(1);
         });
+    } else if (settings.action == 'amtinfodebug') {
+        // Display Intel AMT version and activation state
+        mestate = {};
+        var amtMeiModule = require('amt-mei');
+        var amtMei = new amtMeiModule();
+        amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+        amtMei.getVersion(function (result) { console.log('getVersion: ' + JSON.stringify(result)); });
+        amtMei.getProvisioningState(function (result) { console.log('getProvisioningState: ' + JSON.stringify(result)); });
+        amtMei.getProvisioningMode(function (result) { console.log('getProvisioningMode: ' + JSON.stringify(result)); });
+        amtMei.getEHBCState(function (result) { if (result) { console.log('getEHBCState: ' + JSON.stringify(result)); } });
+        amtMei.getControlMode(function (result) { if (result) { console.log('getControlMode: ' + JSON.stringify(result)); } });
+        amtMei.getMACAddresses(function (result) { if (result) { console.log('getMACAddresses: ' + JSON.stringify(result)); } });
+        amtMei.getLanInterfaceSettings(0, function (result) { console.log('getLanInterfaceSettings0: ' + JSON.stringify(result)); });
+        amtMei.getLanInterfaceSettings(1, function (result) { console.log('getLanInterfaceSettings1: ' + JSON.stringify(result)); });
+        amtMei.getUuid(function (result) { console.log('getUuid: ' + JSON.stringify(result)); });
+        amtMei.getDnsSuffix(function (result) { console.log('getDnsSuffix: ' + JSON.stringify(result)); });
     } else if (settings.action == 'amtsavestate') {
         // Save the entire state of Intel AMT info a JSON file
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }

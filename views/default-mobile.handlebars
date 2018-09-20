@@ -351,7 +351,7 @@
                         <div id=p10html2></div>
                         <div id=p10html3></div>
                     </div>
-                    <div id=p10desktop style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                    <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
                         <div id=deskarea1 style="position:absolute;top:0px;width:100%;height:25px">
                             <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
@@ -1622,9 +1622,9 @@
             QV('p10desktop', currentDevicePanel == 1);
             QV('p10files', currentDevicePanel == 2);
             var menus = [];
-            if (currentDevicePanel != 0) { menus.push( { n:'General', f:'setupDeviceMenu(0)' } ); }
-            if (currentDevicePanel != 1) { menus.push( { n:'Desktop', f:'setupDeviceMenu(1)' } ); }
-            if ((currentDevicePanel != 2) && ((currentNode != null) && (currentNode.mtype == 2))) { menus.push( { n:'Files', f:'setupDeviceMenu(2)' } ); }
+            if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
+            if ((currentDevicePanel != 1) && (currentNode != null) && ((currentNode.mtype == 1) || (currentNode.agent.caps & 1))) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
         }
 
@@ -2804,7 +2804,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); deskAdjust(); /*drawDeviceTimeline();*/ }
+        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }

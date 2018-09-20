@@ -3949,6 +3949,7 @@
                     if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
                     terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term'));
                     terminal.debugmode = debugmode;
+                    terminal.m.debugmode = debugmode;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id, 16994, '*', '*', 0);
                     terminal.contype = 2;
@@ -3958,7 +3959,7 @@
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
-                    terminal.m.lineFeed = ([1,2,3,4,21,22].indexOf(currentNode.agent.id) >= 0)?'\r\n':'\r'; // On windows, send \r\n, on Linux only \r
+                    terminal.m.lineFeed = ([1,2,3,4,21,22].indexOf(currentNode.agent.id) >= 0)?'\r\n':'\n'; // On windows, send \r\n, on Linux only \n
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);

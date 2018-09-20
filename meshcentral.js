@@ -1087,14 +1087,16 @@ function CreateMeshCentralServer(config, args) {
     // Update server state. Writes a server state file.
     var meshServerState = {};
     obj.updateServerState = function (name, val) {
-        if ((name != null) && (val != null)) {
-            var changed = false;
-            if ((name != null) && (meshServerState[name] != val)) { if ((val == null) && (meshServerState[name] != null)) { delete meshServerState[name]; changed = true; } else { if (meshServerState[name] != val) { meshServerState[name] = val; changed = true; } } }
-            if (changed == false) return;
-        }
-        var r = 'time=' + Date.now() + '\r\n';
-        for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
-        obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r);
+        try {
+            if ((name != null) && (val != null)) {
+                var changed = false;
+                if ((name != null) && (meshServerState[name] != val)) { if ((val == null) && (meshServerState[name] != null)) { delete meshServerState[name]; changed = true; } else { if (meshServerState[name] != val) { meshServerState[name] = val; changed = true; } } }
+                if (changed == false) return;
+            }
+            var r = 'time=' + Date.now() + '\r\n';
+            for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
+            obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r); // Try to write the server state, this may fail if we don't have permission.
+        } catch (ex) { } // Do nothing since this is not a critical feature.
     };
     
     // Logging funtions
