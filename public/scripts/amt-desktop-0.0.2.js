@@ -39,6 +39,14 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.noMouseRotate = false;
     obj.rotation = 0;
     // ###END###{DesktopRotation}
+    // ###BEGIN###{DesktopInband}
+    obj.kvmDataSupported = false;
+    obj.onKvmData = null;
+    obj.onKvmDataPending = [];
+    obj.onKvmDataAck = -1;
+    obj.holding = false;
+    obj.lastKeepAlive = Date.now();
+    // ###END###{DesktopInband}
 
     // ###BEGIN###{DesktopFocus}
     obj.mx = 0; // Last mouse x position
@@ -138,6 +146,9 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 var supportedEncodings = '';
                 if (obj.useZRLE) supportedEncodings += IntToStr(16);
                 supportedEncodings += IntToStr(0);
+                // ###BEGIN###{DesktopInband}
+                supportedEncodings += IntToStr(1092);
+                // ###END###{DesktopInband}
 
                 obj.send(String.fromCharCode(2, 0) + ShortToStr((supportedEncodings.length / 4) + 1) + supportedEncodings + IntToStr(-223));          // Supported Encodings + Desktop Size
 
@@ -157,13 +168,21 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight); }
             }
             else if (obj.state == 4) {
-                var c = obj.acc.charCodeAt(0);
-                if (c == 2) {
-                    cmdsize = 1;                                // This is the bell, do nothing.
-                } else if (c == 0) {
-                    if (obj.acc.length < 4) return;
-                    obj.state = 100 + ReadShort(obj.acc, 2);    // Read the number of tiles that are going to be sent, add 100 and use that as our protocol state.
-                    cmdsize = 4;
+                switch (obj.acc.charCodeAt(0)) {
+                    case 0: // FramebufferUpdate
+                        if (obj.acc.length < 4) return;
+                        obj.state = 100 + ReadShort(obj.acc, 2); // Read the number of tiles that are going to be sent, add 100 and use that as our protocol state.
+                        cmdsize = 4;
+                        break;
+                    case 2: // This is the bell, do nothing.
+                        cmdsize = 1;
+                        break;
+                    case 3: // This is ServerCutText
+                        if (obj.acc.length < 8) return;
+                        var len = ReadInt(obj.acc, 4) + 8;
+                        if (obj.acc.length < len) return;
+                        cmdsize = handleServerCutText(obj.acc);
+                        break;
                 }
             }
             else if (obj.state > 100 && obj.acc.length >= 12) {
@@ -319,7 +338,31 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         }
     }
 
+    // ###BEGIN###{DesktopInband}
+    obj.hold = function (holding) {
+        if (obj.holding == holding) return;
+        obj.holding = holding;
+        obj.canvas.fillStyle = '#000000';
+        obj.canvas.fillRect(0, 0, obj.width, obj.height); // Paint black
+        if (obj.holding == false) {
+            // Go back to normal operations
+            // Set canvas size and ask for full screen refresh
+            if ((obj.canvas.canvas.width != obj.width) || (obj.canvas.canvas.height != obj.height)) {
+                obj.canvas.canvas.width = obj.width; obj.canvas.canvas.height = obj.height;
+                if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight); } // ???
+            }
+            obj.Send(String.fromCharCode(3, 0, 0, 0, 0, 0) + ShortToStr(obj.width) + ShortToStr(obj.height)); // FramebufferUpdateRequest
+        } else {
+            obj.UnGrabMouseInput();
+            obj.UnGrabKeyInput();
+        }
+    }
+    // ###END###{DesktopInband}
+
     function _putImage(i, x, y) {
+        // ###BEGIN###{DesktopInband}
+        if (obj.holding == true) return;
+        // ###END###{DesktopInband}
         // ###BEGIN###{DesktopRotation}
         var xx = _arotX(x, y);
         y = _arotY(x, y);
@@ -416,6 +459,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.setRotation = function (x) {
         while (x < 0) { x += 4; }
         var newrotation = x % 4;
+        //console.log('hard-rot: ' + newrotation);
+        // ###BEGIN###{DesktopInband}
+        if (obj.holding == true) { obj.rotation = newrotation; return; }
+        // ###END###{DesktopInband}
+
         if (newrotation == obj.rotation) return true;
         var rw = obj.canvas.canvas.width;
         var rh = obj.canvas.canvas.height;
@@ -451,6 +499,9 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     function _fixColor(c) { return (c > 127) ? (c + 32) : c; }
 
     function _SendRefresh() {
+        // ###BEGIN###{DesktopInband}
+        if (obj.holding == true) return;
+        // ###END###{DesktopInband}
         // ###BEGIN###{DesktopFocus}
         if (obj.focusmode > 0) {
             // Request only pixels around the last mouse position
@@ -477,6 +528,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         // ###BEGIN###{Inflate}
         obj.inflate.inflateReset();
         // ###END###{Inflate}
+        // ###BEGIN###{DesktopInband}
+        obj.onKvmDataPending = [];
+        obj.onKvmDataAck = -1;
+        obj.kvmDataSupported = false;
+        // ###END###{DesktopInband}
         for (var i in obj.sparecache) { delete obj.sparecache[i]; }
     }
 
@@ -554,6 +610,43 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         if (typeof k == 'object') { for (var i in k) { obj.sendkey(k[i][0], k[i][1]); } }
         else { obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
     }
+
+    function handleServerCutText(acc) {
+        if (acc.length < 8) return 0;
+        var len = ReadInt(obj.acc, 4) + 8;
+        if (acc.length < len) return 0;
+        // ###BEGIN###{DesktopInband}
+        if (obj.onKvmData != null) {
+            var d = acc.substring(8, len);
+            if ((d.length >= 16) && (d.substring(0, 15) == '\0KvmDataChannel')) {
+                if (obj.kvmDataSupported == false) { obj.kvmDataSupported = true; console.log('KVM Data Channel Supported.'); }
+                if (((obj.onKvmDataAck == -1) && (d.length == 16)) || (d.charCodeAt(15) != 0)) { obj.onKvmDataAck = true; }
+                //if (urlvars && urlvars['kvmdatatrace']) { console.log('KVM-Recv(' + (d.length - 16) + '): ' + d.substring(16)); }
+                if (d.length > 16) { obj.onKvmData(d.substring(16)); } // Event the data and ack
+                if ((obj.onKvmDataAck == true) && (obj.onKvmDataPending.length > 0)) { obj.sendKvmData(obj.onKvmDataPending.shift()); } // Send pending data
+            }
+        }
+        // ###END###{DesktopInband}
+        return len;
+    }
+
+    // ###BEGIN###{DesktopInband}
+    obj.sendKvmData = function (x) {
+        if (obj.onKvmDataAck !== true) {
+            obj.onKvmDataPending.push(x);
+        } else {
+            if (urlvars && urlvars['kvmdatatrace']) { console.log('KVM-Send(' + x.length + '): ' + x); }
+            x = '\0KvmDataChannel\0' + x;
+            obj.Send(String.fromCharCode(6, 0, 0, 0) + IntToStr(x.length) + x);
+            obj.onKvmDataAck = false;
+        }
+    }
+
+    // Send a HWKVM keep alive if it's not been sent in the last 5 seconds.
+    obj.sendKeepAlive = function () {
+        if (obj.lastKeepAlive < Date.now() - 5000) { obj.lastKeepAlive = Date.now(); obj.Send(String.fromCharCode(6, 0, 0, 0) + IntToStr(16) + '\0KvmDataChannel\0'); }
+    }
+    // ###END###{DesktopInband}
 
     obj.SendCtrlAltDelMsg = function () { obj.sendcad(); }
     obj.sendcad = function () { obj.sendkey([[0xFFE3, 1], [0xFFE9, 1], [0xFFFF, 1], [0xFFFF, 0], [0xFFE9, 0], [0xFFE3, 0]]); } // Control down, Alt down, Delete down, Delete up , Alt up , Control up

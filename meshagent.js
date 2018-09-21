@@ -89,7 +89,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (msg.length < 2) return;
             var cmdid = obj.common.ReadShort(msg, 0);
             if (cmdid == 11) { // MeshCommand_CoreModuleHash
-                if (msg.length == 4) { ChangeAgentCoreInfo({ caps: 0 }); } // If the agent indicated that no core is running, clear the core information string.
+                if (msg.length == 4) { ChangeAgentCoreInfo({ "caps": 0 }); } // If the agent indicated that no core is running, clear the core information string.
                 // Mesh core hash, sent by agent with the hash of the current mesh core.
                 if (obj.agentCoreCheck == 1000) return; // If we are using a custom core, don't try to update it.
                 // We need to check if the core is current.
@@ -552,7 +552,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             var node = nodes[0];
                             if (node.meshid == obj.dbMeshKey) {
                                 // Update the device name & host
-                                var newNode = { name: node.name };
+                                var newNode = { "name": node.name };
                                 if (node.intelamt != null) { newNode.intelamt = node.intelamt; }
                                 ChangeAgentCoreInfo(newNode);
 
@@ -575,9 +575,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function ChangeAgentCoreInfo(command) {
         if ((command == null) || (command == null)) return; // Safety, should never happen.
 
-        // Check capabilities value
-        if (command.caps == null || command.caps == null) { command.caps = 0; } else { if (typeof command.caps != 'number') command.caps = 0; }
-
         // Check that the mesh exists
         var mesh = obj.parent.meshes[obj.dbMeshKey];
         if (mesh == null) return;
@@ -589,30 +586,39 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (device.agent) {
                 var changes = [], change = 0;
 
+                //if (command.users) { console.log(command.users); }
+
                 // Check if anything changes
                 if (command.name && (command.name != device.name)) { change = 1; device.name = command.name; changes.push('name'); }
                 if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
-                if ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7)) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
+                if ((command.caps != null) && ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7))) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
+                if ((command.osdesc != null) && (device.osdesc != command.osdesc)) { device.osdesc = command.osdesc; change = 1; changes.push('os desc'); }
                 if (command.intelamt) {
                     if (!device.intelamt) { device.intelamt = {}; }
-                    if ((command.intelamt.ver != null) && (device.intelamt.ver != command.intelamt.ver)) { device.intelamt.ver = command.intelamt.ver; change = 1; changes.push('AMT version'); }
-                    if ((command.intelamt.state != null) && (device.intelamt.state != command.intelamt.state)) { device.intelamt.state = command.intelamt.state; change = 1; changes.push('AMT state'); }
-                    if ((command.intelamt.flags != null) && (device.intelamt.flags != command.intelamt.flags)) { device.intelamt.flags = command.intelamt.flags; change = 1; changes.push('AMT flags'); }
-                    if ((command.intelamt.host != null) && (device.intelamt.host != command.intelamt.host)) { device.intelamt.host = command.intelamt.host; change = 1; changes.push('AMT host'); }
-                    if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { device.intelamt.uuid = command.intelamt.uuid; change = 1; changes.push('AMT uuid'); }
+                    if ((command.intelamt.ver != null) && (device.intelamt.ver != command.intelamt.ver)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.ver; change = 1; }
+                    if ((command.intelamt.state != null) && (device.intelamt.state != command.intelamt.state)) { changes.push('AMT state'); device.intelamt.state = command.intelamt.state; change = 1; }
+                    if ((command.intelamt.flags != null) && (device.intelamt.flags != command.intelamt.flags)) {
+                        if (device.intelamt.flags) { changes.push('AMT flags (' + device.intelamt.flags + ' --> ' + command.intelamt.flags + ')'); } else { changes.push('AMT flags (' + command.intelamt.flags + ')'); }
+                        device.intelamt.flags = command.intelamt.flags; change = 1;
+                    }
+                    if ((command.intelamt.host != null) && (device.intelamt.host != command.intelamt.host)) { changes.push('AMT host'); device.intelamt.host = command.intelamt.host; change = 1; }
+                    if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.uuid; change = 1; }
                 }
+                if ((command.users != null) && (device.users != command.users)) { device.users = command.users; change = 1; } // Would be nice not to save this to the db.
                 if (mesh.mtype == 2) {
                     if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
                     // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                 }
 
-                // If there are changes, save and event
+                // If there are changes, event the new device
                 if (change == 1) {
+                    // Save to the database
                     obj.db.Set(device);
 
                     // Event the node change
-                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
-                    if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
+                    if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
+                    if ((obj.agentInfo.capabilities & 0x20) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     var device2 = obj.common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;

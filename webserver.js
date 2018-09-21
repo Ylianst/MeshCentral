@@ -1636,11 +1636,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain == null) || (req.query.id == null)) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); console.log('2'); return; }
+        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
         // Send a specific mesh agent back
         var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
-        if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); console.log('3'); return; }
+        if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); return; }
 
         // We are going to embed the .msh file into the Windows executable (signed or not).
         // First, fetch the mesh object to build the .msh file
@@ -1651,8 +1651,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
             var user = obj.users[req.session.userid];
             var escUserId = obj.common.escapeFieldName(user._id);
-            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); console.log('4');  return; }
-            if (domain.id != mesh.domain) { res.sendStatus(401); console.log('5');  return; }
+            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
         }
 
         var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();

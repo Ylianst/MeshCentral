@@ -197,11 +197,18 @@ function UserSessions()
         {
             this.parent.hwnd = h;
 
-            // Now that we have a window handle, we can register it to receive Windows Messages
-            this.parent._wts.WTSRegisterSessionNotification(this.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS);
-            //this.parent._user32.ACDC_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
-            //this.parent._user32.BATT_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
-            //this.parent._user32.DISP_H = this.parent._user32.RegisterPowerSettingNotification(this.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0); // Windows 8+ only, THIS WILL BLOCK ON WIN7
+            // We need to yield, and do this in the next event loop pass, becuase we don't want to call 'RegisterPowerSettingNotification'
+            // from the messagepump 'thread', because we are actually on the microstack thread, such that the message pump thread, is holding
+            // on a semaphore for us to return. If we call now, we may deadlock on Windows 7, becuase it will try to notify immediately
+            this.immediate = setImmediate(function (self)
+            {
+                // Now that we have a window handle, we can register it to receive Windows Messages
+                self.parent._wts.WTSRegisterSessionNotification(self.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS);
+                self.parent._user32.ACDC_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
+                self.parent._user32.BATT_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
+                self.parent._user32.DISP_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0);
+                console.log(self.parent._user32.ACDC_H.Val, self.parent._user32.BATT_H.Val, self.parent._user32.DISP_H.Val);
+            }, this);
         });
         this._messagepump.on('message', function (msg)
         {

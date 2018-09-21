@@ -144,8 +144,8 @@
                 </div>
                 <div id=p1 style=display:none>
                     <div style="float:right" id="devListToolbarViewIcons">
-                        <div id=devViewButton1 class="viewSelector" onclick=onDeviceViewChange(1) title="Columns"><div class="viewSelector1"></div></div>
-                        <div id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) title="List"><div class="viewSelector2"></div></div>
+                        <div id=devViewButton1 class="viewSelector" onclick=onDeviceViewChange(1) title="Columns"><div class="viewSelector2"></div></div>
+                        <div id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) title="List"><div class="viewSelector1"></div></div>
                         <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
                         <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
                     </div><div><h1>My Devices</h1></div>
@@ -1361,12 +1361,15 @@
                             for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
                             if (index != -1) {
                                 var node = nodes[index];
+                                console.log(node);
 
                                 // Change the node
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
+                                node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
+                                node.osdesc = message.event.node.osdesc;
                                 node.publicip = message.event.node.publicip;
                                 node.iploc = message.event.node.iploc;
                                 node.wifiloc = message.event.node.wifiloc;
@@ -1892,6 +1895,7 @@
                     desk.m.bpp = 1;
                     desk.m.useZRLE = true;
                     desk.m.showmouse = true;
+                    desk.m.onKvmData = function (data) { console.log('KVMData: ' + data); };
                     //desk.m.onScreenSizeChange = deskAdjust;
                     desk.Start(nodeid, 16994, '*', '*', 0);
                     desk.contype = 2;
@@ -2075,8 +2079,8 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid], x = '';
-            //x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
-            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
+            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
+            //x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
 
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
@@ -2093,7 +2097,7 @@
 
             // OSX agent install
             x += "<div id=agins_osx style=display:none>To add a new computer to mesh " + EscapeHtml(mesh.name) + ", download the mesh agent and install it the computer to manage. This agent installer has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit) - TEST BUILD</a>');
             x += "</div>";
 
             // Windows agent uninstall
@@ -3067,6 +3071,12 @@
                 // Attribute: Intel AMT
                 //if (node.intelamt && node.intelamt.user) { x += addDeviceAttribute('Intel&reg; AMT', node.intelamt.user); }
 
+                // Operating system description
+                if (node.osdesc) { x += addDeviceAttribute('Operating System', node.osdesc); }
+
+                // Active Users
+                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute('Active User' + ((node.users.length > 1)?'s':''), node.users.join(', ')); }
+
                 // Attribute: Connectivity (Only show this if more than just the agent is connected).
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
@@ -3583,6 +3593,7 @@
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = desktopsettings.showmouse;
                     desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.m.onKvmData = function (data) { console.log('KVMData: ' + data); };
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
                 } else {

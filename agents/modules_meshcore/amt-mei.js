@@ -30,7 +30,28 @@ function amt_heci() {
         this._amt.UnicodeStringLen = 20;
 
         this._amt.Parent = this;
-        this._amt.on('error', function _amtOnError(e) { this.Parent.emit('error', e); });
+        this._amt.on('error', function _amtOnError(e)
+        {
+            if(this.Parent._rq.isEmpty())
+            {
+                this.Parent.emit('error', e); // No pending requests, so propagate the error up
+            }
+            else
+            {
+                // There is a pending request, so fail the pending request
+                var user = this.Parent._rq.deQueue();
+                var params = user.optional;
+                var callback = user.func;
+                params.unshift({ Status: -1 }); // Relay an error
+                callback.apply(this.Parent, params);
+
+                if(!this.Parent._rq.isEmpty())
+                {
+                    // There are still more pending requests, so try to re-helpconnect MEI
+                    this.connect(heci.GUIDS.AMT, { noPipeline: 1 });
+                }
+            }
+        });
         this._amt.on('connect', function _amtOnConnect()
         {
             this.on('data', function _amtOnData(chunk)
@@ -70,7 +91,8 @@ function amt_heci() {
         return (ret);
     };
 
-    this.sendCommand = function sendCommand() {
+    this.sendCommand = function sendCommand()
+    {
         if (arguments.length < 3 || typeof (arguments[0]) != 'number' || typeof (arguments[1]) != 'object' || typeof (arguments[2]) != 'function') { throw ('invalid parameters'); }
         var args = [];
         for (var i = 3; i < arguments.length; ++i) { args.push(arguments[i]); }
@@ -278,8 +300,16 @@ function amt_heci() {
     this.getLocalSystemAccount = function getLocalSystemAccount(callback) {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt) {
-            if (header.Data.length == 68) { opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data }); } else { opt.unshift(null); }
+        this.sendCommand(103, Buffer.alloc(40), function (header, fn, opt)
+        {
+            if (header.Status == 0 && header.Data.length == 68)
+            {
+                opt.unshift({ user: trim(header.Data.slice(0, 33).toString()), pass: trim(header.Data.slice(33, 67).toString()), raw: header.Data });
+            }
+            else
+            {
+                opt.unshift(null);
+            }
             fn.apply(this, opt);
         }, callback, optional);
     }
