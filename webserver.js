@@ -575,7 +575,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             var escUserId = obj.common.escapeFieldName(userid);
                             if (mesh.links[escUserId] != null) { delete mesh.links[escUserId]; obj.db.Set(mesh); }
                             // Notify mesh change
-                            var change = 'Removed user ' + user.name + ' from mesh ' + mesh.name;
+                            var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
                             obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
                         }
                     }
@@ -728,7 +728,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.clickonce !== false) { features += 256; } // Enable ClickOnce (Default true)
             if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 1024; } // No CIRA
-
+            if ((obj.serverSelfWriteAllowed == true) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
+            
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
@@ -1410,7 +1411,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                         obj.db.Set(node);
 
                                                         // Event the node change
-                                                        var event = { etype: 'node', action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Intel(R) AMT host change ' + node.name + ' from mesh ' + mesh.name + ': ' + oldname + ' to ' + amthost };
+                                                        var event = { etype: 'node', action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Intel(R) AMT host change ' + node.name + ' from group ' + mesh.name + ': ' + oldname + ' to ' + amthost };
                                                         var node2 = obj.common.Clone(node);
                                                         if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                                         event.node = node2;

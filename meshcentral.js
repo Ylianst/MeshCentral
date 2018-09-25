@@ -57,6 +57,7 @@ function CreateMeshCentralServer(config, args) {
     obj.currentVer = null;
     obj.serverKey = new Buffer(obj.crypto.randomBytes(32), 'binary');
     obj.loginCookieEncryptionKey = null;
+    obj.serverSelfWriteAllowed = false;
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -491,7 +492,7 @@ function CreateMeshCentralServer(config, args) {
     // Perform maintenance operations (called every hour)
     obj.maintenanceActions = function () {
         // Check if we need to perform server self-update
-        if (obj.args.selfupdate == true) {
+        if ((obj.args.selfupdate == true) && (obj.serverSelfWriteAllowed == true)) {
             obj.db.getValueOfTheDay('performSelfUpdate', 1, function (performSelfUpdate) {
                 if (performSelfUpdate.value > 0) {
                     performSelfUpdate.value--;
@@ -1096,7 +1097,8 @@ function CreateMeshCentralServer(config, args) {
             var r = 'time=' + Date.now() + '\r\n';
             for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
             obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r); // Try to write the server state, this may fail if we don't have permission.
-        } catch (ex) { } // Do nothing since this is not a critical feature.
+            obj.serverSelfWriteAllowed = true;
+        } catch (ex) { obj.serverSelfWriteAllowed = false; } // Do nothing since this is not a critical feature.
     };
     
     // Logging funtions

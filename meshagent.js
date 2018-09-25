@@ -164,7 +164,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             // Send the next block to the agent
                             obj.agentUpdate.ptr += len;
                             //console.log("Agent update send next block", obj.agentUpdate.ptr, len);
-                            if (len == agentUpdateBlockSize) { obj.ws.send(obj.agentUpdate.buf); } else { obj.ws.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
+                            if (len == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
 
                             if (len < agentUpdateBlockSize) {
                                 //console.log("Agent update sent");
@@ -294,6 +294,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
             // Mark when we connected to this agent
             obj.connectTime = Date.now();
+            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime });
+
+            // See if this node exists in the database
             if (nodes.length == 0) {
                 // This node does not exist, create it.
                 device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
@@ -324,7 +327,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
-                    if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
+                    if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
                     var device2 = obj.common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;
@@ -450,7 +453,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 if (ws != null) {
                                     command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
                                     delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
-                                    ws.send(JSON.stringify(command));
+                                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
                                 } else if (obj.parent.parent.multiServer != null) {
                                     // See if we can send this to a peer server
                                     var serverid = obj.parent.wsPeerSessions2[command.sessionid];
@@ -617,7 +620,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
-                    if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', '); }
+                    if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
                     if ((obj.agentInfo.capabilities & 0x20) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     var device2 = obj.common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
@@ -652,7 +655,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.db.Set(device);
 
                     // Event the node change
-                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ') };
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', ') };
                     if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     var device2 = obj.common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
