@@ -129,13 +129,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             if ((user == null) || (obj.common.validateString(command.action, 3, 32) == false)) return; // User must be set and action must be a string between 3 and 32 chars
 
             switch (command.action) {
-                case 'ping': { ws.send(JSON.stringify({ action: 'pong' })); break; }
+                case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
                 case 'meshes':
                     {
                         // Request a list of all meshes this user as rights to
                         var docs = [];
                         for (i in user.links) { if (obj.parent.meshes[i]) { docs.push(obj.parent.meshes[i]); } }
-                        ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag }));
+                        try { ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag })); } catch (ex) { }
                         break;
                     }
                 case 'nodes':
@@ -175,7 +175,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                                 r[meshid].push(docs[i]);
                             }
-                            ws.send(JSON.stringify({ action: 'nodes', nodes: r, tag: command.tag }));
+                            try { ws.send(JSON.stringify({ action: 'nodes', nodes: r, tag: command.tag })); } catch (ex) { }
                         });
                         break;
                     }
@@ -219,11 +219,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                         }
                                     }
                                 }
-                                ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag }));
+                                try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
                             } else {
                                 // No records found, send current state if we have it
                                 var state = obj.parent.parent.GetConnectivityState(command.nodeid);
-                                if (state != null) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); }
+                                if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
                             }
                         });
                         break;
@@ -254,7 +254,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             if (path == null) break;
 
                             if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) { try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { } } // Create a new folder
-                            else if (command.fileop == 'delete') { if (obj.common.validateArray(command.delfiles, 1) == false) return; for (i in command.delfiles) { if (obj.common.IsFilenameValid(command.delfiles[i]) == true) { var fullpath = path + "/" + command.delfiles[i]; try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } } } } } // Delete
+                            else if (command.fileop == 'delete') { // Delete
+                                if (obj.common.validateArray(command.delfiles, 1) == false) return;
+                                for (i in command.delfiles) {
+                                    if (obj.common.IsFilenameValid(command.delfiles[i]) == true) {
+                                        var fullpath = obj.path.join(path, command.delfiles[i]);
+                                        if (command.rec == true) {
+                                            deleteFolderRecursive(fullpath); // TODO, make this an async function
+                                        } else {
+                                            try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } }
+                                        }
+                                    }
+                                }
+                            } 
                             else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
                             else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                                 if (obj.common.validateArray(command.names, 1) == false) return;
@@ -366,7 +378,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 docs.push(userinfo);
                             }
                         }
-                        ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag }));
+                        try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
                         break;
                     }
                 case 'changeemail':
@@ -378,7 +390,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                                 if (docs.length > 0) {
                                     // Notify the duplicate email error
-                                    ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' }));
+                                    try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
                                 } else {
                                     // Update the user's email
                                     var oldemail = user.email;
@@ -434,7 +446,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                             // We have peer servers, use more complex session counting
                             for (i in obj.parent.sessionsCount) { if (i.split('/')[1] == domain.id) { wssessions[i] = obj.parent.sessionsCount[i]; } }
                         }
-                        ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); // wssessions is: userid --> count
+                        try { ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); } catch (ex) { } // wssessions is: userid --> count
                         break;
                     }
                 case 'deleteuser':
@@ -572,7 +584,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Check the server version
                         if ((user.siteadmin & 16) == 0) break;
-                        obj.parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); });
+                        obj.parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
                         break;
                     }
                 case 'serverupdate':
@@ -586,7 +598,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                     {
                         // Load the server error log
                         if ((user.siteadmin & 16) == 0) break;
-                        obj.parent.parent.readEntireTextFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (data) { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } );
+                        obj.parent.parent.readEntireTextFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } } );
                         break;
                     }
                 case 'serverclearerrorlog':
@@ -823,6 +835,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.db.Remove(node._id); // Remove node with that id
                                     obj.db.Remove('if' + node._id); // Remove interface information
                                     obj.db.Remove('nt' + node._id); // Remove notes
+                                    obj.db.Remove('lc' + node._id); // Remove last connect time
                                     obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                     // Event node deletion
@@ -894,7 +907,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 });
                             }
                             // Confirm we may be doing something (TODO)
-                            ws.send(JSON.stringify({ action: 'wakedevices' }));
+                            try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
                         }
 
                         break;
@@ -931,7 +944,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 });
                             }
                             // Confirm we may be doing something (TODO)
-                            ws.send(JSON.stringify({ action: 'poweraction' }));
+                            try { ws.send(JSON.stringify({ action: 'poweraction' })); } catch (ex) { }
                         }
                         break;
                     }
@@ -978,20 +991,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                         // Get the device
                         obj.db.Get(command.nodeid, function (err, nodes) {
-                            if (nodes.length != 1) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
+                            if (nodes.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                             var node = nodes[0];
 
                             // Get the mesh for this device
                             mesh = obj.parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
+                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
 
                                 // Get network information about this node
                                 obj.db.Get('if' + command.nodeid, function (err, netinfos) {
-                                    if (netinfos.length != 1) { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); return; }
+                                    if (netinfos.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                                     var netinfo = netinfos[0];
-                                    ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif }));
+                                    try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
                                 });
                             }
                         });
@@ -1122,7 +1135,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                                     if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
                                     command.cookie = obj.parent.parent.encodeCookie(cookieContent);
-                                    ws.send(JSON.stringify(command));
+                                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
                                 }
                             }
                         });
@@ -1220,8 +1233,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                                     // Get the notes about this node
                                     obj.db.Get('nt' + command.id, function (err, notes) {
-                                        if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
-                                        ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                        try {
+                                            if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                            ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                        } catch (ex) { }
                                     });
                                 }
                             });
@@ -1234,15 +1249,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                                 // Get the notes about this node
                                 obj.db.Get('nt' + command.id, function (err, notes) {
-                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
-                                    ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                    try {
+                                        if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                        ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                    } catch (ex) { }
                                 });
                             }
                         } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
                             // Get the notes about this node
                             obj.db.Get('nt' + command.id, function (err, notes) {
-                                if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
-                                ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                try {
+                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                    ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                } catch (ex) { }
                             });
                         }
 
@@ -1288,13 +1307,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         if (obj.args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
 
         // Send server information
-        ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo }));
+        try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
 
         // Send user information to web socket, this is the first thing we send
         var userinfo = obj.common.Clone(obj.parent.users[req.session.userid]);
         delete userinfo.salt;
         delete userinfo.hash;
-        ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo }));
+        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
     } catch (e) { console.log(e); }
 
     // Read entire file and return it in callback function
@@ -1328,6 +1347,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         }
         return r;
     }
+
+    // Delete a directory with a files and directories within it
+    // TODO, make this an async function
+    function deleteFolderRecursive(path) {
+        if (obj.fs.existsSync(path)) {
+            obj.fs.readdirSync(path).forEach(function (file, index) {
+                var curPath = obj.path.join(path, file);;
+                if (obj.fs.lstatSync(curPath).isDirectory()) { // recurse
+                    deleteFolderRecursive(curPath);
+                } else { // delete file
+                    obj.fs.unlinkSync(curPath);
+                }
+            });
+            obj.fs.rmdirSync(path);
+        }
+    };
 
     function updateUserFiles(user, ws, domain) {
         // Request the list of server files
@@ -1375,7 +1410,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
         }
 
         // Respond
-        ws.send(JSON.stringify(files));
+        try { ws.send(JSON.stringify(files)); } catch (ex) { }
     }
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }

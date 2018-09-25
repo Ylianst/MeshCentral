@@ -41,6 +41,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
         // Create the main GreenLock code module.
         var greenlockargs = {
+            version: 'draft-12',
             server: (obj.parent.config.letsencrypt.production === true) ? greenlock.productionServerUrl : greenlock.stagingServerUrl,
             store: leStore,
             challenges: { 'http-01': leHttpChallenge },
