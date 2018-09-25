@@ -76,7 +76,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
     try {
         // Check if the user is logged in
-        if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) { try { obj.ws.close(); } catch (e) { } return; }
+        if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) {
+            // If a default user is active, setup the session here.
+            if (obj.args.user && obj.parent.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                if (req.session && req.session.loginmode) { delete req.session.loginmode; }
+                req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+            } else {
+                // Close the websocket connection
+                try { obj.ws.close(); } catch (e) { } return;
+            }
+        }
         req.session.ws = obj.ws; // Associate this websocket session with the web session
         req.session.ws.userid = req.session.userid;
         req.session.ws.domainid = domain.id;
@@ -214,6 +225,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 var state = obj.parent.parent.GetConnectivityState(command.nodeid);
                                 if (state != null) { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); }
                             }
+                        });
+                        break;
+                    }
+                case 'lastconnect':
+                    {
+                        if (obj.common.validateString(command.nodeid, 0, 128) == false) return;
+
+                        // Query the database for the last time this node connected
+                        obj.db.Get('lc' + command.nodeid, function (err, docs) {
+                            if ((docs != null) && (docs.length > 0)) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time })); } catch (ex) { } }
                         });
                         break;
                     }
@@ -434,7 +455,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     // Remove user from the mesh
                                     if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; obj.parent.db.Set(mesh); }
                                     // Notify mesh change
-                                    change = 'Removed user ' + deluser.name + ' from mesh ' + mesh.name;
+                                    change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                     obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, { etype: 'mesh', username: user.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
                                 }
                             }
@@ -722,7 +743,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                 obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                                 // Notify mesh change
-                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from mesh ' + mesh.name, domain: domain.id });
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id });
                             }
                         }
                         break;
@@ -805,7 +826,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                     // Event node deletion
-                                    obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from mesh ' + mesh.name, domain: domain.id });
+                                    obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id });
 
                                     // Disconnect all connections if needed
                                     var state = obj.parent.parent.GetConnectivityState(nodeid);
@@ -1034,7 +1055,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.db.Set(node);
 
                                     // Event the node change
-                                    event.msg = 'Changed device ' + node.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ');
+                                    event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
                                     var node2 = obj.common.Clone(node);
                                     if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                     event.node = node2;

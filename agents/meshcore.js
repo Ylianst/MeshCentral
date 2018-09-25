@@ -1477,13 +1477,15 @@ function createMeshCore(agent) {
         } catch (e) { amtLmsState = -1; amtLms = null; }
 
         // Setup logged in user monitoring
-        /*
         try {
             var userSession = require('user-sessions');
             userSession.on('changed', function onUserSessionChanged() {
                 userSession.enumerateUsers().then(function (users) {
                     var u = [], a = users.Active;
-                    for (var i in a) { if (a[i].Domain) { u.push(a[i].Domain + '\\' + a[i].Username); } else { u.push(a[i].Username); } }
+                    for (var i = 0; i < a.length; i++) {
+                        var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
+                        if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
+                    }
                     obj.loggedInUsers = u;
                     if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "coreinfo", "users": u }); }
                 });
@@ -1492,7 +1494,6 @@ function createMeshCore(agent) {
             //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
             //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
         } catch (ex) { }
-        */
     }
     
     obj.stop = function () {
