@@ -64,6 +64,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.db.Remove(obj.dbNodeKey); // Remove node with that id
             obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
             obj.db.Remove('nt' + obj.dbNodeKey); // Remove notes
+            obj.db.Remove('lc' + obj.dbNodeKey); // Remove last connect time
             obj.db.RemoveNode(obj.dbNodeKey); // Remove all entries with node:id
 
             // Event node deletion
@@ -75,6 +76,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((state.connectivity & 1) != 0) { obj.parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
                 if ((state.connectivity & 2) != 0) { obj.parent.parent.mpsserver.close(obj.parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
             }
+        } else {
+            // Update the last connect time
+            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime });
         }
         delete obj.nodeid;
     };

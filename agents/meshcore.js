@@ -707,10 +707,9 @@ function createMeshCore(agent) {
                         break;
                     }
                     case 'rm': {
-                        // Remove many files or folders
+                        // Delete, possibly recursive delete
                         for (var i in cmd.delfiles) {
-                            var fullpath = obj.path.join(cmd.path, cmd.delfiles[i]);
-                            try { fs.unlinkSync(fullpath); } catch (e) { console.log(e); }
+                            try { deleteFolderRecursive(obj.path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
                         }
                         break;
                     }
@@ -1757,6 +1756,23 @@ function createMeshCore(agent) {
     obj.kvmSetData = function(x) {
         obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelWrite(Buffer.from(x).toString('base64'), function () { });
     }
+
+    // Delete a directory with a files and directories within it
+    function deleteFolderRecursive(path, rec) {
+        if (fs.existsSync(path)) {
+            if (rec == true) {
+                fs.readdirSync(obj.path.join(path, '*')).forEach(function (file, index) {
+                    var curPath = obj.path.join(path, file);
+                    if (fs.statSync(curPath).isDirectory()) { // recurse
+                        deleteFolderRecursive(curPath, true);
+                    } else { // delete file
+                        fs.unlinkSync(curPath);
+                    }
+                });
+            }
+            fs.unlinkSync(path);
+        }
+    };
 
     return obj;
 }
