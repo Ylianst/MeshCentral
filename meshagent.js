@@ -56,10 +56,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             delete obj.parent.wsagents[obj.dbNodeKey];
             obj.parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
         }
+
+        // Get the current mesh
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+
         // Other clean up may be needed here
         if (obj.unauth) { delete obj.unauth; }
         if (obj.agentUpdate != null) { obj.fs.close(obj.agentUpdate.fd); obj.agentUpdate = null; }
-        if ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) { // This is a temporary agent, remote it
+        if (((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) { // This is a temporary agent, remote it
             // Delete this node including network interface information and events
             obj.db.Remove(obj.dbNodeKey); // Remove node with that id
             obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
@@ -597,7 +601,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check if anything changes
                 if (command.name && (command.name != device.name)) { change = 1; device.name = command.name; changes.push('name'); }
-                if (device.agent.core != command.value) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
+                if ((command.caps != null) && (device.agent.core != command.value)) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; changes.push('agent core'); }
                 if ((command.caps != null) && ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7))) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; changes.push('agent capabilities'); } // Allow Javascript on the agent to change all capabilities except console and javascript support
                 if ((command.osdesc != null) && (device.osdesc != command.osdesc)) { device.osdesc = command.osdesc; change = 1; changes.push('os desc'); }
                 if (command.intelamt) {

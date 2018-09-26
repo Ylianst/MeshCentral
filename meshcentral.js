@@ -57,7 +57,7 @@ function CreateMeshCentralServer(config, args) {
     obj.currentVer = null;
     obj.serverKey = new Buffer(obj.crypto.randomBytes(32), 'binary');
     obj.loginCookieEncryptionKey = null;
-    obj.serverSelfWriteAllowed = false;
+    obj.serverSelfWriteAllowed = true;
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -1096,9 +1096,10 @@ function CreateMeshCentralServer(config, args) {
             }
             var r = 'time=' + Date.now() + '\r\n';
             for (var i in meshServerState) { r += (i + '=' + meshServerState[i] + '\r\n'); }
-            obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r); // Try to write the server state, this may fail if we don't have permission.
-            obj.serverSelfWriteAllowed = true;
-        } catch (ex) { obj.serverSelfWriteAllowed = false; } // Do nothing since this is not a critical feature.
+            try {
+                obj.fs.writeFileSync(obj.getConfigFilePath('serverstate.txt'), r); // Try to write the server state, this may fail if we don't have permission.
+            } catch (ex) { obj.serverSelfWriteAllowed = false; }
+        } catch (ex) { } // Do nothing since this is not a critical feature.
     };
     
     // Logging funtions

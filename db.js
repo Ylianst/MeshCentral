@@ -121,6 +121,27 @@ module.exports.CreateDB = function (parent) {
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
 
+    // Get the number of records in the database for various types, this is the slow NeDB way. TODO: MongoDB can use group() to do this faster.
+    obj.getStats = function (func) {
+        obj.file.count({ type: 'node' }, function (err, nodeCount) {
+            obj.file.count({ type: 'mesh' }, function (err, meshCount) {
+                obj.file.count({ type: 'power' }, function (err, powerCount) {
+                    obj.file.count({ type: 'user' }, function (err, userCount) {
+                        obj.file.count({ type: 'ifinfo' }, function (err, nodeInterfaceCount) {
+                            obj.file.count({ type: 'note' }, function (err, noteCount) {
+                                obj.file.count({ type: 'lastconnect' }, function (err, nodeLastConnectCount) {
+                                    obj.file.count({ }, function (err, totalCount) {
+                                        func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, total: totalCount });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
     // This is used to rate limit a number of operation per day. Returns a startValue each new days, but you can substract it and save the value in the db.
     obj.getValueOfTheDay = function (id, startValue, func) { obj.Get(id, function (err, docs) { var date = new Date(), t = date.toLocaleDateString(); if (docs.length == 1) { var r = docs[0]; if (r.day == t) { func({ _id: id, value: r.value, day: t }); return; } } func({ _id: id, value: startValue, day: t }); }); };
 
