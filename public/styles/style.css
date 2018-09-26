@@ -236,6 +236,14 @@ a {
     border: none;
 }
 
+.lb6 {
+    background: url(../images/leftbar-62.png) -360px 0px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+}
+
 .m0  { background : url(../images/images16.png)  -32px 0px; height : 16px; width : 16px; border:none; float:left }
 .m1  { background : url(../images/images16.png)  -16px 0px; height : 16px; width : 16px; border:none; float:left }
 .m2  { background : url(../images/images16.png)  -96px 0px; height : 16px; width : 16px; border:none; float:left }

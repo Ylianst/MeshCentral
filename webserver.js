@@ -717,6 +717,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Give the web page a list of supported server features
             features = 0;
+            user = obj.users[req.session.userid];
             if (obj.args.wanonly == true) { features += 1; } // WAN-only mode
             if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
             if (obj.args.nousers == true) { features += 4; } // Single user mode
@@ -728,7 +729,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.clickonce !== false) { features += 256; } // Enable ClickOnce (Default true)
             if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 1024; } // No CIRA
-            if ((obj.serverSelfWriteAllowed == true) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
+            if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
@@ -1812,6 +1813,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
         obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
+
+        // Server picture
+        obj.app.get(url + 'serverpic.ashx', function (req, res) {
+            // Check if we have "server.png" in the data folder, if so, use that.
+            var p = obj.path.join(obj.parent.datapath, 'server.png');
+            if (obj.fs.existsSync(p)) {
+                // Use the data folder server picture
+                try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+            } else {
+                // Use the default server picture
+                try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.png')); } catch (e) { res.sendStatus(404); }
+            }
+        });
 
         // Receive mesh agent connections
         obj.app.ws(url + 'agent.ashx', function (ws, req) {

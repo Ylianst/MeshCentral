@@ -23,6 +23,7 @@
     <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
@@ -79,6 +80,9 @@
             <div id=LeftMenuMyUsers class="lbbutton" title="My Users" onclick=go(4)>
                 <div class="lb5" style="position:absolute;top:6px;left:6px"></div>
             </div>
+            <div id=LeftMenuMyServer class="lbbutton" title="My Server" onclick=go(6) style="display:none">
+                <div class="lb6" style="position:absolute;top:6px;left:6px"></div>
+            </div>
         </div>
         <div id="page_content" style="max-height:calc(100vh - 130px)">
             <div id=topbarmaster>
@@ -95,6 +99,7 @@
                                     <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
                                     <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
                                     <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
+                                    <td id=MainMenuMyServer style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(6)>My Server</td>
                                     <td class=style3 style="text-align:right;height:24px">&nbsp;</td>
                                 </tr>
                             </table>
@@ -237,13 +242,6 @@
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
                         </p>
                     </div>
-                    <p id="p2ServerActions"><strong>Server actions</strong></p>
-                    <p style="margin-left:40px">
-                        <a id="p2ServerActionsBackup" href="/backup.zip" target="_blank" style="cursor:pointer">Download server backup</a><br />
-                        <a id="p2ServerActionsRestore" onclick="server_showRestoreDlg()" style="cursor:pointer">Restore server with backup</a><br />
-                        <a id="p2ServerActionsVersion" onclick="server_showVersionDlg()" style="cursor:pointer">Check server version</a><br />
-                        <a id="p2ServerActionsErrors" onclick="server_showErrorsDlg()" style="cursor:pointer">Show server error log</a><br />
-                    </p>
                     <br style=clear:both />
                     <strong>Device Groups</strong>
                     ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
@@ -341,6 +339,29 @@
                     <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
                         <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td></tr>
                     </table>
+                </div>
+                <div id=p6 style=display:none>
+                    <img id=MainMeshImage src="serverpic.ashx" style=border-width:0px;height:200px;width:200px;float:right>
+                    <h1>My Server</h1>
+                    <p id="p2ServerActions"><strong>Server actions</strong></p>
+                    <p style="margin-left:40px">
+                        <a id="p2ServerActionsBackup" href="/backup.zip" target="_blank" style="cursor:pointer">Download server backup</a><br />
+                        <a id="p2ServerActionsRestore" onclick="server_showRestoreDlg()" style="cursor:pointer">Restore server with backup</a><br />
+                        <a id="p2ServerActionsVersion" onclick="server_showVersionDlg()" style="cursor:pointer">Check server version</a><br />
+                        <a id="p2ServerActionsErrors" onclick="server_showErrorsDlg()" style="cursor:pointer">Show server error log</a><br />
+                    </p>
+                    <br /><strong>Server Statistics</strong><br /><br />
+                    <div id="serverStats" style="margin-left:40px">
+                        <div id="serverCpuChartView" style="display:none">
+                            <div style="width:60px;display:inline-block"><canvas id="serverCpuChart" style="width:60px;height:60px"></canvas></div>
+                            <div style="width:160px;display:inline-block" id="serverCpuChartText"></div>
+                        </div>
+                        <div id="serverMemoryChartView" style="display:none">
+                            <div style="width:60px;display:inline-block"><canvas id="serverMemoryChart" style="width:60px;height:60px"></canvas></div>
+                            <div style="width:160px;display:inline-block" id="serverMemoryChartText"></div>
+                        </div><br /><br />
+                        <div id="serverStatsTable"></div>
+                    </div>
                 </div>
                 <div id=p10 style="display:none">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -916,6 +937,9 @@
             var x = '';
             for (var c = 1; c < 27; c++) x += "<option value='" + c + "'>Ctrl-" + String.fromCharCode(64 + c) + " (" + c + ")</option>";
             QH('specialkeylist', x);
+
+            // Setup server stats panel
+            setupServerStats();
         }
 
         // Toggle the web page to full screen
@@ -1016,7 +1040,9 @@
 
             // Update account actions
             QV('p2AccountActions', (features & 4) == 0); // Hide Account Actions if in single user mode
-            QV('p2ServerActions', siteRights & 5);
+            QV('p2ServerActions', siteRights & 21);
+            QV('LeftMenuMyServer', siteRights & 21);
+            QV('MainMenuMyServer', siteRights & 21);
             QV('p2ServerActionsBackup', siteRights & 1);
             QV('p2ServerActionsRestore', siteRights & 4);
             QV('p2ServerActionsVersion', siteRights & 16);
@@ -1039,10 +1065,17 @@
             }
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
             QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
+
+            // If we are site administrator, register to get server statistics
+            if ((siteRights & 21) != 0) { meshserver.send({ action: 'serverstats', interval: 10000 }); }
         }
 
         function onMessage(server, message) {
             switch (message.action) {
+                case 'serverstats': {
+                    updateServerStats(message);
+                    break;
+                }
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
                     break;
@@ -1116,7 +1149,7 @@
                     if (node != null) {
                         node.lastconnect = message.time;
                         if ((currentNode._id == node._id) && (Q('MainComputerState').innerHTML == '')) {
-                            QH('MainComputerState', '<span style=font-size:12px>Last connected:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>');
+                            QH('MainComputerState', '<span style=font-size:12px>Last seen:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>');
                         }
                     }
                     break;
@@ -1289,6 +1322,7 @@
                                 // This is an existing mesh
                                 meshes[message.event.meshid].name = message.event.name;
                                 meshes[message.event.meshid].desc = message.event.desc;
+                                meshes[message.event.meshid].flags = message.event.flags;
                                 meshes[message.event.meshid].links = message.event.links;
 
                                 // Check if we lost rights to this mesh in this change.
@@ -3139,7 +3173,7 @@
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
                 if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
-                if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>Last connected:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>'; }
+                if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>Last seen:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
@@ -4900,9 +4934,19 @@
             var x = '';
             x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
             x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):'<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
-            x += addHtmlValue('Type', meshtype);
-            x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
+            // Display features
+            var meshFeatures = [];
+            if (currentMesh.flags) { if (currentMesh.flags & 1) { meshFeatures.push('Auto-Remove'); } }
+            meshFeatures = meshFeatures.join(', ');
+            if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
+            x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', (meshrights & 1) != 0));
+
+            // Display group type
+            x += addHtmlValue('Type', meshtype);
+            //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+
+            // Display group note support
             x += '<br><input type=button value=Notes title="View notes about this device group" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
@@ -4994,6 +5038,19 @@
 
         function p20editmeshValidate() {
             QE('idx_dlgOkButton', Q('dp20meshname').value.length > 0);
+        }
+
+        function p20editmeshfeatures() {
+            if (xxdialogMode) return;
+            var flags = (currentMesh.flags)?currentMesh.flags:0;
+            var x = "<div><input type=checkbox id=d20flag1 " + ((flags & 1)?'checked':'') + ">Remove device on disconnect<br></div>";
+            setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
+        }
+
+        function p20editmeshfeaturesEx() {
+            var flags = 0;
+            if (Q('d20flag1').checked) { flags += 1; }
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 
         function p20showAddMeshUserDialog() {
@@ -5169,6 +5226,14 @@
             if (bytes < 2097152) return Math.round(bytes / 1024) + ' kilobytes remaining';
             if (bytes < 2147483648) return Math.round(bytes / 1024 / 1024) + ' megabytes remaining';
             return Math.round(bytes / 1024 / 1024 / 1024) + ' gigabytes remaining';
+        }
+
+        function getNiceSize2(bytes) {
+            if (bytes <= 0) return 'None';
+            if (bytes < 2048) return bytes + ' b';
+            if (bytes < 2097152) return Math.round(bytes / 1024) + ' Kb';
+            if (bytes < 2147483648) return Math.round(bytes / 1024 / 1024) + ' Mb';
+            return Math.round(bytes / 1024 / 1024 / 1024) + ' Gb';
         }
 
         function p5getQuotabar(f) {
@@ -5951,6 +6016,60 @@
         }
 
         //
+        // Server Statistics
+        //
+
+        function setupServerStats() {
+            window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ['Used', 'Free'] },
+                options: { responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+            });
+            window.serverStatMemory = new Chart(document.getElementById('serverMemoryChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ['Used', 'Free'] },
+                options: { responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+            });
+        }
+
+        var lastServerStats = null;
+        function updateServerStats(message) {
+            if (message != null) { lastServerStats = message; } else { message = lastServerStats; }
+            if (message == null) return;
+
+            // Paint the pie graphs
+            if (typeof message.cpuavg == 'object') {
+                var m = Math.min(message.cpuavg[0], 1);
+                window.serverStatCpu.config.data.datasets[0].data = [m, 1 - m];
+                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title="CPU load in the last minute">' + message.cpuavg[0] + '</b>%, <b title="CPU load in the last 5 minutes">' + message.cpuavg[1] + '</b>%, <b title="CPU load in the 15 minutes">' + message.cpuavg[2] + '</b>%</div>');
+                QS('serverCpuChartView')['display'] = 'inline-block';
+                window.serverStatCpu.update();
+            }
+            if ((typeof message.totalmem == 'number') && (typeof message.freemem == 'number')) {
+                window.serverStatMemory.config.data.datasets[0].data = [message.totalmem - message.freemem, message.freemem];
+                QH('serverMemoryChartText', '<div style=margin-bottom:5px>Memory</div><div><b>' + getNiceSize2(message.freemem) + '</b> free, <b>' + getNiceSize2(message.totalmem) + '</b> total</div>');
+                QS('serverMemoryChartView')['display'] = 'inline-block';
+                window.serverStatMemory.update();
+            }
+
+            // Display all of the server values
+            var x = '<div style=width:100% cellpadding=0 cellspacing=0>';
+            if (typeof message.values == 'object') {
+                for (var i in message.values) {
+                    x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + i + '</div>';
+                    for (var j in message.values[i]) {
+                        x += '<div style=width:300px;display:inline-block><div class=bar style=height:24px;width:100%;font-size:medium>';
+                        x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
+                        x += '<div><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></div></div></div>';
+                    }
+                }
+            }
+            x += '</div>';
+
+            QH('serverStatsTable', x);
+        }
+
+        //
         // POPUP DIALOG
         //
 
@@ -5998,7 +6117,7 @@
             xxcurrentView = x;
 
             // Remove left bar selection
-            var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers'];
+            var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers', 'LeftMenuMyServer'];
             for (var i in leftBarItems) { Q(leftBarItems[i]).classList.remove('lbbuttonsel'); Q(leftBarItems[i]).classList.remove('lbbuttonsel2'); }
 
             // My Devices
@@ -6024,6 +6143,10 @@
             // My Files
             QS('MainMenuMyFiles').backgroundColor = ((x == 5) ? "#003366" : "#808080");
             if (x == 5) { Q('LeftMenuMyFiles').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+
+            // My Server
+            QS('MainMenuMyServer').backgroundColor = ((x == 6) ? "#003366" : "#808080");
+            if (x == 6) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
 
             // column_l max-height
             if (webPageFullScreen) {
@@ -6059,7 +6182,8 @@
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
+        //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
+        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton src=images/link5.png></span>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }
