@@ -73,7 +73,6 @@ function createMeshCore(agent) {
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
     var processManager = require('process-manager');
-    var SMBiosTables = require('smbios');
     var amtMei = null, amtLms = null, amtLmsState = 0;
     var amtMeiConnected = 0, amtMeiTmpState = null;
     var wifiScannerLib = null;
@@ -81,7 +80,25 @@ function createMeshCore(agent) {
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
-    
+
+    // If we are running in Duktape, agent will be null
+    if (agent == null) {
+        // Running in native agent, Import libraries
+        db = require('SimpleDataStore').Shared();
+        sha = require('SHA256Stream');
+        mesh = require('MeshAgent');
+        childProcess = require('child_process');
+        if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
+            // Check if this computer supports a desktop
+            try { if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) { obj.meshCoreCapabilities |= 1; } } catch (ex) { }
+        }
+    } else {
+        // Running in nodejs
+        obj.meshCoreInfo += '-NodeJS';
+        obj.meshCoreCapabilities = 8;
+        mesh = agent.getMeshApi();
+    }
+
     // Get the operating system description string
     var osDesc = null;
     try { require('os').name().then(function (v) { osDesc = v; if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "coreinfo", "value": obj.meshCoreInfo, "osdesc": osDesc }); } }); } catch (ex) { }
@@ -118,15 +135,29 @@ function createMeshCore(agent) {
         amtscanner = new AMTScannerModule();
         //amtscanner.on('found', function (data) { if (typeof data != 'string') { data = JSON.stringify(data, null, " "); } sendConsoleText(data); });
     } catch (ex) { amtscanner = null; }
-    
-    // Try to load up the MEI module
-    try {
-        var amtMeiLib = require('amt-mei');
-        amtMei = new amtMeiLib();
-        amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; });
-        amtMeiConnected = 2;
-        sendPeriodicServerUpdate(1);
-    } catch (ex) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
+
+    // Fetch the SMBios Tables
+    var SMBiosTables = null;
+    var SMBiosTablesRaw = null;
+    require('smbios').get(function (data) {
+        if (data != null) {
+            SMBiosTablesRaw = data;
+            SMBiosTables = require('smbios').parse(data)
+            if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
+
+            // If SMBios tables say that AMT is present, try to connect MEI
+            if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
+                // Try to load up the MEI module
+                try {
+                    var amtMeiLib = require('amt-mei');
+                    amtMei = new amtMeiLib();
+                    amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; });
+                    amtMeiConnected = 2;
+                    sendPeriodicServerUpdate(1);
+                } catch (ex) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
+            }
+        }
+    });
     
     // Try to load up the WIFI scanner
     try {
@@ -134,24 +165,6 @@ function createMeshCore(agent) {
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(JSON.stringify(data)); });
     } catch (ex) { wifiScannerLib = null; wifiScanner = null; }
-    
-    // If we are running in Duktape, agent will be null
-    if (agent == null) {
-        // Running in native agent, Import libraries
-        db = require('SimpleDataStore').Shared();
-        sha = require('SHA256Stream');
-        mesh = require('MeshAgent');
-        childProcess = require('child_process');
-        if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
-            // Check if this computer supports a desktop
-            try { if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) { obj.meshCoreCapabilities |= 1; } } catch (ex) { }
-        }
-    } else {
-        // Running in nodejs
-        obj.meshCoreInfo += '-NodeJS';
-        obj.meshCoreCapabilities = 8;
-        mesh = agent.getMeshApi();
-    }
     
     // Get our location (lat/long) using our public IP address
     var getIpLocationDataExInProgress = false;
@@ -972,31 +985,22 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'smbios': {
-                    if (SMBiosTables != null) {
-                        SMBiosTables.get(function (data) {
-                            if (data == null) { sendConsoleText('Unable to get SM BIOS data.', sessionid); return; }
-                            sendConsoleText(objToString(SMBiosTables.parse(data), 0, ' ', true), sessionid);
-                        });
-                    } else { response = 'SM BIOS module not available.'; }
+                    if (SMBiosTables == null) { response = 'SMBios tables not available.'; } else { response = objToString(SMBiosTables, 0, ' ', true); }
                     break;
                 }
                 case 'rawsmbios': {
-                    if (SMBiosTables != null) {
-                        SMBiosTables.get(function (data) {
-                            if (data == null) { sendConsoleText('Unable to get SM BIOS data.', sessionid); return; }
-                            var out = '';
-                            for (var i in data) {
-                                var header = false;
-                                for (var j in data[i]) {
-                                    if (data[i][j].length > 0) {
-                                        if (header == false) { out += ('Table type #' + i + ((SMBiosTables.smTableTypes[i] == null) ? '' : (', ' + SMBiosTables.smTableTypes[i]))) + '\r\n'; header = true; }
-                                        out += ('  ' + data[i][j].toString('hex')) + '\r\n';
-                                    }
+                    if (SMBiosTablesRaw == null) { response = 'SMBios tables not available.'; } else {
+                        response = '';
+                        for (var i in SMBiosTablesRaw) {
+                            var header = false;
+                            for (var j in SMBiosTablesRaw[i]) {
+                                if (SMBiosTablesRaw[i][j].length > 0) {
+                                    if (header == false) { response += ('Table type #' + i + ((require('smbios').smTableTypes[i] == null) ? '' : (', ' + require('smbios').smTableTypes[i]))) + '\r\n'; header = true; }
+                                    response += ('  ' + SMBiosTablesRaw[i][j].toString('hex')) + '\r\n';
                                 }
                             }
-                            sendConsoleText(out, sessionid);
-                        });
-                    } else { response = 'SM BIOS module not available.'; }
+                        }
+                    }
                     break;
                 }
                 case 'eval': { // Eval JavaScript
@@ -1358,10 +1362,13 @@ function createMeshCore(agent) {
             var oldNodeId = db.Get('OldNodeId');
             if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
 
-            // Update the server wtih basic info
+            // Update the server with basic info
             var r = { "action": "coreinfo", "value": obj.meshCoreInfo, "caps": obj.meshCoreCapabilities };
             if (osDesc != null) { r.osdesc = osDesc; }
             mesh.SendCommand(r);
+
+            // Send SMBios tables if present
+            if (SMBiosTablesRaw != null) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
 
             // Update list of logged in users
             if (obj.loggedInUsers != null) { mesh.SendCommand({ "action": "coreinfo", "v": { "users": obj.loggedInUsers } }); }
@@ -1422,9 +1429,9 @@ function createMeshCore(agent) {
         try {
             amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
             amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
-            amtMei.getVersion(function (val) { amtMeiTmpState.Versions = {}; for (var version in val.Versions) { amtMeiTmpState.Versions[val.Versions[version].Description] = val.Versions[version].Version; } });
-            amtMei.getProvisioningMode(function (result) { amtMeiTmpState.ProvisioningMode = result.mode; });
-            amtMei.getProvisioningState(function (result) { amtMeiTmpState.ProvisioningState = result.state; });
+            amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } });
+            amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
+            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } });
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
             amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
             amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });

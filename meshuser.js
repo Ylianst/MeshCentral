@@ -131,7 +131,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
                 var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Connected Agents": Object.keys(obj.parent.wsagents).length, "Connected Users": Object.keys(obj.parent.wssessions2).length };
                 if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
-                stats.values = { "Server State": serverStats, "Database": { "Records": data.total, "Users": data.users, "Device Groups": data.meshes, "Devices": data.nodes, "Device NetInfo": data.nodeInterfaces, "Device Power Event": data.powerEvents, "Notes": data.notes, "Connection Records": data.connectEvents } }
+                stats.values = { "Server State": serverStats, "Database": { "Records": data.total, "Users": data.users, "Device Groups": data.meshes, "Devices": data.nodes, "Device NetInfo": data.nodeInterfaces, "Device Power Event": data.powerEvents, "Notes": data.notes, "Connection Records": data.connectEvents, "SMBios": data.smbios } }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
             });
         }
@@ -865,6 +865,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     obj.db.Remove('if' + node._id); // Remove interface information
                                     obj.db.Remove('nt' + node._id); // Remove notes
                                     obj.db.Remove('lc' + node._id); // Remove last connect time
+                                    obj.db.Remove('sm' + node._id); // Remove SMBios data
                                     obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                     // Event node deletion

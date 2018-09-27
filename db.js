@@ -129,9 +129,11 @@ module.exports.CreateDB = function (parent) {
                     obj.file.count({ type: 'user' }, function (err, userCount) {
                         obj.file.count({ type: 'ifinfo' }, function (err, nodeInterfaceCount) {
                             obj.file.count({ type: 'note' }, function (err, noteCount) {
-                                obj.file.count({ type: 'lastconnect' }, function (err, nodeLastConnectCount) {
-                                    obj.file.count({ }, function (err, totalCount) {
-                                        func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, total: totalCount });
+                                obj.file.count({ type: 'smbios' }, function (err, nodeSmbiosCount) {
+                                    obj.file.count({ type: 'lastconnect' }, function (err, nodeLastConnectCount) {
+                                        obj.file.count({ }, function (err, totalCount) {
+                                            func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
+                                        });
                                     });
                                 });
                             });
