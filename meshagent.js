@@ -69,6 +69,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
             obj.db.Remove('nt' + obj.dbNodeKey); // Remove notes
             obj.db.Remove('lc' + obj.dbNodeKey); // Remove last connect time
+            obj.db.Remove('sm' + obj.dbNodeKey); // Remove SMBios data
             obj.db.RemoveNode(obj.dbNodeKey); // Remove all entries with node:id
 
             // Event node deletion
@@ -522,6 +523,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     {
                         // Sent by the agent to update agent information
                         ChangeAgentCoreInfo(command);
+                        break;
+                    }
+                case 'smbios':
+                    {
+                        // The RAW SMBios table of this computer
+                        obj.db.Set({ _id: 'sm' + obj.dbNodeKey, type: 'smbios', domain: domain.id, time: Date.now(), smbios: command.value });
+
+                        // Event the node interface information change (This is a lot of traffic, probably don't need this).
+                        //obj.parent.parent.DispatchEvent(['*', obj.meshid], obj, { action: 'smBiosChange', nodeid: obj.dbNodeKey, domain: domain.id, smbios: command.value,  nolog: 1 });
+
                         break;
                     }
                 case 'netinfo':
