@@ -674,6 +674,29 @@ a {
     width: 28px;
 }
 
+.backButtonEx {
+    margin-left:2px;
+    margin-top:2px;
+    background: url(../images/views.png) -140px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.backButton {
+    width:32px;
+    height:32px;
+    background-color:#DDD;
+    border-radius:3px;
+    float:left;
+    margin-right:5px;
+    cursor: pointer;
+    opacity: 0.3;
+}
+    .backButton:hover {
+        opacity: 0.5;
+        background-color:#AAA;
+    }
+
 .hoverButton {
     opacity: 0.5;
 }
