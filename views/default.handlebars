@@ -367,7 +367,8 @@
                     <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
-                                <div id="p10title">
+                                <div id=p10title>
+                                    <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                                     <h1>General - <span id=p10deviceName></span></h1>
                                 </div>
                                 <div id=p10html></div>
@@ -385,6 +386,7 @@
                 <div id=p11 style=display:none>
                     <div id="p11title">
                         <div id=p11deviceNameHeader>
+                            <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                             <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull() title="Full Screen"><div class="viewSelector5"></div></div></div>
                             <h1>Desktop - <span id=p11deviceName></span></h1>
                         </div>
@@ -466,7 +468,10 @@
                     </table>
                 </div>
                 <div id=p12 style="display:none">
-                    <div id="p12title"><h1>Terminal - <span id=p12deviceName></span></h1></div>
+                    <div id="p12title">
+                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <h1>Terminal - <span id=p12deviceName></span></h1>
+                    </div>
                     <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
                         <div class="icon2" style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
@@ -524,7 +529,10 @@
                     </table>
                 </div>
                 <div id=p13 style=display:none>
-                    <div id="p13title"><h1>Files - <span id=p13deviceName></span></h1></div>
+                    <div id="p13title">
+                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <h1>Files - <span id=p13deviceName></span></h1>
+                    </div>
                     <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
@@ -581,11 +589,17 @@
                     </table>
                 </div>
                 <div id=p14 style=display:none>
-                    <div id="p14title"><h1>Intel&reg; AMT - <span id=p14deviceName></span></h1></div>
+                    <div id="p14title">
+                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
+                    </div>
                     <iframe id=p14iframe style="width:100%;height:calc(100vh - 242px);border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style=display:none>
-                    <div id="p15title"><h1>Console - <span id=p15deviceName></span></h1></div>
+                    <div id="p15title">
+                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <h1>Console - <span id=p15deviceName></span></h1>
+                    </div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr>
                             <td style=background:#C0C0C0>
@@ -622,7 +636,10 @@
                     </table>
                 </div>
                 <div id=p16 style=display:none>
-                    <div id="p16title"><h1>Events - <span id=p16deviceName></span></h1></div>
+                    <div id="p16title">
+                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <h1>Events - <span id=p16deviceName></span></h1>
+                    </div>
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
@@ -645,7 +662,8 @@
                 </div>
                 <div id=p20 style="display:none">
                     <img id=MainMeshImage src="images/mesh-200.png" style=border-width:0px;height:200px;width:200px;float:right>
-                    <h1><span id=p20meshName></span> - General</h1>
+                    <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <h1>General - <span id=p20meshName></span></h1>
                     <p id=p20info></p>
                 </div>
                 <div id=p30 style=display:none>
@@ -653,7 +671,8 @@
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id="p30title">
-                                    <h1><span id=p30userName></span> - General</h1>
+                                    <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                                    <h1>General - <span id=p30userName></span></h1>
                                 </div>
                                 <div id=p30html></div>
                             </td>
@@ -668,7 +687,8 @@
                     <div id=p30html3></div>
                 </div>
                 <div id=p31 style=display:none>
-                    <h1><span id=p31userName></span> - Events</h1>
+                    <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <h1>Events - <span id=p31userName></span></h1>
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
                         <div class=h1 style=height:100%;float:left>&nbsp;</div>
@@ -3523,9 +3543,9 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Groups'];
+        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Tags'];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
-        var showEditNodeValueDialog_modes3 = ['', '', '', 'Group1, Group2, Group3'];
+        var showEditNodeValueDialog_modes3 = ['', '', '', 'Tag1, Tag2, Tag3'];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
@@ -4651,7 +4671,7 @@
                     Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                 }
                 var online = ((consoleNode.conn & 1) != 0)?true:false;
-                QH('p15statetext', online?"Mesh Agent is online":"Mesh Agent is offline");
+                QH('p15statetext', online?"Agent is online":"Agent is offline");
                 QE('p15consoleText', online);
                 QE('p15uploadCore', online);
             } else {
@@ -4993,7 +5013,7 @@
                 var trash = '', rights = 'Partial Rights', r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = 'Full Administrator'; else if (r == 0) rights = 'No Rights';
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td><div title="Mesh User" class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td><div title="User" class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -5059,9 +5079,9 @@
             x += addHtmlValue('User Name', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<br><div>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Mesh<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Mesh Users<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Mesh Computers<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
@@ -5107,9 +5127,9 @@
             userid = decodeURIComponent(userid);
             var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
-                if ((meshrights &   1) != 0) r += ', Edit Mesh';
-                if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
-                if ((meshrights &   4) != 0) r += ', Manage Mesh Computers';
+                if ((meshrights &   1) != 0) r += ', Edit Device Group';
+                if ((meshrights &   2) != 0) r += ', Manage Device Group Users';
+                if ((meshrights &   4) != 0) r += ', Manage Device Group Computers';
                 if ((meshrights &   8) != 0) r += ', Remote Control';
                 if ((meshrights &  16) != 0) r += ', Agent Console';
                 if ((meshrights &  32) != 0) r += ', Server Files';
@@ -6041,7 +6061,7 @@
             if (typeof message.cpuavg == 'object') {
                 var m = Math.min(message.cpuavg[0], 1);
                 window.serverStatCpu.config.data.datasets[0].data = [m, 1 - m];
-                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title="CPU load in the last minute">' + message.cpuavg[0] + '</b>%, <b title="CPU load in the last 5 minutes">' + message.cpuavg[1] + '</b>%, <b title="CPU load in the 15 minutes">' + message.cpuavg[2] + '</b>%</div>');
+                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title="CPU load in the last minute">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title="CPU load in the last 5 minutes">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title="CPU load in the 15 minutes">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
                 QS('serverCpuChartView')['display'] = 'inline-block';
                 window.serverStatCpu.update();
             }
@@ -6109,6 +6129,13 @@
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
+
+        function goBack() {
+            if (xxdialogMode) return;
+            if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } // Return to My Devices
+            if ((xxcurrentView >= 20) && (xxcurrentView < 30)) { go(2); } // Return to My Account
+            if ((xxcurrentView >= 30) && (xxcurrentView < 40)) { go(4); } // Return to My Users
+        }
 
         function go(x) {
             if (xxdialogMode || xxcurrentView == x) return;

@@ -243,11 +243,11 @@
                                 </div>
                             </div>
                             <br style=clear:both />
-                            <strong>Meshes</strong>
+                            <strong>Device Groups</strong>
                             ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
                             <br /><br />
                             <div id=p3meshes></div>
-                            <div id=p3noMeshFound style=margin-left:9px;display:none>No meshes. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
+                            <div id=p3noMeshFound style=margin-left:9px;display:none>No device groups. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
                             <br style=clear:both />
                         </div>
                     </div>
@@ -953,9 +953,9 @@
         function account_createMesh() {
             if (xxdialogMode) return;
             var x = addHtmlValue('Name', '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
-            x += addHtmlValue('Type', '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Mesh Agent Policy</option><option value=1>Intel&reg; AMT Agent-less Policy</option></select></div>');
+            x += addHtmlValue('Type', '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Software Agent Group</option><option value=1>Intel&reg; AMT only</option></select></div>');
             x += addHtmlValue('Description', '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
-            setDialogMode(2, "Create Mesh", 3, account_createMeshEx, x);
+            setDialogMode(2, "Create Device Group", 3, account_createMeshEx, x);
             account_validateMeshCreate();
             Q('dp3meshname').focus();
         }
@@ -1472,7 +1472,7 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span title="The name of the administrative group this computer belong to">Mesh</span>', '<a  title="The name of the group this computer belong to" onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span title="The name of the device group this computer belong to">Group</span>', '<a  title="The name of the device group this computer belong to" onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
                 if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
@@ -1504,7 +1504,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    x += addDeviceAttribute('Mesh Agent', str);
+                    x += addDeviceAttribute('Agent', str);
                 }
 
                 // Attribute: Intel AMT
@@ -1552,17 +1552,17 @@
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
-                    if ((node.conn & 1) != 0) cstate.push('<span title="Mesh agent is connected and ready for use.">Mesh Agent</span>');
+                    if ((node.conn & 1) != 0) cstate.push('<span title="Software agent is connected and ready for use.">Agent</span>');
                     if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
                     if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
-                    if ((node.conn & 8) != 0) cstate.push('<span title="Mesh agent is reachable using another agent as relay.">Mesh Relay</span>');
+                    if ((node.conn & 8) != 0) cstate.push('<span title="Software agent is reachable using another agent as relay.">Agent Relay</span>');
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
 
-                // Node grouping tags
+                // Node tags
                 var groupingTags = '<i>None</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
-                x += addDeviceAttribute('Groups', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
@@ -1792,7 +1792,7 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Groups'];
+        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Tags'];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
         var showEditNodeValueDialog_modes3 = ['', '', '', 'Group1, Group2, Group3'];
         function showEditNodeValueDialog(mode) {
@@ -2577,7 +2577,7 @@
             var meshtype = 'Unknown #' + currentMesh.mtype;
             var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT group';
-            if (currentMesh.mtype == 2) meshtype = 'Mesh agent group';
+            if (currentMesh.mtype == 2) meshtype = 'Software agent group';
 
             var x = '';
             x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
@@ -2665,7 +2665,7 @@
             if (xxdialogMode) return;
             var x = addHtmlValue('Name', '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
             x += addHtmlValue('Description', '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
-            setDialogMode(2, "Edit Mesh", 3, p20editmeshEx, x);
+            setDialogMode(2, "Edit Device Group", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
             if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
             p20editmeshValidate();
@@ -2685,9 +2685,9 @@
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:80px;overflow-y:scroll">';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Mesh<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Mesh Users<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Mesh Computers<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
@@ -2733,9 +2733,9 @@
             userid = decodeURIComponent(userid);
             var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
-                if ((meshrights &   1) != 0) r += ', Edit Mesh';
-                if ((meshrights &   2) != 0) r += ', Manage Mesh Users';
-                if ((meshrights &   4) != 0) r += ', Manage Mesh Computers';
+                if ((meshrights &   1) != 0) r += ', Edit Device Group';
+                if ((meshrights &   2) != 0) r += ', Manage Device Group Users';
+                if ((meshrights &   4) != 0) r += ', Manage Device Group Computers';
                 if ((meshrights &   8) != 0) r += ', Remote Control';
                 if ((meshrights &  16) != 0) r += ', Agent Console';
                 if ((meshrights &  32) != 0) r += ', Server Files';
