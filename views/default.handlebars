@@ -22,6 +22,7 @@
     <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.0.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
@@ -1958,7 +1959,7 @@
                     desk.m.bpp = 1;
                     desk.m.useZRLE = true;
                     desk.m.showmouse = true;
-                    desk.m.onKvmData = function (data) { console.log('KVMData: ' + data); };
+                    desk.m.onKvmData = function (data) { console.log('KVM Data received in multi-desktop mode, this is not supported.'); }; // KVM Data Channel not supported in multi-desktop right now.
                     //desk.m.onScreenSizeChange = deskAdjust;
                     desk.Start(nodeid, 16994, '*', '*', 0);
                     desk.contype = 2;
@@ -3629,7 +3630,7 @@
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', (mesh.mtype == 2) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1)));
+            QV('d7meshkvm', (webRtcDesktop) || ((mesh.mtype == 2) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
@@ -3666,7 +3667,77 @@
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = desktopsettings.showmouse;
                     desktop.m.onScreenSizeChange = deskAdjust;
-                    desktop.m.onKvmData = function (data) { console.log('KVMData: ' + data); };
+                    desktop.m.onKvmData = function (x) {
+                        //console.log('onKvmData (' + x.length + '): ' + x);
+                        // Send the presense probe only once if needed.
+                        if (x.length == 0) { if (!desktop.m._sentPresence) { desktop.m._sentPresence = true; desktop.m.sendKvmData(JSON.stringify({ action: 'present', ver: 1 })); } return; }
+                        var data = null;
+                        try { data = JSON.parse(x); } catch (e) { }
+                        if ((data != null) && (data.action != null)) {
+                            if (data.action == 'restart') {
+                                // Clear WebRTC channel
+                                webRtcDesktopReset();
+                                desktop.m.sendKvmData(JSON.stringify({ action: 'present', ver: 1 }));
+                            } else if ((data.action == 'present') && (webRtcDesktop == null)) {
+                                // Setup WebRTC channel
+                                webRtcDesktop = { platform: data.platform };
+                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                                if (typeof RTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new RTCPeerConnection(configuration); }
+                                else if (typeof webkitRTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new webkitRTCPeerConnection(configuration); }
+
+                                webRtcDesktop.webchannel = webRtcDesktop.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
+                                webRtcDesktop.webchannel.onopen = function () {
+                                    // Switch to software KVM
+                                    //if (urlvars && urlvars['kvmdatatrace']) { console.log('WebRTC Data Channel Open'); }
+                                    console.log('WebRTC Data Channel Open');
+                                    Q('deskstatus').textContent = StatusStrs[desktop.State] + ', Soft-KVM';
+                                    desktop.m.hold(true);
+                                    webRtcDesktop.webRtcActive = true;
+                                    webRtcDesktop.softdesktop = CreateKvmDataChannel(webRtcDesktop.webchannel, CreateAgentRemoteDesktop('Desk', Q('id_mainarea')), desktop.m);
+                                    webRtcDesktop.softdesktop.m.setRotation(desktop.m.rotation);
+                                    webRtcDesktop.softdesktop.m.onScreenSizeChange = deskAdjust;
+                                    if (desktopsettings.quality) { webRtcDesktop.softdesktop.m.CompressionLevel = desktopsettings.quality; } // Number from 1 to 100. 50 or less is best.
+                                    if (desktopsettings.scaling) { webRtcDesktop.softdesktop.m.ScalingLevel = desktopsettings.scaling; }
+                                    webRtcDesktop.softdesktop.Start();
+
+                                    // Check if we can get remote file access
+                                    // ###BEGIN###{DesktopInbandFiles}
+                                    /*
+                                    QV('go24', true); // Files
+                                    downloadFile = null;
+                                    p24files = webRtcDesktop.softdesktop;
+                                    p24targetpath = '';
+                                    webRtcDesktop.softdesktop.onControlMsg = onFilesControlData;
+                                    webRtcDesktop.softdesktop.sendCtrlMsg(JSON.stringify({ action: 'ls', reqid: 1, path: '' })); // Ask for the root folder
+                                    */
+                                    // ###END###{DesktopInbandFiles}
+                                }
+                                webRtcDesktop.webchannel.onclose = function (event) {
+                                    //if (urlvars['kvmdatatrace']) { console.log('WebRTC Data Channel Closed'); }
+                                    console.log('WebRTC Data Channel Closed');
+                                    webRtcDesktopReset();
+                                }
+                                webRtcDesktop.webrtc.onicecandidate = function (e) {
+                                    if (e.candidate == null) {
+                                        desktop.m.sendKvmData(JSON.stringify({ action: 'offer', ver: 1, sdp: webRtcDesktop.webrtcoffer.sdp }));
+                                    } else {
+                                        webRtcDesktop.webrtcoffer.sdp += ("a=" + e.candidate.candidate + "\r\n"); // New candidate, add it to the SDP
+                                    }
+                                }
+                                webRtcDesktop.webrtc.oniceconnectionstatechange = function () {
+                                    if ((webRtcDesktop != null) && (webRtcDesktop.webrtc != null) && ((webRtcDesktop.webrtc.iceConnectionState == 'disconnected') || (webRtcDesktop.webrtc.iceConnectionState == 'failed'))) { /*console.log('WebRTC ICE Failed');*/ webRtcDesktopReset(); }
+                                }
+                                webRtcDesktop.webrtc.createOffer(function (offer) {
+                                    // Got the offer
+                                    webRtcDesktop.webrtcoffer = offer;
+                                    webRtcDesktop.webrtc.setLocalDescription(offer, function () { }, webRtcDesktopReset);
+                                }, webRtcDesktopReset, { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } });
+                            } else if ((data.action == 'answer') && (webRtcDesktop != null)) {
+                                // Complete the WebRTC channel
+                                webRtcDesktop.webrtc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }), function () { }, webRtcDesktopReset);
+                            }
+                        }
+                    };
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
                 } else {
@@ -3687,8 +3758,32 @@
             } else {
                 // Disconnect and clean up the remote desktop
                 desktop.Stop();
+                webRtcDesktopReset();
                 desktopNode = desktop = null;
             }
+        }
+
+        var webRtcDesktop = null;
+        function webRtcDesktopReset() {
+            if (webRtcDesktop == null) return;
+            if (webRtcDesktop.softdesktop != null) { webRtcDesktop.softdesktop.Stop(); webRtcDesktop.softdesktop = null; }
+            if (webRtcDesktop.webchannel != null) { try { webRtcDesktop.webchannel.close(); } catch (e) { } webRtcDesktop.webchannel = null; }
+            if (webRtcDesktop.webrtc != null) { try { webRtcDesktop.webrtc.close(); } catch (e) { } webRtcDesktop.webrtc = null; }
+            webRtcDesktop = null;
+            // Switch back to hardware KVM
+            if (desktop && desktop.m) {
+                desktop.m.hold(false);
+                Q('deskstatus').textContent = StatusStrs[desktop.State];
+            }
+            // ###BEGIN###{DesktopInbandFiles}
+            /*
+            p24files = null;
+            p24downloadFileCancel() // If any downloads are in process, cancel them.
+            p24uploadFileCancel(); // If any uploads are in process, cancel them.
+            QV('go24', false); // Files
+            if (currentView == 24) { go(14); }
+            */
+            // ###END###{DesktopInbandFiles}
         }
 
         function onDesktopStateChange(xdesktop, state) {
@@ -3707,6 +3802,7 @@
                     QV('termdisplays', false);
                     deskFocusBtn.value = 'All Focus';
                     if (fullscreen == true) { deskToggleFull(); }
+                    webRtcDesktopReset();
                     break;
                 case 2:
                     break;
@@ -3809,6 +3905,7 @@
                     var mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('deskarea4').clientHeight));
                     var mw = 9999;
                     if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
+                    if (webRtcDesktop && webRtcDesktop.softdesktop) { mw = (webRtcDesktop.softdesktop.m.width / webRtcDesktop.softdesktop.m.height) * mh; }
                     QS('Desk')['max-height'] = mh + 'px';
                     QS('Desk')['max-width'] = mw + 'px';
                     x = 0;
@@ -3821,6 +3918,7 @@
             } else {
                 var mw = 9999, mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (webPageFullScreen?276:290));
                 if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
+                if (webRtcDesktop && webRtcDesktop.softdesktop) { mw = (webRtcDesktop.softdesktop.m.width / webRtcDesktop.softdesktop.m.height) * mh; }
                 document.documentElement.style.overflow = 'auto';
                 QS('Desk')['max-height'] = mh + 'px';
                 QS('Desk')['max-width'] = mw + 'px';
@@ -3945,10 +4043,10 @@
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousedown(e) }
-        function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mouseup(e) }
-        function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } }
+        function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
+        function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
+        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }

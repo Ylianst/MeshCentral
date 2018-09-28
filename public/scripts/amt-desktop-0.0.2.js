@@ -622,7 +622,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 if (obj.kvmDataSupported == false) { obj.kvmDataSupported = true; console.log('KVM Data Channel Supported.'); }
                 if (((obj.onKvmDataAck == -1) && (d.length == 16)) || (d.charCodeAt(15) != 0)) { obj.onKvmDataAck = true; }
                 //if (urlvars && urlvars['kvmdatatrace']) { console.log('KVM-Recv(' + (d.length - 16) + '): ' + d.substring(16)); }
-                if (d.length > 16) { obj.onKvmData(d.substring(16)); } // Event the data and ack
+                if (d.length >= 16) { obj.onKvmData(d.substring(16)); } // Event the data and ack
                 if ((obj.onKvmDataAck == true) && (obj.onKvmDataPending.length > 0)) { obj.sendKvmData(obj.onKvmDataPending.shift()); } // Send pending data
             }
         }
@@ -635,16 +635,16 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         if (obj.onKvmDataAck !== true) {
             obj.onKvmDataPending.push(x);
         } else {
-            if (urlvars && urlvars['kvmdatatrace']) { console.log('KVM-Send(' + x.length + '): ' + x); }
+            //if (urlvars && urlvars['kvmdatatrace']) { console.log('KVM-Send(' + x.length + '): ' + x); }
             x = '\0KvmDataChannel\0' + x;
-            obj.Send(String.fromCharCode(6, 0, 0, 0) + IntToStr(x.length) + x);
+            obj.send(String.fromCharCode(6, 0, 0, 0) + IntToStr(x.length) + x);
             obj.onKvmDataAck = false;
         }
     }
 
     // Send a HWKVM keep alive if it's not been sent in the last 5 seconds.
     obj.sendKeepAlive = function () {
-        if (obj.lastKeepAlive < Date.now() - 5000) { obj.lastKeepAlive = Date.now(); obj.Send(String.fromCharCode(6, 0, 0, 0) + IntToStr(16) + '\0KvmDataChannel\0'); }
+        if (obj.lastKeepAlive < Date.now() - 5000) { obj.lastKeepAlive = Date.now(); obj.send(String.fromCharCode(6, 0, 0, 0) + IntToStr(16) + '\0KvmDataChannel\0'); }
     }
     // ###END###{DesktopInband}
 
