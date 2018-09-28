@@ -60,6 +60,7 @@
     <Compile Include="meshrelay.js" />
     <Compile Include="meshuser.js" />
     <Compile Include="mpsserver.js" />
+    <Compile Include="public\scripts\agent-redir-rtc-0.1.0.js" />
     <Compile Include="swarmserver.js" />
     <Compile Include="multiserver.js" />
     <Compile Include="pass.js" />
