@@ -25,7 +25,7 @@ function dbus(address, uid)
         .createEvent('signal');
     Object.defineProperty(this, "uid", { value: uid });
     this._child = require('child_process').execFile("/bin/sh", ["sh"], { type: require('child_process').SpawnTypes.TERM, uid: uid == null ? -1 : uid });
-    this._child.stdin.write('dbus-monitor --session "type=\'signal\', interface=\'' + address + '\'" | ( while true; do read X; echo "$X"; done )\n');
+    this._child.stdin.write('dbus-monitor --session "type=\'signal\', interface=\'' + address + '\'" | ( while read X; do echo "$X"; done )\n');
     this._child.stdout.dbus = this;
     this._child.stdout.on('data', function (chunk)
     {

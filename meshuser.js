@@ -86,7 +86,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                 req.session.currentNode = '';
             } else {
                 // Close the websocket connection
-                try { obj.ws.close(); } catch (e) { } return;
+                console.log('NOAUTH1');
+                ws.send(JSON.stringify({ action: 'close', cause: 'noauth' }));
+                try { obj.ws.close(); } catch (e) { }
+                return;
             }
         }
         req.session.ws = obj.ws; // Associate this websocket session with the web session
@@ -120,8 +123,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
             }
         };
 
-        user.subscriptions = obj.parent.subscribe(user._id, ws);   // Subscribe to events
-        obj.ws._socket.setKeepAlive(true, 240000);                 // Set TCP keep alive
+        user.subscriptions = obj.parent.subscribe(user._id, ws); // Subscribe to events
+        try { obj.ws._socket.setKeepAlive(true, 240000); } catch (ex) { } // Set TCP keep alive
 
         // Send current server statistics
         obj.SendServerStats = function () {
@@ -329,7 +332,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                     command.sessionid = ws.sessionId;   // Set the session id, required for responses.
                                     command.rights = rights.rights;     // Add user rights flags to the message
                                     delete command.nodeid;              // Remove the nodeid since it's implyed.
-                                    agent.send(JSON.stringify(command));
+                                    try { agent.send(JSON.stringify(command)); } catch (ex) { }
                                 }
                             } else {
                                 // Check if a peer server is connected to this agent
@@ -601,7 +604,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
 
                         // Get the list of sessions for this user
                         var sessions = obj.parent.wssessions[command.userid];
-                        if (sessions != null) { for (i in sessions) { sessions[i].send(JSON.stringify(notification)); } }
+                        if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
 
                         if (obj.parent.parent.multiServer != null) {
                             // TODO: Add multi-server support
@@ -925,7 +928,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                                         var agent = obj.parent.wsagents[i];
                                                         if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
                                                             //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
-                                                            agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs }));
+                                                            try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
                                                             wakeActions++;
                                                         }
                                                     }
@@ -966,7 +969,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                             var agent = obj.parent.wsagents[node._id];
                                             if (agent != null) {
                                                 // Send the power command
-                                                agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype }));
+                                                try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
                                                 powerActions++;
                                             }
                                         }
@@ -1004,7 +1007,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain) {
                                             var agent = obj.parent.wsagents[node._id];
                                             if (agent != null) {
                                                 // Send the power command
-                                                agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg }));
+                                                try { agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg })); } catch (ex) { }
                                             }
                                         }
                                     }

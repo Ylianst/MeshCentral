@@ -155,58 +155,59 @@
                         <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
                         <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
                     </div><div><h1>My Devices</h1></div>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6>
-                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <div id=devListToolbar class=style14 style="height:100%;float:left;vertical-align:middle">
-                            &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
-                            <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                            <input id=SearchInput type=text style=width:120px placeholder=Search onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
-                            <input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span>
-                        </div>
-                        <div id=kvmListToolbar class=style14 style=height:100%;float:left>
-                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
-                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;
-                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                        </div>
-                        <div id=devMapToolbar class=style14 style=height:100%;float:left>
-                            &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
-                            <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                            <input type=button id=refreshmap title="Reset map view" value=Reset style=margin-left:5px onclick=refreshMap(false,true) />
-                        </div>
-                        <div class="auto-style1" style=height:100%;float:right>
-                            <div style="height:100%;width:4px;float:right;background-color:#ffffff"></div>
-                            <div class=h2 style="height:100%;float:right">&nbsp;</div>
-                            <div style="float:right;display:none" id=devListToolbarView>
-                                View
-                                <select id=viewselect onchange=onDeviceViewChange()>
-                                    <option value=1>Columns</option>
-                                    <option value=2>List</option>
-                                    <option value=3>Desktops</option>
-                                    <option id=viewselectmapoption value=4>Map</option>
-                                </select>
-                            </div>
-                            <div style=float:right id=devListToolbarSort>
-                                Sort
-                                <select id=sortselect onchange=onSortSelectChange()>
-                                    <option>Group</option>
-                                    <option>Power</option>
-                                    <option>Device</option>
-                                    <option>Tags</option>
-                                </select>
-                                &nbsp;
-                            </div>
-                            <div style=float:right id=devListToolbarSize>
-                                Size
-                                <select id=sizeselect onchange=onDeviceViewChange()>
-                                    <option value=0>Small</option>
-                                    <option value=1>Medium</option>
-                                    <option value=2>Large</option>
-                                </select>
-                                &nbsp;
-                            </div>
-                        </div>
-                    </div>
+                    <table style=width:100%;height:24px;background-color:#d3d9d6;vertical-align:middle;border-spacing:0>
+                        <tr>
+                            <td class=h1></td>
+                            <td id=devListToolbar class=style14>
+                                &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
+                                <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
+                                <input id=SearchInput type=text style=width:120px placeholder=Search onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                                <input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span>
+                            </td>
+                            <td id=kvmListToolbar class=style14 style=height:100%>
+                                &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                                <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                                <input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;
+                                <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                            </td>
+                            <td id=devMapToolbar class=style14 style=height:100%>
+                                &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
+                                <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
+                                <input type=button id=refreshmap title="Reset map view" value=Reset style=margin-left:5px onclick=refreshMap(false,true) />
+                            </td>
+                            <td class="auto-style1" style=height:100%>
+                                <div style="float:right;display:none" id=devListToolbarView>
+                                    View
+                                    <select id=viewselect onchange=onDeviceViewChange()>
+                                        <option value=1>Columns</option>
+                                        <option value=2>List</option>
+                                        <option value=3>Desktops</option>
+                                        <option id=viewselectmapoption value=4>Map</option>
+                                    </select>
+                                </div>
+                                <div style=float:right id=devListToolbarSort>
+                                    Sort
+                                    <select id=sortselect onchange=onSortSelectChange()>
+                                        <option>Group</option>
+                                        <option>Power</option>
+                                        <option>Device</option>
+                                        <option>Tags</option>
+                                    </select>
+                                    &nbsp;
+                                </div>
+                                <div style=float:right id=devListToolbarSize>
+                                    Size
+                                    <select id=sizeselect onchange=onDeviceViewChange()>
+                                        <option value=0>Small</option>
+                                        <option value=1>Medium</option>
+                                        <option value=2>Large</option>
+                                    </select>
+                                    &nbsp;
+                                </div>
+                            </td>
+                            <td class=h2></td>
+                        </tr>
+                    </table>
                     <div id=NoMeshesPanel style=display:none>
                         <table style="width:100%;padding:20px">
                             <tr>
@@ -253,40 +254,38 @@
                 </div>
                 <div id=p3 style=display:none>
                     <h1>My Events</h1>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
-                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
-                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style=display:none value="Delete All..." />&nbsp;</div>
-                        <div class="auto-style1" style="height:100%;float:right">
-                            Show
-                            <select id=p3limitdropdown onchange=refreshEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                            </select>
-                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
-                            <div class="h2" style="height:100%;float:right;">&nbsp;</div>
-                        </div>
-                    </div>
+                    <table style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0>
+                        <tr>
+                            <td class=h1></td>
+                            <td>&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style=display:none value="Delete All..." /></td>
+                            <td class=auto-style1>
+                                Show
+                                <select id=p3limitdropdown onchange=refreshEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                </select>
+                            </td>
+                            <td class=h2></td>
+                        </tr>
+                    </table>
                     <div id=p3events style="height:calc(100vh - 243px);overflow-y:scroll"></div>
                 </div>
                 <div id=p4 style=display:none>
                     <h1>My Users</h1>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
-                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
-                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <div class=style14 style=height:100%;float:left>
-                            &nbsp;&nbsp;
-                            <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
-                            <input id=UserSearchInput type=text style=width:120px placeholder=Search onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
-                        </div>
-                        <div class=auto-style1 style="height:100%;float:right">
-                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
-                            <div class=h2 style="height:100%;float:right">&nbsp;</div>
-                        </div>
-                    </div>
+                    <table style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0>
+                        <tr>
+                            <td class=h1></td>
+                            <td class=style14>
+                                &nbsp;
+                                <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
+                                <input id=UserSearchInput type=text style=width:120px placeholder=Search onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
+                            </td>
+                            <td class=h2></td>
+                        </tr>
+                    </table>
                     <div id="p3users" style="max-height:calc(100vh - 243px);overflow-y:auto"></div>
                 </div>
                 <div id=p5 style=display:none>
@@ -1235,7 +1234,7 @@
                         x += addHtmlValue2('Current Version', '<b>' + EscapeHtml(message.current) + '</b>');
                         x += addHtmlValue2('Latest Version', '<b>' + EscapeHtml(message.latest) + '</b>');
                         x += '</div>';
-                        if ((message.current == message.latest) || ((features & 2048) == 0)) {
+                        if ((message.latest.indexOf('.') == -1) || (message.current == message.latest) || ((features & 2048) == 0)) {
                             setDialogMode(2, "MeshCentral Version", 1, null, x);
                         } else {
                             setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x + '<br /><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to start server self-update.');
@@ -2595,6 +2594,7 @@
             } catch (ex) {
                 console.log(ex);
                 QV('viewselectmapoption', false);
+                QV('devViewButton4', false);
                 xxmap = null;
             }
         }
@@ -6176,9 +6176,7 @@
                 for (var i in message.values) {
                     x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + i + '</div>';
                     for (var j in message.values[i]) {
-                        x += '<div style=width:300px;display:inline-block><div class=bar style=height:24px;width:100%;font-size:medium>';
-                        x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
-                        x += '<div><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></div></div></div>';
+                        x += '<div style=display:inline-block><table style=width:300px;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0><tr><td class=h1></td><td><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
                     }
                 }
             }
