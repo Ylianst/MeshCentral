@@ -679,7 +679,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     };
 
     function ChangeHostname(socket, host) {
-        if (socket.tag.host == host) return; // Nothing to change
+        if (socket.tag.host === host) return; // Nothing to change
         socket.tag.host = host;
 
         // Change the device

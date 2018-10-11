@@ -214,7 +214,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
         var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
         // Query the db for the given username
-        if (!user) return fn(new Error('cannot find user'));
+        if (!user) { fn(new Error('cannot find user')); return; }
         // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
         if (user.salt == null) {
             fn(new Error('invalid password'));
@@ -1803,7 +1803,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
         obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
-        obj.app.ws(url + 'control.ashx', function (ws, req) { try { var domain = checkUserIpAddress(ws, req); if (domain != null) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); } } catch (e) { console.log(e); } });
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
         obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
@@ -1813,6 +1812,57 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
         obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
+
+        // User login
+        obj.app.ws(url + 'control.ashx', function (ws, req) {
+            try {
+                var domain = checkUserIpAddress(ws, req);
+                if (domain != null) {
+                    var loginok = false;
+                    // Check if the user is logged in
+                    if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) {
+                        // If a default user is active, setup the session here.
+                        if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                            if (req.session && req.session.loginmode) { delete req.session.loginmode; }
+                            req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
+                            req.session.domainid = domain.id;
+                            req.session.currentNode = '';
+                            obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
+                            loginok = true;
+                        } else {
+                            // See the the user/pass is provided in URL arguments
+                            if ((req.query.user != null) && (req.query.pass != null)) {
+                                loginok = true;
+                                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                                    var loginok2 = false;
+                                    if (err == null) {
+                                        var user = obj.users[userid];
+                                        if (user) {
+                                            req.session.userid = userid;
+                                            req.session.domainid = domain.id;
+                                            req.session.currentNode = '';
+                                            obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
+                                            loginok2 = true;
+                                        }
+                                    }
+                                    if (loginok2 == false) {
+                                        // Close the websocket connection
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
+                        loginok = true;
+                    }
+                    if (loginok == false) {
+                        // Close the websocket connection
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+                    }
+                }
+            } catch (e) { console.log(e); }
+        });
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
