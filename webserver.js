@@ -1081,8 +1081,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!user) { console.log('ERR: Not a user'); return; }
         Debug(1, 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
 
-        ws.pause();                                         // Hold this socket until we are ready.
-        ws._socket.setKeepAlive(true, 240000);              // Set TCP keep alive
+        ws.pause();                                                     // Hold this socket until we are ready.
+        try { ws._socket.setKeepAlive(true, 240000); } catch (ex) { }   // Set TCP keep alive
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
@@ -1150,7 +1150,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (e) { } }
                     };
 
-                    // Handke CIRA tunnel state change
+                    // Handle CIRA tunnel state change
                     chnl.onStateChange = function (ciraconn, state) {
                         Debug(2, 'Relay TLS CIRA state change', state);
                         if (state == 0) { try { ws.close(); } catch (e) { } }
@@ -1169,6 +1169,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         try {
                             data = data.toString('binary');
                             if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
+                            //ws.send(Buffer.from(data, 'binary'));
                             ws.send(data);
                         } catch (e) { }
                     });
@@ -1209,7 +1210,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.forwardclient.onData = function (ciraconn, data) {
                     Debug(4, 'Relay CIRA data', data.length);
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    if (data.length > 0) { try { ws.send(data); } catch (e) { } } // TODO: Add TLS support
+                    if (data.length > 0) { try { ws.send(new Buffer(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
                 };
 
                 ws.forwardclient.onSendOk = function (ciraconn) {
@@ -1801,8 +1802,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.post(url + 'resetaccount', handleResetAccountRequest);
         obj.app.get(url + 'checkmail', handleCheckMailRequest);
         obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
-        obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
-        obj.app.ws(url + 'webrelay.ashx', handleRelayWebSocket);
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
         obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
@@ -1812,57 +1811,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
         obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
-
-        // User login
-        obj.app.ws(url + 'control.ashx', function (ws, req) {
-            try {
-                var domain = checkUserIpAddress(ws, req);
-                if (domain != null) {
-                    var loginok = false;
-                    // Check if the user is logged in
-                    if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) {
-                        // If a default user is active, setup the session here.
-                        if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
-                            if (req.session && req.session.loginmode) { delete req.session.loginmode; }
-                            req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
-                            req.session.domainid = domain.id;
-                            req.session.currentNode = '';
-                            obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
-                            loginok = true;
-                        } else {
-                            // See the the user/pass is provided in URL arguments
-                            if ((req.query.user != null) && (req.query.pass != null)) {
-                                loginok = true;
-                                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                                    var loginok2 = false;
-                                    if (err == null) {
-                                        var user = obj.users[userid];
-                                        if (user) {
-                                            req.session.userid = userid;
-                                            req.session.domainid = domain.id;
-                                            req.session.currentNode = '';
-                                            obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
-                                            loginok2 = true;
-                                        }
-                                    }
-                                    if (loginok2 == false) {
-                                        // Close the websocket connection
-                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
-                                    }
-                                });
-                            }
-                        }
-                    } else {
-                        obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws, req, obj.args, domain); // Accept the connection
-                        loginok = true;
-                    }
-                    if (loginok == false) {
-                        // Close the websocket connection
-                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
-                    }
-                }
-            } catch (e) { console.log(e); }
-        });
+        obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
+        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformSessionAuth(ws, req, handleRelayWebSocket); });
+        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformSessionAuth(ws, req, function (ws1, req1, domain) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
@@ -1893,6 +1844,51 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Indicates to ExpressJS that the public folder should be used to serve static files.
         obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));
+    }
+
+    // Authenticates a session and forwards
+    function PerformSessionAuth(ws, req, func) {
+        try {
+            var domain = checkUserIpAddress(ws, req);
+            if (domain != null) {
+                var loginok = false;
+                // Check if the user is logged in
+                if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) {
+                    // If a default user is active, setup the session here.
+                    if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                        if (req.session && req.session.loginmode) { delete req.session.loginmode; }
+                        req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
+                        req.session.domainid = domain.id;
+                        func(ws, req, domain);
+                        loginok = true;
+                    } else {
+                        // See the the user/pass is provided in URL arguments
+                        if ((req.query.user != null) && (req.query.pass != null)) {
+                            loginok = true;
+                            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                                var loginok2 = false;
+                                if (err == null) {
+                                    var user = obj.users[userid];
+                                    if (user) {
+                                        req.session.userid = userid;
+                                        req.session.domainid = domain.id;
+                                        func(ws, req, domain);
+                                        loginok2 = true;
+                                    }
+                                }
+                                // If not authenticated, close the websocket connection
+                                if (loginok2 == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { } }
+                            });
+                        }
+                    }
+                } else {
+                    func(ws, req, domain);
+                    loginok = true;
+                }
+                // If not authenticated, close the websocket connection
+                if (loginok == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { } }
+            }
+        } catch (e) { console.log(e); }
     }
 
     // Find a free port starting with the specified one and going up.
