@@ -1271,7 +1271,7 @@
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
                         var basicPort = "{{{serverRedirPort}}}"==""?"{{{serverPublicPort}}}":"{{{serverRedirPort}}}";
-                        rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + "&HOL=1";
+                        var rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + "&HOL=1";
                         window.open(rdpurl, '_blank');
                     }
                     break;
