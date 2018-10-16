@@ -1865,7 +1865,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // A default user is active
                 func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
                 return;
-            } else if (req.session && (req.session.userid != null) && (req.session.domainid == obj.domain.id)) {
+            } else if (req.session && (req.session.userid != null) && (req.session.domainid == domain.id)) {
                 // This user is logged in using the ExpressJS session
                 func(ws, req, domain, req.session.userid);
                 return;
