@@ -263,7 +263,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (action == null) return;
         if (!event) { var event = window.event; }
         var kc = event.keyCode;
-        if (kc == 0x3B) kc = 0xBA; // ';' key
+        if (kc == 59) kc = 186; // Correct for ';' key in Firefox
+        if (kc == 61) kc = 187; // Correct for '=' key in Firefox
+        if (kc == 173) kc = 189; // Correct for '-' key in Firefox
         obj.SendKeyMsgKC(action, kc);
     }
 

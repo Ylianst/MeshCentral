@@ -1063,7 +1063,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!(req.query.host)) { console.log('ERR: No host target specified'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
         Debug(1, 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
 
-        ws.pause();                                                     // Hold this socket until we are ready.
         try { ws._socket.setKeepAlive(true, 240000); } catch (ex) { }   // Set TCP keep alive
 
         // Fetch information about the target
@@ -1104,6 +1103,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // If Intel AMT CIRA connection is available, use it
             if (((conn & 2) != 0) && (parent.mpsserver.ciraConnections[req.query.host] != null)) {
+                Debug(1, 'Opening relay CIRA channel connection to ' + req.query.host + '.');
+
                 var ciraconn = parent.mpsserver.ciraConnections[req.query.host];
 
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
@@ -1114,7 +1115,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Setup a new CIRA channel
                 if ((port == 16993) || (port == 16995)) {
-                    // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why )
+                    // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why. Well, could be broken TLS 1.0 in firmware )
                     var ser = new SerialTunnel();
                     var chnl = parent.mpsserver.SetupCiraChannel(ciraconn, port);
 
@@ -1217,7 +1218,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // If Intel AMT direct connection is possible, option a direct socket
             if ((conn & 4) != 0) {   // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
-                Debug(2, 'Opening relay TCP socket connection to ' + req.query.host + '.');
+                Debug(1, 'Opening relay TCP socket connection to ' + req.query.host + '.');
 
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
@@ -1795,7 +1796,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
         obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
-        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
+        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
@@ -1831,6 +1832,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         try {
+            // Hold this websocket until we are ready.
+            ws.pause();
+
             // Check IP filtering and domain
             var domain = checkUserIpAddress(ws, req);
             if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); return; } catch (e) { return; } }
@@ -1843,9 +1847,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // We are authenticated
                         func(ws, req, domain, obj.users[userid]);
                     } else {
-                        // If not authenticated, close the websocket connection
-                        Debug(1, 'ERR: Websocket bad user/pass auth');
-                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+                        // Failed to authenticate, see if a default user is active
+                        if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                            // A default user is active
+                            func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
+                        } else {
+                            // If not authenticated, close the websocket connection
+                            Debug(1, 'ERR: Websocket bad user/pass auth');
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+                        }
                     }
                 });
                 return;
@@ -1865,9 +1875,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // A default user is active
                 func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
                 return;
-            } else if (req.session && (req.session.userid != null) && (req.session.domainid == domain.id)) {
+            } else if (req.session && (req.session.userid != null) && (req.session.domainid == domain.id) && (obj.users[req.session.userid])) {
                 // This user is logged in using the ExpressJS session
-                func(ws, req, domain, req.session.userid);
+                func(ws, req, domain, obj.users[req.session.userid]);
                 return;
             }
 
