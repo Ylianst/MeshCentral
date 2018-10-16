@@ -1792,10 +1792,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
         obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
         obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
-        obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
+        obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
-        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, handleRelayWebSocket); });
-        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
+        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
+        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
@@ -1829,7 +1829,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Authenticates a session and forwards
-    function PerformWSSessionAuth(ws, req, func) {
+    function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         try {
             // Check IP filtering and domain
             var domain = checkUserIpAddress(ws, req);
@@ -1870,9 +1870,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 func(ws, req, domain, req.session.userid);
                 return;
             }
-            // If not authenticated, close the websocket connection
-            Debug(1, 'ERR: Websocket no auth');
-            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+
+            if (noAuthOk != true) {
+                // If not authenticated, close the websocket connection
+                Debug(1, 'ERR: Websocket no auth');
+                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
+            } else {
+                // Continue this session without user authentication,
+                // this is expected if the agent is connecting for a tunnel.
+                func(ws, req, domain, null);
+            }
         } catch (e) { console.log(e); }
     }
 
