@@ -13,11 +13,13 @@
 /*jshint esversion: 6 */
 "use strict";
 
-module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
+module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
     var obj = {};
     obj.ws = ws;
     obj.req = req;
     obj.peer = null;
+    obj.user = user;
+    obj.cookie = cookie;
     obj.parent = parent;
     obj.id = req.query.id;
     obj.remoteaddr = obj.ws._socket.remoteAddress;
@@ -69,49 +71,25 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain) {
         return false;
     };
 
-    if (req.query.auth == null) {
-        // Use ExpressJS session, check if this session is a logged in user, at least one of the two connections will need to be authenticated.
-        try { if ((req.session) && (req.session.userid) || (req.session.domainid == obj.domain.id)) { obj.authenticated = true; } } catch (e) { }
-        if ((obj.authenticated != true) && (req.query.user != null) && (req.query.pass != null)) {
-            // Check user authentication
-            obj.parent.authenticate(req.query.user, req.query.pass, obj.domain, function (err, userid, passhint) {
-                if (userid != null) {
-                    obj.authenticated = true;
-                    // Check if we have agent routing instructions, process this here.
-                    if ((req.query.nodeid != null) && (req.query.tcpport != null)) {
-                        if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                        var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
-                        if (obj.sendAgentMessage(command, userid, obj.domain.id) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
-                    }
-                } else {
-                    obj.parent.parent.debug(1, 'Relay: User authentication failed (' + obj.remoteaddr + ')');
-                    obj.ws.send('error:Authentication failed');
-                }
-                performRelay();
-            });
-        } else {
-            performRelay();
-        }
-    } else {
-        // Get the session from the cookie
-        var cookie = obj.parent.parent.decodeCookie(req.query.auth);
-        if (cookie != null) {
-            obj.authenticated = true;
-            if (cookie.tcpport != null) {
-                // This cookie has agent routing instructions, process this here.
-                if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                // Send connection request to agent
-                var command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
-                if (obj.sendAgentMessage(command, cookie.userid, cookie.domainid) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
-            }
-        } else {
-            obj.id = null;
-            obj.parent.parent.debug(1, 'Relay: invalid cookie (' + obj.remoteaddr + ')');
-            obj.ws.send('error:Invalid cookie');
-        }
-        performRelay();
-    }
+    // Mark this relay session as authenticated if this is the user end.
+    obj.authenticated = (obj.user != null);
 
+    // Kick off the routing, if we have agent routing instructions, process them here.
+    if ((obj.cookie != null) && (obj.cookie.nodeid != null) && (obj.cookie.tcpport != null) && (obj.cookie.domainid != null)) {
+        // We have routing instructions in the cookie, Send connection request to agent
+        if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+        var command = { nodeid: obj.cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: obj.cookie.tcpport, tcpaddr: obj.cookie.tcpaddr };
+        obj.parent.parent.debug(1, 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
+        if (obj.sendAgentMessage(command, obj.cookie.userid, obj.cookie.domainid) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
+    } else if ((req.query.nodeid != null) && (req.query.tcpport != null)) {
+        // We have routing instructions in the URL arguments, Send connection request to agent
+        if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+        var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
+        obj.parent.parent.debug(1, 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
+        if (obj.sendAgentMessage(command, userid, obj.domain.id) == false) { obj.id = null; obj.parent.parent.debug(1, 'Relay: Unable to contact this agent (' + obj.remoteaddr + ')'); }
+    }
+    performRelay();
+    
     function performRelay() {
         if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive

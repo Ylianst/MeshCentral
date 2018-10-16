@@ -1059,26 +1059,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     };
 
     // Handle a web socket relay request
-    function handleRelayWebSocket(ws, req) {
-        var domain = checkUserIpAddress(ws, req);
-        if (domain == null) return;
-        // Check if this is a logged in user
-        var user, peering = true;
-        if (req.query.auth == null) {
-            // Use ExpressJS session
-            if (!req.session || !req.session.userid) { return; } // Web socket attempt without login, disconnect.
-            if (req.session.domainid != domain.id) { console.log('ERR: Invalid domain'); return; }
-            user = obj.users[req.session.userid];
-        } else {
-            // Get the session from the cookie
-            if (obj.parent.multiServer == null) { return; }
-            var session = obj.parent.decodeCookie(req.query.auth);
-            if (session == null) { console.log('ERR: Invalid cookie'); return; }
-            if (session.domainid != domain.id) { console.log('ERR: Invalid domain'); return; }
-            user = obj.users[session.userid];
-            peering = false; // Don't allow the connection to jump again to a different server
-        }
-        if (!user) { console.log('ERR: Not a user'); return; }
+    function handleRelayWebSocket(ws, req, domain, user, cookie) {
+        if (!(req.query.host)) { console.log('ERR: No host target specified'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
         Debug(1, 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
 
         ws.pause();                                                     // Hold this socket until we are ready.
@@ -1086,13 +1068,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
-            if (docs.length == 0) { console.log('ERR: Node not found'); return; }
+            if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
             var node = docs[0];
-            if (!node.intelamt) { console.log('ERR: Not AMT node'); return; }
+            if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
 
             // Check if this user has permission to manage this computer
             var meshlinks = user.links[node.meshid];
-            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); return; }
+            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
 
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
@@ -1100,7 +1082,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (!state || state.connectivity == 0) { Debug(1, 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
 
             // Check what server needs to handle this connection
-            if ((obj.parent.multiServer != null) && (peering == true)) {
+            if ((obj.parent.multiServer != null) && (cookie == null)) { // If a cookie is provided, don't allow the connection to jump again to a different server
                 var server = obj.parent.GetRoutingServerId(req.query.host, 2); // Check for Intel CIRA connection
                 if (server != null) {
                     if (server.serverid != obj.parent.serverId) {
@@ -1810,10 +1792,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
         obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
         obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
-        obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { try { obj.meshRelayHandler.CreateMeshRelay(obj, ws, req, getDomain(req)); } catch (e) { console.log(e); } });
+        obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
-        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformSessionAuth(ws, req, handleRelayWebSocket); });
-        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformSessionAuth(ws, req, function (ws1, req1, domain) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
+        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, handleRelayWebSocket); });
+        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain); }); });
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
@@ -1847,47 +1829,50 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Authenticates a session and forwards
-    function PerformSessionAuth(ws, req, func) {
+    function PerformWSSessionAuth(ws, req, func) {
         try {
+            // Check IP filtering and domain
             var domain = checkUserIpAddress(ws, req);
-            if (domain != null) {
-                var loginok = false;
-                // Check if the user is logged in
-                if ((!req.session) || (!req.session.userid) || (req.session.domainid != domain.id)) {
-                    // If a default user is active, setup the session here.
-                    if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
-                        if (req.session && req.session.loginmode) { delete req.session.loginmode; }
-                        req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
-                        req.session.domainid = domain.id;
-                        func(ws, req, domain);
-                        loginok = true;
+            if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); return; } catch (e) { return; } }
+
+            // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
+            if ((req.query.user != null) && (req.query.pass != null)) {
+                // A user/pass is provided in URL arguments
+                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                    if ((err == null) && (obj.users[userid])) {
+                        // We are authenticated
+                        func(ws, req, domain, obj.users[userid]);
                     } else {
-                        // See the the user/pass is provided in URL arguments
-                        if ((req.query.user != null) && (req.query.pass != null)) {
-                            loginok = true;
-                            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                                var loginok2 = false;
-                                if (err == null) {
-                                    var user = obj.users[userid];
-                                    if (user) {
-                                        req.session.userid = userid;
-                                        req.session.domainid = domain.id;
-                                        func(ws, req, domain);
-                                        loginok2 = true;
-                                    }
-                                }
-                                // If not authenticated, close the websocket connection
-                                if (loginok2 == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { } }
-                            });
-                        }
+                        // If not authenticated, close the websocket connection
+                        Debug(1, 'ERR: Websocket bad user/pass auth');
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
                     }
+                });
+                return;
+            } else if (req.query.auth != null) {
+                // This is a encrypted cookie authentication
+                var cookie = obj.parent.decodeCookie(req.query.auth, null, 60); // Cookie with 60 minute timeout
+                if ((cookie != null) && (obj.users[cookie.userid])) {
+                    // Valid cookie, we are authenticated
+                    func(ws, req, domain, obj.users[cookie.userid], cookie);
                 } else {
-                    func(ws, req, domain);
-                    loginok = true;
+                    // This is a bad cookie
+                    Debug(1, 'ERR: Websocket bad cookie auth: ' + req.query.auth);
+                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
                 }
-                // If not authenticated, close the websocket connection
-                if (loginok == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { } }
+                return;
+            } else if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                // A default user is active
+                func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
+                return;
+            } else if (req.session && (req.session.userid != null) && (req.session.domainid == obj.domain.id)) {
+                // This user is logged in using the ExpressJS session
+                func(ws, req, domain, req.session.userid);
+                return;
             }
+            // If not authenticated, close the websocket connection
+            Debug(1, 'ERR: Websocket no auth');
+            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); } catch (e) { }
         } catch (e) { console.log(e); }
     }
 
