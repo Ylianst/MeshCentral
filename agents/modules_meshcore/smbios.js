@@ -143,15 +143,45 @@ function SMBiosTables()
             });
             return;
         }
-        throw (process.platform + ' not supported');
+        if (callback) { callback.apply(this, [null]); return; } else { return (null); }
     };
     this.parse = function parse(data) {
         var r = {};
-        r.processorInfo = this.processorInfo(data);
-        r.memoryInfo = this.memoryInfo(data);
-        r.systemInfo = this.systemInfo(data);
-        r.systemSlots = this.systemInfo(data);
-        r.amtInfo = this.amtInfo(data);
+        try
+        {
+            r.processorInfo = this.processorInfo(data);
+        }
+        catch(e)
+        {
+        }
+        try
+        {
+            r.memoryInfo = this.memoryInfo(data);
+        }
+        catch(e)
+        {
+        }
+        try
+        {
+            r.systemInfo = this.systemInfo(data);
+        }
+        catch(e)
+        {
+        }
+        try
+        {
+            r.systemSlots = this.systemInfo(data);
+        }
+        catch(e)
+        {
+        }
+        try
+        {
+            r.amtInfo = this.amtInfo(data);
+        }
+        catch(e)
+        {
+        }
         return r;
     }
     this.processorInfo = function processorInfo(data) {

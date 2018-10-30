@@ -458,6 +458,7 @@
                                         <option value=2>Win+L</option>
                                         <option value=3>Win+M</option>
                                         <option value=4>Shift+Win+M</option>
+                                        <option value=6>Win+R</option>
                                     </select>
                                     <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                                     <input id="DeskCAD" style="margin-left:6px" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
@@ -3971,6 +3972,12 @@
                     desktop.m.sendkey([[0xffe7,1],[0xffe7,0]]); // Intel AMT: Meta-left down, Meta-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN,0x5B], [desktop.m.KeyAction.EXUP,0x5B]]); // MeshAgent: L-Winkey press, L-Winkey release
+                }
+            } else if (ks == 6) { // WIN+R
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0x72, 1], [0x72, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 82], [desktop.m.KeyAction.UP, 82], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'R' press, 'R' release, L-Winkey release
                 }
             }
         }
