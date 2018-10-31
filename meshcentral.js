@@ -398,11 +398,44 @@ function CreateMeshCentralServer(config, args) {
         });
     };
 
-    // Start the server with the given certificates
+    // Start the server with the given certificates, but check if we have web certificates to load
     obj.StartEx3 = function (certs) {
-        var i;
+        var i, webCertLoadCount = 0;
         obj.certificates = certs;
         obj.certificateOperations.acceleratorStart(certs); // Set the state of the accelerators
+
+        // Load any domain web certificates
+        for (i in obj.config.domains) {
+            if (obj.config.domains[i].certurl != null) {
+                // Load web certs
+                webCertLoadCount++;
+                obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, obj.config.domains[i], function (url, cert, xdomain) {
+                    if (cert != null) {
+                        try {
+                            // Decode a RSA certificate and hash the public key
+                            var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert.raw.toString('binary')));
+                            var hash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+                            xdomain.certhash = hash;
+                        } catch (ex) {
+                            // This may be a ECDSA certificate, hash the entire cert
+                            xdomain.certhash = obj.crypto.createHash('sha384').update(cert.raw).digest('hex');
+                        }
+                    } else {
+                        console.log('Failed to load web certificate at: ' + url);
+                    }
+                    webCertLoadCount--;
+                    if (webCertLoadCount == 0) { obj.StartEx4(); } // Done loading all certificates
+                });
+            }
+        }
+
+        // No certificate to load, start the server
+        if (webCertLoadCount == 0) { obj.StartEx4(); }
+    }
+
+    // Start the server with the given certificates
+    obj.StartEx4 = function () {
+        var i;
 
         // If the certificate is un-configured, force LAN-only mode
         if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }
@@ -435,7 +468,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
                 if (!obj.args.sessionkey) { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
 
-                // Start eh web server and if needed, the redirection web server.
+                // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
                 if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
 
