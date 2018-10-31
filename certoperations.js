@@ -20,10 +20,24 @@ module.exports.CertificateOperations = function () {
     obj.fs = require("fs");
     obj.forge = require("node-forge");
     obj.crypto = require("crypto");
+    obj.tls = require('tls');
     obj.pki = obj.forge.pki;
     obj.dirExists = function (filePath) { try { return obj.fs.statSync(filePath).isDirectory(); } catch (err) { return false; } };
     obj.getFilesizeInBytes = function (filename) { try { return obj.fs.statSync(filename).size; } catch (err) { return -1; } };
     obj.fileExists = function (filePath) { try { return obj.fs.statSync(filePath).isFile(); } catch (err) { return false; } };
+
+    // Return the certificate of the remote HTTPS server
+    obj.loadCertificate = function (url, tag, func) {
+        var u = require('url').parse(url);
+        if (u.protocol == 'https:') {
+            var tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
+            tlssocket.xxurl = url;
+            tlssocket.xxfunc = func;
+            tlssocket.xxtag = tag;
+            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert, this.xxtag); });
+            tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, this.xxtag); });
+        } else { func(url, null, tag); }
+    };
 
     // Return the SHA386 hash of the certificate public key
     obj.getPublicKeyHash = function (cert) {
