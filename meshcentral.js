@@ -416,9 +416,11 @@ function CreateMeshCentralServer(config, args) {
                             var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert.raw.toString('binary')));
                             var hash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
                             xdomain.certhash = hash;
+                            console.log('Loaded RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
                         } catch (ex) {
                             // This may be a ECDSA certificate, hash the entire cert
                             xdomain.certhash = obj.crypto.createHash('sha384').update(cert.raw).digest('hex');
+                            console.log('Loaded non-RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
                         }
                     } else {
                         console.log('Failed to load web certificate at: ' + url);

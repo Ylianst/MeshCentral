@@ -38,10 +38,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentInfo = null;
     obj.agentUpdate = null;
     const agentUpdateBlockSize = 65520;
-    obj.remoteaddr = obj.ws._socket.remoteAddress;
-    obj.useSHA386 = false;
-    obj.agentConnectCount = ++AgentConnectCount;
+    obj.remoteaddr = req.ip;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
+    obj.remoteaddrport = obj.remoteaddr + ':' + obj.ws._socket.remotePort;
+    obj.agentConnectCount = ++AgentConnectCount;
     ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
     // Send a message to the mesh agent
@@ -49,8 +49,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Disconnect this agent
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { obj.ws._socket._parent.end(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (arg == 3) { obj.authenticated = -1; } // Don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
@@ -197,8 +197,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                // Check that the server hash matches our own web certificate hash (SHA386)
-                if (getWebCertHash(obj.domain) != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash (' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' != ' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddr + ').'); return; }
+                // Check that the server hash matches our own web certificate hash (SHA384)
+                if (getWebCertHash(obj.domain) != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash (' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' != ' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 obj.agentnonce = msg.substring(50, 98);
@@ -223,7 +223,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check the agent signature if we can
                 if (obj.unauthsign != null) {
-                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').'); return; } else { completeAgentConnection(); }
+                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return; } else { completeAgentConnection(); }
                 }
             }
             else if (cmd == 2) {
@@ -238,7 +238,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + new Buffer(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
 
                 // Check the agent signature if we can
-                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddr + ').'); return; } }
+                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return; } }
                 completeAgentConnection();
             }
             else if (cmd == 3) {
@@ -279,8 +279,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } obj.close(0); });
-    // obj.ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); } });
+    ws.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } obj.close(0); });
+    // obj.ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
@@ -294,8 +294,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Check that the mesh exists
         var mesh = obj.parent.meshes[obj.dbMeshKey];
-        if (mesh == null) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddr + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
-        if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddr + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        if (mesh == null) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
 
         // Check that the node exists
         obj.db.Get(obj.dbNodeKey, function (err, nodes) {
@@ -349,7 +349,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.parent.wsagents[obj.dbNodeKey] = obj;
             if (dupAgent) {
                 // Close the duplicate agent
-                if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ')'); }
+                if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
                 dupAgent.close(3);
             } else {
                 // Indicate the agent is connected
@@ -432,7 +432,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.agentnonce;
         delete obj.unauth;
         if (obj.unauthsign) delete obj.unauthsign;
-        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddr + ':' + obj.ws._socket.remotePort + ').');
+        obj.parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddrport + ').');
         obj.authenticated = 1;
         return true;
     }
@@ -442,7 +442,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         var i;
         var str = msg.toString('utf8'), command = null;
         if (str[0] == '{') {
-            try { command = JSON.parse(str); } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddr + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str); } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddrport + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
             if (typeof command != 'object') { return; }
             switch (command.action) {
                 case 'msg':
