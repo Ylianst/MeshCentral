@@ -39,7 +39,7 @@ module.exports.CertificateOperations = function () {
         } else { func(url, null, tag); }
     };
 
-    // Return the SHA386 hash of the certificate public key
+    // Return the SHA384 hash of the certificate public key
     obj.getPublicKeyHash = function (cert) {
         var publickey = obj.pki.certificateFromPem(cert).publicKey;
         return obj.pki.getPublicKeyFingerprint(publickey, { encoding: "hex", md: obj.forge.md.sha384.create() });
@@ -122,7 +122,7 @@ module.exports.CertificateOperations = function () {
             rcount++;
         }
 
-        if (args.tlsoffload === true) {
+        if (args.tlsoffload) {
             // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
             if (obj.fileExists(parent.getConfigFilePath("webserver-cert-public.crt"))) {
                 r.web = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-public.crt"), "utf8") };
@@ -204,7 +204,7 @@ module.exports.CertificateOperations = function () {
         for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
-                if (args.tlsoffload === true) {
+                if (args.tlsoffload) {
                     // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
                     if (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"))) {
                         r.dns[i] = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), "utf8") };
@@ -370,7 +370,7 @@ module.exports.CertificateOperations = function () {
         for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
-                if (args.tlsoffload != true) {
+                if (!args.tlsoffload) {
                     // If the web certificate does not exist, create it
                     if ((obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt")) === false) || (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-private.key")) === false)) {
                         console.log("Generating HTTPS certificate for " + i + "...");

@@ -178,23 +178,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Setup middleware
     obj.app.engine('handlebars', obj.exphbs({})); // defaultLayout: 'main'
     obj.app.set('view engine', 'handlebars');
+    if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
     obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
-    if (obj.args.sessiontime != null) {
-        obj.app.use(obj.session({
-            name: 'xid', // Recommanded security practice to not use the default cookie name
-            httpOnly: true,
-            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-            secure: (obj.args.notls != true), // Use this cookie only over TLS
-            maxAge: (obj.args.sessiontime * 60 * 1000) // Number of minutes
-        }));
-    } else {
-        obj.app.use(obj.session({
-            name: 'xid', // Recommanded security practice to not use the default cookie name
-            httpOnly: true,
-            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-            secure: (obj.args.notls != true) // Use this cookie only over TLS
-        }));
+    var sessionOptions = {
+        name: 'xid', // Recommanded security practice to not use the default cookie name
+        httpOnly: true,
+        keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+        secure: (obj.args.notls != true) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
     }
+    if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); } 
+    obj.app.use(obj.session(sessionOptions));
 
     // Session-persisted message middleware
     obj.app.use(function (req, res, next) {
@@ -283,9 +276,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function checkUserIpAddressEx(req, res, allowedIpList) {
         if (allowedIpList == null) { return true; }
         try {
-            var ip = null, type = 0;
-            if (req.connection) { ip = req.connection.remoteAddress; type = 1; } // HTTP(S) request
-            else if (req._socket) { ip = req._socket.remoteAddress; type = 2; } // WebSocket request
+            var ip = req.ip, type = 0;
+            if (req.connection) { type = 1; } // HTTP(S) request
+            else if (req._socket) { type = 2; } // WebSocket request
             if (ip.startsWith('::ffff:')) { ip = ip.substring(7); } // Fix IPv4 IP's encoded in IPv6 form
             if ((ip != null) && (allowedIpList.indexOf(ip) >= 0)) { return true; }
             if (type == 1) { res.sendStatus(401); }
@@ -343,7 +336,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 user.login = Date.now();
                 obj.db.SetUser(user);
 
-
                 // Regenerate session when signing in to prevent fixation
                 //req.session.regenerate(function () {
                 // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
@@ -369,6 +361,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         res.redirect(domain.url);
                     });
                     */
+                    res.redirect(domain.url); // Temporary
                 } else {
                     res.redirect(domain.url);
                 }
@@ -743,7 +736,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
             if (obj.args.nousers == true) { features += 4; } // Single user mode
             if (domain.userQuota == -1) { features += 8; } // No server files mode
-            if (obj.args.tlsoffload == true) { features += 16; } // No mutual-auth CIRA
+            if (obj.args.tlsoffload) { features += 16; } // No mutual-auth CIRA
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 64; } // Email invites
             if (obj.args.webrtc == true) { features += 128; } // Enable WebRTC (Default false for now)
@@ -1405,7 +1398,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, "POST", auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
 
                                                 // This is an authenticated Intel AMT event, update the host address
-                                                var amthost = req.connection.remoteAddress;
+                                                var amthost = req.ip;
                                                 if (amthost.substring(0, 7) === '::ffff:') { amthost = amthost.substring(7); }
                                                 if (node.host != amthost) {
                                                     // Get the mesh for this device
@@ -1773,6 +1766,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Two more headers to take a look at:
             //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
             //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
+            /*
             var headers = null;
             if (obj.args.notls) {
                 // Default headers if no TLS is used
@@ -1783,6 +1777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
             if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
             res.set(headers);
+            */
             return next();
         }
     });
