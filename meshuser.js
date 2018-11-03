@@ -315,7 +315,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (agent != null) {
                                 // Check if we have permission to send a message to that node
                                 var rights = user.links[agent.dbMeshKey];
-                                if ((rights != null) && ((rights.rights & 8) != 0)) { // 8 is remote control permission
+                                if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission, 256 is desktop read only
                                     command.sessionid = ws.sessionId;   // Set the session id, required for responses.
                                     command.rights = rights.rights;     // Add user rights flags to the message
                                     delete command.nodeid;              // Remove the nodeid since it's implyed.
@@ -327,7 +327,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (routing != null) {
                                     // Check if we have permission to send a message to that node
                                     var rights = user.links[routing.meshid];
-                                    if ((rights != null) && ((rights.rights & 8) != 0)) { // 8 is remote control permission
+                                    if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
                                         command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
                                         command.rights = rights.rights;         // Add user rights flags to the message
                                         obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
@@ -1210,7 +1210,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             mesh = obj.parent.meshes[command.id];
                             if (mesh) {
                                 // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+                                if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { return; } // Must have rights to edit the mesh
 
                                 // Set the id's notes
                                 if (obj.common.validateString(command.notes, 1) == false) {
@@ -1265,7 +1265,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             mesh = obj.parent.meshes[command.id];
                             if (mesh) {
                                 // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
+                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) { return; } // Must have rights to edit the mesh
 
                                 // Get the notes about this node
                                 obj.db.Get('nt' + command.id, function (err, notes) {

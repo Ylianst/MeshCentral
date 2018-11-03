@@ -389,9 +389,10 @@
                                 </div>
                                 <div>
                                     <input id="deskActionsBtn" type=button style="margin-left:3px" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
-                                    <input type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
-                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
-                                    <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
+                                    <input type="button" value="Settings..." style="margin-left:3px" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
+                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none;margin-left:3px">
+                                    <!--<input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">-->
+                                    <span id="DeskControlSpan" style="margin-left:3px;display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span>
                                 </div>
                             </div>
                         </div>
@@ -499,6 +500,56 @@
             </div>
             <div id=dialog2 style="margin:auto;margin:3px">
                 <div id=id_dialogOptions></div>
+            </div>
+            <div id=dialog7 style="margin:auto;margin:3px">
+                <div id="d7meshkvm">
+                    <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
+                    <div style="margin:3px 0 3px 0">
+                        <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl"></select>
+                        <div style="height:20px">Quality</div>
+                    </div>
+                    <div style="margin:3px 0 3px 0">
+                        <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
+                            <option selected=selected value=1024>100%</option>
+                            <option value=896>87.5%</option>
+                            <option value=768>75%</option>
+                            <option value=640>62.5%</option>
+                            <option value=512>50%</option>
+                            <option value=384>37.5%</option>
+                            <option value=256>25%</option>
+                            <option value=128>12.5%</option>
+                        </select>
+                        <div style="height:20px">Scaling</div>
+                    </div>
+                    <div style="margin:3px 0 3px 0">
+                        <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
+                            <option selected=selected value=50>Fast</option>
+                            <option value=100>Medium</option>
+                            <option value=400>Slow</option>
+                            <option value=1000>Very slow</option>
+                        </select>
+                        <div style="height:20px">Rate</div>
+                    </div>
+                </div>
+                <div id="d7amtkvm">
+                    <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
+                    <div style='height:26px'>
+                        <select id="d7desktopmode" style="float:right;width:200px">
+                            <option value="1">RLE8, Fastest</option>
+                            <option value="2">RLE16, Recommended</option>
+                            <option value="3">RAW8, Slow</option>
+                            <option value="4">RAW16, Very Slow</option>
+                        </select>
+                        <div>Encoding</div>
+                    </div>
+                    <div style="height:60px">
+                        <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
+                            <input type="checkbox" id='d7showfocus'>Show Focus Tool<br>
+                            <input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br>
+                        </div>
+                        <div>Other</div>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
@@ -637,7 +688,7 @@
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
                             message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
                             message.nodes[m][n].meshid = m;
-                            message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
+                            message.nodes[m][n].state = (message.nodes[m][n].state) ? (message.nodes[m][n].state) : 0;
                             message.nodes[m][n].desc = message.nodes[m][n].desc;
                             if (!message.nodes[m][n].icon) message.nodes[m][n].icon = 1;
                             message.nodes[m][n].ident = ++nodeShortIdent;
@@ -883,9 +934,9 @@
         }
 
         function updateFooterMenu(options) {
-            while (options != null && options.length < 3) { options.push( { n:'' } ); }
+            while (options != null && options.length < 3) { options.push({ n: '' }); }
             var x = '', prev = '';
-            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '')?'':';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
+            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
             QH('footerMenu', '<tr>' + x);
         }
 
@@ -986,7 +1037,7 @@
         function checkPasswordStrength(password) {
             var r = 0, letters = {}, varCount = 0, variations = { digits: /\d/.test(password), lower: /[a-z]/.test(password), upper: /[A-Z]/.test(password), nonWords: /\W/.test(password) }
             if (!password) return 0;
-            for (var i = 0; i< password.length; i++) { letters[password[i]] = (letters[password[i]] || 0) + 1; r += 5.0 / letters[password[i]]; }
+            for (var i = 0; i < password.length; i++) { letters[password[i]] = (letters[password[i]] || 0) + 1; r += 5.0 / letters[password[i]]; }
             for (var c in variations) { varCount += (variations[c] == true) ? 1 : 0; }
             return parseInt(r + (varCount - 1) * 10);
         }
@@ -1078,7 +1129,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != null?filetreex.n:filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
                     folderdepth++;
                 } else {
                     break;
@@ -1108,7 +1159,7 @@
 
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
-                    var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
+                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
                     h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right;padding-right:4px title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
@@ -1144,7 +1195,7 @@
             while (f.t > 1 && f.t != 4) { f = f.parent; }
             if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
-            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1?'s':'') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0)?('Storage limit exceed'):(tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1 ? 's' : '') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0) ? ('Storage limit exceed') : (tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
@@ -1186,22 +1237,22 @@
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
-        function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
-        function p5deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
-        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles}); }
-        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile}); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
+        function p5deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?') : ('Delete selected item?')); }
+        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles }); }
+        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
-        var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
+        var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0?'copy':'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
-        function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1)?'s':'') + ' for ' + (p5clipboardCut == 0?'copy':'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0 ? 'copy' : 'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1) ? 's' : '') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1) ? 's' : '') + ' for ' + (p5clipboardCut == 0 ? 'copy' : 'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
 
         function p5fileDragDrop(e) {
@@ -1216,7 +1267,7 @@
                 names.push(file.name);
                 sizes.push(file.size);
                 types.push(file.type);
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     datas.push(event.target.result);
                     if (--readercount == 0) {
                         Q('p5fileDragName').value = names.join('*');
@@ -1428,7 +1479,7 @@
         }
 
         function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
-        function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
+        function powerSort(a, b) { var ap = a.pwr ? a.pwr : 0; var bp = b.pwr ? b.pwr : 0; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } if (ap > bp) return 1; if (ap < bp) return -1; return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
 
@@ -1491,7 +1542,7 @@
                 }
 
                 // Attribute: Description
-                var description = node.desc?EscapeHtml(node.desc):"<i>None</i>";
+                var description = node.desc ? EscapeHtml(node.desc) : "<i>None</i>";
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
@@ -1499,7 +1550,7 @@
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'OSX 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'OSX 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l' ];
+                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'OSX 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'OSX 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l'];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
@@ -1590,7 +1641,7 @@
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Agent connected">Mesh Agent</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; } else
-                if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                    if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
@@ -1613,18 +1664,20 @@
         }
 
         function deviceToastFunctionEx() {
-            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: 'MeshCentral', msg: Q('d2devToast').value });
+            meshserver.send({ action: 'toast', nodeids: [currentNode._id], title: 'MeshCentral', msg: Q('d2devToast').value });
         }
 
         function setupDeviceMenu(op, obj) {
+            var meshrights = 0;
+            if (currentNode) { meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; }
             if (op != null) { currentDevicePanel = op; }
             QV('p10general', currentDevicePanel == 0);
-            QV('p10desktop', currentDevicePanel == 1);
+            QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
             QV('p10files', currentDevicePanel == 2);
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
-            if ((currentDevicePanel != 1) && (currentNode != null) && ((currentNode.mtype == 1) || (currentNode.agent.caps & 1))) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
-            if ((currentDevicePanel != 2) && (currentNode != null) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 1) && (currentNode != null) && ((meshrights & 8) || (meshrights & 256)) && ((currentNode.mtype == 1) || (currentNode.agent.caps & 1))) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
         }
 
@@ -1644,10 +1697,10 @@
             var op = Q('d2deviceop').value;
             if (op == 100) {
                 // Device wake
-                meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
+                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
             } else {
                 // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: op });
             }
         }
 
@@ -1671,12 +1724,12 @@
             // De-compact the timeline
             var timeline2 = [];
             if (timeline != null && timeline.length > 1) {
-                timeline2.push([ 0, timeline[1], timeline[0] ]); // Start, End, Power
+                timeline2.push([0, timeline[1], timeline[0]]); // Start, End, Power
                 var ct = timeline[1];
                 for (var i = 2; i < timeline.length; i += 2) {
                     var power = timeline[i], dt = now;
                     if (timeline.length > (i + 1)) { dt = timeline[i + 1]; }
-                    timeline2.push([ ct, ct + dt, power ]); // Start, End, Power
+                    timeline2.push([ct, ct + dt, power]); // Start, End, Power
                     ct = ct + dt;
                 }
             }
@@ -1699,7 +1752,7 @@
                         }
                     }
                 }
-                x += '<tr style=' + (((count % 2) == 0)?'background-color:#DDD':'') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
@@ -1767,7 +1820,7 @@
         }
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
-            meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
+            meshserver.send({ action: 'removedevices', nodeids: [nodeid] });
         }
 
         function p10showiconselector() {
@@ -1851,11 +1904,12 @@
             var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
+            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
-            QV('connectbutton1', (deskState == 0) && (mesh.mtype == 2));
-            QV('connectbutton1h', (deskState == 0) && ((currentNode.intelamt != null) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton1', (deskState == 0) && (mesh.mtype == 2) && ((meshrights & 8) || (meshrights & 256)));
+            QV('connectbutton1h', (deskState == 0) && ((currentNode.intelamt != null) && (meshrights & 8) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
@@ -1867,14 +1921,17 @@
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             //QE('deskSaveBtn', deskState == 3);
-            QE('DeskCAD', deskState == 3);
-            QE('DeskWD', deskState == 3);
-            QE('deskkeys', deskState == 3);
-            QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5));
-            QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5));
-            QE('DeskToolsButton', online);
-            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5));
+            //QV('DeskCAD', meshrights & 8);
+            //QE('DeskCAD', deskState == 3);
+            //QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5));
+            //QE('DeskWD', deskState == 3);
+            //QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5));
+            //QE('deskkeys', deskState == 3);
+            //QE('DeskToolsButton', online);
+            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
             QE('DeskToastButton', online);
+            QV('deskActionsBtn', meshrights & 8);
+            Q('DeskControl').checked = ((meshrights & 8) != 0);
             if (online == false) QV('DeskTools', false);
         }
 
@@ -1965,8 +2022,7 @@
         }
 
         function applyDesktopSettings() {
-            /*
-            var r = '', ops = (features & 512)?[90,70,50,40,30,20,10,5,1]:[50,40,30,20,10,5,1];
+            var r = '', ops = (features & 512) ? [90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
@@ -1976,7 +2032,6 @@
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
-            */
         }
 
         var fullscreen = false;
@@ -2025,6 +2080,7 @@
             QS('Desk')['margin-bottom'] = x + 'px';
         }
 
+        /*
         // Remote desktop special key combos for Windows
         function deskSendKeys() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
@@ -2061,12 +2117,15 @@
                 }
             }
         }
+        */
 
+        /*
         // Send CTRL-ALT-DEL
         function sendCAD() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             desktop.m.sendcad();
         }
+        */
 
         // Show process dialogs
         function toggleDeskTools() {
@@ -2084,7 +2143,7 @@
         function refreshDeskTools() {
             QV('DeskToolsRefreshButton', false);
             setTimeout(refreshDeskToolsEx, 500);
-            meshserver.send({ action: 'msg', type:'ps', nodeid: currentNode._id });
+            meshserver.send({ action: 'msg', type: 'ps', nodeid: currentNode._id });
         }
         function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
         var deskTools = { sort: 1, msg: null };
@@ -2099,10 +2158,10 @@
             try { processes = JSON.parse(message.value); } catch (e) { }
             console.log(processes);
             if (processes != null) {
-                for (var pid in processes) { p.push( { p:parseInt(pid), c:processes[pid].cmd, d:processes[pid].cmd.toLowerCase(), u: processes[pid].user } ); }
+                for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
-                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=stopProcess(' + p[i].p + ',"' + p[i].c + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u?p[i].u:'') + '</div><div>' + p[i].c + '</div></div>'; } }
+                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=stopProcess(' + p[i].p + ',"' + p[i].c + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + p[i].c + '</div></div>'; } }
                 QH('DeskToolsProcesses', x);
             }
         }
@@ -2116,7 +2175,7 @@
 
         function deskDisplayInfo(sender, info, selDisplay, selItem) {
             var txt = Q('termdisplays').value;
-            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x])?' selected':'') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
+            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x]) ? ' selected' : '') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
             QV('termdisplays', info.length > 0);
         }
 
@@ -2128,13 +2187,13 @@
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != null) desktop.m.mousedown(e) }
-        function dmouseup(e) { if (!xxdialogMode && desktop != null) desktop.m.mouseup(e) }
-        function dmousemove(e) { if (!xxdialogMode && desktop != null) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousedown(e) }
+        function dmouseup(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mouseup(e) }
+        function dmousemove(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousemove(e) }
+        function dmousewheel(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
-        function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
+        function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
         // FILES
@@ -2145,7 +2204,7 @@
             // Setup the files tab
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
-            var online = ((filesNode.conn & 1) != 0)?true:false; // If Agent (1) connected, enable Terminal
+            var online = ((filesNode.conn & 1) != 0) ? true : false; // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
             if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
         }
@@ -2176,8 +2235,8 @@
         function CreateRemoteFiles(onFileUpdate) {
             var obj = { protocol: 5 };
             obj.onFileUpdate = onFileUpdate;
-            obj.xxStateChange = function(state) { }
-            obj.ProcessData = function(data) { obj.onFileUpdate(data); }
+            obj.xxStateChange = function (state) { }
+            obj.ProcessData = function (data) { obj.onFileUpdate(data); }
             return obj;
         }
 
@@ -2348,9 +2407,9 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1)?('Delete ' + cc + ' selected items?'):('Delete selected item?')); }
+        function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?') : ('Delete selected item?')); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles }); p13folderup(999); }
-        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
@@ -2358,9 +2417,9 @@
 
         var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
         function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
-        function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0?'copy':'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
-        function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0?'copy':'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
-        function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1)?'s':'') + ' for ' + (p13clipboardCut == 0?'copy':'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
+        function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0 ? 'copy' : 'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1) ? 's' : '') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
+        function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
+        function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1) ? 's' : '') + ' for ' + (p13clipboardCut == 0 ? 'copy' : 'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
         function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
         function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
@@ -2512,7 +2571,7 @@
                 Q('d2progressBar').value = 0;
 
                 uploadFile.xreader = new FileReader();
-                uploadFile.xreader.onload = function() {
+                uploadFile.xreader.onload = function () {
                     uploadFile.xdata = uploadFile.xreader.result;
                     uploadFile.ws.sendText({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength });
                 };
@@ -2581,7 +2640,7 @@
 
             var x = '';
             x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
-            x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):'<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : '<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
             x += addHtmlValue('Type', meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
@@ -2623,14 +2682,14 @@
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
             for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
-            sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
+            sortedusers.sort(function (a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
 
             // Display all users for this mesh
             for (var i in sortedusers) {
                 var trash = '', rights = 'Partial&nbsp;Rights', r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = 'Full&nbsp;Administrator'; else if (r == 0) rights = 'No&nbsp;Rights';
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0)?';background-color:#DDD':'') + '><td>';
+                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
                 x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div>';
                 x += '</td></tr>';
                 ++count;
@@ -2693,6 +2752,7 @@
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview>Remote View Only<br>';
             x += '</div>';
             setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -2711,6 +2771,7 @@
             QE('p20meshserverfiles', !Q('p20fulladmin').checked);
             QE('p20wakedevices', !Q('p20fulladmin').checked);
             QE('p20editnotes', !Q('p20fulladmin').checked);
+            QE('p20remoteview', !Q('p20fulladmin').checked);
         }
 
         function p20showAddMeshUserDialogEx() {
@@ -2724,8 +2785,9 @@
                 if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
                 if (Q('p20wakedevices').checked == true) meshadmin += 64;
                 if (Q('p20editnotes').checked == true) meshadmin += 128;
+                if (Q('p20remoteview').checked == true) meshadmin += 256;
             }
-            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
+            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value, meshadmin: meshadmin });
         }
 
         function p20viewuser(userid) {
@@ -2733,13 +2795,13 @@
             userid = decodeURIComponent(userid);
             var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
-                if ((meshrights &   1) != 0) r += ', Edit Device Group';
-                if ((meshrights &   2) != 0) r += ', Manage Device Group Users';
-                if ((meshrights &   4) != 0) r += ', Manage Device Group Computers';
-                if ((meshrights &   8) != 0) r += ', Remote Control';
-                if ((meshrights &  16) != 0) r += ', Agent Console';
-                if ((meshrights &  32) != 0) r += ', Server Files';
-                if ((meshrights &  64) != 0) r += ', Wake Devices';
+                if ((meshrights & 1) != 0) r += ', Edit Device Group';
+                if ((meshrights & 2) != 0) r += ', Manage Device Group Users';
+                if ((meshrights & 4) != 0) r += ', Manage Device Group Computers';
+                if ((meshrights & 8) != 0) r += ', Remote Control';
+                if ((meshrights & 16) != 0) r += ', Agent Console';
+                if ((meshrights & 32) != 0) r += ', Server Files';
+                if ((meshrights & 64) != 0) r += ', Wake Devices';
                 if ((meshrights & 128) != 0) r += ', Edit Notes';
             }
             r = r.substring(2);
@@ -2752,7 +2814,7 @@
 
         function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid); }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
-        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid}); }
+        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
         //
         // PANELS
@@ -2820,8 +2882,8 @@
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
-        var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
+        function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
+        var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
 
     </script>
 </body>

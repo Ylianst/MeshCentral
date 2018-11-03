@@ -1817,13 +1817,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {
             // Check if we have "server.png" in the data folder, if so, use that.
-            var p = obj.path.join(obj.parent.datapath, 'server.png');
+            var p = obj.path.join(obj.parent.datapath, 'server.jpg');
             if (obj.fs.existsSync(p)) {
                 // Use the data folder server picture
                 try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
             } else {
                 // Use the default server picture
-                try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.png')); } catch (e) { res.sendStatus(404); }
+                try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
             }
         });
 
