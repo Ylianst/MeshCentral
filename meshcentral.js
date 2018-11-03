@@ -407,6 +407,9 @@ function CreateMeshCentralServer(config, args) {
         // Load any domain web certificates
         for (i in obj.config.domains) {
             if (obj.config.domains[i].certurl != null) {
+                // Fix the URL and add 'https://' if needed
+                if (obj.config.domains[i].certurl.indexOf('://') < 0) { obj.config.domains[i].certurl = 'https://' + obj.config.domains[i].certurl; }
+
                 // Load web certs
                 webCertLoadCount++;
                 obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, obj.config.domains[i], function (url, cert, xdomain) {
@@ -415,12 +418,17 @@ function CreateMeshCentralServer(config, args) {
                             // Decode a RSA certificate and hash the public key
                             var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert.raw.toString('binary')));
                             var hash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
-                            xdomain.certhash = hash;
-                            console.log('Loaded RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
+                            if (xdomain.certhash != hash) {
+                                xdomain.certhash = hash;
+                                console.log('Loaded RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
+                            }
                         } catch (ex) {
                             // This may be a ECDSA certificate, hash the entire cert
-                            xdomain.certhash = obj.crypto.createHash('sha384').update(cert.raw).digest('hex');
-                            console.log('Loaded non-RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
+                            var hash = obj.crypto.createHash('sha384').update(cert.raw).digest('hex');
+                            if (xdomain.certhash != hash) {
+                                xdomain.certhash = hash;
+                                console.log('Loaded non-RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
+                            }
                         }
                     } else {
                         console.log('Failed to load web certificate at: ' + url);
