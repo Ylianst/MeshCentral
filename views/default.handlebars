@@ -5256,6 +5256,7 @@
                 if ((meshrights &  32) != 0) r += ', Server Files';
                 if ((meshrights &  64) != 0) r += ', Wake Devices';
                 if ((meshrights & 128) != 0) r += ', Edit Notes';
+                if ((meshrights & 256) != 0) r += ', Remote View Only';
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }

@@ -2677,7 +2677,7 @@
             }
             */
 
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -2803,6 +2803,7 @@
                 if ((meshrights & 32) != 0) r += ', Server Files';
                 if ((meshrights & 64) != 0) r += ', Wake Devices';
                 if ((meshrights & 128) != 0) r += ', Edit Notes';
+                if ((meshrights & 256) != 0) r += ', Remote View Only';
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
