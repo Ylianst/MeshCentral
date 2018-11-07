@@ -2101,7 +2101,7 @@
             if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
             x += "</div>";
 
-            // Setup CIRA with certificate authentication (Really difficult, only is allowed)
+            // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
                 x += "<div id=dlgAddCira2 style=display:none>To add a new Intel&reg; AMT device to device group \"" + EscapeHtml(mesh.name) + "\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.<br /><br />";
                 x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" target="_blank">Root Certificate File</a>');
