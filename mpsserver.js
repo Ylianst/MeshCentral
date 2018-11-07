@@ -26,7 +26,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     const tls = require("tls");
     const MAX_IDLE = 90000;      // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
 
-    if (obj.args.tlsoffload) {
+    if (obj.args.mpstlsoffload) {
         obj.server = net.createServer(onConnection);
     } else {
         obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false }, onConnection);
@@ -99,7 +99,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     };
 
     function onConnection(socket) {
-        if (obj.args.tlsoffload) {
+        if (obj.args.mpstlsoffload) {
             socket.tag = { first: true, clientCert: null, accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         } else {
             socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };

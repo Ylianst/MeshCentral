@@ -709,8 +709,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        // If a user is logged in, serve the default app, otherwise server the login app.
-        if (req.session && req.session.userid) {
+        // If a user exists and is logged in, serve the default app, otherwise server the login app.
+        if (req.session && req.session.userid && obj.users[req.session.userid]) {
+            var user = obj.users[req.session.userid];
             if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
             var viewmode = 1;
             if (req.session.viewmode) {
@@ -727,16 +728,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 currentNode = 'node/' + domain.id + '/' + req.query.node;
             }
             var logoutcontrol = '';
-            if (obj.args.nousers != true) { logoutcontrol = 'Welcome ' + obj.users[req.session.userid].name + '.'; }
+            if (obj.args.nousers != true) { logoutcontrol = 'Welcome ' + user.name + '.'; }
 
             // Give the web page a list of supported server features
             features = 0;
-            user = obj.users[req.session.userid];
             if (obj.args.wanonly == true) { features += 1; } // WAN-only mode
             if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
             if (obj.args.nousers == true) { features += 4; } // Single user mode
             if (domain.userQuota == -1) { features += 8; } // No server files mode
-            if (obj.args.tlsoffload) { features += 16; } // No mutual-auth CIRA
+            if (obj.args.mpstlsoffload) { features += 16; } // No mutual-auth CIRA
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 64; } // Email invites
             if (obj.args.webrtc == true) { features += 128; } // Enable WebRTC (Default false for now)

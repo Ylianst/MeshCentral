@@ -81,9 +81,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
 
         // Associate this websocket session with the web session
-        //req.session.ws = obj.ws;
-        //req.session.ws.userid = req.session.userid;
-        //req.session.ws.domainid = domain.id;
+        obj.ws.userid = req.session.userid;
+        obj.ws.domainid = domain.id;
 
         // Add this web socket session to session list
         obj.ws.sessionId = user._id + '/' + ('' + Math.random()).substring(2);
@@ -102,7 +101,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.ws.HandleEvent = function (source, event) {
             if (!event.domain || event.domain == obj.domain.id) {
                 try {
-                    if (event == 'close') { req.session.destroy(); obj.close(); }
+                    if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
                     else if (event == 'resubscribe') { user.subscriptions = obj.parent.subscribe(user._id, ws); }
                     else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                     else { ws.send(JSON.stringify({ action: 'event', event: event })); }
@@ -1137,7 +1136,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 case 'close':
                     {
                         // Close the web socket session
-                        if (obj.req.session && obj.req.session.ws && obj.req.session.ws == ws) delete obj.req.session.ws;
+                        console.log('CLOSING1');
+                        if (obj.req.session && obj.req.session.ws && obj.req.session.ws == ws) { console.log('CLOSING2'); delete obj.req.session.ws; }
                         try { ws.close(); } catch (e) { }
                         break;
                     }
