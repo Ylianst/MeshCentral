@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CheckStartupType() {
-#  echo "Checking process autostart system..."
+  # echo "Checking process autostart system..."
   starttype=`ps -p 1 | awk '/1/ {print $4}'`
   if [[ $starttype == 'systemd' ]]; then return 1; # systemd;
   elif [[ $starttype == 'init' ]]; then return 3; # sysv-init;
@@ -11,7 +11,7 @@ CheckStartupType() {
 }
 
 CheckStartupTypeOld() {
-#  echo "Checking process autostart system..."
+  # echo "Checking process autostart system..."
   if [[ `systemctl` =~ -\.mount ]]; then return 1; # systemd;
   elif [[ `/sbin/init --version` =~ upstart ]]; then return 2; # upstart;
   elif [[ -f /etc/init.d/cron && ! -h /etc/init.d/cron ]]; then return 3; # sysv-init;
@@ -29,45 +29,55 @@ UpdateMshFile() {
 }
 
 CheckInstallAgent() {
-#  echo "Checking mesh identifier..."
+  # echo "Checking mesh identifier..."
   if [ -e "/usr/local" ]
   then
     installpath="/usr/local/mesh"
   else
     installpath="/usr/mesh"
   fi
-  if [ $# -eq 2 ]
+  if [ $# -ge 2 ]
   then
     url=$1
     meshid=$2
     meshidlen=${#meshid}
     if [ $meshidlen -eq 64 ]
     then
-#      echo "Detecting computer type..."
-      machinetype=$( uname -m )
       machineid=0
-      if [ $machinetype == 'x86_64' ] || [ $machinetype == 'amd64' ]
+      machinetype=$( uname -m )
+
+      # If we have 3 arguments...
+      if [ $# -ge 3 ]
       then
-#       Linux x86, 64 bit
-        machineid=6
-      fi
-      if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ]
+        # echo "Computer type is specified..."
+	    machineid=$3
+	  else
+        # echo "Detecting computer type..."
+        if [ $machinetype == 'x86_64' ] || [ $machinetype == 'amd64' ]
+        then
+          # Linux x86, 64 bit
+          machineid=6
+        fi
+        if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ]
+        then
+          # Linux x86, 32 bit
+          machineid=5
+        fi
+        if [ $machinetype == 'armv6l' ] || [ $machinetype == 'armv7l' ]
+        then
+          # RaspberryPi 1 (armv6l) or RaspberryPi 2/3 (armv7l)
+          machineid=25
+        fi
+        # Add more machine types, detect KVM support... here.
+	  fi
+
+	  if [ $machineid -eq 0 ]
       then
-#       Linux x86, 32 bit
-        machineid=5
-      fi
-      if [ $machinetype == 'armv6l' ] || [ $machinetype == 'armv7l' ]
-      then
-#       RaspberryPi 1 (armv6l) or RaspberryPi 2/3 (armv7l)
-        machineid=25
-      fi
-# TODO: Add more machine types, detect KVM support, etc.
-      if [ $machineid -eq 0 ]
-      then
-        echo "Unsupported machine type: $machinetype, check with server administrator."
+        echo "Unsupported machine type: $machinetype."
       else
         DownloadAgent $url $meshid $machineid
       fi
+
     else
       echo "MeshID is not correct, must be 64 characters long."
     fi
@@ -81,17 +91,32 @@ DownloadAgent() {
   url=$1
   meshid=$2
   machineid=$3
-# Create folder
+  # Create folder
   mkdir -p /usr/local/mesh
   cd /usr/local/mesh
-#  echo "Downloading mesh agent..."
+  echo "Downloading Mesh agent #$machineid..."
   wget $url/meshagents?id=$machineid -q --no-check-certificate -O /usr/local/mesh/meshagent
+
+  # If it did not work, try again using http
+  if [ $? != 0 ]
+  then
+    url=${url/"https://"/"http://"}
+    wget $url/meshagents?id=$machineid -q -O /usr/local/mesh/meshagent
+  fi
+
   if [ $? -eq 0 ]
   then
     echo "Mesh agent downloaded."
-# TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
+    # TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
     wget $url/meshsettings?id=$meshid -q --no-check-certificate -O /usr/local/mesh/meshagent.msh
+
+    # If it did not work, try again using http
+    if [ $? -eq 0 ]
+    then
+      wget $url/meshsettings?id=$meshid -q -O /usr/local/mesh/meshagent.msh
+    fi
+
     if [ $? -eq 0 ]
     then
 	  UpdateMshFile
@@ -177,7 +202,7 @@ if [ $currentuser == 'root' ]
 then
   if [ $# -eq 0 ]
   then
-    echo -e "This script will install or uninstall a mesh agent, usage:\n  $0 [serverurl] [meshid]\n  $0 uninstall"
+    echo -e "This script will install or uninstall a mesh agent, usage:\n  $0 [serverurl] [meshid] (machineid)\n  $0 uninstall"
   else
     if [ $# -eq 1 ]
     then
@@ -186,7 +211,7 @@ then
         UninstallAgent
       fi
     else
-      CheckInstallAgent $1 $2
+      CheckInstallAgent $1 $2 $3
     fi
   fi
 else
