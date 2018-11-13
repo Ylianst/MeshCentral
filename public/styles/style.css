@@ -281,6 +281,24 @@ a {
     font-weight: bold;
 }
 
+.style3x {
+    text-align: center;
+    color: white;
+    background-color: #808080;
+    font-weight: bold;
+}
+
+    .style3x:hover {
+        background-color: #606060;
+    }
+
+.style3sel {
+    text-align: center;
+    color: white;
+    background-color: #003366;
+    font-weight: bold;
+}
+
 .style4 {
     color: white;
     text-decoration: none;
@@ -402,6 +420,10 @@ a {
     background-attachment: scroll;
 }
 
+.g1s {
+    background-image: linear-gradient(to right, #ffffff 0%, #b9b9b9 100%);
+}
+
 .g2 {
     background-position: 0% 0%;
     width: 14px;
@@ -414,6 +436,10 @@ a {
     background-color: #c9c9c9;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.g2s {
+    background-image: linear-gradient(to right, #b9b9b9 0%, #ffffff 100%);
 }
 
 .h1 {
@@ -456,6 +482,10 @@ a {
     float: left;
     height: 100%;
     background-color: #c9c9c9;
+}
+
+.e2s {
+    background-color: #b9b9b9;
 }
 
 .bar {

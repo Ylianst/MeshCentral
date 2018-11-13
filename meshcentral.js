@@ -368,7 +368,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.updateMeshCore();
                 obj.updateMeshCmd();
 
-                // Setup and start the redirection server if needed
+                // Setup and start the redirection server if needed. We must start the redirection server before Let's Encrypt.
                 if ((obj.args.redirport != null) && (typeof obj.args.redirport == 'number') && (obj.args.redirport != 0)) {
                     obj.redirserver = require('./redirserver.js').CreateRedirServer(obj, obj.db, obj.args, obj.StartEx2);
                 } else {
@@ -383,7 +383,7 @@ function CreateMeshCentralServer(config, args) {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations();
         obj.certificateOperations.GetMeshServerCertificate(obj, obj.args, obj.config, function (certs) {
-            if (obj.config.letsencrypt == null) {
+            if ((obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
                 var le = require('./letsencrypt.js');
@@ -448,7 +448,12 @@ function CreateMeshCentralServer(config, args) {
         var i;
 
         // If the certificate is un-configured, force LAN-only mode
-        if (obj.certificates.CommonName == 'un-configured') { console.log('Server name not configured, running in LAN-only mode.'); obj.args.lanonly = true; }
+        if (obj.certificates.CommonName == 'un-configured') { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
+
+        // Write server version and run mode
+        var productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
+        var runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
+        console.log('MeshCentral v' + obj.currentVer + ', ' + (['Hybrid (LAN + WAN) mode', 'WAN mode', 'LAN mode'][runmode]) + (productionMode ? ', Production mode.' : '.'));
 
         // Check that no sub-domains have the same DNS as the parent
         for (i in obj.config.domains) {
