@@ -95,25 +95,25 @@
                             </div>
                             <table id=MainMenuSpan style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
-                                    <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(1)>My Devices</td>
-                                    <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(2)>My Account</td>
-                                    <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(3)>My Events</td>
-                                    <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(5)>My Files</td>
-                                    <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(4)>My Users</td>
-                                    <td id=MainMenuMyServer style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(6)>My Server</td>
+                                    <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(1)>My Devices</td>
+                                    <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(2)>My Account</td>
+                                    <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(3)>My Events</td>
+                                    <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(5)>My Files</td>
+                                    <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(4)>My Users</td>
+                                    <td id=MainMenuMyServer style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(6)>My Server</td>
                                     <td class=style3 style="text-align:right;height:24px">&nbsp;</td>
                                 </tr>
                             </table>
                             <div id=MainSubMenuSpan style=display:none>
                                 <table id=MainSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(10)>General</td>
-                                        <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(11)>Desktop</td>
-                                        <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(12)>Terminal</td>
-                                        <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3 onclick=go(13)>Files</td>
-                                        <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(16)>Events</td>
-                                        <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(14)>Intel&reg; AMT</td>
-                                        <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(15)>Console</td>
+                                        <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(10)>General</td>
+                                        <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(11)>Desktop</td>
+                                        <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(12)>Terminal</td>
+                                        <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(13)>Files</td>
+                                        <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(16)>Events</td>
+                                        <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(14)>Intel&reg; AMT</td>
+                                        <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(15)>Console</td>
                                         <td class=style3 style=height:24px>&nbsp;</td>
                                     </tr>
                                 </table>
@@ -121,7 +121,7 @@
                             <div id=MeshSubMenuSpan style=display:none>
                                 <table id=MeshSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(20)>General</td>
+                                        <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(20)>General</td>
                                         <td class=style3 style=height:24px>&nbsp;</td>
                                     </tr>
                                 </table>
@@ -129,8 +129,8 @@
                             <div id=UserSubMenuSpan style=display:none>
                                 <table id=UserSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(30)>General</td>
-                                        <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3 onclick=go(31)>Events</td>
+                                        <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(30)>General</td>
+                                        <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(31)>Events</td>
                                         <td class=style3 style=height:24px>&nbsp;</td>
                                     </tr>
                                 </table>
@@ -1659,6 +1659,19 @@
         var updateDevicesTimer = null;
         function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
 
+        // Highlights the device being hovered
+        function devMouseHover(element, over) {
+            var e = element.children[1].children[1];
+            e.children[0].classList.remove('g1s');
+            e.children[1].classList.remove('e2s');
+            e.children[2].classList.remove('g2s');
+            if (over == 1) {
+                e.children[0].classList.add('g1s');
+                e.children[1].classList.add('e2s');
+                e.children[2].classList.add('g2s');
+            }
+        }
+
         var deviceHeaderId = 0;
         var deviceHeaderTotal = 0;
         var deviceHeadersTitles = {};
@@ -1754,7 +1767,7 @@
                         var realw = Q('xdevices').clientWidth - 30;
                         var xw = Math.floor(realw / 301);
                         xw = 301 + Math.floor((realw - (xw * 301)) / xw);
-                        r += '<div id=devs style=display:inline-block;width:' + xw + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (xw - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
+                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + xw + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (xw - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
                         r += '<tr><td><div id=devs class=bar18 style=height:18px;width:100%;font-size:medium>';
                         r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
@@ -5009,7 +5022,7 @@
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
                 // Print the mesh information
-                r += '<div style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
+                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
 
             meshcount = count;
@@ -5520,6 +5533,17 @@
         // MY EVENTS
         //
 
+        // Highlights the device being hovered
+        function eventMouseHover(e, over) {
+            e.children[1].classList.remove('g1s');
+            e.children[2].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
+            e.children[3].classList.remove('g2s');
+            if (over == 1) {
+                e.children[1].classList.add('g1s');
+                e.children[3].classList.add('g2s');
+            }
+        }
+
         function events_update() {
             var x = '', dateHeader = null;
             for (var i in events) {
@@ -5536,7 +5560,7 @@
 
                 var msg = event.msg.split('(R)').join('&reg;');
                 if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
+                x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -6310,18 +6334,15 @@
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QV('UserDummyMenuSpan', (x < 10) && webPageFullScreen);
-            QS('MainDev').backgroundColor = ((x == 10) ? "#003366" : "#808080");
-            QS('MainDevDesktop').backgroundColor = ((x == 11) ? "#003366" : "#808080");
-            QS('MainDevTerminal').backgroundColor = ((x == 12) ? "#003366" : "#808080");
-            QS('MainDevFiles').backgroundColor = ((x == 13) ? "#003366" : "#808080");
-            QS('MainDevEvents').backgroundColor = ((x == 16) ? "#003366" : "#808080");
-            QS('MainDevAmt').backgroundColor = ((x == 14) ? "#003366" : "#808080");
-            QS('MainDevConsole').backgroundColor = ((x == 15) ? "#003366" : "#808080");
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
-            QS('MeshGeneral').backgroundColor = ((x == 20) ? "#003366" : "#808080");
             QV('UserSubMenuSpan', x >= 30 && x < 40);
-            QS('UserGeneral').backgroundColor = ((x == 30) ? "#003366" : "#808080");
-            QS('UserEvents').backgroundColor = ((x == 31) ? "#003366" : "#808080");
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents' };
+            for (var i in panels) {
+                Q(panels[i]).classList.remove('style3x');
+                Q(panels[i]).classList.remove('style3sel');
+                Q(panels[i]).classList.add((x == i) ? 'style3sel' : 'style3x');
+            }
+
             if (x == 1) updateDevicesEx();
         }
 
