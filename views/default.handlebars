@@ -1995,6 +1995,7 @@
                     desk.m.showmouse = true;
                     desk.m.onKvmData = function (data) { console.log('KVM Data received in multi-desktop mode, this is not supported.'); }; // KVM Data Channel not supported in multi-desktop right now.
                     //desk.m.onScreenSizeChange = deskAdjust;
+                    if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
                     desk.Start(nodeid, 16994, '*', '*', 0);
                     desk.contype = 2;
                     multiDesktop[nodeid] = desk;
@@ -2009,6 +2010,7 @@
                     desk.m.FrameRateTimer = multidesktopsettings.framerate;
                     //desk.m.onDisplayinfo = deskDisplayInfo;
                     //desk.m.onScreenSizeChange = deskAdjust;
+                    if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
                     desk.Start(nodeid);
                     desk.contype = 1;
                     multiDesktop[nodeid] = desk;
@@ -3965,6 +3967,26 @@
                 QS('Desk')['margin-top'] = '0';
                 QS('Desk')['margin-bottom'] = '0';
             }
+        }
+
+        function mdeskAdjust(mod, sw, sh, cv) {
+            if (!mod || !sw || !sh || !cv) return;
+
+            // Check if we are in single desktop mode
+            if (cv.id == "Desk") { deskAdjust(); return; }
+
+            // Figure out and adjust the size to fill the width of the div
+            var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
+            var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
+            xw = realw + Math.floor((tw - (xw * realw)) / xw);
+            vsize.y = vsize.y * (xw / vsize.x);
+            vsize.x = xw;
+            var mh = vsize.y, mw = vsize.x;
+            if (mod.State != 0) { mh = vsize.y; mw = (sw / sh) * vsize.y; }
+            QS(cv.id)['max-height'] = mh + 'px';
+            QS(cv.id)['max-width'] = mw + 'px';
+            QS(cv.id)['margin-top'] = '0';
+            QS(cv.id)['margin-bottom'] = '0';
         }
 
         // Remote desktop special key combos for Windows
