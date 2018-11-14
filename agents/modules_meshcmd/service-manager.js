@@ -214,6 +214,13 @@ function serviceManager()
             throw ('could not find service: ' + name);
         }
     }
+    else
+    {
+        this.isAdmin = function isAdmin() 
+        {
+            return (require('user-sessions').isRoot());
+        }
+    }
     this.installService = function installService(options)
     {
         if (process.platform == 'win32')
@@ -273,6 +280,8 @@ function serviceManager()
         }
         if(process.platform == 'linux')
         {
+            if (!this.isAdmin()) { throw ('Installing as Service, requires root'); }
+
             switch (this.getServiceType())
             {
                 case 'init':
@@ -311,14 +320,70 @@ function serviceManager()
                     break;
             }
         }
+        if(process.platform == 'darwin')
+        {
+            if (!this.isAdmin()) { throw ('Installing as Service, requires root'); }
+
+            // Mac OS
+            var stdoutpath = (options.stdout ? ('<key>StandardOutPath</key>\n<string>' + options.stdout + '</string>') : '');
+            var autoStart = (options.startType == 'AUTO_START' ? '<true/>' : '<false/>');
+            var params =  '     <key>ProgramArguments</key>\n';
+            params += '     <array>\n';
+            params += ('         <string>/usr/local/mesh_services/' + options.name + '/' + options.name + '</string>\n');
+            if(options.parameters)
+            {
+                for(var itm in options.parameters)
+                {
+                    params += ('         <string>' + options.parameters[itm] + '</string>\n');
+                }
+            }        
+            params += '     </array>\n';
+            
+            var plist = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            plist += '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n';
+            plist += '<plist version="1.0">\n';
+            plist += '  <dict>\n';
+            plist += '      <key>Label</key>\n';
+            plist += ('     <string>' + options.name + '</string>\n');
+            plist += (params + '\n');
+            plist += '      <key>WorkingDirectory</key>\n';
+            plist += ('     <string>/usr/local/mesh_services/' + options.name + '</string>\n');
+            plist += (stdoutpath + '\n');
+            plist += '      <key>RunAtLoad</key>\n';
+            plist += (autoStart + '\n');
+            plist += '  </dict>\n';
+            plist += '</plist>';
+
+            if (!require('fs').existsSync('/usr/local/mesh_services')) { require('fs').mkdirSync('/usr/local/mesh_services'); }
+            if (!require('fs').existsSync('/Library/LaunchDaemons/' + options.name + '.plist'))
+            {
+                if (!require('fs').existsSync('/usr/local/mesh_services/' + options.name)) { require('fs').mkdirSync('/usr/local/mesh_services/' + options.name); }
+                if (options.binary)
+                {
+                    require('fs').writeFileSync('/usr/local/mesh_services/' + options.name + '/' + options.name, options.binary);
+                }
+                else
+                {
+                    require('fs').copyFileSync(options.servicePath, '/usr/local/mesh_services/' + options.name + '/' + options.name);
+                }
+                require('fs').writeFileSync('/Library/LaunchDaemons/' + options.name + '.plist', plist);
+                var m = require('fs').statSync('/usr/local/mesh_services/' + options.name + '/' + options.name).mode;
+                m |= (require('fs').CHMOD_MODES.S_IXUSR | require('fs').CHMOD_MODES.S_IXGRP);
+                require('fs').chmodSync('/usr/local/mesh_services/' + options.name + '/' + options.name, m);
+            }
+            else
+            {
+                throw ('Service: ' + options.name + ' already exists');
+            }
+        }
     }
     this.uninstallService = function uninstallService(name)
     {
+        if (!this.isAdmin()) { throw ('Uninstalling a service, requires admin'); }
+
         if (typeof (name) == 'object') { name = name.name; }
         if (process.platform == 'win32')
         {
-            if (!this.isAdmin()) { throw ('Uninstalling a service, requires admin'); }
-
             var service = this.getService(name);
             if (service.status.state == undefined || service.status.state == 'STOPPED')
             {
@@ -386,6 +451,39 @@ function serviceManager()
                     break;
                 default: // unknown platform service type
                     break;
+            }
+        }
+        else if(process.platform == 'darwin')
+        {
+            if (require('fs').existsSync('/Library/LaunchDaemons/' + name + '.plist'))
+            {
+                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child.stdout.on('data', function (chunk) { });
+                child.stdin.write('launchctl stop ' + name + '\n');
+                child.stdin.write('launchctl unload /Library/LaunchDaemons/' + name + '.plist\n');
+                child.stdin.write('exit\n');
+                child.waitExit();
+
+                try
+                {
+                    require('fs').unlinkSync('/usr/local/mesh_services/' + name + '/' + name);
+                    require('fs').unlinkSync('/Library/LaunchDaemons/' + name + '.plist');
+                }
+                catch(e)
+                {
+                    throw ('Error uninstalling service: ' + name + ' => ' + e);
+                }
+
+                try
+                {
+                    require('fs').rmdirSync('/usr/local/mesh_services/' + name);
+                }
+                catch(e)
+                {}
+            }
+            else
+            {
+                throw ('Service: ' + name + ' does not exist');
             }
         }
     }

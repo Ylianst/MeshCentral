@@ -78,12 +78,20 @@ function UserSessions()
         this._marshal = require('_GenericMarshal');
         this._kernel32 = this._marshal.CreateNativeProxy('Kernel32.dll');
         this._kernel32.CreateMethod('GetLastError');
-        this._wts = this._marshal.CreateNativeProxy('Wtsapi32.dll');
-        this._wts.CreateMethod('WTSEnumerateSessionsA');
-        this._wts.CreateMethod('WTSQuerySessionInformationA');
-        this._wts.CreateMethod('WTSRegisterSessionNotification');
-        this._wts.CreateMethod('WTSUnRegisterSessionNotification');
-        this._wts.CreateMethod('WTSFreeMemory');
+        
+        try
+        {
+            this._wts = this._marshal.CreateNativeProxy('Wtsapi32.dll');
+            this._wts.CreateMethod('WTSEnumerateSessionsA');
+            this._wts.CreateMethod('WTSQuerySessionInformationA');
+            this._wts.CreateMethod('WTSRegisterSessionNotification');
+            this._wts.CreateMethod('WTSUnRegisterSessionNotification');
+            this._wts.CreateMethod('WTSFreeMemory');
+        }
+        catch(exc)
+        {
+        }
+
         this._user32 = this._marshal.CreateNativeProxy('user32.dll');
         this._user32.CreateMethod('RegisterPowerSettingNotification');
         this._user32.CreateMethod('UnregisterPowerSettingNotification');
@@ -203,7 +211,7 @@ function UserSessions()
             this.immediate = setImmediate(function (self)
             {
                 // Now that we have a window handle, we can register it to receive Windows Messages
-                self.parent._wts.WTSRegisterSessionNotification(self.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS);
+                if (self.parent._wts) { self.parent._wts.WTSRegisterSessionNotification(self.parent.hwnd, NOTIFY_FOR_ALL_SESSIONS); }
                 self.parent._user32.ACDC_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_ACDC_POWER_SOURCE, 0);
                 self.parent._user32.BATT_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_BATTERY_PERCENTAGE_REMAINING, 0);
                 self.parent._user32.DISP_H = self.parent._user32.RegisterPowerSettingNotification(self.parent.hwnd, GUID_CONSOLE_DISPLAY_STATE, 0);
@@ -307,6 +315,38 @@ function UserSessions()
         {
             this.user_session.emit('changed');
         });
+        this._users = function _users()
+        {
+            var child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write('awk -F: \'($3 >= 0) {printf "%s:%s\\n", $1, $3}\' /etc/passwd\nexit\n');
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            var ret = {}, tokens;
+            for (var ln in lines)
+            {
+                tokens = lines[ln].split(':');
+                if (tokens[0]) { ret[tokens[0]] = tokens[1]; }           
+            }
+            return (ret);
+        }
+        this._uids = function _uids() {
+            var child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write('awk -F: \'($3 >= 0) {printf "%s:%s\\n", $1, $3}\' /etc/passwd\nexit\n');
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            var ret = {}, tokens;
+            for (var ln in lines) {
+                tokens = lines[ln].split(':');
+                if (tokens[0]) { ret[tokens[1]] = tokens[0]; }
+            }
+            return (ret);
+        }
         this.Self = function Self()
         {
             var promise = require('promise');
@@ -501,6 +541,43 @@ function UserSessions()
     }
     else if(process.platform == 'darwin')
     {
+        this._users = function ()
+        {
+            var child = require('child_process').execFile('/usr/bin/dscl', ['dscl', '.', 'list', '/Users', 'UniqueID']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write('exit\n');
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            var tokens, i;
+            var users = {};
+
+            for (i = 0; i < lines.length; ++i) {
+                tokens = lines[i].split(' ');
+                if (tokens[0]) { users[tokens[0]] = tokens[tokens.length - 1]; }
+            }
+
+            return (users);
+        }
+        this._uids = function () {
+            var child = require('child_process').execFile('/usr/bin/dscl', ['dscl', '.', 'list', '/Users', 'UniqueID']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write('exit\n');
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            var tokens, i;
+            var users = {};
+
+            for (i = 0; i < lines.length; ++i) {
+                tokens = lines[i].split(' ');
+                if (tokens[0]) { users[tokens[tokens.length - 1]] = tokens[0]; }
+            }
+
+            return (users);
+        }
         this._idTable = function()
         {
             var table = {};
@@ -559,6 +636,48 @@ function UserSessions()
             if (cb) { cb.call(this, users); }
         }
     }
+
+    if(process.platform == 'linux' || process.platform == 'darwin')
+    {
+        this._self = function _self()
+        {
+            var child = require('child_process').execFile('/usr/bin/id', ['id', '-u']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.waitExit();
+            return (parseInt(child.stdout.str));
+        }
+        this.isRoot = function isRoot()
+        {
+            return (this._self() == 0);
+        }
+        this.consoleUid = function consoleUid()
+        {
+            var checkstr = process.platform == 'darwin' ? 'console' : ':0';
+            var child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write('who\nexit\n');
+            child.waitExit();
+
+            var lines = child.stdout.str.split('\n');
+            var tokens, i, j;
+            for (i in lines)
+            {
+                tokens = lines[i].split(' ');
+                for (j = 1; j < tokens.length; ++j)
+                {
+                    if (tokens[j].length > 0 && tokens[j] == checkstr)
+                    {
+                        return (parseInt(this._users()[tokens[0]]));
+                    }
+                }
+            }
+            throw ('nobody logged into console');
+        }
+    }
+
+
 }
 function showActiveOnly(source)
 {
