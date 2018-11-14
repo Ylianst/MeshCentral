@@ -1682,12 +1682,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Skip all folder entries
                     zipfile.readEntry();
                 } else {
-                    if (entry.fileName == 'Meshcentral_MeshAgent.mpkg/Contents/distribution.dist') {
+                    if (entry.fileName == 'MeshAgent.mpkg/Contents/distribution.dist') {
                         // This is a special file entry, we need to fix it.
                         zipfile.openReadStream(entry, function (err, readStream) {
                             readStream.on("data", function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
                             readStream.on("end", function () {
-                                var welcomemsg = 'Welcome to the MeshCentral agent for OSX\\\n\\\nThis installer will install the mesh agent for "' + mesh.name + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to info.meshcentral.com.\\\n\\\nThis software is provided under Apache 2.0 license.\\\n';
+                                var meshname = mesh.name.split(']').join('').split('[').join(''); // We can't have ']]' in the string since it will terminate the CDATA.
+                                var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://www.meshcommander.com/meshcentral2.\n\nThis software is provided under Apache 2.0 license.\n';
                                 var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
                                 archive.append(readStream.xxdata.toString().split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName });
                                 zipfile.readEntry();
@@ -1697,15 +1698,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // Normal file entry
                         zipfile.openReadStream(entry, function (err, readStream) {
                             if (err) { throw err; }
-                            archive.append(readStream, { name: entry.fileName });
+                            var options = { name: entry.fileName };
+                            if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
+                            archive.append(readStream, options);
                             readStream.on('end', function () { zipfile.readEntry(); });
                         });
                     }
                 }
             });
             zipfile.on("end", function () {
-                archive.file(argentInfo.path, { name: "Meshcentral_MeshAgent.mpkg/Contents/Packages/meshagentosx64.pkg/Contents/meshagent_osx64.bin" });
-                archive.append(meshsettings, { name: "Meshcentral_MeshAgent.mpkg/Contents/Packages/meshagentosx64.pkg/Contents/meshagent_osx64.msh" });
+                archive.file(argentInfo.path, { name: "MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.bin" });
+                archive.append(meshsettings, { name: "MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.msh" });
                 archive.finalize();
             });
         });

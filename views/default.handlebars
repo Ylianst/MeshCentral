@@ -1936,6 +1936,10 @@
                     for (var i in multiDesktop) {
                         // If a device is no longer viewed, disconnect it.
                         if (multiDesktop[i].xxdelete == true) { multiDesktop[i].Stop(); delete multiDesktop[i]; }
+                        else if (debugmode && multiDesktop[i].m && multiDesktop[i].m.onScreenSizeChange) {
+                            // Adjust screen size change (JOKO) - This is not good.
+                            multiDesktop[i].m.onScreenSizeChange();
+                        }
                     }
                     deskAdjust();
                 } else {
@@ -2197,7 +2201,7 @@
 
             // OSX agent install
             x += "<div id=agins_osx style=display:none>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent installer has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit) - TEST BUILD</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit)</a>');
             x += "</div>";
 
             // Windows agent uninstall
