@@ -1682,7 +1682,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Skip all folder entries
                     zipfile.readEntry();
                 } else {
-                    if (entry.fileName == 'Mesh Agent.mpkg/Contents/distribution.dist') {
+                    if (entry.fileName == 'Meshcentral_MeshAgent.mpkg/Contents/distribution.dist') {
                         // This is a special file entry, we need to fix it.
                         zipfile.openReadStream(entry, function (err, readStream) {
                             readStream.on("data", function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
@@ -1704,8 +1704,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             });
             zipfile.on("end", function () {
-                archive.file(argentInfo.path, { name: "Mesh Agent.mpkg/Contents/Packages/meshagent.pkg/Contents/MeshAgent" });
-                archive.append(meshsettings, { name: "Mesh Agent.mpkg/Contents/Packages/meshagent.pkg/Contents/MeshAgent.msh" });
+                archive.file(argentInfo.path, { name: "Meshcentral_MeshAgent.mpkg/Contents/Packages/meshagentosx64.pkg/Contents/meshagent_osx64.bin" });
+                archive.append(meshsettings, { name: "Meshcentral_MeshAgent.mpkg/Contents/Packages/meshagentosx64.pkg/Contents/meshagent_osx64.msh" });
                 archive.finalize();
             });
         });
