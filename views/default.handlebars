@@ -1937,8 +1937,7 @@
                         // If a device is no longer viewed, disconnect it.
                         if (multiDesktop[i].xxdelete == true) { multiDesktop[i].Stop(); delete multiDesktop[i]; }
                         else if (debugmode && multiDesktop[i].m && multiDesktop[i].m.onScreenSizeChange) {
-                            // Adjust screen size change (JOKO) - This is not good.
-                            multiDesktop[i].m.onScreenSizeChange();
+                            mdeskAdjust(multiDesktop[i].m, multiDesktop[i].m.ScreenWidth, multiDesktop[i].m.ScreenHeight, multiDesktop[i].m.CanvasId); // Adjust screen size change
                         }
                     }
                     deskAdjust();

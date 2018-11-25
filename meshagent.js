@@ -602,7 +602,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (mesh == null) return;
 
         // Get the node and change it if needed
-        obj.db.Get(obj.dbNodeKey, function (err, nodes) {
+        obj.db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
             if (nodes.length != 1) return;
             var device = nodes[0];
             if (device.agent) {
