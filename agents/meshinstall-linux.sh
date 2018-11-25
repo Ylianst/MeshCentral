@@ -112,7 +112,7 @@ DownloadAgent() {
     wget $url/meshsettings?id=$meshid -q --no-check-certificate -O /usr/local/mesh/meshagent.msh
 
     # If it did not work, try again using http
-    if [ $? -eq 0 ]
+    if [ $? -ne 0 ]
     then
       wget $url/meshsettings?id=$meshid -q -O /usr/local/mesh/meshagent.msh
     fi
