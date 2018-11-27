@@ -172,11 +172,14 @@ function lme_heci(options) {
                             { // Bind a new server socket if not already present
                                 this[name][port] = require('net').createServer();
                                 this[name][port].HECI = this;
-                                if (lme_port_offset == 0) {
-                                    this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
-                                } else {
-                                    this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
-                                }
+
+                                try {
+                                    if (lme_port_offset == 0) {
+                                        this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
+                                    } else {
+                                        this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
+                                    }
+                                } catch (ex) { console.log('Binding error, LMS port ' + (port + lme_port_offset) + ': ' + ex) } // TODO: We can't bind
                                 this[name][port].on('connection', function (socket) {
                                     //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
                                     this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);

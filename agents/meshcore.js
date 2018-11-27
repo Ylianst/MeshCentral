@@ -19,6 +19,7 @@ process.on('uncaughtException', function (ex) {
     require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "uncaughtException1: " + ex });
 });
 
+//attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
 
 function createMeshCore(agent) {
     var obj = {};
@@ -1526,6 +1527,7 @@ function createMeshCore(agent) {
     obj.setupMeiOsAdmin = function (func, state) {
         if ((amtMei == null) || (amtMeiConnected != 2)) { return; } // If there is no MEI, don't bother with this.
         amtMei.getLocalSystemAccount(function (x) {
+            if (x == null) return;
             var transport = require('amt-wsman-duk');
             var wsman = require('amt-wsman');
             var amt = require('amt');
@@ -1537,6 +1539,7 @@ function createMeshCore(agent) {
             //*************************************
             // Setup KVM data channel if this is Intel AMT 12 or above
             amtMei.getVersion(function (x) {
+                if (x == null) return;
                 var amtver = null;
                 try { for (var i in x.Versions) { if (x.Versions[i].Description == 'AMT') amtver = parseInt(x.Versions[i].Version.split('.')[0]); } } catch (e) { }
                 if ((amtver != null) && (amtver >= 12)) {
