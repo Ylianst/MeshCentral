@@ -55,56 +55,74 @@ function monitorinfo()
     else if(process.platform == 'linux')
     {
         // First thing we need to do, is determine where the X11 libraries are
-        var fs = require('fs');
-        var files = fs.readdirSync('/usr/lib');
-        var files2;
-
-        /*
-        for (j in files)
+        var askOS = false;
+        try
         {
-            if (files[j].split('libX11.so.').length > 1 && files[j].split('.').length == 3)
+            if (require('user-sessions').isRoot()) { askOS = true; }
+        }
+        catch (e)
+        { }
+
+        if (askOS)
+        {
+            // Sufficient access rights to use ldconfig
+            var p = require('child_process').execFile('/bin/sh', ['sh']);
+            p.stdout._lines = '';
+            p.stdout.on('data', function (chunk) { this._lines += chunk.toString(); });
+            p.stdin.write('ldconfig -v\nexit\n');
+            p.waitExit();
+
+            var paths = p.stdout._lines.split('\n');
+            var searchPath = '';
+            for (var i in paths)
             {
-                Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/'  + files[j] });
-            }
-            if (files[j].split('libXtst.so.').length > 1 && files[j].split('.').length == 3)
-            {
-                Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[j] });
-            }
-            if (files[j].split('libXext.so.').length > 1 && files[j].split('.').length == 3)
-            {
-                Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[j] });
+                if (paths[i].endsWith(':'))
+                {
+                    searchPath = paths[i].substring(0, paths[i].length - 1);
+                }
+                else
+                {
+                    if (paths[i].split('libX11.').length > 1) { Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                    if (paths[i].split('libXtst.').length > 1) { Object.defineProperty(this, 'Location_X11TST', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                    if (paths[i].split('libXext.').length > 1) { Object.defineProperty(this, 'Location_X11EXT', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                }
             }
         }
-        */
-
-        for (var i in files)
+        else
         {
-            try {
-                if (files[i].split('libX11.so.').length > 1 && files[i].split('.').length == 3) {
-                    Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] });
-                }
-                if (files[i].split('libXtst.so.').length > 1 && files[i].split('.').length == 3) {
-                    Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] });
-                }
-                if (files[i].split('libXext.so.').length > 1 && files[i].split('.').length == 3) {
-                    Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] });
-                }
+            // Not enough access rights to use ldconfig, so manually search
+            var fs = require('fs');
+            var files = fs.readdirSync('/usr/lib');
+            var files2;
 
-                if (files[i].split('-linux-').length > 1) {
-                    files2 = fs.readdirSync('/usr/lib/' + files[i]);
-                    for (j in files2) {
-                        if (files2[j].split('libX11.so.').length > 1 && files2[j].split('.').length == 3) {
-                            Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
-                        }
-                        if (files2[j].split('libXtst.so.').length > 1 && files2[j].split('.').length == 3) {
-                            Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
-                        }
-                        if (files2[j].split('libXext.so.').length > 1 && files2[j].split('.').length == 3) {
-                            Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+            for (var i in files) {
+                try {
+                    if (files[i].split('libX11.so.').length > 1 && files[i].split('.').length == 3) {
+                        Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] });
+                    }
+                    if (files[i].split('libXtst.so.').length > 1 && files[i].split('.').length == 3) {
+                        Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] });
+                    }
+                    if (files[i].split('libXext.so.').length > 1 && files[i].split('.').length == 3) {
+                        Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] });
+                    }
+
+                    if (files[i].split('-linux-').length > 1) {
+                        files2 = fs.readdirSync('/usr/lib/' + files[i]);
+                        for (j in files2) {
+                            if (files2[j].split('libX11.so.').length > 1 && files2[j].split('.').length == 3) {
+                                Object.defineProperty(this, 'Location_X11LIB', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                            }
+                            if (files2[j].split('libXtst.so.').length > 1 && files2[j].split('.').length == 3) {
+                                Object.defineProperty(this, 'Location_X11TST', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                            }
+                            if (files2[j].split('libXext.so.').length > 1 && files2[j].split('.').length == 3) {
+                                Object.defineProperty(this, 'Location_X11EXT', { value: '/usr/lib/' + files[i] + '/' + files2[j] });
+                            }
                         }
                     }
-                }
-            } catch (ex) { }
+                } catch (ex) { }
+            }
         }
         Object.defineProperty(this, 'kvm_x11_support', { value: (this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT)?true:false });
 
