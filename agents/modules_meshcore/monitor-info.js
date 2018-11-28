@@ -73,10 +73,17 @@ function monitorinfo()
                     searchPath = paths[i].substring(0, paths[i].length - 1);
                 } else {
                     try { // Added by Ylian: Try/catch to fix X11 detection, not sure if this is correct.
-                        if (paths[i].split('libX11.').length > 1) { Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                        if (paths[i].split('libX11.').length > 1)
+                        {
+                            //require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "path = " + searchPath + '/' + paths[i].split('->')[1].trim() });
+                            Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() });
+                        }
                         if (paths[i].split('libXtst.').length > 1) { Object.defineProperty(this, 'Location_X11TST', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
                         if (paths[i].split('libXext.').length > 1) { Object.defineProperty(this, 'Location_X11EXT', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
-                    } catch (ex) { }
+                    } catch (ex)
+                    {
+                        //require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "[" + searchPath + '/' + paths[i].split('->')[1].trim() + "] uncaughtException7: " + ex });
+                    }
                 }
             }
         }

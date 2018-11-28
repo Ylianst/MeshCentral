@@ -1529,6 +1529,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
                 if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
                 if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+                if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
+
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
@@ -1665,6 +1667,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
         if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
 
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
@@ -1744,6 +1747,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+        if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
+        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
         res.send(meshsettings);
