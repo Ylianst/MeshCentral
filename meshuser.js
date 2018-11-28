@@ -1177,7 +1177,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                             // Perform email invitation
-                            obj.parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg);
+                            obj.parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags);
                         }
                         break;
                     }

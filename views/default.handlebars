@@ -2165,7 +2165,8 @@
             var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
             x += addHtmlValue('Name (optional)', '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
             x += addHtmlValue('Email', '<input id=agentInviteEmail style=width:230px placeholder="example@email.com" onkeyup=validateAgentInvite()></input>');
-            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=1>Windows</option><option value=0>Windows or Linux</option><option value=2>Linux</option></select>');
+            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=0>Any supported</option><option value=1>Windows only</option><option value=3>Apple OSX only</option><option value=2>Linux only</option></select>');
+            x += addHtmlValue('Installation Type', '<select id=agentInviteType style=width:236px><option value=0>Background and interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
             x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             validateAgentInvite();
@@ -2176,21 +2177,23 @@
         }
 
         function performAgentInvite(button, meshid) {
-            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value, name: Q('agentInviteName').value, os: Q('agentInviteNameOs').value, msg: Q('agentInviteMessage').value });
+            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value, name: Q('agentInviteName').value, os: Q('agentInviteNameOs').value, flags: Q('agentInviteType').value, msg: Q('agentInviteMessage').value });
         }
 
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
-            var mesh = meshes[meshid], x = '';
-            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
-            //x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>') + '<hr>';
+            var mesh = meshes[meshid], x = '', installType = 0;
+            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>');
+            x += '<div id=aginsTypeDiv>';
+            x += addHtmlValue('Installation Type', '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>Background & interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
+            x += '</div><hr>';
 
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a href="meshsettings?id=' + meshid.split('/')[2] + '" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
             // Linux agent install
@@ -2228,6 +2231,7 @@
                 Q('agins_linux_area_un').value = "wget -q http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             }
             Q('aginsSelect').focus();
+            addAgentToMeshClick();
         }
 
         function addAgentToMeshClick() {
@@ -2237,6 +2241,12 @@
             QV('agins_osx', v == 2);
             QV('agins_windows_un', v == 3);
             QV('agins_linux_un', v == 4);
+            QV('aginsTypeDiv', v == 0);
+
+            // Fix the links if needed
+            Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value; }
         }
 
         function validateDeviceToMesh() {
