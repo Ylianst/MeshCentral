@@ -44,24 +44,18 @@ function monitorinfo()
                 if (info._user32.EnumDisplayMonitors(0, 0, this._monitorinfo.callback, this._monitorinfo.dwData).Val == 0) {
                     rejector('LastError=' + info._kernel32.GetLastError().Val);
                     return;
-                }
-                else {
+                } else {
                     resolver(this._monitorinfo.callback.results);
                 }
 
             }));
         }
     }
-    else if(process.platform == 'linux')
+    else if (process.platform == 'linux')
     {
         // First thing we need to do, is determine where the X11 libraries are
         var askOS = false;
-        try
-        {
-            if (require('user-sessions').isRoot()) { askOS = true; }
-        }
-        catch (e)
-        { }
+        try { if (require('user-sessions').isRoot()) { askOS = true; } } catch (e) { }
 
         if (askOS)
         {
@@ -74,17 +68,15 @@ function monitorinfo()
 
             var paths = p.stdout._lines.split('\n');
             var searchPath = '';
-            for (var i in paths)
-            {
-                if (paths[i].endsWith(':'))
-                {
+            for (var i in paths) {
+                if (paths[i].endsWith(':')) {
                     searchPath = paths[i].substring(0, paths[i].length - 1);
-                }
-                else
-                {
-                    if (paths[i].split('libX11.').length > 1) { Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
-                    if (paths[i].split('libXtst.').length > 1) { Object.defineProperty(this, 'Location_X11TST', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
-                    if (paths[i].split('libXext.').length > 1) { Object.defineProperty(this, 'Location_X11EXT', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                } else {
+                    try { // Added by Ylian: Try/catch to fix X11 detection, not sure if this is correct.
+                        if (paths[i].split('libX11.').length > 1) { Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                        if (paths[i].split('libXtst.').length > 1) { Object.defineProperty(this, 'Location_X11TST', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                        if (paths[i].split('libXext.').length > 1) { Object.defineProperty(this, 'Location_X11EXT', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
+                    } catch (ex) { }
                 }
             }
         }

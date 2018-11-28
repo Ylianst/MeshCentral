@@ -383,11 +383,11 @@
                     <div id=p10html2></div>
                     <div id=p10html3></div>
                 </div>
-                <div id=p11 style=display:none>
+                <div id=p11 class=noselect style=display:none>
                     <div id="p11title">
                         <div id=p11deviceNameHeader>
                             <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
-                            <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull() title="Full Screen"><div class="viewSelector5"></div></div></div>
+                            <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                             <h1>Desktop - <span id=p11deviceName></span></h1>
                         </div>
                     </div>
@@ -399,7 +399,7 @@
                         <div class=icon2 style="float:left;margin:7px"></div>
                         <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
                     </div>
-                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                    <table id=deskarea0 cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr id=deskarea1>
                             <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
@@ -409,11 +409,11 @@
                                     <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
                                     <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() style=margin-right:3px>
                                     <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
-                                    <input type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="margin-right:3px">
+                                    <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="margin-right:3px">
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
                                 </div>
                                 <div>
-                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull() style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;&#x2716;</div>
+                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
                                     <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                                     <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
@@ -3688,9 +3688,11 @@
             QE('deskkeys', deskState == 3);
             QV('DeskToolsButton', meshrights & 8);
             QE('DeskToolsButton', online);
-            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
+            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8) && (browserfullscreen == false));
             QE('DeskToastButton', online);
             QV('DeskControlSpan', meshrights & 8)
+            QV('deskActionsBtn', (browserfullscreen == false));
+            QV('deskActionsSettings', (browserfullscreen == false));
             if (meshrights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
             if (online == false) QV('DeskTools', false);
         }
@@ -3898,8 +3900,30 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
 
+        // Enter browser fullscreen
+        function enterBrowserFullscreen(elem) {
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+        }
+
+        // Exit browser fullscreen
+        function exitBrowserFullscreen() {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+        }
+
+        // Return true if the browser is fullscreen. This is a delayed method that will return true/false late. Not very useful.
+        function isBrowserFullscreen() {
+            if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { return false; } else { return true; }
+        }
+
         var fullscreen = false;
-        function deskToggleFull() {
+        var browserfullscreen = false;
+        function deskToggleFull(e) {
             fullscreen = !fullscreen;
             QV('mastheadx', !fullscreen);
             QV('masthead', !fullscreen);
@@ -3911,6 +3935,8 @@
             QV('deskFullBtn', !fullscreen);
             QV('page_leftbar', !fullscreen);
             if (fullscreen) {
+                // If shift is pressed, enter browser full screen.
+                if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
                 QS('column_l').width = '930px';
                 QS('column_l').height = '';
                 QS('column_l')['margin-left'] = '';
@@ -3925,6 +3951,8 @@
                 QS('column_l').width = '100%';
                 QS('column_l')["max-height"] = '';
             } else {
+                exitBrowserFullscreen();
+                browserfullscreen = false;
                 QS('container').width = '960px';
                 QS('container')['border-right'] = '1px solid #b7b7b7';
                 QS('container')['border-left'] = '1px solid #b7b7b7';
@@ -3934,6 +3962,7 @@
             }
             deskAdjust();
             deskAdjust();
+            updateDesktopButtons();
         }
 
         function deskToggleFocus() {
