@@ -19,6 +19,7 @@ process.on('uncaughtException', function (ex) {
     require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "uncaughtException1: " + ex });
 });
 
+// NOTE: This seems to cause big problems, don't enable the debugger in the server's meshcore. 
 //attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
 
 // Mesh Rights
