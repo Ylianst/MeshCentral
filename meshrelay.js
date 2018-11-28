@@ -35,6 +35,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     const MESHRIGHT_SERVERFILES = 32;
     const MESHRIGHT_WAKEDEVICE = 64;
     const MESHRIGHT_SETNOTES = 128;
+    const MESHRIGHT_REMOTEVIEW = 256;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;

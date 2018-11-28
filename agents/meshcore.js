@@ -21,6 +21,17 @@ process.on('uncaughtException', function (ex) {
 
 //attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
 
+// Mesh Rights
+const MESHRIGHT_EDITMESH = 1;
+const MESHRIGHT_MANAGEUSERS = 2;
+const MESHRIGHT_MANAGECOMPUTERS = 4;
+const MESHRIGHT_REMOTECONTROL = 8;
+const MESHRIGHT_AGENTCONSOLE = 16;
+const MESHRIGHT_SERVERFILES = 32;
+const MESHRIGHT_WAKEDEVICE = 64;
+const MESHRIGHT_SETNOTES = 128;
+const MESHRIGHT_REMOTEVIEW = 256;
+
 function createMeshCore(agent) {
     var obj = {};
 
@@ -414,11 +425,11 @@ function createMeshCore(agent) {
                                     tunnel.tcpport = data.tcpport;
                                     tunnel.end();
                                     // Put the tunnel in the tunnels list
-                                    var index = nextTunnelIndex++;;
+                                    var index = nextTunnelIndex++;
                                     tunnel.index = index;
                                     tunnels[index] = tunnel;
 
-                                    sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
+                                    //sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
                                 }
                             }
                             break;
@@ -554,7 +565,7 @@ function createMeshCore(agent) {
     
     function onTunnelClosed() {
         if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
-        sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
+        //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
         delete tunnels[this.httprequest.index];
         
         /*
@@ -584,7 +595,7 @@ function createMeshCore(agent) {
         // Clean up WebSocket
         this.removeAllListeners('data');
     }
-    function onTunnelSendOk() { sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid); }
+    function onTunnelSendOk() { /*sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid);*/ }
     function onTunnelData(data) {
         //console.log("OnTunnelData");
         //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
@@ -608,7 +619,7 @@ function createMeshCore(agent) {
 
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
-            if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
+            if (data == 'c') { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
         } else {
             // Handle tunnel data
             if (this.httprequest.protocol == 0) { // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
@@ -616,12 +627,21 @@ function createMeshCore(agent) {
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
+                    // Check user access rights
+                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                        // Disengage this tunnel, user does not have the rights to do this!!
+                        this.httprequest.protocol = 999999;
+                        sendConsoleText('Error: No Remote Control Rights.');
+                        return;
+                    }
+
                     // Remote terminal using native pipes
                     if (process.platform == "win32") {
                         this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
                     } else {
                         this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
                     }
+
                     this.httprequest.process.tunnel = this;
                     this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
                     this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
@@ -634,6 +654,14 @@ function createMeshCore(agent) {
                     if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
                 } else if (this.httprequest.protocol == 2)
                 {
+                    // Check user access rights
+                    if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
+                        // Disengage this tunnel, user does not have the rights to do this!!
+                        this.httprequest.protocol = 999999;
+                        sendConsoleText('Error: No Remote Control Rights.');
+                        return;
+                    }
+
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
@@ -653,12 +681,29 @@ function createMeshCore(agent) {
                         }
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
-                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                    this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+
+                    //sendConsoleText('KVM Rights: ' + this.httprequest.rights);
+                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) {
+                        // If we have remote control rights, pipe the KVM input
+                        this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
+                    } else {
+                        // We need to only pipe non-mouse & non-keyboard inputs.
+                        // TODO!!!
+                    }
+
+                    this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text. Pipe the KVM --> Browser images.
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
                 } else if (this.httprequest.protocol == 5) {
+                    // Check user access rights
+                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                        // Disengage this tunnel, user does not have the rights to do this!!
+                        this.httprequest.protocol = 999999;
+                        sendConsoleText('Error: No Remote Control Rights.');
+                        return;
+                    }
+
                     // Setup files
                     // NOP
                 }
