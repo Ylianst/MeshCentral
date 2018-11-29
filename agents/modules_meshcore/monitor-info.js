@@ -8,6 +8,33 @@ var _NET_WM_STATE_TOGGLE = 2;    // toggle property
 var SubstructureRedirectMask = (1 << 20);
 var SubstructureNotifyMask = (1 << 19);
 
+function getLibInfo(libname)
+{
+    if (process.platform != 'linux') { throw ('Only supported on linux'); }
+
+    var child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = '';
+    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+    child.stdin.write("ldconfig -p | grep '" + libname + ".so.'\nexit\n");
+    child.waitExit();
+
+    var v = [];
+    var lines = child.stdout.str.split('\n');
+    for (var i in lines) {
+        if (lines[i]) {
+            var info = lines[i].split('=>');
+            var pth = info[1].trim();
+            var libinfo = info[0].trim().split(' ');
+            var lib = libinfo[0];
+            var plat = libinfo[1].substring(1, libinfo[1].length - 1).split(',');
+
+            if (lib.startsWith(libname + '.so.')) {
+                v.push({ lib: lib, path: pth, info: plat });
+            }
+        }
+    }
+    return (v);
+}
 
 function monitorinfo()
 {
@@ -44,46 +71,67 @@ function monitorinfo()
                 if (info._user32.EnumDisplayMonitors(0, 0, this._monitorinfo.callback, this._monitorinfo.dwData).Val == 0) {
                     rejector('LastError=' + info._kernel32.GetLastError().Val);
                     return;
-                } else {
+                }
+                else {
                     resolver(this._monitorinfo.callback.results);
                 }
 
             }));
         }
     }
-    else if (process.platform == 'linux')
+    else if(process.platform == 'linux')
     {
         // First thing we need to do, is determine where the X11 libraries are
         var askOS = false;
-        try { if (require('user-sessions').isRoot()) { askOS = true; } } catch (e) { }
+        try
+        {
+            if (require('user-sessions').isRoot()) { askOS = true; }
+        }
+        catch (e)
+        { }
 
         if (askOS)
         {
             // Sufficient access rights to use ldconfig
-            var p = require('child_process').execFile('/bin/sh', ['sh']);
-            p.stdout._lines = '';
-            p.stdout.on('data', function (chunk) { this._lines += chunk.toString(); });
-            p.stdin.write('ldconfig -v\nexit\n');
-            p.waitExit();
+            var x11info = getLibInfo('libX11');
+            var xtstinfo = getLibInfo('libXtst');
+            var xextinfo = getLibInfo('libXext');
+            var ix;
 
-            var paths = p.stdout._lines.split('\n');
-            var searchPath = '';
-            for (var i in paths) {
-                if (paths[i].endsWith(':')) {
-                    searchPath = paths[i].substring(0, paths[i].length - 1);
-                } else {
-                    try { // Added by Ylian: Try/catch to fix X11 detection, not sure if this is correct.
-                        if (paths[i].split('libX11.').length > 1)
-                        {
-                            //require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "path = " + searchPath + '/' + paths[i].split('->')[1].trim() });
-                            Object.defineProperty(this, 'Location_X11LIB', { value: searchPath + '/' + paths[i].split('->')[1].trim() });
-                        }
-                        if (paths[i].split('libXtst.').length > 1) { Object.defineProperty(this, 'Location_X11TST', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
-                        if (paths[i].split('libXext.').length > 1) { Object.defineProperty(this, 'Location_X11EXT', { value: searchPath + '/' + paths[i].split('->')[1].trim() }); }
-                    } catch (ex)
-                    {
-                        //require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": "[" + searchPath + '/' + paths[i].split('->')[1].trim() + "] uncaughtException7: " + ex });
-                    }
+            for(ix in x11info)
+            {
+                try
+                {
+                    this._gm.CreateNativeProxy(x11info[ix].path);
+                    Object.defineProperty(this, 'Location_X11LIB', { value: x11info[ix].path });
+                    break;
+                }
+                catch(ex)
+                {
+                }
+            }
+            for (ix in xtstinfo)
+            {
+                try
+                {
+                    this._gm.CreateNativeProxy(xtstinfo[ix].path);
+                    Object.defineProperty(this, 'Location_X11TST', { value: xtstinfo[ix].path });
+                    break;
+                }
+                catch (ex)
+                {
+                }
+            }
+            for (ix in xextinfo)
+            {
+                try
+                {
+                    this._gm.CreateNativeProxy(xextinfo[ix].path);
+                    Object.defineProperty(this, 'Location_X11EXT', { value: xextinfo[ix].path });
+                    break;
+                }
+                catch (ex)
+                {
                 }
             }
         }
