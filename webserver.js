@@ -804,13 +804,33 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleTermsRequest(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        if (req.session && req.session.userid) {
-            if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
-            var user = obj.users[req.session.userid];
-            res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+
+        // See if there is a terms.txt file in meshcentral-data
+        var p = obj.path.join(obj.parent.datapath, 'terms.txt');
+        if (obj.fs.existsSync(p)) {
+            readEntireTextFile(p, function (data) {
+                if (data == null) { res.sendStatus(404); return; }
+
+                // Send the terms
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+                if (req.session && req.session.userid) {
+                    if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
+                    var user = obj.users[req.session.userid];
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                } else {
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
+                }
+            });
         } else {
-            res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2 });
+            // Send the terms
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+            if (req.session && req.session.userid) {
+                if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
+                var user = obj.users[req.session.userid];
+                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+            } else {
+                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2 });
+            }
         }
     }
 

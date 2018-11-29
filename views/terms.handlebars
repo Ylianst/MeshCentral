@@ -242,6 +242,10 @@
         if (webPageFullScreen == 'true') { webPageFullScreen = true; }
         toggleFullScreen();
 
+        var terms = "{{{terms}}}";
+        if (terms != "") { QH('column_l', decodeURIComponent(terms)); }
+        QV('column_l', true);
+
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
