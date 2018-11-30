@@ -14,6 +14,9 @@
 /*jshint esversion: 6 */
 "use strict";
 
+// If running NodeJS less than version 8, try to polyfill promisify
+try { if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { require('util.promisify').shim(); } } catch (ex) { }
+
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (e) { } }
 
@@ -1276,6 +1279,9 @@ function mainStart(args) {
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
+
+        // If running NodeJS < 8, install "util.promisify"
+        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { modules.push('util.promisify'); }
 
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });

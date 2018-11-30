@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.2.3-o",
+  "version": "0.2.3-r",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -35,12 +35,16 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.6",
     "express-ws": "^3.0.0",
+    "greenlock": "^2.4.10",
+    "le-acme-core": "^2.1.4",
+    "le-store-certbot": "^2.2.1",
     "meshcentral": "*",
     "minimist": "^1.2.0",
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.7.6",
     "nodemailer": "^4.7.0",
+    "util.promisify": "^1.0.0",
     "ws": "^6.1.2",
     "xmldom": "^0.1.27",
     "yauzl": "^2.9.1"
