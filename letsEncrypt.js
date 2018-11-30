@@ -125,6 +125,6 @@ module.exports.CreateLetsEncrypt = function (parent) {
         };
 
         return obj;
-    } catch (e) { console.error(e); } // Unable to start Let's Encrypt
+    } catch (ex) { console.log(ex); } // Unable to start Let's Encrypt
     return null;
 };

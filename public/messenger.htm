@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html style=height:100%>
+    <head>
+        <meta http-equiv=X-UA-Compatible content="IE=edge">
+        <meta content="text/html;charset=utf-8" http-equiv=Content-Type>
+        <meta name=format-detection content="telephone=no">
+        <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+        <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    </head>
+    <body style="font-family:Arial,Helvetica,sans-serif">
+        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:30px;background-color:#036;color:#c8c8c8"><div style="padding-top:6px;padding-left:6px;font-size:medium"><b>Messenger<span id="xtitle"></span></b></div></div>
+        <div id="xmiddle" style="position:absolute;left:0;right:0;top:30px;bottom:30px">
+            <div id="xmsg" style="position:absolute;left:0;right:0;top:0px;bottom:0px;padding:5px;overflow-y:scroll"></div>
+        </div>
+        <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036">
+            <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) /></div>
+            <input type="button" id="sendButton" value="Send" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)" />
+            <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="xclear(event)" />
+        </div>
+        <script type="text/javascript">
+            var userInputFocus = 0;
+            var controlsEnabled = true;
+            var args = parseUriArgs();
+            var socket = null;
+            var state = 0;
+
+            // Set the title
+            if (args.title) { QH('xtitle', ' - ' + args.title); }
+
+            // Trap document key presses
+            document.onkeypress = function ondockeypress(e) {
+                if (controlsEnabled == true) {
+                    if ((e.keyCode == 8) && (userInputFocus == 0)) {
+                        // Backspace
+                        var outtext = Q('xouttext').value;
+                        if (outtext.length > 0) { Q('xouttext').value = outtext.substring(0, outtext.length - 1); }
+                    } else if (e.keyCode == 13) {
+                        // Return
+                        xsend(e);
+                    } else {
+                        // Any other key
+                        if ((userInputFocus == 0) && (e.key.length == 1)) { Q('xouttext').value = Q('xouttext').value + e.key; }
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            function onUserInputFocus(x) { userInputFocus = x; }
+            function xclear(event) { QH('xmsg', ''); }
+            function xcontrol(msg) {
+                QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+            function xrecv(msg) {
+                QA('xmsg', '<div style="clear:both"><div style="background-color:#00cc99;color:black;border-radius:5px;padding:5px;float:left;margin-bottom:5px;margin-right:20px">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            function xsend(event) {
+                var outtext = Q('xouttext').value;
+                if (outtext.length > 0) {
+                    Q('xouttext').value = '';
+                    QA('xmsg', '<div style="clear:both"><div style="background-color:#0099ff;color:black;border-radius:5px;padding:5px;float:right;margin-bottom:5px;margin-left:20px">' + outtext + '</div><div></div></div>');
+                    Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+                    socket.send(JSON.stringify({ action: 'chat', msg: outtext }));
+                }
+            }
+
+            function enableControls(lock) {
+                controlsEnabled = lock;
+                QE('sendButton', lock);
+                QE('clearButton', lock);
+                QE('xouttext', lock);
+            }
+
+            function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
+
+            // Get started
+            enableControls(false);
+            if ((typeof args.id == 'string') && (args.id.length > 0)) {
+                xcontrol('Connecting...');
+                socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
+                socket.onopen = function () { xcontrol('Waiting for other user...'); }
+                socket.onerror = function (e) { console.error(e); }
+                socket.onclose = function () { enableControls(false); xcontrol('Connection closed.'); socket = null; }
+                socket.onmessage = function (msg) {
+                    if ((state == 0) && (typeof msg.data == 'string')) { enableControls(true); xcontrol('Connected.'); state = 1; return; }
+                    if (state == 1) {
+                        if (typeof msg.data == 'string') {
+                            var obj = JSON.parse(msg.data);
+                            switch (obj.action) {
+                                case 'chat': { xrecv(obj.msg); break; }
+                            }
+                        } else {
+                            //xrecv(JSON.stringify(msg));
+                        }
+                    }
+                }
+            } else {
+                xcontrol('Error: No connection key specified.');
+            }
+
+        </script>
+</body>
+</html>
