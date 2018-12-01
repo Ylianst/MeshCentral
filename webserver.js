@@ -102,32 +102,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Perform hash on web certificate and agent certificate
-    obj.webCertificateHash = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
+    obj.webCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
     obj.webCertificateHashs = { '': obj.webCertificateHash };
-    obj.webCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.web.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-    obj.agentCertificateHashHex = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
-    obj.agentCertificateHashBase64 = new Buffer(parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.agent.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.webCertificateHashBase64 = new Buffer(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
+    obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
+    obj.webCertificateFullHashBase64 = new Buffer(obj.webCertificateFullHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
+    obj.agentCertificateHashBase64 = new Buffer(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
 
     // Compute the hash of all of the web certificates for each domain
     for (var i in obj.parent.config.domains) {
         if (obj.parent.config.domains[i].certhash != null) {
             // If the web certificate hash is provided, use it.
-            obj.webCertificateHashs[i] = new Buffer(obj.parent.config.domains[i].certhash, 'hex').toString('binary');
+            obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i] = new Buffer(obj.parent.config.domains[i].certhash, 'hex').toString('binary');
+            if (obj.parent.config.domains[i].certkeyhash != null) { obj.webCertificateHashs[i] = new Buffer(obj.parent.config.domains[i].certkeyhash, 'hex').toString('binary'); }
         } else if ((obj.parent.config.domains[i].dns != null) && (obj.parent.config.domains[i].certs != null)) {
             // If the domain has a different DNS name, use a different certificate hash.
+            // Hash the full certificate
+            obj.webCertificateFullHashs[i] = parent.certificateOperations.getCertHashBinary(obj.parent.config.domains[i].certs.cert);
             try {
-                // Decode a RSA certificate and hash the public key
-                obj.webCertificateHashs[i] = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.config.domains[i].certs.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
+                // Decode a RSA certificate and hash the public key.
+                obj.webCertificateHashs[i] = parent.certificateOperations.getPublicKeyHashBinary(obj.parent.config.domains[i].certs.cert);
             } catch (ex) {
-                // This may be a ECDSA certificate, hash the entire cert
-                var x1 = obj.parent.config.domains[i].certs.cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = obj.parent.config.domains[i].certs.cert.indexOf('-----END CERTIFICATE-----');
-                if ((x1 >= 0) && (x2 > x1)) {
-                    obj.webCertificateHashs[i] = obj.crypto.createHash('sha384').update(new Buffer(obj.parent.config.domains[i].certs.cert.substring(x1 + 27, x2), 'base64')).digest('binary');
-                } else { console.log('ERROR: Unable to decode certificate for domain "' + i + '".'); }
+                // This may be a ECDSA certificate, hash the entire cert.
+                obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i];
             }
         }
     }
+
+    //console.log(new Buffer(obj.webCertificateHashs['devtest'], 'binary').toString('hex'));
+    //console.log(new Buffer(obj.webCertificateFullHashs['devtest'], 'binary').toString('hex'));
 
     // If we are running the legacy swarm server, compute the hash for that certificate
     if (parent.certificates.swarmserver != null) {

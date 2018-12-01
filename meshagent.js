@@ -198,7 +198,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 // Check that the server hash matches our own web certificate hash (SHA384)
-                if (getWebCertHash(obj.domain) != msg.substring(2, 50)) { console.log('Agent connected with bad web certificate hash (' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' != ' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent connected with bad web certificate hash (Agent:' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 obj.agentnonce = msg.substring(50, 98);
@@ -411,19 +411,30 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
     }
 
-    // Get the web certificate hash for the speficied domain
+    // Get the web certificate private key hash for the specified domain
     function getWebCertHash(domain) {
         var hash = obj.parent.webCertificateHashs[domain.id];
         if (hash != null) return hash;
         return obj.parent.webCertificateHash;
     }
 
+    // Get the web certificate hash for the specified domain
+    function getWebCertFullHash(domain) {
+        var hash = obj.parent.webCertificateFullHashs[domain.id];
+        if (hash != null) return hash;
+        return obj.parent.webCertificateFullHash;
+    }
+
     // Verify the agent signature
     function processAgentSignature(msg) {
         // Verify the signature. This is the fast way, without using forge.
         const verify = obj.parent.crypto.createVerify('SHA384');
-        verify.end(new Buffer(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));
-        if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { return false; }
+        verify.end(new Buffer(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
+        if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) {
+            const verify2 = obj.parent.crypto.createVerify('SHA384');
+            verify2.end(new Buffer(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
+            if (verify2.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { return false; }
+        }
 
         // Connection is a success, clean up
         obj.nodeid = obj.unauth.nodeid;

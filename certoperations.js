@@ -28,14 +28,26 @@ module.exports.CertificateOperations = function () {
 
     // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, tag, func) {
-        var u = require('url').parse(url);
+        const u = require('url').parse(url);
         if (u.protocol == 'https:') {
-            var tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
+            // Read the certificate from HTTPS
+            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: u.hostname, rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
             tlssocket.xxurl = url;
             tlssocket.xxfunc = func;
             tlssocket.xxtag = tag;
-            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert, this.xxtag); });
+            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert.raw.toString('binary'), this.xxtag); });
             tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, this.xxtag); });
+        } else if (u.protocol == 'file:') {
+            // Read the certificate from a file
+            obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
+                if (err) { func(url, null, tag); return; }
+                var x1 = data.indexOf('-----BEGIN CERTIFICATE-----'), x2 = data.indexOf('-----END CERTIFICATE-----');
+                if ((x1 >= 0) && (x2 > x1)) {
+                    func(url, new Buffer(data.substring(x1 + 27, x2), 'base64').toString('binary'), tag);
+                } else {
+                    func(url, data, tag);
+                }
+            });
         } else { func(url, null, tag); }
     };
 
@@ -43,6 +55,43 @@ module.exports.CertificateOperations = function () {
     obj.getPublicKeyHash = function (cert) {
         var publickey = obj.pki.certificateFromPem(cert).publicKey;
         return obj.pki.getPublicKeyFingerprint(publickey, { encoding: "hex", md: obj.forge.md.sha384.create() });
+    };
+
+    // Return the SHA384 hash of the certificate, return hex
+    obj.getCertHash = function (cert) {
+        try {
+            var md = obj.forge.md.sha384.create();
+            md.update(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(obj.pki.certificateFromPem(cert))).getBytes());
+            return md.digest().toHex();
+        } catch (ex) {
+            // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
+            var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
+            if ((x1 >= 0) && (x2 > x1)) {
+                return obj.crypto.createHash('sha384').update(new Buffer(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
+            } else { console.log('ERROR: Unable to decode certificate.'); return null; }
+        }
+    };
+
+    // Return the SHA384 hash of the certificate public key
+    obj.getPublicKeyHashBinary = function (cert) {
+        var publickey = obj.pki.certificateFromPem(cert).publicKey;
+        return obj.pki.getPublicKeyFingerprint(publickey, { encoding: "binary", md: obj.forge.md.sha384.create() });
+    };
+
+    // Return the SHA384 hash of the certificate, return binary
+    obj.getCertHashBinary = function (cert) {
+        try {
+            // If this is a RSA certificate, we can use Forge to hash the ASN1
+            var md = obj.forge.md.sha384.create();
+            md.update(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(obj.pki.certificateFromPem(cert))).getBytes());
+            return md.digest().getBytes();
+        } catch (ex) {
+            // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
+            var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
+            if ((x1 >= 0) && (x2 > x1)) {
+                return obj.crypto.createHash('sha384').update(new Buffer(cert.substring(x1 + 27, x2), 'base64')).digest('binary');
+            } else { console.log('ERROR: Unable to decode certificate.'); return null; }
+        }
     };
 
     // Create a self-signed certificate
