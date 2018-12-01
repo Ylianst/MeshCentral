@@ -591,7 +591,7 @@ module.exports.CreateMultiServer = function (parent, args) {
             peerTunnel.ws2.on('close', function (req) { peerTunnel.parent.parent.debug(1, 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
 
             // If a message is received from the peer, Peer ---> Browser (TODO: Pipe this?)
-            peerTunnel.ws2.on('message', function (msg) { try { peerTunnel.ws2.pause(); peerTunnel.ws1.send(msg, function () { peerTunnel.ws2.resume(); }); } catch (e) { } });
+            peerTunnel.ws2.on('message', function (msg) { try { peerTunnel.ws2._socket.pause(); peerTunnel.ws1.send(msg, function () { peerTunnel.ws2._socket.resume(); }); } catch (e) { } });
 
             // Register the connection event
             peerTunnel.ws2.on('open', function () {
@@ -605,11 +605,11 @@ module.exports.CreateMultiServer = function (parent, args) {
                 if (obj.peerServers[serverid] == null || obj.peerServers[serverid].serverCertHash != serverCertHashHex) { console.log('ERROR: Outer certificate hash mismatch (1). (' + peerTunnel.url + ', ' + peerTunnel.serverid + ').'); peerTunnel.close(); return; }
 
                 // Connection accepted, resume the web socket to start the data flow
-                peerTunnel.ws1.resume();
+                peerTunnel.ws1._socket.resume();
             });
 
             // If a message is received from the browser, Browser ---> Peer
-            peerTunnel.ws1.on('message', function (msg) { try { peerTunnel.ws1.pause(); peerTunnel.ws2.send(msg, function () { peerTunnel.ws1.resume(); }); } catch (e) { } });
+            peerTunnel.ws1.on('message', function (msg) { try { peerTunnel.ws1._socket.pause(); peerTunnel.ws2.send(msg, function () { peerTunnel.ws1._socket.resume(); }); } catch (e) { } });
 
             // If error, do nothing
             peerTunnel.ws1.on('error', function (err) { peerTunnel.close(); });

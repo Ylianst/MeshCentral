@@ -1337,7 +1337,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
 
         // We are all set, start receiving data
-        ws.resume();
+        ws._socket.resume();
     } catch (e) { console.log(e); }
 
     // Read entire file and return it in callback function
