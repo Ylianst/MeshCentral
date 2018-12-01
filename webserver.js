@@ -1184,7 +1184,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
                     var tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
-                    tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws.resume(); });
+                    tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
 
                     // Decrypted tunnel from TLS communcation to be forwarded to websocket
                     tlsock.on('data', function (data) {
@@ -1204,7 +1204,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Without TLS
                     ws.forwardclient = parent.mpsserver.SetupCiraChannel(ciraconn, port);
                     ws.forwardclient.xtls = 0;
-                    ws.resume();
+                    ws._socket.resume();
                 }
 
                 // When data is received from the web socket, forward the data into the associated CIRA cahnnel.
@@ -1291,7 +1291,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws.forwardclient.setEncoding('binary');
                     ws.forwardclient.xstate = 0;
                     ws.forwardclient.forwardwsocket = ws;
-                    ws.resume();
+                    ws._socket.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
                     var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
@@ -1299,7 +1299,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS connected to ' + node.host + ':' + port + '.');
                         ws.forwardclient.xstate = 1;
-                        ws.resume();
+                        ws._socket.resume();
                     });
                     ws.forwardclient.setEncoding('binary');
                     ws.forwardclient.xstate = 0;
@@ -1337,7 +1337,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws.forwardclient.connect(port, node.host, function () {
                         Debug(1, 'TCP relay connected to ' + node.host + ':' + port + '.');
                         ws.forwardclient.xstate = 1;
-                        ws.resume();
+                        ws._socket.resume();
                     });
                 }
                 return;
@@ -1883,7 +1883,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         try {
             // Hold this websocket until we are ready.
-            ws.pause();
+            ws._socket.pause();
 
             // Check IP filtering and domain
             var domain = checkUserIpAddress(ws, req);

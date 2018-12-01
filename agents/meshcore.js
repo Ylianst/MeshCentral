@@ -413,7 +413,7 @@ function createMeshCore(agent) {
                                 if (xurl != null) {
                                     var woptions = http.parseUri(xurl);
                                     woptions.rejectUnauthorized = 0;
-                                    sendConsoleText(JSON.stringify(woptions));
+                                    //sendConsoleText(JSON.stringify(woptions));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
                                     tunnel.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }

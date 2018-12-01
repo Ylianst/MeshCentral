@@ -127,8 +127,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     relayinfo.state = 2;
                     obj.ws.send('c'); // Send connect to both peers
                     relayinfo.peer1.ws.send('c');
-                    relayinfo.peer1.ws.resume(); // Release the traffic
-                    relayinfo.peer2.ws.resume(); // Release the traffic
+                    relayinfo.peer1.ws._socket.resume(); // Release the traffic
+                    relayinfo.peer2.ws._socket.resume(); // Release the traffic
 
                     relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
                     relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
@@ -143,7 +143,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 }
             } else {
                 // Wait for other relay connection
-                ws.pause(); // Hold traffic until the other connection
+                ws._socket.pause(); // Hold traffic until the other connection
                 parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
                 obj.parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + obj.remoteaddr + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
@@ -163,14 +163,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
     }
 
-    ws.flushSink = function () { try { ws.resume(); } catch (e) { } };
+    ws.flushSink = function () { try { ws._socket.resume(); } catch (e) { } };
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
         //console.log(typeof data, data.length);
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
-            try { this.pause(); this.peer.send(data, ws.flushSink); } catch (e) { }
+            try { this._socket.pause(); this.peer.send(data, ws.flushSink); } catch (e) { }
         }
     });
 

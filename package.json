@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.2.3-w",
+  "version": "0.2.3-x",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -34,7 +34,7 @@
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.6",
-    "express-ws": "^3.0.0",
+    "express-ws": "^4.0.0",
     "le-acme-core": "^2.1.4",
     "le-store-certbot": "^2.2.1",
     "meshcentral": "*",
