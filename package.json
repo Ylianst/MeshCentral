@@ -35,7 +35,6 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.6",
     "express-ws": "^3.0.0",
-    "greenlock": "^2.4.10",
     "le-acme-core": "^2.1.4",
     "le-store-certbot": "^2.2.1",
     "meshcentral": "*",
