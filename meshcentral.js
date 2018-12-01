@@ -417,22 +417,23 @@ function CreateMeshCentralServer(config, args) {
                 webCertLoadCount++;
                 obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, obj.config.domains[i], function (url, cert, xdomain) {
                     if (cert != null) {
-                        try {
-                            // Decode a RSA certificate and hash the public key
-                            var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert.raw.toString('binary')));
-                            var hash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
-                            if (xdomain.certhash != hash) {
-                                xdomain.certhash = hash;
-                                console.log('Loaded RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
-                            }
-                        } catch (ex) {
-                            // This may be a ECDSA certificate, hash the entire cert
-                            var hash = obj.crypto.createHash('sha384').update(cert.raw).digest('hex');
-                            if (xdomain.certhash != hash) {
-                                xdomain.certhash = hash;
-                                console.log('Loaded non-RSA web certificate at ' + url + ', SHA384: ' + xdomain.certhash + '.');
-                            }
+                        // Hash the entire cert
+                        var hash = obj.crypto.createHash('sha384').update(cert).digest('hex');
+                        if (xdomain.certhash != hash) {
+                            xdomain.certkeyhash = hash;
+                            xdomain.certhash = hash;
                         }
+
+                        try {
+                            // Decode a RSA certificate and hash the public key, if this is not RSA, skip this.
+                            var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert));
+                            xdomain.certkeyhash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
+                            console.log('V1: ' + xdomain.certkeyhash);
+                        } catch (ex) { }
+
+                        console.log('Loaded web certificate from ' + url);
+                        console.log('  SHA384 cert hash: ' + xdomain.certhash);
+                        if (xdomain.certhash != xdomain.certkeyhash) { console.log('  SHA384 key hash:  ' + xdomain.certkeyhash); }
                     } else {
                         console.log('Failed to load web certificate at: ' + url);
                     }
