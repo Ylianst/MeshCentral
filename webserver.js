@@ -220,7 +220,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         for (i in docs) { var u = obj.users[docs[i]._id] = docs[i]; domainUserCount[u.domain]++; }
         for (i in parent.config.domains) {
             if (domainUserCount[i] == 0) {
-                if (parent.config.domains[i].newaccounts == 0) { parent.config.domains[i].newaccounts = 2; }
+                // If newaccounts is set to no new accounts, but no accounts exists, temporarly allow account creation.
+                if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
                 console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
             }
         }
@@ -390,7 +391,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleCreateAccountRequest(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        if (domain.newaccounts == 0) { res.sendStatus(401); return; }
+        if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~') {
             req.session.loginmode = 2;
             req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
@@ -420,7 +421,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id, passhint: hint };
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts == 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
                         obj.users[user._id] = user;
                         req.session.userid = user._id;
                         req.session.domainid = domain.id;
@@ -444,7 +445,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleResetAccountRequest(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        if (domain.newaccounts == 0) { res.sendStatus(401); return; }
+        if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!req.body.email || checkEmail(req.body.email) == false) {
             req.session.loginmode = 3;
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';

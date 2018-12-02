@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html style=height:100%>
     <head>
+        <title>MeshMessenger</title>
         <meta http-equiv=X-UA-Compatible content="IE=edge">
         <meta content="text/html;charset=utf-8" http-equiv=Content-Type>
         <meta name=format-detection content="telephone=no">
@@ -8,7 +9,7 @@
         <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
-        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:30px;background-color:#036;color:#c8c8c8"><div style="padding-top:6px;padding-left:6px;font-size:medium"><b>Messenger<span id="xtitle"></span></b></div></div>
+        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:30px;background-color:#036;color:#c8c8c8"><div style="padding-top:6px;padding-left:6px;font-size:medium"><b>MeshMessenger<span id="xtitle"></span></b></div></div>
         <div id="xmiddle" style="position:absolute;left:0;right:0;top:30px;bottom:30px">
             <div id="xmsg" style="position:absolute;left:0;right:0;top:0px;bottom:0px;padding:5px;overflow-y:scroll"></div>
         </div>
@@ -25,7 +26,7 @@
             var state = 0;
 
             // Set the title
-            if (args.title) { QH('xtitle', ' - ' + args.title); }
+            if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
 
             // Trap document key presses
             document.onkeypress = function ondockeypress(e) {
@@ -76,31 +77,34 @@
             function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
             function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
 
-            // Get started
-            enableControls(false);
-            if ((typeof args.id == 'string') && (args.id.length > 0)) {
-                xcontrol('Connecting...');
-                socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
-                socket.onopen = function () { xcontrol('Waiting for other user...'); }
-                socket.onerror = function (e) { console.error(e); }
-                socket.onclose = function () { enableControls(false); xcontrol('Connection closed.'); socket = null; }
-                socket.onmessage = function (msg) {
-                    if ((state == 0) && (typeof msg.data == 'string')) { enableControls(true); xcontrol('Connected.'); state = 1; return; }
-                    if (state == 1) {
-                        if (typeof msg.data == 'string') {
-                            var obj = JSON.parse(msg.data);
-                            switch (obj.action) {
-                                case 'chat': { xrecv(obj.msg); break; }
+            function start() {
+                // Get started
+                enableControls(false);
+                if ((typeof args.id == 'string') && (args.id.length > 0)) {
+                    //xcontrol('Connecting...');
+                    socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
+                    socket.onopen = function () { state = 1; xcontrol('Waiting for other user...'); }
+                    socket.onerror = function (e) { console.error(e); }
+                    socket.onclose = function () { enableControls(false); if (state > 0) { xcontrol('Connection closed.'); } socket = null; if (state > 1) { setTimeout(start, 500); } state = 0; }
+                    socket.onmessage = function (msg) {
+                        if ((state < 2) && (typeof msg.data == 'string')) { enableControls(true); xcontrol('Connected.'); state = 2; return; }
+                        if (state == 2) {
+                            if (typeof msg.data == 'string') {
+                                var obj = JSON.parse(msg.data);
+                                switch (obj.action) {
+                                    case 'chat': { xrecv(obj.msg); break; }
+                                }
+                            } else {
+                                //xrecv(JSON.stringify(msg));
                             }
-                        } else {
-                            //xrecv(JSON.stringify(msg));
                         }
                     }
+                } else {
+                    xcontrol('Error: No connection key specified.');
                 }
-            } else {
-                xcontrol('Error: No connection key specified.');
             }
 
+            start();
         </script>
 </body>
 </html>

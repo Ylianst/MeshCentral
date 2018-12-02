@@ -597,6 +597,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         break;
                     }
+                case 'meshmessenger':
+                    {
+                        // Send a notification message to a user
+                        if ((user.siteadmin & 2) == 0) break;
+                        if (obj.common.validateString(command.userid, 1, 2048) == false) break;
+
+                        // Create the notification message
+                        var notification = {
+                            "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: Chat Request, Click here to accept.", "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id) };
+
+                        // Get the list of sessions for this user
+                        var sessions = obj.parent.wssessions[command.userid];
+                        if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
+
+                        if (obj.parent.parent.multiServer != null) {
+                            // TODO: Add multi-server support
+                        }
+                        break;
+                    }
                 case 'serverversion':
                     {
                         // Check the server version
