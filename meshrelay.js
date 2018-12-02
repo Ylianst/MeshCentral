@@ -94,6 +94,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
+        // If this is a MeshMessenger session, the ID is the two userid's and authentication must match one of them.
+        if (obj.id.startsWith('meshmessenger/')) {
+            if (obj.user == null) { try { obj.close(); } catch (e) { } return null; }
+            var x = obj.id.split('/'), user1 = x[1] + '/' + x[2] + '/' + x[3], user2 = x[4] + '/' + x[5] + '/' + x[6];
+            if ((obj.user._id != user1) && (obj.user._id != user2)) { try { obj.close(); } catch (e) { } return null; }
+        }
+
         // Validate that the id is valid, we only need to do this on non-authenticated sessions.
         // TODO: Figure out when this needs to be done.
         /*

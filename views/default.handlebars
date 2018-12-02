@@ -1195,6 +1195,7 @@
                                 var n = { text:message.value };
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
+                                if (message.username != null) { n.username = message.username; }
                                 addNotification(n);
                             } else if (message.type == 'ps') {
                                 showDeskToolsProcesses(message);
@@ -1204,6 +1205,7 @@
                         if (message.type == 'notify') { // This is a notification message.
                             var n = { text:message.value };
                             if (message.tag != null) { n.tag = message.tag; }
+                            if (message.username != null) { n.username = message.username; }
                             addNotification(n);
                         }
                     }
@@ -5720,10 +5722,13 @@
         }
 
         function addUserHtml(user, sessions) {
-            var x = '', gray = ' gray', icon = 'm2', msg = '', self = (user.name != userinfo.name);
+            var x = '', gray = ' gray', icon = 'm2', msg = '', msg2 = '', self = (user.name != userinfo.name);
             if (sessions != null) {
                 gray = '';
-                if (self) { msg += "<a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
+                if (self) {
+                    msg2 = "<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Chat><a onclick=userChat(event,\"" + encodeURIComponent(user._id) + "\",\"" + encodeURIComponent(user.name) + "\")><img src='images/icon-chat.png' height=16 width=16 style=padding-top:2px /></a></span>";
+                    msg += "<a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")>";
+                }
                 if (sessions == 1) { msg += '1 active session'; } else { msg += sessions + ' active sessions'; }
                 if (self) { msg += "</a>"; }
             } else {
@@ -5752,7 +5757,7 @@
             x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
             x += '<div style=float:left;height:24px;width:24px;background-color:white><div class="' + icon + gray + '" style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
             x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
-            x += '<div><span>' + username + '</span><span style=float:right>' + msg + '</span></div></div>'; // </td></tr>
+            x += '<div><span>' + username + '</span>' + msg2 + '<span style=float:right>' + msg + '</span></div></div>'; // </td></tr>
             return x;
         }
 
@@ -5763,6 +5768,13 @@
             e.children[2].classList.remove('g2s');
             if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('g2s'); }
             element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
+        }
+
+        function userChat(e, userid, name) {
+            haltEvent(e);
+            window.open('/messenger.htm?id=meshmessenger/' + userid + '/' + encodeURIComponent(userinfo._id) + '&title=' + name, 'meshmessenger:' + userid);
+            meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
+            return false;
         }
 
         function showUserAlertDialog(e, userid) {
@@ -6223,6 +6235,11 @@
                     else if (n.tag == 'intelamt') gotoDevice(n.nodeid, 14); // Intel AMT
                     else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
                     else gotoDevice(n.nodeid, 10); // General
+                } else {
+                    if (n.tag.startsWith('meshmessenger/')) {
+                        window.open('/messenger.htm?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
+                        notificationDelete(id);
+                    }
                 }
             }
         }
