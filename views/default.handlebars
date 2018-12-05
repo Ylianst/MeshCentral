@@ -1282,7 +1282,7 @@
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
                         var basicPort = "{{{serverRedirPort}}}" == "" ? "{{{serverPublicPort}}}" : "{{{serverRedirPort}}}";
-                        var rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + ((debugmode == 1)?"":"&HOL=1");
+                        var rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + ((debugmode == 1) ? "" : "&HOL=1");
                         window.open(rdpurl, '_blank');
                     }
                     break;
@@ -3229,6 +3229,7 @@
                 if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
+                console.log(((connectivity & 1) != 0), (clickOnce == true), (mesh.mtype == 2), ((meshrights & 8) != 0));
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
                     if (node.agent.id > 4) {
@@ -6460,7 +6461,7 @@
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }
-        function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
+        function passwordcheck(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
         function methodcheck(r) { if (r && r != null && r.Body && r.Body.ReturnValueStr != "SUCCESS") { messagebox("Call Error", r.Header.Method + ": " + r.Body.ReturnValueStr.replace("_", " ")); return true; } return false; }
         function TableStart() { return "<table cellpadding=0 cellspacing=0 style=width:100%;border-radius:8px><tr><td width=200px><p><td>"; }
         function TableStart2() { return "<table cellpadding=0 cellspacing=0 style=width:100%;border-radius:8px><tr><td><p><td>"; }

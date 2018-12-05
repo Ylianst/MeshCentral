@@ -107,7 +107,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.webCertificateHashBase64 = new Buffer(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
     obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
-    obj.webCertificateFullHashBase64 = new Buffer(obj.webCertificateFullHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
     obj.agentCertificateHashBase64 = new Buffer(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
@@ -131,9 +130,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
     }
-
-    //console.log(new Buffer(obj.webCertificateHashs['devtest'], 'binary').toString('hex'));
-    //console.log(new Buffer(obj.webCertificateFullHashs['devtest'], 'binary').toString('hex'));
 
     // If we are running the legacy swarm server, compute the hash for that certificate
     if (parent.certificates.swarmserver != null) {
@@ -759,14 +755,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.minify && !req.query.nominify) {
                 // Try to server the minified version if we can.
                 try {
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile-min' : 'views/default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile-min' : 'views/default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 } catch (ex) {
                     // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 }
             } else {
                 // Serve non-minified version of web pages.
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: obj.webCertificateHashBase64, footer: (domain.footer == null) ? '' : domain.footer });
+                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
             }
         } else {
             // Send back the login application
