@@ -198,7 +198,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 // Check that the server hash matches our own web certificate hash (SHA384)
-                if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent connected with bad web certificate hash (Agent:' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 obj.agentnonce = msg.substring(50, 98);

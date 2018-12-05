@@ -419,7 +419,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, obj.config.domains[i], function (url, cert, xdomain) {
                     if (cert != null) {
                         // Hash the entire cert
-                        var hash = obj.crypto.createHash('sha384').update(cert).digest('hex');
+                        var hash = obj.crypto.createHash('sha384').update(Buffer.from(cert, 'binary')).digest('hex');
                         if (xdomain.certhash != hash) {
                             xdomain.certkeyhash = hash;
                             xdomain.certhash = hash;
@@ -429,7 +429,7 @@ function CreateMeshCentralServer(config, args) {
                             // Decode a RSA certificate and hash the public key, if this is not RSA, skip this.
                             var forgeCert = obj.certificateOperations.forge.pki.certificateFromAsn1(obj.certificateOperations.forge.asn1.fromDer(cert));
                             xdomain.certkeyhash = obj.certificateOperations.forge.pki.getPublicKeyFingerprint(forgeCert.publicKey, { md: obj.certificateOperations.forge.md.sha384.create(), encoding: 'hex' });
-                            console.log('V1: ' + xdomain.certkeyhash);
+                            //console.log('V1: ' + xdomain.certkeyhash);
                         } catch (ex) { }
 
                         console.log('Loaded web certificate from ' + url);
