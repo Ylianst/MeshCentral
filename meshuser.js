@@ -76,6 +76,40 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         ds.on('close', function () { /*delete this.ss.fs._copyStreams[this.ss.id];*/ func(tag); });
     }
 
+    // Route a command to a target node
+    function routeCommandToNode(command) {
+        if (obj.common.validateString(command.nodeid, 8, 128) == false) return false;
+        var splitnodeid = command.nodeid.split('/');
+        // Check that we are in the same domain and the user has rights over this node.
+        if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domain.id)) {
+            // See if the node is connected
+            var agent = obj.parent.wsagents[command.nodeid];
+            if (agent != null) {
+                // Check if we have permission to send a message to that node
+                var rights = user.links[agent.dbMeshKey];
+                if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission, 256 is desktop read only
+                    command.sessionid = ws.sessionId;   // Set the session id, required for responses.
+                    command.rights = rights.rights;     // Add user rights flags to the message
+                    delete command.nodeid;              // Remove the nodeid since it's implyed.
+                    try { agent.send(JSON.stringify(command)); } catch (ex) { }
+                }
+            } else {
+                // Check if a peer server is connected to this agent
+                var routing = obj.parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
+                if (routing != null) {
+                    // Check if we have permission to send a message to that node
+                    var rights = user.links[routing.meshid];
+                    if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
+                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
+                        command.rights = rights.rights;         // Add user rights flags to the message
+                        obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     try {
         // Check if the user is logged in
         if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
@@ -303,37 +337,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                 case 'msg':
                     {
-                        // Route a message.
-                        // This this command has a nodeid, that is the target.
-                        if (obj.common.validateString(command.nodeid, 8, 128) == false) return;
-                        var splitnodeid = command.nodeid.split('/');
-                        // Check that we are in the same domain and the user has rights over this node.
-                        if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domain.id)) {
-                            // See if the node is connected
-                            var agent = obj.parent.wsagents[command.nodeid];
-                            if (agent != null) {
-                                // Check if we have permission to send a message to that node
-                                var rights = user.links[agent.dbMeshKey];
-                                if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission, 256 is desktop read only
-                                    command.sessionid = ws.sessionId;   // Set the session id, required for responses.
-                                    command.rights = rights.rights;     // Add user rights flags to the message
-                                    delete command.nodeid;              // Remove the nodeid since it's implyed.
-                                    try { agent.send(JSON.stringify(command)); } catch (ex) { }
-                                }
-                            } else {
-                                // Check if a peer server is connected to this agent
-                                var routing = obj.parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
-                                if (routing != null) {
-                                    // Check if we have permission to send a message to that node
-                                    var rights = user.links[routing.meshid];
-                                    if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
-                                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
-                                        command.rights = rights.rights;         // Add user rights flags to the message
-                                        obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                                    }
-                                }
-                            }
-                        }
+                        // Route this command to a target node
+                        routeCommandToNode(command);
                         break;
                     }
                 case 'events':
@@ -601,19 +606,38 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     {
                         // Send a notification message to a user
                         if ((user.siteadmin & 2) == 0) break;
-                        if (obj.common.validateString(command.userid, 1, 2048) == false) break;
 
-                        // Create the notification message
-                        var notification = {
-                            "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: Chat Request, Click here to accept.", "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id) };
+                        // Setup a user-to-user session
+                        if (obj.common.validateString(command.userid, 1, 2048)) {
 
-                        // Get the list of sessions for this user
-                        var sessions = obj.parent.wssessions[command.userid];
-                        if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
+                            // Create the notification message
+                            var notification = {
+                                "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: Chat Request, Click here to accept.", "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
+                            };
 
-                        if (obj.parent.parent.multiServer != null) {
-                            // TODO: Add multi-server support
+                            // Get the list of sessions for this user
+                            var sessions = obj.parent.wssessions[command.userid];
+                            if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
+
+                            if (obj.parent.parent.multiServer != null) {
+                                // TODO: Add multi-server support
+                            }
                         }
+
+                        // Setup a user-to-node session
+                        if (obj.common.validateString(command.nodeid, 1, 2048)) {
+                            if (obj.args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
+
+                            // Create the server url
+                            var httpsPort = ((obj.parent.args.aliasport == null) ? obj.parent.args.port : obj.parent.args.aliasport); // Use HTTPS alias port is specified
+                            var xdomain = (domain.dns == null) ? domain.id : '';
+                            if (xdomain != '') xdomain += "/";
+                            var url = "http" + (obj.args.notls ? '' : 's') + "://" + obj.parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger.htm?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+
+                            // Create the notification message
+                            routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
+                        }
+
                         break;
                     }
                 case 'serverversion':
