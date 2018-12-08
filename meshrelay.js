@@ -98,7 +98,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if (obj.id.startsWith('meshmessenger/')) {
             if (obj.user == null) { try { obj.close(); } catch (e) { } return null; }
             var x = obj.id.split('/'), user1 = x[1] + '/' + x[2] + '/' + x[3], user2 = x[4] + '/' + x[5] + '/' + x[6];
-            if ((obj.user._id != user1) && (obj.user._id != user2)) { try { obj.close(); } catch (e) { } return null; }
+            if ((x[1] != 'user') && (x[4] != 'user')) { try { obj.close(); } catch (e) { } return null; } // MeshMessenger session must have at least one authenticated user
+            if ((x[1] == 'user') && (x[4] == 'user')) {
+                // If this is a user-to-user session, you must be authenticated to join.
+                if ((obj.user._id != user1) && (obj.user._id != user2)) { try { obj.close(); } catch (e) { } return null; }
+            } else {
+                // If only one side of the session is a user
+                // !!!!! TODO: Need to make sure that one of the two sides is the correct user. !!!!!
+            }
         }
 
         // Validate that the id is valid, we only need to do this on non-authenticated sessions.

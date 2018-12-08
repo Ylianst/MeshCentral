@@ -436,14 +436,23 @@ function createMeshCore(agent) {
                             break;
                         }
                         case 'ps': {
+                            // Return the list of running processes
                             if (data.sessionid) {
                                 processManager.getProcesses(function (plist) { mesh.SendCommand({ "action": "msg", "type": "ps", "value": JSON.stringify(plist), "sessionid": data.sessionid }); });
                             }
                             break;
                         }
                         case 'pskill': {
-                            //sendConsoleText(JSON.stringify(data));
-                            try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
+                            // Kill a process
+                            if (data.value) {
+                                try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
+                            }
+                            break;
+                        }
+                        case 'openUrl': {
+                            // Open a local web browser and return success/fail
+                            sendConsoleText('OpenURL: ' + data.url);
+                            if (data.url) { mesh.SendCommand({ "action": "msg", "type":"openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                             break;
                         }
                     }
@@ -475,6 +484,12 @@ function createMeshCore(agent) {
                 case 'toast': {
                     // Display a toast message
                     if (data.title && data.msg) { require('toaster').Toast(data.title, data.msg); }
+                    break;
+                }
+                case 'openUrl': {
+                    // Open a local web browser and return success/fail
+                    sendConsoleText('OpenURL: ' + data.url);
+                    if (data.url) { mesh.SendCommand({ "action": "openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                     break;
                 }
             }
@@ -964,13 +979,32 @@ function createMeshCore(agent) {
         response.close = function () { sendConsoleText('httprequest.response.close', this.sessionid); consoleHttpRequest = null; }
     };
 
+    // Open a web browser to a specified URL on current user's desktop
+    function openUserDesktopUrl(url) {
+        var child = null;
+        try {
+            switch (process.platform) {
+                case 'win32':
+                    child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER });
+                    break;
+                case 'linux':
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { type: require('child_process').SpawnTypes.DETACHED, uid: require('user-sessions').consoleUid() });
+                    break;
+                case 'darwin':
+                    child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
+                    break;
+            }
+        } catch (ex) { }
+        return child;
+    }
+
     // Process a mesh agent console command
     function processConsoleCommand(cmd, args, rights, sessionid) {
         try {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl.';
                     break;
                 }
                     /*
@@ -992,6 +1026,11 @@ function createMeshCore(agent) {
                     }
                     break;
                     */
+                case 'openurl': {
+                    if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
+                    else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
+                    break;
+                }
                 case 'users': {
                     if (meshCoreObj.users == null) { response = 'Active users are unknown.'; } else { response = 'Active Users: ' + meshCoreObj.users.join(', ') + '.'; }
                     break;
@@ -1520,7 +1559,7 @@ function createMeshCore(agent) {
             //amtLms.on('bind', function (map) { });
             amtLms.on('notify', function (data, options, str, code) {
                 if (code == 'iAMT0052-3') {
-                    kvmGetData();
+                    obj.kvmGetData();
                 } else {
                     //if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
                     handleAmtNotification(data);
@@ -1597,7 +1636,7 @@ function createMeshCore(agent) {
         });
     }
 
-    obj.kvmGetData = function(tag) {
+    obj.kvmGetData = function (tag) {
         obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelRead(obj.kvmDataGetResponse, tag);
     }
 
