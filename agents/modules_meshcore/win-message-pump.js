@@ -17,6 +17,8 @@ limitations under the License.
 var WH_CALLWNDPROC = 4;
 var WM_QUIT =  0x0012;
 
+var GM = require('_GenericMarshal');
+
 function WindowsMessagePump(options)
 {
     this._ObjectID = 'win-message-pump';
@@ -27,92 +29,94 @@ function WindowsMessagePump(options)
     emitterUtils.createEvent('message');
     emitterUtils.createEvent('exit');
 
-    this._child = require('ScriptContainer').Create({ processIsolation: 0 });
-    this._child.MessagePump = this;
-    this._child.prependListener('~', function _childFinalizer() { this.MessagePump.emit('exit', 0); this.MessagePump.stop(); });
-    this._child.once('exit', function onExit(code) { this.MessagePump.emit('exit', code); });
-    this._child.once('ready', function onReady()
-    {
-        var execString = 
-        "var m = require('_GenericMarshal');\
-        var h = null;\
-        var k = m.CreateNativeProxy('Kernel32.dll');\
-        k.CreateMethod('GetLastError');\
-        k.CreateMethod('GetModuleHandleA');\
-        var u = m.CreateNativeProxy('User32.dll');\
-        u.CreateMethod('GetMessageA');\
-        u.CreateMethod('CreateWindowExA');\
-        u.CreateMethod('TranslateMessage');\
-        u.CreateMethod('DispatchMessageA');\
-        u.CreateMethod('RegisterClassExA');\
-        u.CreateMethod('DefWindowProcA');\
-        var wndclass = m.CreateVariable(m.PointerSize == 4 ? 48 : 80);\
-        wndclass.hinstance = k.GetModuleHandleA(0);\
-        wndclass.cname = m.CreateVariable('MainWWWClass');\
-        wndclass.wndproc = m.GetGenericGlobalCallback(4);\
-        wndclass.toBuffer().writeUInt32LE(wndclass._size);\
-        wndclass.cname.pointerBuffer().copy(wndclass.Deref(m.PointerSize == 4 ? 40 : 64, m.PointerSize).toBuffer());\
-        wndclass.wndproc.pointerBuffer().copy(wndclass.Deref(8, m.PointerSize).toBuffer());\
-        wndclass.hinstance.pointerBuffer().copy(wndclass.Deref(m.PointerSize == 4 ? 20 : 24, m.PointerSize).toBuffer());\
-        wndclass.wndproc.on('GlobalCallback', function onWndProc(xhwnd, xmsg, wparam, lparam)\
-        {\
-            if(h==null || h.Val == xhwnd.Val)\
-            {\
-                require('ScriptContainer').send({message: xmsg.Val, wparam: wparam.Val, lparam: lparam.Val, lparam_hex: lparam.pointerBuffer().toString('hex')});\
-                var retVal = u.DefWindowProcA(xhwnd, xmsg, wparam, lparam);\
-                return(retVal);\
-            }\
-        });\
-        u.RegisterClassExA(wndclass);\
-        h = u.CreateWindowExA(0x00000088, wndclass.cname, 0, 0x00800000, 0, 0, 100, 100, 0, 0, 0, 0);\
-        if(h.Val == 0)\
-        {\
-            require('ScriptContainer').send({error: 'Error Creating Hidden Window'});\
-            process.exit();\
-        }\
-        require('ScriptContainer').send({hwnd: h.pointerBuffer().toString('hex')});\
-        require('ScriptContainer').on('data', function onData(jmsg)\
-        {\
-            if(jmsg.listen)\
-            {\
-                var msg = m.CreateVariable(m.PointerSize == 4 ? 28 : 48);\
-                while(u.GetMessageA(msg, h, 0, 0).Val>0)\
-                {\
-                    u.TranslateMessage(msg);\
-                    u.DispatchMessageA(msg);\
-                }\
-                process.exit();\
-            }\
-        });";
+    this._msg = GM.CreateVariable(GM.PointerSize == 4 ? 28 : 48);
+    this._kernel32 = GM.CreateNativeProxy('Kernel32.dll');
+    this._kernel32.mp = this;
+    this._kernel32.CreateMethod('GetLastError');
+    this._kernel32.CreateMethod('GetModuleHandleA');
 
-        this.ExecuteString(execString);    
-    });
-    this._child.on('data', function onChildData(msg)
+    this._user32 = GM.CreateNativeProxy('User32.dll');
+    this._user32.mp = this;
+    this._user32.CreateMethod('GetMessageA');
+    this._user32.CreateMethod('CreateWindowExA');
+    this._user32.CreateMethod('TranslateMessage');
+    this._user32.CreateMethod('DispatchMessageA');
+    this._user32.CreateMethod('RegisterClassExA');
+    this._user32.CreateMethod('DefWindowProcA');
+    this._user32.CreateMethod('PostMessageA');
+
+
+    this.wndclass = GM.CreateVariable(GM.PointerSize == 4 ? 48 : 80);
+    this.wndclass.mp = this;
+    this.wndclass.hinstance = this._kernel32.GetModuleHandleA(0);
+    this.wndclass.cname = GM.CreateVariable('MainWWWClass');
+    this.wndclass.wndproc = GM.GetGenericGlobalCallback(4);
+    this.wndclass.wndproc.mp = this;
+    this.wndclass.toBuffer().writeUInt32LE(this.wndclass._size);
+    this.wndclass.cname.pointerBuffer().copy(this.wndclass.Deref(GM.PointerSize == 4 ? 40 : 64, GM.PointerSize).toBuffer());
+    this.wndclass.wndproc.pointerBuffer().copy(this.wndclass.Deref(8, GM.PointerSize).toBuffer());
+    this.wndclass.hinstance.pointerBuffer().copy(this.wndclass.Deref(GM.PointerSize == 4 ? 20 : 24, GM.PointerSize).toBuffer());
+    this.wndclass.wndproc.on('GlobalCallback', function onWndProc(xhwnd, xmsg, wparam, lparam)
     {
-        if (msg.hwnd)
+        if (this.mp._hwnd != null && this.mp._hwnd.Val == xhwnd.Val)
         {
-            var m = require('_GenericMarshal');
-            this._hwnd = m.CreatePointer(Buffer.from(msg.hwnd, 'hex'));
-            this.MessagePump.emit('hwnd', this._hwnd);
-            this.send({ listen: this.MessagePump._options.filter });
+            // This is for us
+            this.mp.emit('message', { message: xmsg.Val, wparam: wparam.Val, lparam: lparam.Val, lparam_hex: lparam.pointerBuffer().toString('hex') });
+            return (this.mp._user32.DefWindowProcA(xhwnd, xmsg, wparam, lparam));
         }
-        else if(msg.message)
+        else if(this.mp._hwnd == null && this.CallingThread() == this.mp._user32.RegisterClassExA.async.threadId())
         {
-            this.MessagePump.emit('message', msg);
-        }
-        else
-        {
-            console.log('Received: ', msg);
+            // This message was generated from our CreateWindowExA method
+            return (this.mp._user32.DefWindowProcA(xhwnd, xmsg, wparam, lparam));
         }
     });
+
+    this._user32.RegisterClassExA.async(this.wndclass).then(function ()
+    {
+        this.nativeProxy.CreateWindowExA.async(this.nativeProxy.RegisterClassExA.async, 0x00000088, this.nativeProxy.mp.wndclass.cname, 0, 0x00800000, 0, 0, 100, 100, 0, 0, 0, 0)
+            .then(function(h)
+            {
+                if (h.Val == 0)
+                {
+                    // Error creating hidden window
+                    this.nativeProxy.mp.emit('error', 'Error creating hidden window');
+                }
+                else
+                {
+                    this.nativeProxy.mp._hwnd = h;
+                    this.nativeProxy.mp.emit('hwnd', h);
+                    this.nativeProxy.mp._startPump();
+                }
+            });
+    });
+    this._startPump = function _startPump()
+    {
+        this._user32.GetMessageA.async(this._user32.RegisterClassExA.async, this._msg, this._hwnd, 0, 0).then(function (r)
+        {
+            if(r.Val > 0)
+            {
+                this.nativeProxy.TranslateMessage.async(this.nativeProxy.RegisterClassExA.async, this.nativeProxy.mp._msg).then(function ()
+                {
+                    this.nativeProxy.DispatchMessageA.async(this.nativeProxy.RegisterClassExA.async, this.nativeProxy.mp._msg).then(function ()
+                    {
+                        this.nativeProxy.mp._startPump();
+                    });
+                });
+            }
+            else
+            {
+                // We got a 'QUIT' message
+                delete this.nativeProxy.mp._hwnd;
+                this.nativeProxy.mp.emit('exit', 0);
+            }
+        }, function (err) { this.nativeProxy.mp.stop(); });
+    }
+
     this.stop = function stop()
     {
-        if(this._child && this._child._hwnd)
+        if (this._hwnd)
         {
-            var marshal = require('_GenericMarshal');
-            var User32 = marshal.CreateNativeProxy('User32.dll');
-            User32.CreateMethod('PostMessageA');
-            User32.PostMessageA(this._child._hwnd, WM_QUIT, 0, 0);
+            this._user32.PostMessageA(this._hwnd, WM_QUIT, 0, 0);
         }
     };
 }
