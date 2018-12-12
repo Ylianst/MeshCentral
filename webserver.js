@@ -161,7 +161,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         for (i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.tls.createSecureContext(obj.certificates.dns[i]).context; dnscount++; } }
         if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.tls.createSecureContext({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca }).context; } else { obj.tlsSniCredentials = null; }
     }
-    function TlsSniCallback(name, cb) { var c = obj.tlsSniCredentials[name]; if (c != null) { cb(null, c); } else { cb(null, obj.tlsSniCredentials['']); } }
+    function TlsSniCallback(name, cb) {
+        var c = obj.tlsSniCredentials[name];
+        if (c != null) {
+            cb(null, c);
+        } else {
+            cb(null, obj.tlsSniCredentials['']);
+        }
+    }
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
@@ -174,6 +181,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_NO_TLSv1 | obj.constants.SSL_OP_NO_TLSv11 };
         if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
         obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
+        obj.tlsServer.on('secureConnection', function () { });
+        obj.tlsServer.on('error', function (a, b, c) { console.log('tlsServer error', a, b, c); });
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
 
@@ -279,9 +288,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function checkUserIpAddressEx(req, res, allowedIpList) {
         if (allowedIpList == null) { return true; }
         try {
-            var ip = req.ip, type = 0;
-            if (req.connection) { type = 1; } // HTTP(S) request
-            else if (req._socket) { type = 2; } // WebSocket request
+            var ip, type = 0;
+            if (req.connection) { type = 1; ip = req.ip; } // HTTP(S) request
+            else if (req._socket) { type = 2; ip = req._socket.remoteAddress; } // WebSocket request
+            if (!ip) return false;
             if (ip.startsWith('::ffff:')) { ip = ip.substring(7); } // Fix IPv4 IP's encoded in IPv6 form
             if ((ip != null) && (allowedIpList.indexOf(ip) >= 0)) { return true; }
             if (type == 1) { res.sendStatus(401); }
