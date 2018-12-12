@@ -177,19 +177,25 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
     }
 
-    ws.flushSink = function () { try { ws._socket.resume(); } catch (e) { } };
+    ws.flushSink = function () { try { ws._socket.resume(); } catch (ex) { console.log(ex); } };
 
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
         //console.log(typeof data, data.length);
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
-            try { this._socket.pause(); this.peer.send(data, ws.flushSink); } catch (e) { }
+            try {
+                this._socket.pause();
+                this.peer.send(data, ws.flushSink);
+            } catch (ex) { console.log(ex); }
         }
     });
 
     // If error, do nothing
-    ws.on('error', function (err) { /*console.log('Relay Error: ' + err);*/ });
+    ws.on('error', function (err) {
+        console.log('Relay Error', err);
+        obj.close();
+    });
 
     // If the mesh relay web socket is closed
     ws.on('close', function (req) {
