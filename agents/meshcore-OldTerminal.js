@@ -1567,7 +1567,8 @@ function createMeshCore(agent) {
             });
         } catch (e) { amtLmsState = -1; amtLms = null; }
 
-        // Setup logged in user monitoring
+        // Setup logged in user monitoring // TODO: This causes a problem on Windows7
+        /*
         try {
             var userSession = require('user-sessions');
             userSession.on('changed', function onUserSessionChanged() {
@@ -1585,6 +1586,7 @@ function createMeshCore(agent) {
             //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
             //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
         } catch (ex) { }
+        */
     }
     
     obj.stop = function () {

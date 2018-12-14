@@ -1012,7 +1012,8 @@ function createMeshCore(agent) {
         try {
             switch (process.platform) {
                 case 'win32':
-                    child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER, uid: require('user-sessions').Current().Active[0].SessionId });
+                    //child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER, uid: require('user-sessions').Current().Active[0].SessionId }); // TODO: Using user-session breaks Win7
+                    child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER });
                     break;
                 case 'linux':
                     child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { type: require('child_process').SpawnTypes.DETACHED, uid: require('user-sessions').consoleUid() });
@@ -1055,12 +1056,12 @@ function createMeshCore(agent) {
                     */
                 case 'openurl': {
                     if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
-                    else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success as ' + require('user-sessions').Current().Active[0].SessionId + '.'; } }
+                    else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
                     break;
                 }
                 case 'users': {
                     if (meshCoreObj.users == null) { response = 'Active users are unknown.'; } else { response = 'Active Users: ' + meshCoreObj.users.join(', ') + '.'; }
-                    require('user-sessions').enumerateUsers().then(function (u) { for (var i in u) { sendConsoleText(u[i]); } });
+                    //require('user-sessions').enumerateUsers().then(function (u) { for (var i in u) { sendConsoleText(u[i]); } });
                     break;
                 }
                 case 'toast': {
@@ -1595,7 +1596,8 @@ function createMeshCore(agent) {
             });
         } catch (e) { amtLmsState = -1; amtLms = null; }
 
-        // Setup logged in user monitoring
+        // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
+        /*
         try {
             var userSession = require('user-sessions');
             userSession.on('changed', function onUserSessionChanged() {
@@ -1613,6 +1615,7 @@ function createMeshCore(agent) {
             //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
             //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
         } catch (ex) { }
+        */
     }
     
     obj.stop = function () {
