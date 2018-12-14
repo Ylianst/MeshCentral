@@ -45,7 +45,6 @@
     <Compile Include="agents\modules_meshcore\monitor-info.js" />
     <Compile Include="agents\modules_meshcore\power-monitor.js" />
     <Compile Include="agents\modules_meshcore\process-manager.js" />
-    <Compile Include="agents\modules_meshcore\promise.js" />
     <Compile Include="agents\modules_meshcore\service-manager.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
     <Compile Include="agents\modules_meshcore\toaster.js" />
