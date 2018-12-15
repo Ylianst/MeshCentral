@@ -246,6 +246,7 @@ function CreateMeshCentralServer(config, args) {
         if ((obj.args.user != null) && (typeof obj.args.user != 'string')) { delete obj.args.user; }
         if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { console.log("WARNING: CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
         if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { console.log("WARNING: Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = null; }
+        if (obj.args.ignoreagenthashcheck === true) { console.log("WARNING: Agent hash checking is being skipped, this is unsafe."); }
         if (obj.args.port == null || typeof obj.args.port != 'number') { if (obj.args.notls == null) { obj.args.port = 443; } else { obj.args.port = 80; } }
         if (obj.args.aliasport != null && (typeof obj.args.aliasport != 'number')) obj.args.aliasport = null;
         if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
