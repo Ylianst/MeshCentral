@@ -197,8 +197,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                // Check that the server hash matches our own web certificate hash (SHA384)
-                if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                if (obj.args.ignoreagenthashcheck === true) {
+                    // Send the agent web hash back to the agent
+                    obj.send(obj.common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
+                } else {
+                    // Check that the server hash matches our own web certificate hash (SHA384)
+                    if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (new Buffer(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
                 obj.agentnonce = msg.substring(50, 98);
@@ -285,7 +290,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
     obj.nonce = obj.parent.crypto.randomBytes(48).toString('binary');
-    obj.send(obj.common.ShortToStr(1) + getWebCertHash(obj.domain) + obj.nonce); // Command 1, hash + nonce
+    if (obj.args.ignoreagenthashcheck !== true) {
+        obj.send(obj.common.ShortToStr(1) + getWebCertHash(obj.domain) + obj.nonce); // Command 1, hash + nonce
+    }
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
@@ -427,13 +434,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Verify the agent signature
     function processAgentSignature(msg) {
-        // Verify the signature. This is the fast way, without using forge.
-        const verify = obj.parent.crypto.createVerify('SHA384');
-        verify.end(new Buffer(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
-        if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) {
-            const verify2 = obj.parent.crypto.createVerify('SHA384');
-            verify2.end(new Buffer(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
-            if (verify2.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { return false; }
+        if (obj.args.ignoreagenthashcheck !== true) {
+            // Verify the signature. This is the fast way, without using forge.
+            const verify = obj.parent.crypto.createVerify('SHA384');
+            verify.end(new Buffer(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
+            if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) {
+                const verify2 = obj.parent.crypto.createVerify('SHA384');
+                verify2.end(new Buffer(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
+                if (verify2.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { return false; }
+            }
         }
 
         // Connection is a success, clean up
