@@ -31,6 +31,8 @@
     <Compile Include="agents\modules_meshcmd\amt-xml.js" />
     <Compile Include="agents\modules_meshcmd\amt.js" />
     <Compile Include="agents\modules_meshcmd\process-manager.js" />
+    <Compile Include="agents\modules_meshcmd\service-host.js" />
+    <Compile Include="agents\modules_meshcmd\service-manager.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
     <Compile Include="agents\modules_meshcmd\user-sessions.js" />
     <Compile Include="agents\modules_meshcore\amt-lme.js" />
