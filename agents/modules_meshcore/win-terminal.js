@@ -249,7 +249,7 @@ function windows_terminal() {
                     break;
                 case EVENT_CONSOLE_UPDATE_SIMPLE:
                     //console.log('UPDATE SIMPLE: [X: ' + LOWORD(idObject.Val) + ' Y: ' + HIWORD(idObject.Val) + ' Char: ' + LOWORD(idChild.Val) + ' Attr: ' + HIWORD(idChild.Val) + ']');
-                    var simplebuffer = { data: [Buffer.alloc(1, LOWORD(idChild.Val))], attributes: [HIWORD(idChild.Val)], width: 1, height: 1, x: LOWORD(idObject.Val) + 1, y: HIWORD(idObject.Val) };
+                    var simplebuffer = { data: [ Buffer.alloc(1, LOWORD(idChild.Val)) ], attributes: [ HIWORD(idChild.Val) ], width: 1, height: 1, x: LOWORD(idObject.Val), y: HIWORD(idObject.Val) };
                     this.terminal._SendDataBuffer(simplebuffer);
                     break;
                 case EVENT_CONSOLE_UPDATE_SCROLL:
@@ -330,8 +330,8 @@ function windows_terminal() {
     }
     this._WriteCharacter = function (key, bControlKey) {
         var rec = GM.CreateVariable(20);
-        rec.Deref(0, 2).toBuffer().writeUInt16LE(KEY_EVENT);                                 // rec.EventType 
-        rec.Deref(4, 4).toBuffer().writeUInt16LE(1);                                         // rec.Event.KeyEvent.bKeyDown
+        rec.Deref(0, 2).toBuffer().writeUInt16LE(KEY_EVENT);                                // rec.EventType 
+        rec.Deref(4, 4).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.bKeyDown
         rec.Deref(16, 4).toBuffer().writeUInt32LE(bControlKey);                             // rec.Event.KeyEvent.dwControlKeyState
         rec.Deref(14, 1).toBuffer()[0] = key;                                               // rec.Event.KeyEvent.uChar.AsciiChar
         rec.Deref(8, 2).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.wRepeatCount
@@ -345,9 +345,8 @@ function windows_terminal() {
         return (this._kernel32.WriteConsoleInputA(this._stdinput, rec, 1, dwWritten).Val != 0);
     }
     
+    // Get the current visible screen buffer
     this._GetScreenBuffer = function (sx, sy, ex, ey) {
-        // get the current visible screen buffer
-        
         var info = GM.CreateVariable(22);
         if (this._kernel32.GetConsoleScreenBufferInfo(this._stdoutput, info).Val == 0) { throw ('Error getting screen buffer info'); }
         
@@ -365,7 +364,6 @@ function windows_terminal() {
             if (this._scry != 0) { sy += this._scry; ey += this._scry; }
             this._scrx = this._scry = 0;
         }
-        
         
         var nBuffer = GM.CreateVariable((ex - sx + 1) * (ey - sy + 1) * 4);
         var size = GM.CreateVariable(4);
@@ -418,7 +416,7 @@ function windows_terminal() {
             
             //line = data.data.slice(data.width * dy, (data.width * dy) + data.width);
             //attr = data.attributes.slice(data.width * dy, (data.width * dy) + data.width);
-            this._stream.push(TranslateLine(data.x, data.y + dy + 1, line, attr));
+            this._stream.push(TranslateLine(data.x + 1, data.y + dy + 1, line, attr));
         }
     }
 
