@@ -54,6 +54,7 @@
     <Compile Include="agents\modules_meshcore\win-console.js" />
     <Compile Include="agents\modules_meshcore\win-message-pump.js" />
     <Compile Include="agents\modules_meshcore\win-registry.js" />
+    <Compile Include="agents\modules_meshcore\win-terminal.js" />
     <Compile Include="agents\testsuite.js" />
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amtevents.js" />
