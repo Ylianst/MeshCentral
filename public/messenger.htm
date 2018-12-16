@@ -6,17 +6,34 @@
         <meta content="text/html;charset=utf-8" http-equiv=Content-Type>
         <meta name=format-detection content="telephone=no">
         <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+        <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS" />
         <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
-        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:30px;background-color:#036;color:#c8c8c8"><div style="padding-top:6px;padding-left:6px;font-size:medium"><b>MeshMessenger<span id="xtitle"></span></b></div></div>
-        <div id="xmiddle" style="position:absolute;left:0;right:0;top:30px;bottom:30px">
-            <div id="xmsg" style="position:absolute;left:0;right:0;top:0px;bottom:0px;padding:5px;overflow-y:scroll"></div>
+        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8">
+            <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
+            <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
+            <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
+            <div style="display:inline-block;width:2px"></div>
+            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block;"><b>MeshMessenger<span id="xtitle"></span></b></div>
+        </div>
+        <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px">
+            <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
+                <div id="xmsg" style="position:absolute;left:0;right:0;bottom:0;padding:5px"></div>
+            </div>
         </div>
         <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036">
             <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus=onUserInputFocus(1) onblur=onUserInputFocus(0) /></div>
             <input type="button" id="sendButton" value="Send" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)" />
             <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()" />
+        </div>
+        <div id="localVideo" style="position:absolute;right:24px;top:45px;width:320px;height:260px;background-color:black;border-radius:12px 12px 0px 0px;box-shadow:3px 3px 10px gray;display:none">
+            <div style="position:absolute;right:0;left:0;top:0px;height:20px;background-color:gray;text-align:center;border-radius:10px 10px 0px 0px"><div style="padding:3px">Local</div></div>
+            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:320px;height:240px;background-color:black"></video>
+        </div>
+        <div id="remoteVideo" style="position:absolute;left:6px;top:45px;width:320px;height:260px;background-color:black;border-radius:12px 12px 0px 0px;display:none">
+            <div style="position:absolute;right:0;left:0;top:0px;height:20px;background-color:gray;text-align:center;border-radius:10px 10px 0px 0px"><div style="padding:3px">Remote</div></div>
+            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:320px;height:240px;background-color:black"></video>
         </div>
         <script type="text/javascript">
             var userInputFocus = 0;
@@ -28,6 +45,7 @@
             var webrtc = null;              // Main WebRTC object
             var webchannel = null;          // WebRTC data channel
             var webrtcconfiguration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+            var localStream = null;
 
             // Set the title
             if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
@@ -59,6 +77,9 @@
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
             }
 
+            function displayLocalVideo(active) { QV('localVideo', active); }
+            function displayRemoteVideo(active) { QV('remoteVideo', active); }
+
             // Display a message from the remote user
             function displayRemote(msg) {
                 QA('xmsg', '<div style="clear:both"><div style="background-color:#00cc99;color:black;border-radius:5px;padding:5px;float:left;margin-bottom:5px;margin-right:20px">' + msg + '</div><div></div></div>');
@@ -77,7 +98,7 @@
             }
 
             // Enable user controls
-            function enableControls(lock) { controlsEnabled = lock; QE('sendButton', lock); QE('clearButton', lock); QE('xouttext', lock); }
+            function enableControls(lock, webrtc) { controlsEnabled = lock; QE('sendButton', lock); QE('clearButton', lock); QE('xouttext', lock); /*QV('fileButton', lock);*/ QV('camButton', lock & webrtc); QV('micButton', lock & webrtc); }
             function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
             function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
 
@@ -93,7 +114,7 @@
                     webrtc.ondatachannel = function (ev) {
                         webchannel = ev.channel;
                         webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                        webchannel.onopen = function () { webchannel.ok = true; sendws({ action: 'rtcSwitch', v: 0 }); };
+                        webchannel.onopen = function () { webchannel.ok = true; enableControls(true, true); sendws({ action: 'rtcSwitch', v: 0 }); };
                         webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { closeWebRTC(); } }
                     }
                 }
@@ -102,7 +123,7 @@
                 if (description == null) {
                     webchannel = webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                    webchannel.onopen = function () { webchannel.ok = true; sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onopen = function () { webchannel.ok = true; enableControls(true, true); sendws({ action: 'rtcSwitch', v: 0 }); };
                     webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { closeWebRTC(); } }
                     webrtc.createOffer(function (offer) {
                         webrtc.setLocalDescription(offer, function () { try { sendws({ action: 'webRtcSdp', sdp: offer }); } catch (ex) { } }, closeWebRTC);
@@ -133,6 +154,8 @@
             function disconnect() {
                 enableControls(false);
                 closeWebRTC();
+                displayLocalVideo(false);
+                displayRemoteVideo(false);
                 if (socket != null) { socket.close(); socket = null; }
                 if (state > 0) { displayControl('Connection closed.'); }
                 if (state > 1) { setTimeout(start, 500); }
@@ -175,6 +198,52 @@
                     }
                 } else {
                     console.log('Unhandled data', typeof data, data);
+                }
+            }
+
+            // File sharing button
+            function fileButtonClick() {
+
+            }
+
+            // Camera button
+            function camButtonClick() {
+                if (localStream == null) { startLocalStream({ video: true, audio: true }); } else { stopLocalStream(); }
+            }
+
+            // Microphone
+            function micButtonClick() {
+                if (localStream == null) { startLocalStream({ video: false, audio: true }); } else { stopLocalStream(); }
+            }
+
+            // Setup local audio/video
+            function startLocalStream(constraints) {
+                if (localStream != null) return;
+                if (navigator.mediaDevices.getUserMedia) {
+                    localStream = 1;
+                    navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        localStream = stream;
+                        if (constraints.video == true) {
+                            var video = Q('localVideoCanvas');
+                            video.srcObject = stream;
+                            video.onloadedmetadata = function (e) { video.play(); };
+                            displayLocalVideo(true);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log('getUserMedia error');
+                        localStream = null;
+                    });
+                }
+            }
+
+            // Stop local audio/video
+            function stopLocalStream() {
+                if ((localStream != null) && (localStream != 1)) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                    displayLocalVideo(false);
                 }
             }
 

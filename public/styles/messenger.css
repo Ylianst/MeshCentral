@@ -1,0 +1,63 @@
+﻿.topButton {
+    cursor: pointer;
+    border: none;
+    margin: 3px;
+    float: right;
+    border-radius: 3px;
+    height: 32px;
+    width: 32px;
+}
+
+    .topButton:hover {
+        background-color: lightgray;
+    }
+
+.icon1 {
+    background: url(../images/messenger32.png) 0px 0px;
+    background-color: gray;
+}
+
+.icon2 {
+    background: url(../images/messenger32.png) -32px 0px;
+    background-color: gray;
+}
+
+.icon3 {
+    background: url(../images/messenger32.png) -64px 0px;
+    background-color: gray;
+}
+
+.icon4 {
+    background: url(../images/messenger32.png) -96px 0px;
+    background-color: gray;
+}
+
+.icon5 {
+    background: url(../images/messenger32.png) -128px 0px;
+    background-color: gray;
+}
+
+.icon6 {
+    background: url(../images/messenger32.png) -160px 0px;
+    background-color: gray;
+}
+
+.icon7 {
+    background: url(../images/messenger32.png) -192px 0px;
+    background-color: gray;
+}
+
+.icon8 {
+    background: url(../images/messenger32.png) -224px 0px;
+    background-color: gray;
+}
+
+.icon9 {
+    background: url(images/messenger32.png) -256px 0px;
+    background-color: gray;
+}
+
+.icon10 {
+    background: url(../images/messenger32.png) -288px 0px;
+    background-color: gray;
+}
