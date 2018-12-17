@@ -1,7 +1,7 @@
 ﻿.topButton {
     cursor: pointer;
     border: none;
-    margin: 3px;
+    margin: 2px;
     float: right;
     border-radius: 3px;
     height: 32px;
@@ -12,6 +12,19 @@
         background-color: lightgray;
     }
 
+.topRedButton {
+    cursor: pointer;
+    border: none;
+    margin: 2px;
+    float: right;
+    border-radius: 3px;
+    height: 32px;
+    width: 32px;
+}
+
+    .topRedButton:hover {
+        background-color: orangered;
+    }
 
 .remoteBubble {
     background-color: #00cc99;
@@ -87,5 +100,29 @@
 
 .icon11 {
     background: url(../images/messenger32.png) -320px 0px;
-    background-color: gray;
+    background-color: orange;
+}
+
+.fileicon {
+    background: url(../images/messenger32.png) -96px 0px;
+    height: 32px;
+    width: 32px;
+}
+
+.fileiconx {
+    background: url(../images/messenger32.png) -352px 0px;
+    height: 32px;
+    width: 32px;
+}
+
+.fileicontransfer {
+    background: url(../images/messenger32.png) -288px 0px;
+    height: 32px;
+    width: 32px;
+}
+
+.fileicondone {
+    background: url(../images/messenger32.png) -256px 0px;
+    height: 32px;
+    width: 32px;
 }
