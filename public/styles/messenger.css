@@ -12,6 +12,29 @@
         background-color: lightgray;
     }
 
+
+.remoteBubble {
+    background-color: #00cc99;
+    color: black;
+    border-radius: 5px;
+    padding: 5px;
+    float: left;
+    margin-bottom: 5px;
+    margin-right: 20px;
+    box-shadow:3px 3px 10px gray;
+}
+
+.localBubble {
+    background-color: #0099ff;
+    color: black;
+    border-radius: 5px;
+    padding: 5px;
+    float: right;
+    margin-bottom: 5px;
+    margin-left: 20px;
+    box-shadow:3px 3px 10px gray;
+}
+
 .icon1 {
     background: url(../images/messenger32.png) 0px 0px;
     background-color: gray;
@@ -59,5 +82,10 @@
 
 .icon10 {
     background: url(../images/messenger32.png) -288px 0px;
+    background-color: gray;
+}
+
+.icon11 {
+    background: url(../images/messenger32.png) -320px 0px;
     background-color: gray;
 }

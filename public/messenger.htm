@@ -10,12 +10,13 @@
         <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
-        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8">
+        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
             <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
             <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
             <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
+            <div id="hangupButton" class="icon11 topButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
             <div style="display:inline-block;width:2px"></div>
-            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block;"><b>MeshMessenger<span id="xtitle"></span></b></div>
+            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b>MeshMessenger<span id="xtitle"></span></b></div>
         </div>
         <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px">
             <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
@@ -27,37 +28,45 @@
             <input type="button" id="sendButton" value="Send" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)" />
             <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()" />
         </div>
-        <div id="localVideo" style="position:absolute;right:24px;top:45px;width:320px;height:260px;background-color:black;border-radius:12px 12px 0px 0px;box-shadow:3px 3px 10px gray;display:none">
-            <div style="position:absolute;right:0;left:0;top:0px;height:20px;background-color:gray;text-align:center;border-radius:10px 10px 0px 0px"><div style="padding:3px">Local</div></div>
-            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:320px;height:240px;background-color:black"></video>
+        <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div>
+            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
         </div>
-        <div id="remoteVideo" style="position:absolute;left:6px;top:45px;width:320px;height:260px;background-color:black;border-radius:12px 12px 0px 0px;display:none">
-            <div style="position:absolute;right:0;left:0;top:0px;height:20px;background-color:gray;text-align:center;border-radius:10px 10px 0px 0px"><div style="padding:3px">Remote</div></div>
-            <video id="remoteVideoCanvas" autoplay style="position:absolute;top:20px;left:0;width:320px;height:240px;background-color:black"></video>
+        <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
+            <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
         </div>
         <script type="text/javascript">
             var userInputFocus = 0;
-            var controlsEnabled = true;
             var args = parseUriArgs();
-            var socket = null;              // Websocket object
-            var state = 0;                  // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
-            var random = Math.random();     // Selected random, larger value initiates WebRTC.
-            var webrtc = null;              // Main WebRTC object
-            var webchannel = null;          // WebRTC data channel
-            var webrtcconfiguration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+            var socket = null;                  // Websocket object
+            var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
+            var random = Math.random();         // Selected random, larger value initiates WebRTC.
+            var webrtcSessions = { };           // WebRTC objects: 0 for data, 1 for outbound audio/video, 2 for inbound audio/video
+            var webchannel = null;              // WebRTC data channel
+            var webrtcconfiguration = null;     //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
             var localStream = null;
+            var remoteStream = null;
+            var senders = null;
 
             // Set the title
             if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
 
-            // Trap document key presses
-            document.onkeypress = function ondockeypress(e) {
-                if (controlsEnabled == true) {
+            document.onkeyup = function ondockeypress(e) {
+                if (state == 2) {
                     if ((e.keyCode == 8) && (userInputFocus == 0)) {
                         // Backspace
                         var outtext = Q('xouttext').value;
                         if (outtext.length > 0) { Q('xouttext').value = outtext.substring(0, outtext.length - 1); }
-                    } else if (e.keyCode == 13) {
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            // Trap document key presses
+            document.onkeypress = function ondockeypress(e) {
+                if (state == 2) {
+                    if (e.keyCode == 13) {
                         // Return
                         xsend(e);
                     } else {
@@ -77,12 +86,17 @@
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
             }
 
-            function displayLocalVideo(active) { QV('localVideo', active); }
-            function displayRemoteVideo(active) { QV('remoteVideo', active); }
+            function displayLocalVideo(active) { QV('localVideo', active); adjustVideoWindows(); }
+            function displayRemoteVideo(active) { QV('remoteVideo', active); adjustVideoWindows(); }
+            function adjustVideoWindows() {
+                //var lv = (QS('localVideo')['display'] != 'none');
+                var rv = (QS('remoteVideo')['display'] != 'none');
+                QS('localVideo')['top'] = rv ? '320px' : '45px';
+            }
 
             // Display a message from the remote user
             function displayRemote(msg) {
-                QA('xmsg', '<div style="clear:both"><div style="background-color:#00cc99;color:black;border-radius:5px;padding:5px;float:left;margin-bottom:5px;margin-right:20px">' + msg + '</div><div></div></div>');
+                QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + msg + '</div><div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
             }
 
@@ -91,51 +105,84 @@
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
                     Q('xouttext').value = '';
-                    QA('xmsg', '<div style="clear:both"><div style="background-color:#0099ff;color:black;border-radius:5px;padding:5px;float:right;margin-bottom:5px;margin-left:20px">' + outtext + '</div><div></div></div>');
+                    QA('xmsg', '<div style="clear:both"><div class="localBubble">' + outtext + '</div><div></div></div>');
                     Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
                     send({ action: 'chat', msg: outtext });
                 }
             }
 
-            // Enable user controls
-            function enableControls(lock, webrtc) { controlsEnabled = lock; QE('sendButton', lock); QE('clearButton', lock); QE('xouttext', lock); /*QV('fileButton', lock);*/ QV('camButton', lock & webrtc); QV('micButton', lock & webrtc); }
             function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
             function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
 
+            // Update user controls
+            function updateControls() {
+                QE('sendButton', state == 2);
+                QE('clearButton', state == 2);
+                QE('xouttext', state == 2);
+                QV('camButton', webchannel && webchannel.ok && !localStream);
+                QV('micButton', webchannel && webchannel.ok && !localStream);
+                QV('hangupButton', webchannel && webchannel.ok && localStream);
+            }
+
             // This is the WebRTC setup
-            function startWebRTC(description) {
+            function startWebRTC(id, startDataChannel) {
                 // Setup the WebRTC object
-                if (webrtc == null) {
-                    if (typeof RTCPeerConnection !== 'undefined') { webrtc = new RTCPeerConnection(webrtcconfiguration); }
-                    else if (typeof webkitRTCPeerConnection !== 'undefined') { webrtc = new webkitRTCPeerConnection(webrtcconfiguration); }
-                    if (webrtc == null) return;
-                    webrtc.onicecandidate = function (e) { try { if (e.candidate != null) { sendws({ action: 'webRtcIce', ice: e.candidate }); } } catch (ex) { } }
-                    webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { closeWebRTC(); } }
-                    webrtc.ondatachannel = function (ev) {
-                        webchannel = ev.channel;
-                        webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                        webchannel.onopen = function () { webchannel.ok = true; enableControls(true, true); sendws({ action: 'rtcSwitch', v: 0 }); };
-                        webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { closeWebRTC(); } }
-                    }
+                var webrtc;
+                if (typeof RTCPeerConnection !== 'undefined') { webrtc = new RTCPeerConnection(webrtcconfiguration); }
+                else if (typeof webkitRTCPeerConnection !== 'undefined') { webrtc = new webkitRTCPeerConnection(webrtcconfiguration); }
+                webrtc.id = id;
+                webrtc.onicecandidate = function (e) { try { if (e.candidate != null) { sendws({ action: 'webRtcIce', ice: e.candidate, id: this.id }); } } catch (ex) { } }
+                webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { hangUpButtonClick(webrtc.id); } }
+                webrtc.ondatachannel = function (ev) {
+                    webchannel = ev.channel;
+                    webchannel.onmessage = function (event) { processMessage(event.data, 2); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
                 }
+                webrtc.onnegotiationneeded = function (event) {
+                    if (webrtc.holdTimer != null) return;
+                    webrtc.holdTimer = setTimeout(function () { // This time is needed to keep Chrome from being to excited. Wait until we add all tracks before kicking this off.
+                        //console.log('onnegotiationneeded', id);
+                        webrtc.holdTimer = null;
+                        webrtc.createOffer(function (offer) { webrtc.setLocalDescription(offer, function () { sendws({ action: 'webRtcSdp', sdp: offer, id: id }); }, function () { hangUpButtonClick(id); }); }, function () { hangUpButtonClick(id); });
+                    }, 20);
+                }
+                webrtc.ontrack = function (event) {
+                    //console.log('ontrack', id);
+                    var video = Q('remoteVideoCanvas');
+                    video.srcObject = remoteStream = event.streams[0];
+                    video.onloadedmetadata = function (e) { video.play(); };
+                    displayRemoteVideo(true);
+                }
+                //webrtc.onremovetrack = function (event) { console.log('onremovetrack'); }
+                //webrtc.onicegatheringstatechange = function (event) { console.log('onicegatheringstatechange', event); }
+                //webrtc.onsignalingstatechange = function (event) { console.log('onsignalingstatechange', event); }
 
                 // Initiate the WebRTC offer or handle the offer from the peer.
-                if (description == null) {
+                if (startDataChannel == true) {
                     webchannel = webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
-                    webchannel.onopen = function () { webchannel.ok = true; enableControls(true, true); sendws({ action: 'rtcSwitch', v: 0 }); };
-                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { closeWebRTC(); } }
-                    webrtc.createOffer(function (offer) {
-                        webrtc.setLocalDescription(offer, function () { try { sendws({ action: 'webRtcSdp', sdp: offer }); } catch (ex) { } }, closeWebRTC);
-                    }, closeWebRTC, { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } });
-                } else {
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
+                }
+
+                webrtcSessions[id] = webrtc;
+                return webrtc;
+            }
+
+            function webRtcHandleOffer(id, description) {
+                //console.log('webRtcHandleOffer', description.sdp.length);
+                var webrtc = webrtcSessions[id];
+                if (webrtc) {
                     webrtc.setRemoteDescription(new RTCSessionDescription(description), function () {
                         if (description.type == 'offer') {
                             webrtc.createAnswer(function (answer) {
-                                webrtc.setLocalDescription(answer, function () { try { sendws({ action: 'webRtcSdp', sdp: answer }); } catch (ex) { } }, closeWebRTC);
-                            }, closeWebRTC);
+                                webrtc.setLocalDescription(answer, function (a, b) {
+                                    try { sendws({ action: 'webRtcSdp', sdp: answer, id: id }); } catch (ex) { }
+                                }, function () { hangUpButtonClick(id); });
+                            }, function () { hangUpButtonClick(id); });
                         }
-                    }, closeWebRTC);
+                    }, function () { hangUpButtonClick(id); });
                 }
             }
 
@@ -144,21 +191,15 @@
                 if (webchannel && webchannel.ok) { sendws({ action: 'rtcSwitch', v: 1 }); webchannel.xoutBuffer = []; }
             }
 
-            // Close the WebRTC connection, should be called if a problem occurs during WebRTC setup.
-            function closeWebRTC() {
-                if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
-                if (webrtc != null) { try { webrtc.close(); } catch (e) { } webrtc = null; }
-            }
-
             // Disconnect everything
             function disconnect() {
-                enableControls(false);
-                closeWebRTC();
-                displayLocalVideo(false);
-                displayRemoteVideo(false);
-                if (socket != null) { socket.close(); socket = null; }
                 if (state > 0) { displayControl('Connection closed.'); }
                 if (state > 1) { setTimeout(start, 500); }
+                hangUpButtonClick(0, true); // Data channel
+                hangUpButtonClick(1, true); // Local audio/video
+                hangUpButtonClick(2, true); // Remote audio/video
+                if (socket != null) { socket.close(); socket = null; }
+                updateControls();
                 state = 0;
             }
 
@@ -177,15 +218,20 @@
                 if (socket != null) { socket.send(data); }
             }
 
+            // WebRTC id switcher (0 -> 0, 1 -> 2, 2 -> 1)
+            function webRtcIdSwitch(id) { if (id == 0) { return 0; } return 3 - id; }
+
             // Process incoming messages
             function processMessage(data, transport) {
                 if (typeof data == 'string') {
                     try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
+                    //console.log(data);
                     switch (data.action) {
                         case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
-                        case 'random': { if (random > data.random) { startWebRTC(); } break; } // If we have a larger random value, we start WebRTC.
-                        case 'webRtcSdp': { startWebRTC(data.sdp); break; } // Remote WebRTC offer or answer.
-                        case 'webRtcIce': { if (webrtc) { webrtc.addIceCandidate(new RTCIceCandidate(data.ice)); } break; } // Remote ICE candidate
+                        case 'random': { if (random > data.random) { startWebRTC(0, true); } break; } // If we have a larger random value, we start WebRTC.
+                        case 'webRtcSdp': { if (!webrtcSessions[webRtcIdSwitch(data.id)]) { startWebRTC(webRtcIdSwitch(data.id), false); } webRtcHandleOffer(webRtcIdSwitch(data.id), data.sdp); break; } // Remote WebRTC offer or answer.
+                        case 'webRtcIce': { var webrtc = webrtcSessions[webRtcIdSwitch(data.id)]; if (webrtc) { try { webrtc.addIceCandidate(new RTCIceCandidate(data.ice)); } catch (ex) { } } break; } // Remote ICE candidate
+                        case 'videoStop': { hangUpButtonClick(webRtcIdSwitch(data.id), true); break; }
                         case 'rtcSwitch': { // WebRTC switch over commands.
                             switch (data.v) {
                                 case 0: { performWebRtcSwitch(); break; } // Other side is ready for switch over to WebRTC
@@ -208,60 +254,95 @@
 
             // Camera button
             function camButtonClick() {
-                if (localStream == null) { startLocalStream({ video: true, audio: true }); } else { stopLocalStream(); }
+                if (localStream == null) { startLocalStream({ video: true, audio: true }); }
             }
 
             // Microphone
             function micButtonClick() {
-                if (localStream == null) { startLocalStream({ video: false, audio: true }); } else { stopLocalStream(); }
+                if (localStream == null) { startLocalStream({ video: false, audio: true }); }
+            }
+
+            function hangUpButtonClick(id, fromRemote) {
+                //console.log('hangUpButtonClick', id);
+                var localVideo = Q('localVideoCanvas');
+                var remoteVideo = Q('remoteVideoCanvas');
+                var webrtc = webrtcSessions[1];
+
+                if ((id == 0) && (webchannel != null)) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+
+                if (webrtc) {
+                    webrtc.ontrack = null;
+                    webrtc.onremovetrack = null;
+                    webrtc.onremovestream = null;
+                    webrtc.onnicecandidate = null;
+                    webrtc.oniceconnectionstatechange = null;
+                    webrtc.onsignalingstatechange = null;
+                    webrtc.onicegatheringstatechange = null;
+                    webrtc.onnotificationneeded = null;
+
+                    if ((id == 1) && localVideo.srcObject) { localVideo.srcObject.getTracks().forEach(track => track.stop()); }
+                    if ((id == 2) && remoteVideo.srcObject) { remoteVideo.srcObject.getTracks().forEach(track => track.stop()); }
+
+                    webrtc.close();
+                    delete webrtcSessions[id];
+                }
+
+                if (id == 1) {
+                    localVideo.removeAttribute("src");
+                    localVideo.removeAttribute("srcObject");
+                    if (localStream != null) { localStream = null; }
+                    displayLocalVideo(false);
+                } else if (id == 2) {
+                    remoteVideo.removeAttribute("src");
+                    remoteVideo.removeAttribute("srcObject");
+                    displayRemoteVideo(false);
+                }
+
+                if (fromRemote != true) { send({ action: 'videoStop', id: id }); }
+                updateControls();
             }
 
             // Setup local audio/video
             function startLocalStream(constraints) {
-                if (localStream != null) return;
+                if ((localStream != null) || (webrtcSessions[1] != null)) return;
                 if (navigator.mediaDevices.getUserMedia) {
                     localStream = 1;
+                    updateControls();
                     navigator.mediaDevices.getUserMedia(constraints)
                     .then(function (stream) {
                         localStream = stream;
                         if (constraints.video == true) {
-                            var video = Q('localVideoCanvas');
+                            var video = Q('localVideoCanvas'), tracks = localStream.getTracks(), webrtc = startWebRTC(1);
                             video.srcObject = stream;
                             video.onloadedmetadata = function (e) { video.play(); };
                             displayLocalVideo(true);
+                            for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
                         }
                     })
                     .catch(function (err) {
-                        console.log('getUserMedia error');
-                        localStream = null;
+                        displayControl(err.message + '.');
+                        hangUpButtonClick(1);
                     });
-                }
-            }
-
-            // Stop local audio/video
-            function stopLocalStream() {
-                if ((localStream != null) && (localStream != 1)) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                    displayLocalVideo(false);
                 }
             }
 
             // This is the main start
             function start() {
                 // Get started
-                enableControls(false);
+                updateControls();
                 if ((typeof args.id == 'string') && (args.id.length > 0)) {
                     socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
                     socket.onopen = function () { state = 1; displayControl('Waiting for other user...'); }
                     socket.onerror = function (e) { console.error(e); }
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
-                        if ((state < 2) && (typeof msg.data == 'string')) {
-                            enableControls(true);
-                            closeWebRTC();
+                        if ((state < 2) && (typeof msg.data == 'string') && (msg.data == 'c')) {
+                            hangUpButtonClick(0);
+                            hangUpButtonClick(1);
+                            hangUpButtonClick(2);
                             displayControl('Connected.');
                             state = 2;
+                            updateControls();
                             sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
                             return;
                         }
