@@ -8,6 +8,7 @@
         <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
         <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS" />
         <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+        <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
         <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
@@ -36,7 +37,7 @@
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
             <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
         </div>
-        <input id="uploadFileInput" type="file" style="display:none">
+        <input id="uploadFileInput" type="file" multiple style="display:none">
         <script type="text/javascript">
             var userInputFocus = 0;
             var args = parseUriArgs();
@@ -86,7 +87,7 @@
             }
 
             function onUserInputFocus(x) { userInputFocus = x; }
-            function displayClear() { QH('xmsg', ''); }
+            function displayClear() { QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
 
             // Display a control message
             function displayControl(msg) {
@@ -301,32 +302,47 @@
                 chooser.click();
             }
 
+            // User selected one or more files to upload to remote user.
             function fileSelect() {
                 if (state != 2) return;
                 var x = Q('uploadFileInput');
-                if (x.files.length != 1) return;
-                var reader = new FileReader();
-                reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
-                reader.xfile = x.files[0];
-                reader.readAsBinaryString(x.files[0]);
+                if (x.files.length > 10) {
+                    displayControl('Limit of 10 file uploads at the same time.');
+                } else {
+                    for (var i = 0; i < x.files.length; i++) {
+                        if (x.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = x.files[i];
+                            reader.readAsBinaryString(x.files[i]);
+                        }
+                    }
+                }
             }
 
+            // User drag & droped one or more files to upload to remote user.
             function fileDrop(e) {
                 haltEvent(e);
-                if (state != 2) return;
-                if (e.dataTransfer == null || e.dataTransfer.files.length != 1) return;
-                var reader = new FileReader();
-                reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
-                reader.xfile = e.dataTransfer.files[0];
-                reader.readAsBinaryString(e.dataTransfer.files[0]);
+                if ((state != 2) || (e.dataTransfer == null)) return;
+                if (e.dataTransfer.files.length > 10) {
+                    displayControl('Limit of 10 file uploads at the same time.');
+                } else {
+                    for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                        if (e.dataTransfer.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = e.dataTransfer.files[i];
+                            reader.readAsBinaryString(e.dataTransfer.files[i]);
+                        }
+                    }
+                }
             }
 
             function startFileUpload(file) {
                 if (state != 2) return;
                 file.id = Math.random();
                 fileUploads.push(file);
-                //console.log('XXX', file);
-                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
                 send({ action: 'file', size: file.size, id: file.id, type: file.type, name: file.name });
                 if (currentFileUpload == null) continueFileUpload();
@@ -335,7 +351,7 @@
             function startFileDownload(file) {
                 if (state != 2) return;
                 fileDownloads[file.id] = file;
-                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
             }
 
@@ -350,6 +366,18 @@
                 }
                 if (progress) { QS('FILEUP-PROGRESS-' + id)['width'] = progress + 'px'; }
                 if (progressColor) { QS('FILEUP-PROGRESS-' + id)['background-color'] = progressColor; }
+            }
+
+            // Convert a string into a blob
+            data2blob = function (data) {
+                var bytes = new Array(data.length);
+                for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
+                return new Blob([new Uint8Array(bytes)]);
+            };
+
+            function saveFileTransfer(id) {
+                var f = fileDownloads[id];
+                if (f && f.done == 1) { saveAs(data2blob(f.data), f.name); }
             }
 
             function cancelFileTransfer(id) {
