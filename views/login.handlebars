@@ -257,6 +257,8 @@
         var passhint = "{{{passhint}}}";
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
+        var passRequirements = "{{{passRequirements}}}";
+        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var features = parseInt('{{{features}}}');
         var webPageFullScreen = getstore('webPageFullScreen', true);
         if (webPageFullScreen == 'false') { webPageFullScreen = false; }
@@ -312,7 +314,7 @@
             if (e != null) { haltEvent(e); }
         }
 
-        function validateCreate(box,e) {
+        function validateCreate(box, e) {
             setDialogMode(0);
             var userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1);
             var emailok = (validateEmail(Q('aemail').value) == true);
@@ -328,14 +330,27 @@
             QS('nuPass2').color = pass2ok?'black':'#7b241c';
             QS('nuToken').color = newAccOk?'black':'#7b241c';
 
-            QE('createButton', ok);
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');
             } else {
-                var passStrength = checkPasswordStrength(Q('apassword1').value);
-                if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
-                else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>Good Password</b><span>'); }
-                else { QH('passWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+                if (passRequirements == null || passRequirements == '') {
+                    // No password requirements, display password strength
+                    var passStrength = checkPasswordStrength(Q('apassword1').value);
+                    if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
+                    else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>Good Password</b><span>'); }
+                    else { QH('passWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+                } else {
+                    // Password requirements provided, use that
+                    var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
+                    if (passReq == false) {
+                        ok = false;
+                        QS('nuPass1').color = '#7b241c';
+                        QS('nuPass2').color = '#7b241c';
+                        QH('passWarning', '<span style=color:red><b>Password Policy</b><span>'); // TODO: Display problem hint
+                    } else {
+                        QH('passWarning', '');
+                    }
+                }
             }
             if ((e != null) && (e.keyCode == 13)) {
                 if (box == 1) { Q('aemail').focus(); }
@@ -346,6 +361,7 @@
                 if (box == 6) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
+            QE('createButton', ok);
         }
 
         function validateReset(e) {
@@ -367,6 +383,24 @@
             return parseInt(r + (varCount - 1) * 10);
         }
 
+        // Check password requirements
+        function checkPasswordRequirements(password, requirements) {
+            if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
+            if (requirements.min) { if (password.length < requirements.min) return false; }
+            if (requirements.max) { if (password.length > requirements.max) return false; }
+            var num = 0, lower = 0, upper = 0, nonalpha = 0;
+            for (var i = 0; i < password.length; i++) {
+                if (/\d/.test(password[i])) { num++; }
+                if (/[a-z]/.test(password[i])) { lower++; }
+                if (/[A-Z]/.test(password[i])) { upper++; }
+                if (/\W/.test(password[i])) { nonalpha++; }
+            }
+            if (requirements.num && (num < requirements.num)) return false;
+            if (requirements.lower && (lower < requirements.lower)) return false;
+            if (requirements.upper && (upper < requirements.upper)) return false;
+            if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
+            return true;
+        }
         
         //
         // POPUP DIALOG
