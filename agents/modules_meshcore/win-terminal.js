@@ -156,6 +156,10 @@ function windows_terminal() {
         if (this._kernel32.SetConsoleScreenBufferSize(this._stdoutput, coordScreen.Deref(0, 4).toBuffer().readUInt32LE()).Val == 0) {
             throw ('Failed to set Console Buffer Size');
         }
+
+        // Hide the console window
+        this._user32.ShowWindow(this._kernel32.GetConsoleWindow().Val, SW_HIDE);
+
         this.ClearScreen();
         this._hookThread().then(function () {
             // Hook Ready
@@ -203,7 +207,7 @@ function windows_terminal() {
     };
     this._stop = function () {
         if (this.stopping) { return (this.stopping); }
-        console.log('Stopping Terminal...');
+        //console.log('Stopping Terminal...');
         this.stopping = new promise(function (res, rej) { this._res = res; this._rej = rej; });
         
         var threadID = this._kernel32.GetThreadId(this._user32.SetWinEventHook.async.thread()).Val;
@@ -458,7 +462,7 @@ function windows_terminal() {
 function LOWORD(val) { return (val & 0xFFFF); }
 function HIWORD(val) { return ((val >> 16) & 0xFFFF); }
 function GetEsc(op, args) { return (Buffer.from('\x1B[' + args.join(';') + op)); }
-//function MeshConsole(msg) { require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": JSON.stringify(msg) }); }
+function MeshConsole(msg) { require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": JSON.stringify(msg) }); }
 function TranslateLine(x, y, data, attributes) {
     var i, fcolor, bcolor, rcolor, fbright, bbright, lastAttr, fc, bc, rc, fb, bb, esc = [], output = [GetEsc('H', [y, x])];
     if (typeof attributes == 'number') { attributes = [ attributes ]; } // If we get a single attribute, turn it into an array.
