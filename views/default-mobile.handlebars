@@ -585,6 +585,8 @@
         var attemptWebRTC = ((features & 128) != 0);
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
         var files;
+        var passRequirements = "{{{passRequirements}}}";
+        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
 
         function startup() {
             if ((features & 32) == 0) {
@@ -989,15 +991,15 @@
         function account_showChangePassword() {
             if (xxdialogMode) return;
             var x = "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:10px><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
-            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() /></td>";
+            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
+            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td>";
             x += "</tr><tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
             x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Change Password", 0, null, x);
-            account_validateDeleteAccount();
+            account_validateNewPassword();
             Q('apassword1').focus();
         }
 
@@ -1024,13 +1026,20 @@
         }
 
         function account_validateNewPassword() {
-            QE('account_dlgOkButton', (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value));
-            var r = '';
+            var r = '', ok = (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value);
             if (Q('apassword1').value != '') {
-                var passStrength = checkPasswordStrength(Q('apassword1').value);
-                if (passStrength >= 80) { r = '<span style=color:green>Strong<span>'; } else if (passStrength >= 60) { r = '<span style=color:blue>Good<span>'; } else { r = '<span style=color:red>Weak<span>'; }
+                if (passRequirements == null || passRequirements == '') {
+                    // No password requirements, display password strength
+                    var passStrength = checkPasswordStrength(Q('apassword1').value);
+                    if (passStrength >= 80) { r = '<span style=color:green>&#9679;<span>'; } else if (passStrength >= 60) { r = '<span style=color:blue>&#9679;<span>'; } else { r = '<span style=color:red>&#9679;<span>'; }
+                } else {
+                    // Password requirements provided, use that
+                    var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
+                    if (passReq == false) { ok = false; r = '<span style=color:red>&#9679;<span>' }
+                }
             }
             QH('dxPassWarn', r);
+            QE('account_dlgOkButton', ok);
         }
 
         // Return a password strength score
@@ -1040,6 +1049,25 @@
             for (var i = 0; i < password.length; i++) { letters[password[i]] = (letters[password[i]] || 0) + 1; r += 5.0 / letters[password[i]]; }
             for (var c in variations) { varCount += (variations[c] == true) ? 1 : 0; }
             return parseInt(r + (varCount - 1) * 10);
+        }
+
+        // Check password requirements
+        function checkPasswordRequirements(password, requirements) {
+            if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
+            if (requirements.min) { if (password.length < requirements.min) return false; }
+            if (requirements.max) { if (password.length > requirements.max) return false; }
+            var num = 0, lower = 0, upper = 0, nonalpha = 0;
+            for (var i = 0; i < password.length; i++) {
+                if (/\d/.test(password[i])) { num++; }
+                if (/[a-z]/.test(password[i])) { lower++; }
+                if (/[A-Z]/.test(password[i])) { upper++; }
+                if (/\W/.test(password[i])) { nonalpha++; }
+            }
+            if (requirements.num && (num < requirements.num)) return false;
+            if (requirements.lower && (lower < requirements.lower)) return false;
+            if (requirements.upper && (upper < requirements.upper)) return false;
+            if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
+            return true;
         }
 
         function updateMeshes() {

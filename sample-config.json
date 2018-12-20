@@ -23,22 +23,23 @@
   },
   "_domains": {
     "": {
-      "title": "MyServer",
-      "title2": "Servername",
-      "userQuota": 1048576,
-      "meshQuota": 248576,
-      "newAccounts": 1,
-      "footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
-      "_certUrl": "https://192.168.2.106:443/"
+      "Title": "MyServer",
+      "Title2": "Servername",
+      "UserQuota": 1048576,
+      "MeshQuota": 248576,
+      "NewAccounts": 1,
+      "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "_CertUrl": "https://192.168.2.106:443/",
+      "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
     },
     "customer1": {
-      "dns": "customer1.myserver.com",
-      "title": "Customer1",
-      "title2": "TestServer",
-      "newAccounts": 1,
-      "auth": "sspi",
-      "footer": "Test",
-      "_certUrl": "https://192.168.2.106:443/"
+      "DNS": "customer1.myserver.com",
+      "Title": "Customer1",
+      "Title2": "TestServer",
+      "NewAccounts": 1,
+      "Auth": "sspi",
+      "Footer": "Test",
+      "_CertUrl": "https://192.168.2.106:443/"
     },
     "info": {
       "share": "C:\\ExtraWebSite"

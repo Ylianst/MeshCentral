@@ -517,6 +517,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((user.siteadmin & 2) == 0) break;
                         if (obj.common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
                         if (obj.common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                        if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
                         if ((command.email != null) && (obj.common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                         var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                         if (newusername == '~') break; // This is a reserved user name
@@ -576,6 +577,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (user.siteadmin != 0xFFFFFFFF) break;
                         if (obj.common.validateString(command.user, 1, 256) == false) break;
                         if (obj.common.validateString(command.pass, 1, 256) == false) break;
+                        if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
                         var chguserid = 'user/' + domain.id + '/' + command.user.toLowerCase(), chguser = obj.parent.users[chguserid];
                         if (chguser && chguser.salt) {
                             // Compute the password hash & save it
