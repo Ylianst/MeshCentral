@@ -32,3 +32,10 @@ COPY ..\views\login-mobile.handlebars index.html
 COPY compress.htm ..\views\login-mobile-min.handlebars
 DEL compress.htm
 DEL index.html
+
+REM *** messenger.handlebars
+COPY ..\views\messenger.handlebars index.html
+..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
+COPY compress.htm ..\views\messenger-min.handlebars
+DEL compress.htm
+DEL index.html

@@ -632,7 +632,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var httpsPort = ((obj.parent.args.aliasport == null) ? obj.parent.args.port : obj.parent.args.aliasport); // Use HTTPS alias port is specified
                             var xdomain = (domain.dns == null) ? domain.id : '';
                             if (xdomain != '') xdomain += "/";
-                            var url = "http" + (obj.args.notls ? '' : 's') + "://" + obj.parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger.htm?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+                            var url = "http" + (obj.args.notls ? '' : 's') + "://" + obj.parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
 
                             // Create the notification message
                             routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });

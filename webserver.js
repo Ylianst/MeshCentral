@@ -656,6 +656,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } });
+        } else if (req.query.user && req.query.pass) {
+            // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
+            var userid = 'user/' + domain.id + '/' + req.query.user.toLowerCase();
+            if (obj.users[userid] != null) {
+                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                    req.session.userid = userid;
+                    req.session.domainid = domain.id;
+                    req.session.currentNode = '';
+                    handleRootRequestEx(req, res, domain);
+                });
+            }
         } else {
             // Login using a different system
             handleRootRequestEx(req, res, domain);
@@ -813,7 +824,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return '';
     }
 
-    // Renter the terms of service.
+    // Render the terms of service.
     function handleTermsRequest(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
@@ -845,6 +856,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2 });
             }
         }
+    }
+
+    // Render the messenger application.
+    function handleMessengerRequest(req, res) {
+        var webRtcConfig = null;
+        if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+        res.render(obj.path.join(__dirname, 'views/messenger'), { webrtconfig: webRtcConfig });
     }
 
     // Returns the server root certificate encoded in base64
@@ -1188,7 +1207,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                     var TLSSocket = require('tls').TLSSocket;
-                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
+                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     var tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
@@ -1301,7 +1320,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws._socket.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false, cert: obj.certificates.console.cert, key: obj.certificates.console.key };
+                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS connected to ' + node.host + ':' + port + '.');
@@ -1843,6 +1862,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url + 'checkmail', handleCheckMailRequest);
         obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
         obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
+        obj.app.get(url + 'messenger', handleMessengerRequest);
         obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
         obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
         obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);

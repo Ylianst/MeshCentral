@@ -78,8 +78,18 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     obj.leResults = results;
 
                     // If we already have real certificates, use them.
-                    if (results.altnames.indexOf(certs.CommonName) >= 0) { certs.web.cert = results.cert; certs.web.key = results.privkey; certs.web.ca = [results.chain]; }
-                    for (var i in obj.parent.config.domains) { if ((obj.parent.config.domains[i].dns != null) && (results.altnames.indexOf(obj.parent.config.domains[i].dns) >= 0)) { certs.dns[i].cert = results.cert; certs.dns[i].key = results.privkey; certs.dns[i].ca = [results.chain]; } }
+                    if (results.altnames.indexOf(certs.CommonName) >= 0) {
+                        certs.web.cert = results.cert;
+                        certs.web.key = results.privkey;
+                        certs.web.ca = [results.chain];
+                    }
+                    for (var i in obj.parent.config.domains) {
+                        if ((obj.parent.config.domains[i].dns != null) && (results.altnames.indexOf(obj.parent.config.domains[i].dns) >= 0)) {
+                            certs.dns[i].cert = results.cert;
+                            certs.dns[i].key = results.privkey;
+                            certs.dns[i].ca = [results.chain];
+                        }
+                    }
                     func(certs);
 
                     // Check if the Let's Encrypt certificate needs to be renewed.

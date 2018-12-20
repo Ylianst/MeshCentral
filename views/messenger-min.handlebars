@@ -1,0 +1,807 @@
+﻿<!DOCTYPE html> <html style="height:100%"> <head> <title>MeshMessenger</title> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <meta content="text/html;charset=utf-8" http-equiv="Content-Type"> <meta name="format-detection" content="telephone=no"> <style>body{margin:0;padding:0;border:0;color:black;font-size:13px;font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;background-color:#d3d9d6;}#container{background-color:#fff;width:960px;min-width:960px;margin:0 auto;border-top:0;border-right:1px solid #b7b7b7;border-bottom:0;border-left:1px solid #b7b7b7;padding:0;}#masthead{width:auto;margin:0;padding:0;overflow:auto;text-align:right;background-color:#036;width:960px;}#column_l{position:relative;float:left;width:930px;margin:0;padding:0 15px;background-color:#fff;}#footer{clear:both;overflow:auto;width:100%;text-align:center;background-color:#113962;padding-top:5px;padding-bottom:5px;}#masthead img{float:left;}#masthead p{font-size:11px;color:#fff;margin:10px 10px 0;}#footer a{color:#fff;text-decoration:underline;}#footer a:hover{color:#fff;text-decoration:none;}a{color:#036;text-decoration:underline;}.i1{background:url(../images/icons50.png) 0px 0px;height:50px;width:50px;cursor:pointer;border:none;}.i2{background:url(../images/icons50.png) -50px 0px;height:50px;width:50px;cursor:pointer;border:none;}.i3{background:url(../images/icons50.png) -100px 0px;height:50px;width:50px;cursor:pointer;border:none;}.i4{background:url(../images/icons50.png) -150px 0px;height:50px;width:50px;cursor:pointer;border:none;}.i5{background:url(../images/icons50.png) -200px 0px;height:50px;width:50px;cursor:pointer;border:none;}.i6{background:url(../images/icons50.png) -250px 0px;height:50px;width:50px;cursor:pointer;border:none;}.j1{background:url(../images/icons16.png) 0px 0px;height:16px;width:16px;cursor:pointer;border:none;}.j2{background:url(../images/icons16.png) -16px 0px;height:16px;width:16px;cursor:pointer;border:none;}.j3{background:url(../images/icons16.png) -32px 0px;height:16px;width:16px;cursor:pointer;border:none;}.j4{background:url(../images/icons16.png) -48px 0px;height:16px;width:16px;cursor:pointer;border:none;}.j5{background:url(../images/icons16.png) -64px 0px;height:16px;width:16px;cursor:pointer;border:none;}.j6{background:url(../images/icons16.png) -80px 0px;height:16px;width:16px;cursor:pointer;border:none;}.lbbutton{width:74px;height:74px;border-radius:5px;background-color:white;margin-left:8px;margin-top:8px;position:relative;cursor:pointer;opacity:0.5;}.lbbutton:hover{opacity:1;}.lbbuttonsel{opacity:0.9;}.lbbuttonsel2{width:82px;border-radius:5px 0px 0px 5px;opacity:1;}.lb1{background:url(../images/leftbar-62.jpg) -0px 0px;height:62px;width:62px;cursor:pointer;border:none;}.lb2{background:url(../images/leftbar-62.jpg) -75px 0px;height:62px;width:62px;cursor:pointer;border:none;}.lb3{background:url(../images/leftbar-62.jpg) -150px 0px;height:62px;width:62px;cursor:pointer;border:none;}.lb4{background:url(../images/leftbar-62.jpg) -225px 0px;height:62px;width:62px;cursor:pointer;border:none;}.lb5{background:url(../images/leftbar-62.jpg) -294px 0px;height:62px;width:62px;cursor:pointer;border:none;}.lb6{background:url(../images/leftbar-62.jpg) -360px 0px;height:62px;width:62px;cursor:pointer;border:none;}.m0{background :url(../images/images16.png) -32px 0px;height :16px;width :16px;border:none;float:left }.m1{background :url(../images/images16.png) -16px 0px;height :16px;width :16px;border:none;float:left }.m2{background :url(../images/images16.png) -96px 0px;height :16px;width :16px;border:none;float:left }.m3{background :url(../images/images16.png) -112px 0px;height :16px;width :16px;border:none;float:left }.si0{background :url(../images/icons16.png) 0px 0px;height :16px;width :16px;border:none;float:left }.si1{background :url(../images/icons16.png) -16px 0px;height :16px;width :16px;border:none;float:left }.si2{background :url(../images/icons16.png) -32px 0px;height :16px;width :16px;border:none;float:left }.si3{background :url(../images/icons16.png) -48px 0px;height :16px;width :16px;border:none;float:left }.si4{background :url(../images/icons16.png) -64px 0px;height :16px;width :16px;border:none;float:left }.mi{background :url(../images/meshicon50.png) 0px 0px;height:50px;width:50px;cursor:pointer;border:none }#floatframe{position:fixed;top:200px;height:300px;z-index:200;display:none;}.style1{text-align:center;}.style2{text-align:center;background-color:#808080;font-weight:bold;}.style3{text-align:center;color:white;background-color:#808080;font-weight:bold;}.style3x{text-align:center;color:white;background-color:#808080;font-weight:bold;}.style3x:hover{background-color:#606060;}.style3sel{text-align:center;color:white;background-color:#003366;font-weight:bold;}.style4{color:white;text-decoration:none;}.style5{text-align:center;background-color:#808080;font-weight:normal;}.style6{text-align:center;background-color:#D3D9D6;}.style7{font-size:large;background-color:#FFFFFF;}.style10{background-color:#C9C9C9;}.style11{font-size:large;background-color:#C9C9C9;}.style14{text-align:left;background-color:#D3D9D6;}.auto-style1{text-align:right;background-color:#D3D9D6;}.fileIcon1{background:url(data:image/gif;base64,R0lGODlhEAAQAJEDAPb49Y2Sj9LT2f///yH5BAEAAAMALAAAAAAQABAAAAImnI+py+1vhJwyUYAzHTL4D3qdlJWaIFJqmKod607sDKIiDUP63hQAOw==);height:16px;width:16px;cursor:pointer;border:none;float:left;margin-top:1px;}.fileIcon2{background:url(data:image/gif;base64,R0lGODlhEAAQAJEDAM2xV/Xur+XPgP///yH5BAEAAAMALAAAAAAQABAAAAJD3ISZIGHWUGihznesYDYATFVM+D2hJ4lgN1olxALAtAlmPCJvuMmJd6PJckDYwicrHhTD5o7plJmg0Uc0asNMkphHAQA7);height:16px;width:16px;cursor:pointer;border:none;float:left;margin-top:1px;}.fileIcon3{background:url(data:image/gif;base64,R0lGODlhEAAQAJEDAPb19IGBgbq6uv///yH5BAEAAAMALAAAAAAQABAAAAIy3ISpxgcPH2ouQgFEw1YmxnUXKEaaEZZnVWZk66JwzKpvuwZzwOgwb/C1gIOA8Yg8DgoAOw==);height:16px;width:16px;cursor:pointer;border:none;float:left;margin-top:1px;}.fileIcon4{background:url(../images/meshicon16.png);height:16px;width:16px;cursor:pointer;border:none;float:left;margin-top:1px;}.filelist{-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;cursor:default;-khtml-user-drag:element;background-color:white;clear:both;}.noselect{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}.fsize{float:right;text-align:right;width:180px;}.g1{background-position:0% 0%;width:14px;height:100%;float:left;   background-image:linear-gradient(to right, #ffffff 0%, #c9c9c9 100%);background-color:#c9c9c9;background-repeat:repeat;background-attachment:scroll;}.g1s{background-image:linear-gradient(to right, #ffffff 0%, #b9b9b9 100%);}.g2{background-position:0% 0%;width:14px;height:100%;float:right;   background-image:linear-gradient(to right, #c9c9c9 0%, #ffffff 100%);background-color:#c9c9c9;background-repeat:repeat;background-attachment:scroll;}.g2s{background-image:linear-gradient(to right, #b9b9b9 0%, #ffffff 100%);}.h1{background-position:0% 0%;width:14px;height:100%;   background-image:linear-gradient(to right, #ffffff 0%, #d3d9d6 100%);background-color:#d3d9d6;background-repeat:repeat;background-attachment:scroll;}.h2{background-position:0% 0%;width:14px;height:100%;   background-image:linear-gradient(to right, #d3d9d6 0%, #ffffff 100%);background-color:#d3d9d6;background-repeat:repeat;background-attachment:scroll;}.e1{font-size:large;margin-top:4px;margin-bottom:3px;overflow:hidden;word-wrap:hyphenate;white-space:nowrap;text-overflow:ellipsis;}.e2{float:left;height:100%;background-color:#c9c9c9;}.e2s{background-color:#b9b9b9;}.bar{font-size:large;background-color:#C9C9C9;height:24px;float:left;margin-bottom:2px;}.bar2{font-size:large;height:24px;float:left;margin-bottom:2px;}.bar18{font-size:large;background-color:#C9C9C9;height:18px;float:left;margin-bottom:2px;}.bar182{font-size:large;height:18px;float:left;margin-bottom:2px;}.devHeaderx{color:lightgray;}.DevSt{border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:#DDDDDD;}.contextMenu{background:#F9F9F9;box-shadow:0 0 12px rgba( 0, 0, 0, .3 );border:1px solid #ccc; display:none;position:absolute;top:0;left:0;list-style:none;margin:0;padding:5px;min-width:100px;max-width:150px;z-index:500;}.cmtext{color:#444;display:inline-block;padding-left:8px;padding-right:8px;padding-top:5px;padding-bottom:5px;text-decoration:none;width:85%;cursor:default;overflow:hidden;position:relative;}.cmtext:hover{color:#f9f9f9;background:#444;}.gray{  filter:gray; -webkit-filter:grayscale(100%) opacity(60%); }.unselectable{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}.notifiyBox{position:absolute;z-index:1000;top:50px;right:26px;width:300px;text-align:left;background-color:#F0ECCD;border:4px solid #666;-webkit-border-radius:10px;-moz-border-radius:10px;border-radius:10px;-webkit-box-shadow:2px 2px 4px #888;-moz-box-shadow:2px 2px 4px #888;box-shadow:2px 2px 4px #888;max-height:200px;}.notifiyBox:before{content:' ';position:absolute;width:0;height:0;right:5px;top:-30px;border:15px solid;border-color:transparent #666 #666 transparent;}.notifiyBox:after{content:' ';position:absolute;width:0;height:0;right:7px;top:-24px;border:12px solid;border-color:transparent #F0ECCD #F0ECCD transparent;}.notification{width:100%;min-height:30px;}.notification:hover{background-color:#EFE8B6;}.deskToolsBar{padding:3px;}.deskToolsBar:hover{background-color:#EFE8B6;}.userTableHeader{border-bottom:1pt solid lightgray;padding-top:4px;padding-bottom:4px;}.viewSelector{width:32px;height:32px;background-color:#DDD;border-radius:3px;float:left;margin-left:5px;cursor:pointer;opacity:0.3;}.viewSelectorSel{background-color:#BBB;opacity:0.8;}.viewSelector:hover{opacity:0.5;background-color:#AAA;}.viewSelector1{margin-left:2px;margin-top:2px;background:url(../images/views.png) -0px 0px;height:28px;width:28px;}.viewSelector2{margin-left:2px;margin-top:2px;background:url(../images/views.png) -28px 0px;height:28px;width:28px;}.viewSelector3{margin-left:2px;margin-top:2px;background:url(../images/views.png) -56px 0px;height:28px;width:28px;}.viewSelector4{margin-left:2px;margin-top:2px;background:url(../images/views.png) -84px 0px;height:28px;width:28px;}.viewSelector5{margin-left:2px;margin-top:2px;background:url(../images/views.png) -112px 0px;height:28px;width:28px;}.backButtonEx{margin-left:2px;margin-top:2px;background:url(../images/views.png) -140px 0px;height:28px;width:28px;}.backButton{width:32px;height:32px;background-color:#DDD;border-radius:3px;float:left;margin-right:5px;cursor:pointer;opacity:0.3;}.backButton:hover{opacity:0.5;background-color:#AAA;}.hoverButton{opacity:0.5;}.hoverButton:hover{opacity:1;}</style> <style>.topButton{cursor:pointer;border:none;margin:2px;float:right;border-radius:3px;height:32px;width:32px;}.topButton:hover{background-color:lightgray;}.topRedButton{cursor:pointer;border:none;margin:2px;float:right;border-radius:3px;height:32px;width:32px;}.topRedButton:hover{background-color:orangered;}.remoteBubble{background-color:#00cc99;color:black;border-radius:5px;padding:5px;float:left;margin-bottom:5px;margin-right:20px;box-shadow:3px 3px 10px gray;}.localBubble{background-color:#0099ff;color:black;border-radius:5px;padding:5px;float:right;margin-bottom:5px;margin-left:20px;box-shadow:3px 3px 10px gray;}.icon1{background:url(../images/messenger32.png) 0px 0px;background-color:gray;}.icon2{background:url(../images/messenger32.png) -32px 0px;background-color:gray;}.icon3{background:url(../images/messenger32.png) -64px 0px;background-color:gray;}.icon4{background:url(../images/messenger32.png) -96px 0px;background-color:gray;}.icon5{background:url(../images/messenger32.png) -128px 0px;background-color:gray;}.icon6{background:url(../images/messenger32.png) -160px 0px;background-color:gray;}.icon7{background:url(../images/messenger32.png) -192px 0px;background-color:gray;}.icon8{background:url(../images/messenger32.png) -224px 0px;background-color:gray;}.icon9{background:url(images/messenger32.png) -256px 0px;background-color:gray;}.icon10{background:url(../images/messenger32.png) -288px 0px;background-color:gray;}.icon11{background:url(../images/messenger32.png) -320px 0px;background-color:orange;}.fileicon{background:url(../images/messenger32.png) -96px 0px;height:32px;width:32px;}.fileiconx{background:url(../images/messenger32.png) -352px 0px;height:32px;width:32px;}.fileicontransfer{background:url(../images/messenger32.png) -288px 0px;height:32px;width:32px;}.fileicondone{background:url(../images/messenger32.png) -256px 0px;height:32px;width:32px;}</style> </head> <body style="font-family:Arial,Helvetica,sans-serif"> <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray"> <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div> <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div> <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div> <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div> <div style="display:inline-block;width:2px"></div> <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b>MeshMessenger<span id="xtitle"></span></b></div> </div> <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px"> <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll"> <div id="xmsg" style="position:absolute;left:0;right:0;bottom:0;padding:5px"></div> </div> </div> <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036"> <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus="onUserInputFocus(1)" onblur="onUserInputFocus(0)"></div> <input type="button" id="sendButton" value="Send" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)"> <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()"> </div> <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none"> <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remote</div> <video id="remoteVideoCanvas" autoplay="" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video> </div> <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none"> <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div> <video id="localVideoCanvas" autoplay="" muted="" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video> </div> <input id="uploadFileInput" type="file" multiple="" style="display:none"> <script>/** 
+* @description Set of short commonly used methods for handling HTML elements
+* @author Ylian Saint-Hilaire
+* @version v0.0.1b
+*/
+
+// Add startsWith for IE browser
+if (!String.prototype.startsWith) { String.prototype.startsWith = function (str) { return this.lastIndexOf(str, 0) === 0; }; }
+if (!String.prototype.endsWith) { String.prototype.endsWith = function (str) { return this.indexOf(str, this.length - str.length) !== -1; }; }
+
+// Quick UI functions, a bit of a replacement for jQuery
+//function Q(x) { if (document.getElementById(x) == null) { console.log('Invalid element: ' + x); } return document.getElementById(x); }                            // "Q"
+function Q(x) { return document.getElementById(x); }                            // "Q"
+function QS(x) { try { return Q(x).style; } catch (x) { } }                     // "Q" style
+function QE(x, y) { try { Q(x).disabled = !y; } catch (x) { } }                 // "Q" enable
+function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
+function QA(x, y) { Q(x).innerHTML += y; }                                      // "Q" append
+function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
+
+// Move cursor to end of input box
+function inputBoxFocus(x) { Q(x).focus(); var v = Q(x).value; Q(x).value = ''; Q(x).value = v; }
+
+// Binary encoding and decoding functions
+function ReadShort(v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); }
+function ReadShortX(v, p) { return (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); }
+function ReadInt(v, p) { return (v.charCodeAt(p) * 0x1000000) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); } // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
+function ReadSInt(v, p) { return (v.charCodeAt(p) << 24) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); }
+function ReadIntX(v, p) { return (v.charCodeAt(p + 3) * 0x1000000) + (v.charCodeAt(p + 2) << 16) + (v.charCodeAt(p + 1) << 8) + v.charCodeAt(p); }
+function ShortToStr(v) { return String.fromCharCode((v >> 8) & 0xFF, v & 0xFF); }
+function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); }
+function IntToStr(v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); }
+function IntToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); }
+function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
+function SplitArray(v) { return v.split(','); }
+function Clone(v) { return JSON.parse(JSON.stringify(v)); }
+function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+
+// Move an element from one position in an array to a new position
+function ArrayElementMove(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]); };
+
+// Print object for HTML
+function ObjectToStringEx(x, c) {
+    var r = "";
+    if (x != 0 && (!x || x == null)) return "(Null)";
+    if (x instanceof Array) { for (var i in x) { r += '<br />' + gap(c) + "Item #" + i + ": " + ObjectToStringEx(x[i], c + 1); } }
+    else if (x instanceof Object) { for (var i in x) { r += '<br />' + gap(c) + i + " = " + ObjectToStringEx(x[i], c + 1); } }
+    else { r += EscapeHtml(x); }
+    return r;
+}
+
+// Print object for console
+function ObjectToStringEx2(x, c) {
+    var r = "";
+    if (x != 0 && (!x || x == null)) return "(Null)";
+    if (x instanceof Array) { for (var i in x) { r += '\r\n' + gap2(c) + "Item #" + i + ": " + ObjectToStringEx2(x[i], c + 1); } }
+    else if (x instanceof Object) { for (var i in x) { r += '\r\n' + gap2(c) + i + " = " + ObjectToStringEx2(x[i], c + 1); } }
+    else { r += EscapeHtml(x); }
+    return r;
+}
+
+// Create an ident gap
+function gap(c) { var x = ''; for (var i = 0; i < (c * 4) ; i++) { x += '&nbsp;'; } return x; }
+function gap2(c) { var x = ''; for (var i = 0; i < (c * 4) ; i++) { x += ' '; } return x; }
+
+// Print an object in html
+function ObjectToString(x) { return ObjectToStringEx(x, 0); }
+function ObjectToString2(x) { return ObjectToStringEx2(x, 0); }
+
+// Convert a hex string to a raw string
+function hex2rstr(d) {
+    if (typeof d != "string" || d.length == 0) return '';
+    var r = '', m = ('' + d).match(/../g), t;
+    while (t = m.shift()) r += String.fromCharCode('0x' + t);
+    return r
+}
+
+// Convert decimal to hex
+function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }
+
+// Convert a raw string to a hex string
+function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }
+
+// UTF-8 encoding & decoding functions
+function encode_utf8(s) { return unescape(encodeURIComponent(s)); }
+function decode_utf8(s) { return decodeURIComponent(escape(s)); }
+
+// Convert a string into a blob
+function data2blob(data) {
+    var bytes = new Array(data.length);
+    for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
+    var blob = new Blob([new Uint8Array(bytes)]);
+    return blob;
+}
+
+// Generate random numbers
+function random(max) { return Math.floor(Math.random() * max); }
+
+// Trademarks
+function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, '&trade;'); }
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define([], factory);
+  } else if (typeof exports !== "undefined") {
+    factory();
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory();
+    global.FileSaver = mod.exports;
+  }
+})(this, function () {
+  "use strict";
+
+  /*
+  * FileSaver.js
+  * A saveAs() FileSaver implementation.
+  *
+  * By Eli Grey, http://eligrey.com
+  *
+  * License : https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md (MIT)
+  * source  : http://purl.eligrey.com/github/FileSaver.js
+  */
+  // The one and only way of getting global scope in all environments
+  // https://stackoverflow.com/q/3277182/1008999
+  var _global = typeof window === 'object' && window.window === window ? window : typeof self === 'object' && self.self === self ? self : typeof global === 'object' && global.global === global ? global : void 0;
+
+  function bom(blob, opts) {
+    if (typeof opts === 'undefined') opts = {
+      autoBom: false
+    };else if (typeof opts !== 'object') {
+      console.warn('Depricated: Expected third argument to be a object');
+      opts = {
+        autoBom: !opts
+      };
+    } // prepend BOM for UTF-8 XML and text/* types (including HTML)
+    // note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+
+    if (opts.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+      return new Blob([String.fromCharCode(0xFEFF), blob], {
+        type: blob.type
+      });
+    }
+
+    return blob;
+  }
+
+  function download(url, name, opts) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+
+    xhr.onload = function () {
+      saveAs(xhr.response, name, opts);
+    };
+
+    xhr.onerror = function () {
+      console.error('could not download file');
+    };
+
+    xhr.send();
+  }
+
+  function corsEnabled(url) {
+    var xhr = new XMLHttpRequest(); // use sync to avoid popup blocker
+
+    xhr.open('HEAD', url, false);
+    xhr.send();
+    return xhr.status >= 200 && xhr.status <= 299;
+  } // `a.click()` doesn't work for all browsers (#465)
+
+
+  function click(node) {
+    try {
+      node.dispatchEvent(new MouseEvent('click'));
+    } catch (e) {
+      var evt = document.createEvent('MouseEvents');
+      evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
+      node.dispatchEvent(evt);
+    }
+  }
+
+  var saveAs = _global.saveAs || // probably in some web worker
+  typeof window !== 'object' || window !== _global ? function saveAs() {}
+  /* noop */
+  // Use download attribute first if possible (#193 Lumia mobile)
+  : 'download' in HTMLAnchorElement.prototype ? function saveAs(blob, name, opts) {
+    var URL = _global.URL || _global.webkitURL;
+    var a = document.createElement('a');
+    name = name || blob.name || 'download';
+    a.download = name;
+    a.rel = 'noopener'; // tabnabbing
+    // TODO: detect chrome extensions & packaged apps
+    // a.target = '_blank'
+
+    if (typeof blob === 'string') {
+      // Support regular links
+      a.href = blob;
+
+      if (a.origin !== location.origin) {
+        corsEnabled(a.href) ? download(blob, name, opts) : click(a, a.target = '_blank');
+      } else {
+        click(a);
+      }
+    } else {
+      // Support blobs
+      a.href = URL.createObjectURL(blob);
+      setTimeout(function () {
+        URL.revokeObjectURL(a.href);
+      }, 4E4); // 40s
+
+      setTimeout(function () {
+        click(a);
+      }, 0);
+    }
+  } // Use msSaveOrOpenBlob as a second approach
+  : 'msSaveOrOpenBlob' in navigator ? function saveAs(blob, name, opts) {
+    name = name || blob.name || 'download';
+
+    if (typeof blob === 'string') {
+      if (corsEnabled(blob)) {
+        download(blob, name, opts);
+      } else {
+        var a = document.createElement('a');
+        a.href = blob;
+        a.target = '_blank';
+        setTimeout(function () {
+          click(a);
+        });
+      }
+    } else {
+      navigator.msSaveOrOpenBlob(bom(blob, opts), name);
+    }
+  } // Fallback to using FileReader and a popup
+  : function saveAs(blob, name, opts, popup) {
+    // Open a popup immediately do go around popup blocker
+    // Mostly only avalible on user interaction and the fileReader is async so...
+    popup = popup || open('', '_blank');
+
+    if (popup) {
+      popup.document.title = popup.document.body.innerText = 'downloading...';
+    }
+
+    if (typeof blob === 'string') return download(blob, name, opts);
+    var force = blob.type === 'application/octet-stream';
+
+    var isSafari = /constructor/i.test(_global.HTMLElement) || _global.safari;
+
+    var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
+
+    if ((isChromeIOS || force && isSafari) && typeof FileReader === 'object') {
+      // Safari doesn't allow downloading of blob urls
+      var reader = new FileReader();
+
+      reader.onloadend = function () {
+        var url = reader.result;
+        url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, 'data:attachment/file;');
+        if (popup) popup.location.href = url;else location = url;
+        popup = null; // reverse-tabnabbing #460
+      };
+
+      reader.readAsDataURL(blob);
+    } else {
+      var URL = _global.URL || _global.webkitURL;
+      var url = URL.createObjectURL(blob);
+      if (popup) popup.location = url;else location.href = url;
+      popup = null; // reverse-tabnabbing #460
+
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 4E4); // 40s
+    }
+  };
+  _global.saveAs = saveAs.saveAs = saveAs;
+
+  if (typeof module !== 'undefined') {
+    module.exports = saveAs;
+  }
+});
+
+            var userInputFocus = 0;
+            var args = parseUriArgs();
+            var socket = null;                  // Websocket object
+            var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
+            var random = Math.random();         // Selected random, larger value initiates WebRTC.
+            var webrtcSessions = { };           // WebRTC objects: 0 for data, 1 for outbound audio/video, 2 for inbound audio/video
+            var webchannel = null;              // WebRTC data channel
+            var webrtcconfiguration = null;     //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+            var localStream = null;
+            var remoteStream = null;
+            var fileUploads = [];
+            var fileDownloads = {};
+            var currentFileUpload = null;
+            var currentFileDownload = null;
+
+            // Set the title
+            if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
+
+            document.addEventListener('dragover', haltEvent, false);
+            document.addEventListener('dragleave', haltEvent, false);
+            document.addEventListener('drop', fileDrop, false);
+
+            document.onkeyup = function ondockeypress(e) {
+                if (state == 2) {
+                    if ((e.keyCode == 8) && (userInputFocus == 0)) {
+                        // Backspace
+                        var outtext = Q('xouttext').value;
+                        if (outtext.length > 0) { Q('xouttext').value = outtext.substring(0, outtext.length - 1); }
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            // Trap document key presses
+            document.onkeypress = function ondockeypress(e) {
+                if (state == 2) {
+                    if (e.keyCode == 13) {
+                        // Return
+                        xsend(e);
+                    } else {
+                        // Any other key
+                        if ((userInputFocus == 0) && (e.key.length == 1)) { Q('xouttext').value = Q('xouttext').value + e.key; }
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            function onUserInputFocus(x) { userInputFocus = x; }
+            function displayClear() { QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
+
+            // Polyfill FileReader if needed
+            if (!FileReader.prototype.readAsBinaryString) {
+                FileReader.prototype.readAsBinaryString = function (fileData) {
+                    var binary = '', self = this, reader = new FileReader();
+                    reader.onload = function (e) {
+                        var bytes = new Uint8Array(reader.result);
+                        for (var i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+                        self.onload({ target: { result: binary } });
+                    }
+                    reader.readAsArrayBuffer(fileData);
+                }
+            }
+
+            // Display a control message
+            function displayControl(msg) {
+                QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            function displayLocalVideo(active) { QV('localVideo', active); adjustVideoWindows(); }
+            function displayRemoteVideo(active) { QV('remoteVideo', active); adjustVideoWindows(); }
+            function adjustVideoWindows() {
+                //var lv = (QS('localVideo')['display'] != 'none');
+                var rv = (QS('remoteVideo')['display'] != 'none');
+                QS('localVideo')['top'] = rv ? '320px' : '45px';
+            }
+
+            // Display a message from the remote user
+            function displayRemote(msg) {
+                QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            // Display and send a message from the local user
+            function xsend(event) {
+                var outtext = Q('xouttext').value;
+                if (outtext.length > 0) {
+                    Q('xouttext').value = '';
+                    QA('xmsg', '<div style="clear:both"><div class="localBubble">' + outtext + '</div><div></div></div>');
+                    Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+                    send({ action: 'chat', msg: outtext });
+                }
+            }
+
+            function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
+
+            // Update user controls
+            function updateControls() {
+                QE('sendButton', state == 2);
+                QE('clearButton', state == 2);
+                QE('xouttext', state == 2);
+                QV('fileButton', state == 2);
+                QV('camButton', webchannel && webchannel.ok && !localStream);
+                QV('micButton', webchannel && webchannel.ok && !localStream);
+                QV('hangupButton', webchannel && webchannel.ok && localStream);
+            }
+
+            // This is the WebRTC setup
+            function startWebRTC(id, startDataChannel) {
+                // Setup the WebRTC object
+                var webrtc = null;
+                if (typeof RTCPeerConnection !== 'undefined') { webrtc = new RTCPeerConnection(webrtcconfiguration); }
+                else if (typeof webkitRTCPeerConnection !== 'undefined') { webrtc = new webkitRTCPeerConnection(webrtcconfiguration); }
+                if (webrtc == null) return null; // No WebRTC support.
+
+                webrtc.id = id;
+                webrtc.onicecandidate = function (e) { try { if (e.candidate != null) { sendws({ action: 'webRtcIce', ice: e.candidate, id: this.id }); } } catch (ex) { } }
+                webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { webrtc.close(); if (webrtcSessions[webrtc.id]) { delete webrtcSessions[webrtc.id]; } } }
+                webrtc.ondatachannel = function (ev) {
+                    //console.log('ondatachannel');
+                    webchannel = ev.channel;
+                    webchannel.onmessage = function (event) { processMessage(event.data, 2); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
+                }
+                webrtc.onnegotiationneeded = function (event) {
+                    if (webrtc.holdTimer != null) return;
+                    webrtc.holdTimer = setTimeout(function () { // This time is needed to keep Chrome from being to excited. Wait until we add all tracks before kicking this off.
+                        //console.log('onnegotiationneeded', id);
+                        webrtc.holdTimer = null;
+                        webrtc.createOffer(function (offer) { webrtc.setLocalDescription(offer, function () { sendws({ action: 'webRtcSdp', sdp: offer, id: id }); }, function () { hangUpButtonClick(id); }); }, function () { hangUpButtonClick(id); });
+                    }, 20);
+                }
+                webrtc.ontrack = function (event) {
+                    //console.log('ontrack', id);
+                    var video = Q('remoteVideoCanvas');
+                    video.srcObject = remoteStream = event.streams[0];
+                    video.onloadedmetadata = function (e) { video.play(); };
+                    displayRemoteVideo(true);
+                }
+                //webrtc.onremovetrack = function (event) { console.log('onremovetrack'); }
+                //webrtc.onicegatheringstatechange = function (event) { console.log('onicegatheringstatechange', event); }
+                //webrtc.onsignalingstatechange = function (event) { console.log('onsignalingstatechange', event); }
+
+                // Initiate the WebRTC offer or handle the offer from the peer.
+                if (startDataChannel == true) {
+                    webchannel = webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
+                    webchannel.onmessage = function (event) { processMessage(event.data, 2); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
+                }
+
+                webrtcSessions[id] = webrtc;
+                return webrtc;
+            }
+
+            function webRtcHandleOffer(id, description) {
+                //console.log('webRtcHandleOffer', description.sdp.length);
+                var webrtc = webrtcSessions[id];
+                if (webrtc) {
+                    webrtc.setRemoteDescription(new RTCSessionDescription(description), function () {
+                        if (description.type == 'offer') {
+                            webrtc.createAnswer(function (answer) {
+                                webrtc.setLocalDescription(answer, function (a, b) {
+                                    try { sendws({ action: 'webRtcSdp', sdp: answer, id: id }); } catch (ex) { }
+                                }, function () { hangUpButtonClick(id); });
+                            }, function () { hangUpButtonClick(id); });
+                        }
+                    }, function () { hangUpButtonClick(id); });
+                }
+            }
+
+            // Indicate to peer that data traffic will no longer be sent over websocket and start holding traffic.
+            function performWebRtcSwitch() {
+                if (webchannel && webchannel.ok) { sendws({ action: 'rtcSwitch', v: 1 }); webchannel.xoutBuffer = []; }
+            }
+
+            // Disconnect everything
+            function disconnect() {
+                if (state > 0) { displayControl('Connection closed.'); }
+                if (state > 1) { setTimeout(start, 500); }
+                cancelAllFileTransfers();
+                hangUpButtonClick(0, true); // Data channel
+                hangUpButtonClick(1, true); // Local audio/video
+                hangUpButtonClick(2, true); // Remote audio/video
+                if (socket != null) { socket.close(); socket = null; }
+                updateControls();
+                state = 0;
+            }
+
+            // Send data over the current transport (WebRTC first)
+            function send(data) {
+                if (state != 2) return; // If not in connected state, ignore this.
+                if (typeof data == 'object') { data = JSON.stringify(data); } // If this is an object, convert it to a string.
+                if (webchannel && webchannel.ok) { if (webchannel.xoutBuffer != null) { webchannel.xoutBuffer.push(data); } else { webchannel.send(data); } } // If WebRTC channel is possible, use it or hold until we can use it.
+                else { if (socket != null) { try { socket.send(data); } catch (ex) { } } } // If a websocket channel is present, use that.
+            }
+
+            // Send data over the websocket transport (WebSocket only)
+            function sendws(data) {
+                if (state != 2) return;
+                //console.log('SEND', data);
+                if (typeof data == 'object') { data = JSON.stringify(data); }
+                if (socket != null) { socket.send(data); }
+            }
+
+            // WebRTC id switcher (0 -> 0, 1 -> 2, 2 -> 1)
+            function webRtcIdSwitch(id) { if (id == 0) { return 0; } return 3 - id; }
+
+            // Process incoming messages
+            function processMessage(data, transport) {
+                if (typeof data == 'string') {
+                    try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
+                    //console.log('RECV', data);
+                    switch (data.action) {
+                        case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
+                        case 'random': { if (random > data.random) { startWebRTC(0, true); } break; } // If we have a larger random value, we start WebRTC.
+                        case 'webRtcSdp': { if (!webrtcSessions[webRtcIdSwitch(data.id)]) { startWebRTC(webRtcIdSwitch(data.id), false); } webRtcHandleOffer(webRtcIdSwitch(data.id), data.sdp); break; } // Remote WebRTC offer or answer.
+                        case 'webRtcIce': { var webrtc = webrtcSessions[webRtcIdSwitch(data.id)]; if (webrtc) { try { webrtc.addIceCandidate(new RTCIceCandidate(data.ice)); } catch (ex) { } } break; } // Remote ICE candidate
+                        case 'videoStop': { hangUpButtonClick(webRtcIdSwitch(data.id), true); break; }
+                        case 'rtcSwitch': { // WebRTC switch over commands.
+                            switch (data.v) {
+                                case 0: { performWebRtcSwitch(); break; } // Other side is ready for switch over to WebRTC
+                                case 1: { sendws({ action: 'rtcSwitch', v: 2 }); break; } // Other side no longer sending data on websocket, confirm we got the end marker
+                                case 2: { for (var i in webchannel.xoutBuffer) { webchannel.send(webchannel.xoutBuffer[i]); } delete webchannel.xoutBuffer; break; } // Send any pending data over WebRTC and start using WebRTC with all traffic
+                            }
+                            break;
+                        }
+                        case 'file': { startFileDownload(data); break; }
+                        case 'fileUploadCancel': { cancelFileTransfer(data.id); break; }
+                        case 'fileUploadStart': {
+                            if (fileDownloads[data.id]) {
+                                currentFileDownload = fileDownloads[data.id];
+                                currentFileDownload.data = '';
+                                changeFileInfo(data.id, 2, 0);
+                                continueFileDownload(data);
+                                send({ action: 'fileUploadAck', id: data.id });
+                            } break;
+                        }
+                        case 'fileUploadEnd': {
+                            if (currentFileDownload && (currentFileDownload.id == data.id)) {
+                                changeFileInfo(data.id, 3, 200);
+                                currentFileDownload.done = 1;
+                                currentFileDownload = null;
+                                send({ action: 'fileUploadAck', id: data.id });
+                            }
+                            currentFileDownload = null;
+                            break;
+                        }
+                        case 'fileUploadAck': {
+                            continueFileUpload();
+                            break;
+                        }
+                        case 'fileData': {
+                            if (currentFileDownload && (currentFileDownload.id == data.id)) {
+                                currentFileDownload.data += data.data;
+                                changeFileInfo(data.id, 2, (currentFileDownload.data.length * 200 / currentFileDownload.size));
+                                send({ action: 'fileUploadAck', id: data.id });
+                            }
+                            break;
+                        }
+                        default: { console.log('Unhandled object data', data); break; }
+                    }
+                } else {
+                    console.log('Unhandled data', typeof data, data);
+                }
+            }
+
+            // File sharing button
+            function fileButtonClick() {
+                var chooser = Q('uploadFileInput');
+                if (chooser.getAttribute("eventset") != 1) {
+                    chooser.setAttribute("eventset", "1");
+                    chooser.addEventListener("change", fileSelect, false);
+                }
+                chooser.value = null;
+                chooser.click();
+            }
+
+            // User selected one or more files to upload to remote user.
+            function fileSelect() {
+                if (state != 2) return;
+                var x = Q('uploadFileInput');
+                if (x.files.length > 10) {
+                    displayControl('Limit of 10 file uploads at the same time.');
+                } else {
+                    for (var i = 0; i < x.files.length; i++) {
+                        if (x.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = x.files[i];
+                            reader.readAsBinaryString(x.files[i]);
+                        }
+                    }
+                }
+            }
+
+            // User drag & droped one or more files to upload to remote user.
+            function fileDrop(e) {
+                haltEvent(e);
+                if ((state != 2) || (e.dataTransfer == null)) return;
+                if (e.dataTransfer.files.length > 10) {
+                    displayControl('Limit of 10 file uploads at the same time.');
+                } else {
+                    for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                        if (e.dataTransfer.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = e.dataTransfer.files[i];
+                            reader.readAsBinaryString(e.dataTransfer.files[i]);
+                        }
+                    }
+                }
+            }
+
+            function startFileUpload(file) {
+                if (state != 2) return;
+                file.id = Math.random();
+                fileUploads.push(file);
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+                send({ action: 'file', size: file.size, id: file.id, type: file.type, name: file.name });
+                if (currentFileUpload == null) continueFileUpload();
+            }
+
+            function startFileDownload(file) {
+                if (state != 2) return;
+                fileDownloads[file.id] = file;
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            // Change the file icon and progress
+            function changeFileInfo(id, icon, progress, progressColor) {
+                if (icon) {
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicon');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileiconx');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicontransfer');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicondone');
+                    Q('FILEUP-ICON-' + id).classList.add(['fileicon', 'fileiconx', 'fileicontransfer', 'fileicondone'][icon]);
+                }
+                if (progress) { QS('FILEUP-PROGRESS-' + id)['width'] = progress + 'px'; }
+                if (progressColor) { QS('FILEUP-PROGRESS-' + id)['background-color'] = progressColor; }
+            }
+
+            // Convert a string into a blob
+            function data2blob(data) {
+                var bytes = new Array(data.length);
+                for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
+                return new Blob([new Uint8Array(bytes)]);
+            };
+
+            function saveFileTransfer(id) {
+                var f = fileDownloads[id];
+                if (f && f.done == 1) { saveAs(data2blob(f.data), f.name); }
+            }
+
+            function cancelFileTransfer(id) {
+                if ((currentFileUpload != null) && (currentFileUpload.id == id)) { currentFileUpload = null; }
+                if ((currentFileDownload != null) && (currentFileDownload.id == id)) { currentFileDownload = null; }
+
+                var found = false;
+                if (fileDownloads[id] && (fileDownloads[id].done != 1)) {
+                    delete fileDownloads[id];
+                    found = true;
+                } else {
+                    for (var i in fileUploads) {
+                        if (fileUploads[i].id == id) {
+                            send({ action: 'fileUploadCancel', id: id });
+                            fileUploads.splice(i, 1);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) { changeFileInfo(id, 1, 200, 'gray'); } // Only cancel a file if it was in the file queue.
+            }
+
+            function cancelAllFileTransfers() {
+                for (var i in fileDownloads) { cancelFileTransfer(fileDownloads[i].id); }
+                for (var i in fileUploads) { cancelFileTransfer(fileUploads[i].id); }
+            }
+
+            function continueFileUpload() {
+                if (currentFileUpload == null) {
+                    // Select the next file to upload
+                    if (fileUploads.length == 0) { return; } // Nothing to do
+                    currentFileUpload = fileUploads[0];
+                    currentFileUpload.ptr = 0;
+
+                    // Indicate that we are sending this file
+                    send({ action: 'fileUploadStart', size: currentFileUpload.size, id: currentFileUpload.id, type: currentFileUpload.type, name: currentFileUpload.name });
+                } else {
+                    if (currentFileUpload.size <= currentFileUpload.ptr) {
+                        // If we are done, send the end marker
+                        send({ action: 'fileUploadEnd', size: currentFileUpload.size, id: currentFileUpload.id, type: currentFileUpload.type, name: currentFileUpload.name });
+                        changeFileInfo(currentFileUpload.id, 3, 200);
+                        fileUploads.splice(0, 1);
+                        currentFileUpload = null;
+                        continueFileUpload(); // Send the next file
+                    } else {
+                        // Send the next block
+                        var nextBlockLen = Math.min(4000, currentFileUpload.data.length - currentFileUpload.ptr);
+                        var data = currentFileUpload.data.substring(currentFileUpload.ptr, currentFileUpload.ptr + nextBlockLen);
+                        send({ action: 'fileData', id: currentFileUpload.id, data: data });
+                        currentFileUpload.ptr += nextBlockLen;
+                        changeFileInfo(currentFileUpload.id, 0, (currentFileUpload.ptr * 200 / currentFileUpload.size));
+                    }
+                }
+            }
+
+            function continueFileDownload(msg) {
+                send({ action: 'fileUploadAck', id: msg.id });
+            }
+
+            // Camera button
+            function camButtonClick() {
+                if (localStream == null) { startLocalStream({ video: true, audio: true }); }
+            }
+
+            // Microphone
+            function micButtonClick() {
+                if (localStream == null) { startLocalStream({ video: false, audio: true }); }
+            }
+
+            function hangUpButtonClick(id, fromRemote) {
+                //console.log('hangUpButtonClick', id);
+                var localVideo = Q('localVideoCanvas');
+                var remoteVideo = Q('remoteVideoCanvas');
+                var webrtc = webrtcSessions[id];
+
+                if ((id == 0) && (webchannel != null)) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+
+                if (webrtc) {
+                    webrtc.ontrack = null;
+                    webrtc.onremovetrack = null;
+                    webrtc.onremovestream = null;
+                    webrtc.onnicecandidate = null;
+                    webrtc.oniceconnectionstatechange = null;
+                    webrtc.onsignalingstatechange = null;
+                    webrtc.onicegatheringstatechange = null;
+                    webrtc.onnotificationneeded = null;
+
+                    if ((id == 1) && localStream) { var tracks = localStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } localStream = null; }
+                    if ((id == 2) && remoteStream) { var tracks = remoteStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } remoteStream = null; }
+
+                    webrtc.close();
+                    delete webrtcSessions[id];
+                }
+
+                if (id == 1) {
+                    localVideo.removeAttribute("src");
+                    localVideo.removeAttribute("srcObject");
+                    if (localStream != null) { localStream = null; }
+                    displayLocalVideo(false);
+                } else if (id == 2) {
+                    remoteVideo.removeAttribute("src");
+                    remoteVideo.removeAttribute("srcObject");
+                    displayRemoteVideo(false);
+                }
+
+                if (fromRemote != true) { send({ action: 'videoStop', id: id }); }
+                updateControls();
+            }
+
+            // Setup local audio/video
+            function startLocalStream(constraints) {
+                if ((localStream != null) || (webrtcSessions[1] != null)) return;
+                if (navigator.mediaDevices.getUserMedia) {
+                    localStream = 1;
+                    updateControls();
+                    navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        localStream = stream;
+                        var tracks = localStream.getTracks(), webrtc = startWebRTC(1);
+                        if (constraints.video == true) {
+                            var video = Q('localVideoCanvas');
+                            video.srcObject = stream;
+                            video.onloadedmetadata = function (e) { video.play(); };
+                            displayLocalVideo(true);
+                        }
+                        for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
+                    })
+                    .catch(function (err) {
+                        displayControl(err.message + '.');
+                        hangUpButtonClick(1);
+                    });
+                }
+            }
+
+            // This is the main start
+            function start() {
+                // Get started
+                updateControls();
+                if ((typeof args.id == 'string') && (args.id.length > 0)) {
+                    socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
+                    socket.onopen = function () { state = 1; displayControl('Waiting for other user...'); }
+                    socket.onerror = function (e) { console.error(e); }
+                    socket.onclose = function () { disconnect(); }
+                    socket.onmessage = function (msg) {
+                        if ((state < 2) && (typeof msg.data == 'string') && (msg.data == 'c')) {
+                            hangUpButtonClick(0, true);
+                            hangUpButtonClick(1, true);
+                            hangUpButtonClick(2, true);
+                            displayControl('Connected.');
+                            state = 2;
+                            updateControls();
+                            sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
+                            return;
+                        }
+                        if (state == 2) { processMessage(msg.data, 1); }
+                    }
+                } else {
+                    displayControl('Error: No connection key specified.');
+                }
+            }
+
+            start();
+
+            function onUnLoad() {
+                for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { webrtcSessions[i].close(); delete webrtcSessions[i]; } }
+                if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+                if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
+            }
+        </script></body></html>

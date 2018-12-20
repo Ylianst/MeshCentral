@@ -447,11 +447,10 @@
                             <td style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
                                     <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
-                                    <!--<input id=DeskToastButton type=button value=Toast title="Display a notification message on the remote computer" onkeypress="return false" onkeydown="return false" onclick="deviceToastFunction()">&nbsp;-->
                                     <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
-                                    <span style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open chat window to this computer"><a onclick=deviceChat()><img src='images/icon-chat.png' height=16 width=16 style=padding-top:2px /></a></span>
-                                    <span style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Display a notification on the remote computer"><a onclick=deviceToastFunction()><img src='images/icon-notify.png' height=16 width=16 style=padding-top:2px /></a></span>
-                                    <span style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open a web address on remote computer"><a onclick=deviceUrlFunction()><img src='images/icon-url2.png' height=16 width=16 style=padding-top:2px /></a></span>
+                                    <span id=DeskChatButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
+                                    <span id=DeskNotifyButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
+                                    <span id=DeskOpenWebButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open a web address on remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
                                 </div>
                                 <div>
                                     <select style="margin-left:6px" id="deskkeys">
@@ -3316,7 +3315,7 @@
 
         function deviceChat() {
             if (xxdialogMode) return;
-            window.open('/messenger.htm?id=meshmessenger/' + encodeURIComponent(currentNode._id) + '/' + encodeURIComponent(userinfo._id) + '&title=' + currentNode.name, 'meshmessenger:' + currentNode._id);
+            window.open('/messenger?id=meshmessenger/' + encodeURIComponent(currentNode._id) + '/' + encodeURIComponent(userinfo._id) + '&title=' + currentNode.name, 'meshmessenger:' + currentNode._id);
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
         }
 
@@ -3716,10 +3715,12 @@
             QE('DeskWD', deskState == 3);
             QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
             QE('deskkeys', deskState == 3);
-            QV('DeskToolsButton', meshrights & 8);
-            QE('DeskToolsButton', online);
-            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8) && (browserfullscreen == false));
-            QE('DeskToastButton', online);
+
+            QV('DeskToolsButton', (meshrights & 8) && (mesh.mtype == 2) && online);
+            QV('DeskChatButton', (browserfullscreen == false) && (meshrights & 8) && (mesh.mtype == 2) && online);
+            QV('DeskNotifyButton', (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8) && (mesh.mtype == 2) && online);
+            QV('DeskOpenWebButton', (browserfullscreen == false) && (meshrights & 8) && (mesh.mtype == 2) && online);
+
             QV('DeskControlSpan', meshrights & 8)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
@@ -5789,7 +5790,7 @@
 
         function userChat(e, userid, name) {
             haltEvent(e);
-            window.open('/messenger.htm?id=meshmessenger/' + userid + '/' + encodeURIComponent(userinfo._id) + '&title=' + name, 'meshmessenger:' + userid);
+            window.open('/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponent(userinfo._id) + '&title=' + name, 'meshmessenger:' + userid);
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
             return false;
         }
@@ -6254,7 +6255,7 @@
                     else gotoDevice(n.nodeid, 10); // General
                 } else {
                     if (n.tag.startsWith('meshmessenger/')) {
-                        window.open('/messenger.htm?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
+                        window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
                         notificationDelete(id);
                     }
                 }

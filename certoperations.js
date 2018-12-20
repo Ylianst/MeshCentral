@@ -151,7 +151,7 @@ module.exports.CertificateOperations = function () {
         var certargs = args.cert;
         var mpscertargs = args.mpscert;
         var strongCertificate = (args.fastcert ? false : true);
-        var rcountmax = 5;
+        var rcountmax = 4;
         var caindex = 1;
         var caok = false;
         var calist = [];
@@ -194,12 +194,6 @@ module.exports.CertificateOperations = function () {
         // If the agent certificate already exist, load it
         if (obj.fileExists(parent.getConfigFilePath("agentserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("agentserver-cert-private.key"))) {
             r.agent = { cert: obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-private.key"), "utf8") };
-            rcount++;
-        }
-
-        // If the console certificate already exist, load it
-        if (obj.fileExists(parent.getConfigFilePath("amtconsole-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("agentserver-cert-private.key"))) {
-            r.console = { cert: obj.fs.readFileSync(parent.getConfigFilePath("amtconsole-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("amtconsole-cert-private.key"), "utf8") };
             rcount++;
         }
 
@@ -285,8 +279,6 @@ module.exports.CertificateOperations = function () {
         }
 
         if (rcount === rcountmax) {
-            // Fetch the Intel AMT console name
-            r.AmtConsoleName = obj.pki.certificateFromPem(r.console.cert).subject.getField("CN").value;
             // Fetch the Intel AMT MPS common name
             r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField("CN").value;
             // Fetch the name of the server
@@ -396,24 +388,7 @@ module.exports.CertificateOperations = function () {
             mpsPrivateKey = r.mps.key;
         }
 
-        // If the Intel AMT console certificate does not exist, create one
-        var consoleCertAndKey, consoleCertificate, consolePrivateKey, amtConsoleName = "MeshCentral";
-        if (r.console == null) {
-            console.log("Generating Intel AMT console certificate...");
-            consoleCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, amtConsoleName, country, organization, { name: "extKeyUsage", clientAuth: true, "2.16.840.1.113741.1.2.1": true, "2.16.840.1.113741.1.2.2": true, "2.16.840.1.113741.1.2.3": true }, false); // Intel AMT Remote, Agent and Activation usages
-            consoleCertificate = obj.pki.certificateToPem(consoleCertAndKey.cert);
-            consolePrivateKey = obj.pki.privateKeyToPem(consoleCertAndKey.key);
-            obj.fs.writeFileSync(parent.getConfigFilePath("amtconsole-cert-public.crt"), consoleCertificate);
-            obj.fs.writeFileSync(parent.getConfigFilePath("amtconsole-cert-private.key"), consolePrivateKey);
-        } else {
-            // Keep the console certificate we have
-            consoleCertAndKey = { cert: obj.pki.certificateFromPem(r.console.cert), key: obj.pki.privateKeyFromPem(r.console.key) };
-            consoleCertificate = r.console.cert;
-            consolePrivateKey = r.console.key;
-            amtConsoleName = consoleCertAndKey.cert.subject.getField("CN").value;
-        }
-
-        r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, console: { cert: consoleCertificate, key: consolePrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtConsoleName: amtConsoleName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
+        r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
 
         // Look for domains with DNS names that have no certificates and generated them.
         for (i in config.domains) {

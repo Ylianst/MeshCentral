@@ -107,7 +107,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
                         }
                         obj.webrtc.oniceconnectionstatechange = function () {
                             if (obj.webrtc != null) {
-                                if (obj.webrtc.iceConnectionState == 'disconnected') { obj.Stop(); }
+                                if (obj.webrtc.iceConnectionState == 'disconnected') { if (obj.webRtcActive == true) { obj.Stop(); } else { obj.xxCloseWebRTC(); } }
                                 else if (obj.webrtc.iceConnectionState == 'failed') { obj.xxCloseWebRTC(); }
                             }
                         }

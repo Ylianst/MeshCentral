@@ -173,7 +173,6 @@
     <Content Include="public\images\mapmarker.png" />
     <Content Include="public\images\meshicon50.png" />
     <Content Include="public\images\trash.png" />
-    <Content Include="public\messenger.htm" />
     <Content Include="public\scriptblocks.txt" />
     <Content Include="public\sounds\chimes.mp3" />
     <Content Include="public\styles\font-awesome\css\font-awesome.min.css" />
@@ -215,12 +214,18 @@
     <Content Include="readme.txt" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
+    <Content Include="views\default-min.handlebars" />
+    <Content Include="views\default-mobile-min.handlebars" />
     <Content Include="views\default-mobile.handlebars" />
     <Content Include="views\default.handlebars" />
     <Content Include="views\download.handlebars" />
+    <Content Include="views\login-min.handlebars" />
+    <Content Include="views\login-mobile-min.handlebars" />
     <Content Include="views\login-mobile.handlebars" />
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />
+    <Content Include="views\messenger-min.handlebars" />
+    <Content Include="views\messenger.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
   </ItemGroup>

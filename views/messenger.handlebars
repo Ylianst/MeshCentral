@@ -8,7 +8,7 @@
         <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
         <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS" />
         <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
-        <script type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
+        <script type="text/javascript" src="scripts/filesaver.js"></script>
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
         <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
@@ -38,17 +38,25 @@
             <video id="localVideoCanvas" autoplay muted style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
         </div>
         <input id="uploadFileInput" type="file" multiple style="display:none">
-        <script type="text/javascript">
+        <script type="text/javascript" onunload="onUnLoad()">
             var userInputFocus = 0;
             var args = parseUriArgs();
             var socket = null;                  // Websocket object
             var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
+
+            // WebRTC sessions and data, audio and video channels
             var random = Math.random();         // Selected random, larger value initiates WebRTC.
             var webrtcSessions = { };           // WebRTC objects: 0 for data, 1 for outbound audio/video, 2 for inbound audio/video
             var webchannel = null;              // WebRTC data channel
-            var webrtcconfiguration = null;     //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
             var localStream = null;
             var remoteStream = null;
+            var multiWebRtc = true;             // if set to true, multiple WebRTC sessions will be setup. If false, everything uses one session.
+            var userMediaSupport = 0;
+            getUserMediaSupport(function (x) { userMediaSupport = x; })
+            var webrtcconfiguration = "{{{webrtconfig}}}";
+            if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: \"' + webrtcconfiguration + '\".'); webrtcconfiguration = null; } }
+
+            // File transfer state
             var fileUploads = [];
             var fileDownloads = {};
             var currentFileUpload = null;
@@ -56,11 +64,13 @@
 
             // Set the title
             if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
-
+            
+            // Listen to drag & drop events
             document.addEventListener('dragover', haltEvent, false);
             document.addEventListener('dragleave', haltEvent, false);
             document.addEventListener('drop', fileDrop, false);
 
+            // Trap document key up events
             document.onkeyup = function ondockeypress(e) {
                 if (state == 2) {
                     if ((e.keyCode == 8) && (userInputFocus == 0)) {
@@ -88,6 +98,38 @@
 
             function onUserInputFocus(x) { userInputFocus = x; }
             function displayClear() { QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
+
+            // Polyfill FileReader if needed
+            if (!FileReader.prototype.readAsBinaryString) {
+                FileReader.prototype.readAsBinaryString = function (fileData) {
+                    var binary = '', self = this, reader = new FileReader();
+                    reader.onload = function (e) {
+                        var bytes = new Uint8Array(reader.result);
+                        for (var i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+                        self.onload({ target: { result: binary } });
+                    }
+                    reader.readAsArrayBuffer(fileData);
+                }
+            }
+
+            // Detect if microphone & camera are present
+            // 0 = nomedia, 1 = miconly, 2 = mic&cam
+            function getUserMediaSupport(func) {
+                try {
+                    navigator.mediaDevices.enumerateDevices()
+                    .then(devices => {
+                        try {
+                            var mic = 0, cam = 0;
+                            devices.forEach(device => {
+                                if (device.kind === 'audioinput') { mic = 1; }
+                                if (device.kind === 'videoinput') { cam = 1; }
+                            })
+                            if (mic == 0) { func(0); }
+                            func(mic + cam);
+                        } catch (ex) { }
+                    })
+                } catch (ex) { }
+            }
 
             // Display a control message
             function displayControl(msg) {
@@ -129,21 +171,26 @@
                 QE('clearButton', state == 2);
                 QE('xouttext', state == 2);
                 QV('fileButton', state == 2);
-                QV('camButton', webchannel && webchannel.ok && !localStream);
-                QV('micButton', webchannel && webchannel.ok && !localStream);
+                QV('camButton', webchannel && webchannel.ok && !localStream && (userMediaSupport == 2));
+                QV('micButton', webchannel && webchannel.ok && !localStream && (userMediaSupport > 0));
                 QV('hangupButton', webchannel && webchannel.ok && localStream);
             }
 
             // This is the WebRTC setup
             function startWebRTC(id, startDataChannel) {
+                if ((webrtcSessions[0] != null) && (multiWebRtc == false)) { return webrtcSessions[0]; };
+
                 // Setup the WebRTC object
-                var webrtc;
+                var webrtc = null;
                 if (typeof RTCPeerConnection !== 'undefined') { webrtc = new RTCPeerConnection(webrtcconfiguration); }
                 else if (typeof webkitRTCPeerConnection !== 'undefined') { webrtc = new webkitRTCPeerConnection(webrtcconfiguration); }
+                if (webrtc == null) return null; // No WebRTC support.
+
                 webrtc.id = id;
                 webrtc.onicecandidate = function (e) { try { if (e.candidate != null) { sendws({ action: 'webRtcIce', ice: e.candidate, id: this.id }); } } catch (ex) { } }
-                webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { hangUpButtonClick(webrtc.id); } }
+                webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { webrtc.close(); if (webrtcSessions[webrtc.id]) { delete webrtcSessions[webrtc.id]; } } }
                 webrtc.ondatachannel = function (ev) {
+                    //console.log('ondatachannel');
                     webchannel = ev.channel;
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
                     webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
@@ -154,7 +201,7 @@
                     webrtc.holdTimer = setTimeout(function () { // This time is needed to keep Chrome from being to excited. Wait until we add all tracks before kicking this off.
                         //console.log('onnegotiationneeded', id);
                         webrtc.holdTimer = null;
-                        webrtc.createOffer(function (offer) { webrtc.setLocalDescription(offer, function () { sendws({ action: 'webRtcSdp', sdp: offer, id: id }); }, function () { hangUpButtonClick(id); }); }, function () { hangUpButtonClick(id); });
+                        webrtc.createOffer(function (offer) { /*console.log('offer', offer.sdp.length);*/ webrtc.setLocalDescription(offer, function () { sendws({ action: 'webRtcSdp', sdp: offer, id: id }); }, function () { hangUpButtonClick(id); }); }, function () { hangUpButtonClick(id); });
                     }, 20);
                 }
                 webrtc.ontrack = function (event) {
@@ -225,6 +272,7 @@
             // Send data over the websocket transport (WebSocket only)
             function sendws(data) {
                 if (state != 2) return;
+                //console.log('SEND', data);
                 if (typeof data == 'object') { data = JSON.stringify(data); }
                 if (socket != null) { socket.send(data); }
             }
@@ -236,7 +284,7 @@
             function processMessage(data, transport) {
                 if (typeof data == 'string') {
                     try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
-                    //console.log(data);
+                    //console.log('RECV', data);
                     switch (data.action) {
                         case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
                         case 'random': { if (random > data.random) { startWebRTC(0, true); } break; } // If we have a larger random value, we start WebRTC.
@@ -369,7 +417,7 @@
             }
 
             // Convert a string into a blob
-            data2blob = function (data) {
+            function data2blob(data) {
                 var bytes = new Array(data.length);
                 for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
                 return new Blob([new Uint8Array(bytes)]);
@@ -452,25 +500,29 @@
                 //console.log('hangUpButtonClick', id);
                 var localVideo = Q('localVideoCanvas');
                 var remoteVideo = Q('remoteVideoCanvas');
-                var webrtc = webrtcSessions[1];
+                var webrtc = webrtcSessions[(multiWebRtc == true)? id : 0];
 
                 if ((id == 0) && (webchannel != null)) { try { webchannel.close(); } catch (e) { } webchannel = null; }
 
                 if (webrtc) {
-                    webrtc.ontrack = null;
-                    webrtc.onremovetrack = null;
-                    webrtc.onremovestream = null;
-                    webrtc.onnicecandidate = null;
-                    webrtc.oniceconnectionstatechange = null;
-                    webrtc.onsignalingstatechange = null;
-                    webrtc.onicegatheringstatechange = null;
-                    webrtc.onnotificationneeded = null;
+                    if ((multiWebRtc == true) || (id == 0)) {
+                        webrtc.ontrack = null;
+                        webrtc.onremovetrack = null;
+                        webrtc.onremovestream = null;
+                        webrtc.onnicecandidate = null;
+                        webrtc.oniceconnectionstatechange = null;
+                        webrtc.onsignalingstatechange = null;
+                        webrtc.onicegatheringstatechange = null;
+                        webrtc.onnotificationneeded = null;
+                    }
 
-                    if ((id == 1) && localVideo.srcObject) { localVideo.srcObject.getTracks().forEach(track => track.stop()); }
-                    if ((id == 2) && remoteVideo.srcObject) { remoteVideo.srcObject.getTracks().forEach(track => track.stop()); }
+                    if ((id == 1) && localStream) { var tracks = localStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } localStream = null; }
+                    if ((id == 2) && remoteStream) { var tracks = remoteStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } remoteStream = null; }
 
-                    webrtc.close();
-                    delete webrtcSessions[id];
+                    if ((multiWebRtc == true) || (id == 0)) {
+                        webrtc.close();
+                        delete webrtcSessions[id];
+                    }
                 }
 
                 if (id == 1) {
@@ -490,20 +542,24 @@
 
             // Setup local audio/video
             function startLocalStream(constraints) {
-                if ((localStream != null) || (webrtcSessions[1] != null)) return;
+                var channel = (multiWebRtc == true) ? 1 : 0;
+                if (localStream != null) return;
+                if ((multiWebRtc == true) && (webrtcSessions[1] != null)) return;
                 if (navigator.mediaDevices.getUserMedia) {
                     localStream = 1;
                     updateControls();
                     navigator.mediaDevices.getUserMedia(constraints)
                     .then(function (stream) {
                         localStream = stream;
+                        var tracks = localStream.getTracks();
+                        var webrtc = startWebRTC(channel);
                         if (constraints.video == true) {
-                            var video = Q('localVideoCanvas'), tracks = localStream.getTracks(), webrtc = startWebRTC(1);
+                            var video = Q('localVideoCanvas');
                             video.srcObject = stream;
                             video.onloadedmetadata = function (e) { video.play(); };
                             displayLocalVideo(true);
-                            for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
                         }
+                        for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
                     })
                     .catch(function (err) {
                         displayControl(err.message + '.');
@@ -519,7 +575,7 @@
                 if ((typeof args.id == 'string') && (args.id.length > 0)) {
                     socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
                     socket.onopen = function () { state = 1; displayControl('Waiting for other user...'); }
-                    socket.onerror = function (e) { console.error(e); }
+                    socket.onerror = function (e) { /*console.error(e);*/ }
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
                         if ((state < 2) && (typeof msg.data == 'string') && (msg.data == 'c')) {
@@ -540,6 +596,12 @@
             }
 
             start();
+
+            function onUnLoad() {
+                for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { webrtcSessions[i].close(); delete webrtcSessions[i]; } }
+                if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+                if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
+            }
         </script>
 </body>
 </html>

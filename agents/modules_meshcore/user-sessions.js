@@ -93,7 +93,7 @@ function UserSessions()
         }
 
         this._user32 = this._marshal.CreateNativeProxy('user32.dll');
-        this._user32.CreateMethod('RegisterPowerSettingNotification');
+        this._user32.CreateMethod({ method: 'RegisterPowerSettingNotification', threadDispatch: 1 });
         this._user32.CreateMethod('UnregisterPowerSettingNotification');
         this._rpcrt = this._marshal.CreateNativeProxy('Rpcrt4.dll');
         this._rpcrt.CreateMethod('UuidFromStringA');

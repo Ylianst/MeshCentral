@@ -18,7 +18,8 @@
     "_UserAllowedIP": "127.0.0.1,::1,192.168.0.100",
     "_LocalDiscovery": { "name": "Local server name", "info": "Information about this server" },
     "_TlsOffload": true,
-    "_MpsTlsOffload":  true
+    "_MpsTlsOffload": true,
+    "_WebRtConfig": { "iceServers": [ { "urls": "stun:stun.services.mozilla.com" }, { "urls": "stun:stun.l.google.com:19302" } ] }
   },
   "_domains": {
     "": {
