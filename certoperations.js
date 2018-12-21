@@ -111,7 +111,8 @@ module.exports.CertificateOperations = function () {
         cert.setSubject(attrs);
         cert.setIssuer(attrs);
         // Create a root certificate
-        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "nsCertType", sslCA: true, emailCA: true, objCA: true }, { name: "subjectKeyIdentifier" }]);
+        //cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "nsCertType", sslCA: true, emailCA: true, objCA: true }, { name: "subjectKeyIdentifier" }]);
+        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }]);
         cert.sign(keys.privateKey, obj.forge.md.sha384.create());
 
         return { cert: cert, key: keys.privateKey };
@@ -135,10 +136,10 @@ module.exports.CertificateOperations = function () {
         cert.setIssuer(rootcert.cert.subject.attributes);
 
         if (extKeyUsage == null) { extKeyUsage = { name: "extKeyUsage", serverAuth: true }; } else { extKeyUsage.name = "extKeyUsage"; }
-        var subjectAltName = null;
-        if (extKeyUsage.serverAuth === true) { subjectAltName = { name: "subjectAltName", altNames: [{ type: 6, value: "http://" + commonName + "/" }, { type: 6, value: "http://localhost/" }] }; }
-        var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true }, extKeyUsage, { name: "nsCertType", client: false, server: true, email: false, objsign: false, sslCA: false, emailCA: false, objCA: false }, { name: "subjectKeyIdentifier" }];
-        if (subjectAltName != null) { extensions.push(subjectAltName); }
+        //var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true }, extKeyUsage, { name: "nsCertType", client: false, server: true, email: false, objsign: false, sslCA: false, emailCA: false, objCA: false }, { name: "subjectKeyIdentifier" }];
+        var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: true, dataEncipherment: (extKeyUsage.serverAuth !== true) }, extKeyUsage, { name: "subjectKeyIdentifier" }];
+        if (extKeyUsage.serverAuth === true) { extensions.push({ name: "subjectAltName", altNames: [{ type: 6, value: "http://" + commonName + "/" }, { type: 6, value: "http://localhost/" }] }); }
+
         cert.setExtensions(extensions);
         cert.sign(rootcert.key, obj.forge.md.sha384.create());
 
@@ -360,7 +361,7 @@ module.exports.CertificateOperations = function () {
         var agentCertAndKey, agentCertificate, agentPrivateKey;
         if (r.agent == null) {
             console.log("Generating MeshAgent certificate...");
-            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, "MeshCentralAgentServer", null, strongCertificate);
+            agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, "MeshCentralAgentServer", country, organization, { }, strongCertificate);
             agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
             agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
             obj.fs.writeFileSync(parent.getConfigFilePath("agentserver-cert-public.crt"), agentCertificate);
