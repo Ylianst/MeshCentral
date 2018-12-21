@@ -33,6 +33,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     obj.server.listen(args.mpsport, function () { console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + "."); }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });
+    obj.server.on('tlsClientError', function (err, tlssocket) { if (args.mpsdebug) { var remoteAddress = tlssocket.remoteAddress; if (tlssocket.remoteFamily == 'IPv6') { remoteAddress = '[' + remoteAddress + ']'; } console.log('MPS:Invalid TLS connection from ' + remoteAddress + ':' + tlssocket.remotePort + '.'); } });
     obj.parent.updateServerState("mps-port", args.mpsport);
     obj.parent.updateServerState("mps-name", certificates.AmtMpsName);
     if (args.mpsaliasport != null) { obj.parent.updateServerState("mps-alias-port", args.mpsaliasport); }
@@ -119,7 +120,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
                 //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); socket.end(); return; }
-                if (socket.tag.accumulator.substring(0, 3) == "GET") { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>"); socket.end(); return; }
+                if (socket.tag.accumulator.substring(0, 3) == "GET") { if (args.mpsdebug) { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); } socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>"); socket.end(); return; }
                 socket.tag.first = false;
 
                 // Setup this node with certificate authentication

@@ -991,6 +991,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Handle logo request
+    function handleLogoRequest(req, res) {
+        var domain = checkUserIpAddress(req, res);
+
+        res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        if ((domain != null) && domain.titlepicture) {
+            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); } catch (e) {
+                try { res.sendFile(obj.path.join(__dirname, 'public/images/logoback.png')); } catch (e) { res.sendStatus(404); }
+            }
+        } else {
+            try { res.sendFile(obj.path.join(__dirname, 'public/images/logoback.png')); } catch (e) { res.sendStatus(404); }
+        }
+    }
+
     // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
     obj.getServerFilePath = function (user, domain, path) {
         var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
@@ -1881,6 +1895,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
         obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
         obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
+        obj.app.get(url + 'logo.png', handleLogoRequest);
 
         // Server picture
         obj.app.get(url + 'serverpic.ashx', function (req, res) {

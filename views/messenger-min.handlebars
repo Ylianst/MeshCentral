@@ -356,14 +356,13 @@ function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, 
             // 0 = nomedia, 1 = miconly, 2 = mic&cam
             function getUserMediaSupport(func) {
                 try {
-                    navigator.mediaDevices.enumerateDevices()
-                    .then(devices => {
+                    navigator.mediaDevices.enumerateDevices().then(function (devices) {
                         try {
                             var mic = 0, cam = 0;
-                            devices.forEach(device => {
+                            devices.forEach(function (device) {
                                 if (device.kind === 'audioinput') { mic = 1; }
                                 if (device.kind === 'videoinput') { cam = 1; }
-                            })
+                            });
                             if (mic == 0) { func(0); }
                             func(mic + cam);
                         } catch (ex) { }
