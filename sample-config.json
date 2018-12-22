@@ -25,6 +25,7 @@
     "": {
       "Title": "MyServer",
       "Title2": "Servername",
+      "TitlePicture": "title-sample.png",
       "UserQuota": 1048576,
       "MeshQuota": 248576,
       "NewAccounts": 1,
