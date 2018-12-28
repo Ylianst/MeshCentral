@@ -93,6 +93,8 @@ function createMeshCore(agent) {
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
+    var oswsstack = null;
+    var osamtstack = null;
 
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -156,16 +158,7 @@ function createMeshCore(agent) {
                 if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
 
                 // If SMBios tables say that AMT is present, try to connect MEI
-                if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
-                    // Try to load up the MEI module
-                    try {
-                        var amtMeiLib = require('amt-mei');
-                        amtMei = new amtMeiLib();
-                        amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; });
-                        amtMeiConnected = 2;
-                        sendPeriodicServerUpdate(1);
-                    } catch (ex) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
-                }
+                if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) { resetMei(); }
             }
         });
     } catch (ex) { sendConsoleText(ex); }
@@ -176,7 +169,18 @@ function createMeshCore(agent) {
         wifiScanner = new wifiScannerLib();
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(data); });
     } catch (ex) { wifiScannerLib = null; wifiScanner = null; }
-    
+
+        // Try to load up the MEI module
+    function resetMei() {
+        try {
+            var amtMeiLib = require('amt-mei');
+            amtMei = new amtMeiLib();
+            amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; sendConsoleText('MEI Error.'); });
+            amtMeiConnected = 2;
+            sendPeriodicServerUpdate(1);
+        } catch (ex) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
+    }
+
     // Get our location (lat/long) using our public IP address
     var getIpLocationDataExInProgress = false;
     var getIpLocationDataExCounts = [0, 0];
@@ -1032,7 +1036,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate.';
                     break;
                 }
                     /*
@@ -1054,6 +1058,23 @@ function createMeshCore(agent) {
                     }
                     break;
                     */
+                case 'amtreset': {
+                    resetMei();
+                    resetMicroLms();
+                    response = 'Done.';
+                    break;
+                }
+                case 'amtccm': {
+                    if (amtMei == null) { response = 'Intel AMT not supported.'; } else {
+                        if (args['_'].length != 1) { response = 'Proper usage: amtccm (adminPassword)'; } // Display usage
+                        else { activeToCCM(args['_'][0]); }
+                    }
+                    break;
+                }
+                case 'amtdeactivate': {
+                    if (amtMei == null) { response = 'Intel AMT not supported.'; } else { deactivateCCM(); }
+                    break;
+                }
                 case 'openurl': {
                     if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
                     else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
@@ -1548,12 +1569,14 @@ function createMeshCore(agent) {
             amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } });
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
             amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
+            //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
+            amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } });
+            amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
             amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
-            //amtMei.getMACAddresses(function (result) { amtMeiTmpState.mac = result; });
             amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
         } catch (e) { if (func != null) { func(null); } return; }
     }
-    
+
     // Called on MicroLMS Intel AMT user notification
     function handleAmtNotification(notifyMsg) {
         if ((notifyMsg == null) || (notifyMsg.Body == null) || (notifyMsg.Body.MessageID == null) || (notifyMsg.Body.MessageArguments == null)) return null;
@@ -1567,23 +1590,14 @@ function createMeshCore(agent) {
         // Send to the entire mesh, no sessionid or userid specified.
         if (notify != null) { mesh.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general" });  }
     }
-    
-    // Starting function
-    obj.start = function () {
-        // Setup the mesh agent event handlers
-        mesh.AddCommandHandler(handleServerCommand);
-        mesh.AddConnectHandler(handleServerConnection);
 
-        // Parse input arguments
-        //var args = parseArgs(process.argv);
-        //console.log(args);
-        
+    function resetMicroLms() {
         // Launch LMS
         try {
             var lme_heci = require('amt-lme');
             amtLmsState = 1;
             amtLms = new lme_heci();
-            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; obj.setupMeiOsAdmin(null, 1); });
+            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; sendConsoleText('LMS Error.'); obj.setupMeiOsAdmin(null, 1); });
             amtLms.on('connect', function () { amtLmsState = 2; obj.setupMeiOsAdmin(null, 2); });
             //amtLms.on('bind', function (map) { });
             amtLms.on('notify', function (data, options, str, code) {
@@ -1595,6 +1609,19 @@ function createMeshCore(agent) {
                 }
             });
         } catch (e) { amtLmsState = -1; amtLms = null; }
+    }
+
+    // Starting function
+    obj.start = function () {
+        // Setup the mesh agent event handlers
+        mesh.AddCommandHandler(handleServerCommand);
+        mesh.AddConnectHandler(handleServerConnection);
+
+        // Parse input arguments
+        //var args = parseArgs(process.argv);
+        //console.log(args);
+
+        resetMicroLms();
 
         // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
         try {
@@ -1896,6 +1923,50 @@ function createMeshCore(agent) {
             fs.unlinkSync(path);
         }
     };
+
+
+    //
+    // Deactivate Intel AMT CCM
+    //
+
+    // When called, this will use MEI to deactivate Intel AMT when it's in CCM mode. Simply calls "unprovision" on MEI and checks the return code.
+    function deactivateCCM() {
+        amtMei.unprovision(1, function (status) { if (status == 0) { sendConsoleText('Success deactivating Intel AMT CCM.'); } else { sendConsoleText('Intel AMT CCM deactivation error: ' + status); } });
+    }
+
+
+    //
+    // Activate Intel AMT to CCM
+    //
+
+    function activeToCCM(adminpass) {
+        amtMei.getLocalSystemAccount(function (x) {
+            if (x.user && x.pass) {
+                var transport = require('amt-wsman-duk');
+                var wsman = require('amt-wsman');
+                var amt = require('amt');
+                oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
+                osamtstack = new amt(oswsstack);
+                osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
+            } else {
+                sendConsoleText('Unable to get $$OsAdmin password.');
+            }
+        });
+    }
+
+    function activeToCCMEx2(stack, name, responses, status, adminpass) {
+        if (status != 200) { sendConsoleText('Failed to fetch activation status, status ' + status); }
+        else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { sendConsoleText('Client control mode activation not allowed'); }
+        else { stack.IPS_HostBasedSetupService_Setup(2, md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + adminpass).substring(0, 32), null, null, null, null, activeToCCMEx3); }
+    }
+
+    function activeToCCMEx3(stack, name, responses, status) {
+        if (status != 200) { sendConsoleText('Failed to activate, status ' + status); }
+        else if (responses.Body.ReturnValue != 0) { sendConsoleText('Client control mode activation failed: ' + responses.Body.ReturnValueStr); }
+        else { sendConsoleText('Intel AMT CCM activation success'); }
+    }
+
+    function md5hex(str) { return require('MD5Stream').create().syncHash(str).toString('hex'); }
 
     return obj;
 }
