@@ -58,7 +58,7 @@ function CreateMeshCentralServer(config, args) {
     obj.maintenanceTimer = null;
     obj.serverId = null;
     obj.currentVer = null;
-    obj.serverKey = new Buffer(obj.crypto.randomBytes(32), 'binary');
+    obj.serverKey = new Buffer(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
@@ -528,7 +528,7 @@ function CreateMeshCentralServer(config, args) {
                 // Load the login cookie encryption key from the database if allowed
                 if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
                     obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                        if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
+                        if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
                             obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                         } else {
                             obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
@@ -1067,7 +1067,7 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // Load the login cookie encryption key from the database
                 obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
+                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
                         // Key is present, use it.
                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                         func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey));
@@ -1081,11 +1081,11 @@ function CreateMeshCentralServer(config, args) {
         });
     };
 
-    // Show the yser login token generation key
+    // Show the user login token generation key
     obj.showLoginTokenKey = function (func) {
         // Load the login cookie encryption key from the database
         obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-            if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null)) {
+            if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
                 // Key is present, use it.
                 func(docs[0].key);
             } else {
@@ -1098,30 +1098,36 @@ function CreateMeshCentralServer(config, args) {
 
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {
-        return new Buffer(obj.crypto.randomBytes(32), 'binary');
-        //return Buffer.alloc(32, 0); // Sets the key to zeros, debug only.
+        return new Buffer(obj.crypto.randomBytes(48), 'binary');
+        //return Buffer.alloc(48, 0); // Sets the key to zeros, debug only.
     };
 
-    // Encode an object as a cookie using a key. (key must be 32 bytes long)
+    // Encode an object as a cookie using a key using AES-GCM. (key must be 32 bytes or more)
     obj.encodeCookie = function (o, key) {
         try {
             if (key == null) { key = obj.serverKey; }
             o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
-            var iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key, iv);
-            var crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
-            var cookie = Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-            return cookie;
+            const iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
+            const crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
+            return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
         } catch (e) { return null; }
     };
 
-    // Decode a cookie back into an object using a key. Return null if it's not a valid cookie.  (key must be 32 bytes long)
+    // Decode a cookie back into an object using a key using AES-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
+        const r = obj.decodeCookieAESGCM(cookie, key, timeout);
+        if (r == null) { return obj.decodeCookieAESSHA(cookie, key, timeout); }
+        return r;
+    }
+
+    // Decode a cookie back into an object using a key using AES-GCM. Return null if it's not a valid cookie. (key must be 32 bytes or more)
+    obj.decodeCookieAESGCM = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
             cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
-            var decipher = obj.crypto.createDecipheriv('aes-256-gcm', key, cookie.slice(0, 12));
+            const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
             decipher.setAuthTag(cookie.slice(12, 16));
-            var o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
+            const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { Debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
@@ -1129,6 +1135,28 @@ function CreateMeshCentralServer(config, args) {
             if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { Debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             return o;
         } catch (e) { return null; }
+    };
+
+    // Decode a cookie back into an object using a key using AES128 / HMAC-SHA256. Return null if it's not a valid cookie. (key must be 48 bytes or more)
+    // We do this because poor .NET does not support AES-GCM.
+    obj.decodeCookieAESSHA = function (cookie, key, timeout) {
+        try {
+            if (key == null) { key = obj.serverKey; }
+            if (key.length < 48) return null;
+            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            const decipher = obj.crypto.createDecipheriv('aes-128-cbc', key.slice(32, 48), cookie.slice(0, 16));
+            const rawmsg = decipher.update(cookie.slice(16), 'binary', 'binary') + decipher.final('binary');
+            const hmac = obj.crypto.createHmac('sha256', key.slice(0, 32));
+            hmac.update(rawmsg.slice(32));
+            if (Buffer.compare(hmac.digest(), Buffer.from(rawmsg.slice(0, 32))) == false) { return null; }
+            const o = JSON.parse(rawmsg.slice(32).toString('utf8'));
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { Debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
+            o.time = o.time * 1000; // Decode the cookie creation time
+            o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
+            if (timeout == null) { timeout = 2; }
+            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            return o;
+        } catch (ex) { console.log(ex); return null; }
     };
 
     // Debug
