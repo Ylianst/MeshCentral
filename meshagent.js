@@ -101,7 +101,33 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (msg.length == 4) { ChangeAgentCoreInfo({ "caps": 0 }); } // If the agent indicated that no core is running, clear the core information string.
                 // Mesh core hash, sent by agent with the hash of the current mesh core.
                 if (obj.agentCoreCheck == 1000) return; // If we are using a custom core, don't try to update it.
-                // We need to check if the core is current.
+
+                // Get the current meshcore hash
+                const agentMeshCoreHash = (msg.length == 52) ? msg.substring(4, 52) : null;
+
+                // We need to check if the core is current. First, figure out what core we need.
+                const corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                if (corename != null) {
+                    const meshcorehash = obj.parent.parent.defaultMeshCoresHash[corename];
+                    if (agentMeshCoreHash != meshcorehash) {
+                        if (obj.agentCoreCheck < 5) {
+                            if (meshcorehash == null) {
+                                // Update no core
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
+                                obj.parent.parent.debug(1, 'Clearing core');
+                            } else {
+                                // Update new core
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]);
+                                obj.parent.parent.debug(1, 'Updating code ' + corename);
+                            }
+                            obj.agentCoreCheck++;
+                        }
+                    } else {
+                        obj.agentCoreCheck = 0;
+                    }
+                }
+
+                /*
                 // TODO: Check if we have a mesh specific core. If so, use that.
                 var agentMeshCoreHash = null;
                 if (msg.length == 52) { agentMeshCoreHash = msg.substring(4, 52); }
@@ -123,6 +149,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 } else {
                     obj.agentCoreCheck = 0;
                 }
+                */
             }
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {

@@ -1522,7 +1522,7 @@ function parseUrlArguments(url) {
 
 // Remove a element from a array
 function removeItemFromArray(array, element) {
-    const index = array.indexOf(element);
+    var index = array.indexOf(element);
     if (index !== -1) { array.splice(index, 1); }
 }
 
