@@ -22,15 +22,15 @@ process.on('uncaughtException', function (ex) {
 //attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
 
 // Mesh Rights
-const MESHRIGHT_EDITMESH = 1;
-const MESHRIGHT_MANAGEUSERS = 2;
-const MESHRIGHT_MANAGECOMPUTERS = 4;
-const MESHRIGHT_REMOTECONTROL = 8;
-const MESHRIGHT_AGENTCONSOLE = 16;
-const MESHRIGHT_SERVERFILES = 32;
-const MESHRIGHT_WAKEDEVICE = 64;
-const MESHRIGHT_SETNOTES = 128;
-const MESHRIGHT_REMOTEVIEW = 256;
+var MESHRIGHT_EDITMESH = 1;
+var MESHRIGHT_MANAGEUSERS = 2;
+var MESHRIGHT_MANAGECOMPUTERS = 4;
+var MESHRIGHT_REMOTECONTROL = 8;
+var MESHRIGHT_AGENTCONSOLE = 16;
+var MESHRIGHT_SERVERFILES = 32;
+var MESHRIGHT_WAKEDEVICE = 64;
+var MESHRIGHT_SETNOTES = 128;
+var MESHRIGHT_REMOTEVIEW = 256;
 
 function createMeshCore(agent) {
     var obj = {};

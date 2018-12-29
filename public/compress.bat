@@ -1,41 +1,18 @@
 @ECHO OFF
-REM *** Remove all old minified files
-DEL ..\views\default-min.handlebars
-DEL ..\views\default-mobile-min.handlebars
-DEL ..\views\login-min.handlebars
-DEL ..\views\login-mobile-min.handlebars
+CALL:CompressHandlebars default
+CALL:CompressHandlebars default-mobile
+CALL:CompressHandlebars login
+CALL:CompressHandlebars login-mobile
+CALL:CompressHandlebars messenger
+PAUSE
+GOTO:eof
 
-REM *** default.handlebars
-COPY ..\views\default.handlebars index.html
+:CompressHandlebars
+ECHO COMPRESS ..\views\%~1.handlebars TO ..\views\%~1-min.handlebars
+DEL ..\views\%~1-min.handlebars
+COPY ..\views\%~1.handlebars index.html
 ..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
-COPY compress.htm ..\views\default-min.handlebars
+COPY compress.htm ..\views\%~1-min.handlebars
 DEL compress.htm
 DEL index.html
-
-REM *** default-mobile.handlebars
-COPY ..\views\default-mobile.handlebars index.html
-..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
-COPY compress.htm ..\views\default-mobile-min.handlebars
-DEL compress.htm
-DEL index.html
-
-REM *** login.handlebars
-COPY ..\views\login.handlebars index.html
-..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
-COPY compress.htm ..\views\login-min.handlebars
-DEL compress.htm
-DEL index.html
-
-REM *** login-mobile.handlebars
-COPY ..\views\login-mobile.handlebars index.html
-..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
-COPY compress.htm ..\views\login-mobile-min.handlebars
-DEL compress.htm
-DEL index.html
-
-REM *** messenger.handlebars
-COPY ..\views\messenger.handlebars index.html
-..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe compress.wcc -c
-COPY compress.htm ..\views\messenger-min.handlebars
-DEL compress.htm
-DEL index.html
+GOTO:eof

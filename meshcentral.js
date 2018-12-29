@@ -48,10 +48,8 @@ function CreateMeshCentralServer(config, args) {
     obj.dbconfig = {};                // Persistance values, loaded from database
     obj.certificateOperations = null;
     obj.defaultMeshCmd = null;
-    obj.defaultMeshCore = null;
-    obj.defaultMeshCoreHash = null;
-    obj.defaultMeshCoreNoMei = null;
-    obj.defaultMeshCoreNoMeiHash = null;
+    obj.defaultMeshCores = {};
+    obj.defaultMeshCoresHash = {};
     obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.multiServer = null;
@@ -863,6 +861,23 @@ function CreateMeshCentralServer(config, args) {
         }
     };
 
+    // Escape a code string
+    obj.escapeCodeString = function (str) {
+        const escapeCodeStringTable = { '\'': '\\\'', '\"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t' };
+        var r = '', c, cr, table;
+        for (var i = 0; i < str.length; i++) {
+            c = str[i];
+            table = escapeCodeStringTable[c];
+            if (table != null) {
+                r += table;
+            } else {
+                cr = c.charCodeAt(0);
+                if ((cr >= 32) && (cr <= 127)) { r += c; }
+            }
+        }
+        return r;
+    }
+
     // Update the default mesh core
     obj.updateMeshCoreTimer = 'notset';
     obj.updateMeshCore = function (func) {
@@ -871,35 +886,64 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
             meshcorePath = obj.path.join(__dirname, 'agents');
             if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
-                obj.defaultMeshCoreNoMei = obj.defaultMeshCoreNoMeiHash = obj.defaultMeshCore = obj.defaultMeshCoreHash = null; if (func != null) { func(false); } // meshcore.js not found
+                obj.defaultMeshCores = obj.defaultMeshCoresHash = { }; if (func != null) { func(false); } // meshcore.js not found
             }
         }
 
         // Read meshcore.js and all .js files in the modules folder.
-        var moduleAdditions = 'var addedModules = [];', moduleAdditionsNoMei = 'var addedModules = [];', meshCore = null, modulesDir = null;
-        try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString(); } catch (e) { }
+        var meshCore = null, modulesDir = null;
+        const modulesAdd = {
+            'windows-amt': 'var addedModules = [];\r\n',
+            'linux-amt': 'var addedModules = [];\r\n',
+            'linux-noamt': 'var addedModules = [];\r\n'
+        };
+
+        try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.min.js')).toString(); } catch (e) { } // Favor minified meshcore if present.
+        if (meshCore == null) { try { meshCore = obj.fs.readFileSync(obj.path.join(meshcorePath, 'meshcore.js')).toString(); } catch (e) { } } // Use non-minified meshcore.
         if (meshCore != null) {
-            try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcorePath, 'modules_meshcore')); } catch (e) { }
+            var moduleDirPath = null;
+            try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } // Favor minified modules if present.
+            if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcorePath, 'modules_meshcore'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
             if (modulesDir != null) {
                 for (var i in modulesDir) {
                     if (modulesDir[i].toLowerCase().endsWith('.js')) {
-                        // Merge this module
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
-                        var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcorePath, 'modules_meshcore', modulesDir[i])).toString('base64');
-                        moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
-                        if ((moduleName != 'amt_heci') && (moduleName != 'lme_heci') && (moduleName != 'amt-0.2.0.js') && (moduleName != 'amt-script-0.2.0.js') && (moduleName != 'amt-wsman-0.2.0.js') && (moduleName != 'amt-wsman-duk-0.2.0.js')) {
-                            moduleAdditionsNoMei += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                        if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
+                        var moduleData = 'try { addModule("' + moduleName + '", "' + obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')) + '"); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+
+                        // Merge this module
+                        if (moduleName.startsWith('amt-')) {
+                            // Add to Intel AMT cores only
+                            modulesAdd['windows-amt'] += moduleData;
+                            modulesAdd['linux-amt'] += moduleData;
+                        } else if (moduleName.startsWith('win-')) {
+                            // Add to Windows cores only
+                            modulesAdd['windows-amt'] += moduleData;
+                        } else if (moduleName.startsWith('linux-')) {
+                            // Add to Linux cores only
+                            modulesAdd['linux-amt'] += moduleData;
+                            modulesAdd['linux-noamt'] += moduleData;
+                        } else {
+                            // Add to all cores
+                            modulesAdd['windows-amt'] += moduleData;
+                            modulesAdd['linux-amt'] += moduleData;
+                            modulesAdd['linux-noamt'] += moduleData;
                         }
                     }
                 }
             }
-        } else { meshCore = ''; } // No meshcore.js
 
-        // Set the new default meshcore.js with and without MEI support
-        obj.defaultMeshCore = obj.common.IntToStr(0) + moduleAdditions + meshCore;
-        obj.defaultMeshCoreHash = obj.crypto.createHash('sha384').update(obj.defaultMeshCore).digest("binary");
-        obj.defaultMeshCoreNoMei = obj.common.IntToStr(0) + moduleAdditionsNoMei + meshCore;
-        obj.defaultMeshCoreNoMeiHash = obj.crypto.createHash('sha384').update(obj.defaultMeshCoreNoMei).digest("binary");
+            // Merge the cores and compute the hashes
+            for (var i in modulesAdd) {
+                obj.defaultMeshCores[i] = obj.common.IntToStr(0) + modulesAdd[i] + meshCore;
+                obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest("binary");
+                obj.debug(1, 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
+                //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
+                //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4)); // DEBUG, Write the core to file
+            }
+        }
+
+        // We are done creating all the mesh cores.
         if (func != null) { func(true); }
 
         // If meshcore.js is in the data folder, monitor the file for changes.
@@ -987,37 +1031,37 @@ function CreateMeshCentralServer(config, args) {
             } catch (e) { }
         }
     };
-
+    
     // List of possible mesh agents
     obj.meshAgentsArchitectureNumbers = {
-        0: { id: 0, localname: 'Unknown', rname: 'meshconsole.exe', desc: 'Unknown agent', update: false, amt: true, platform: 'unknown' },
-        1: { id: 1, localname: 'MeshConsole.exe', rname: 'meshconsole.exe', desc: 'Windows x86-32 console', update: true, amt: true, platform: 'win32' },
-        2: { id: 2, localname: 'MeshConsole64.exe', rname: 'meshconsole.exe', desc: 'Windows x86-64 console', update: true, amt: true, platform: 'win32' },
-        3: { id: 3, localname: 'MeshService-signed.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32' },
-        4: { id: 4, localname: 'MeshService64-signed.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32' },
-        5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true, amt: true, platform: 'linux' },
-        6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true, amt: true, platform: 'linux' },
-        7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true, amt: false, platform: 'linux' },
-        8: { id: 8, localname: 'MeshAgent-Linux-XEN-x86-32', rname: 'meshagent', desc: 'XEN x86-64', update: true, amt: false, platform: 'linux' },
-        9: { id: 9, localname: 'meshagent_arm', rname: 'meshagent', desc: 'Linux ARM5', update: true, amt: false, platform: 'linux' },
-        10: { id: 10, localname: 'MeshAgent-Linux-ARM-PlugPC', rname: 'meshagent', desc: 'Linux ARM PlugPC', update: true, amt: false, platform: 'linux' },
-        11: { id: 11, localname: 'meshagent_osx-x86-32', rname: 'meshosx', desc: 'Apple OSX x86-32', update: true, amt: false, platform: 'linux' },
-        12: { id: 12, localname: 'MeshAgent-Android-x86', rname: 'meshandroid', desc: 'Android x86-32', update: true, amt: false, platform: 'linux' },
-        13: { id: 13, localname: 'meshagent_pogo', rname: 'meshagent', desc: 'Linux ARM PogoPlug', update: true, amt: false, platform: 'linux' },
-        14: { id: 14, localname: 'MeshAgent-Android-APK', rname: 'meshandroid', desc: 'Android Market', update: false, amt: false, platform: 'android' }, // Get this one from Google Play
-        15: { id: 15, localname: 'meshagent_poky', rname: 'meshagent', desc: 'Linux Poky x86-32', update: true, amt: false, platform: 'linux' },
-        16: { id: 16, localname: 'meshagent_osx-x86-64', rname: 'meshagent', desc: 'Apple OSX x86-64', update: true, amt: false, platform: 'osx' },
-        17: { id: 17, localname: 'MeshAgent-ChromeOS', rname: 'meshagent', desc: 'Google ChromeOS', update: false, amt: false, platform: 'chromeos' }, // Get this one from Chrome store
-        18: { id: 18, localname: 'meshagent_poky64', rname: 'meshagent', desc: 'Linux Poky x86-64', update: true, amt: false, platform: 'linux' },
-        19: { id: 19, localname: 'meshagent_x86_nokvm', rname: 'meshagent', desc: 'Linux x86-32 NoKVM', update: true, amt: true, platform: 'linux' },
-        20: { id: 20, localname: 'meshagent_x86-64_nokvm', rname: 'meshagent', desc: 'Linux x86-64 NoKVM', update: true, amt: true, platform: 'linux' },
-        21: { id: 21, localname: 'MeshAgent-WinMinCore-Console-x86-32.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Console x86-32', update: true, amt: false, platform: 'win32' },
-        22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Service x86-32', update: true, amt: false, platform: 'win32' },
-        23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node' }, // Get this one from NPM
-        24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux' },
-        25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true, amt: false, platform: 'linux' }, // "armv6l" and "armv7l"
-        10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32' }, // Unsigned version of the Windows MeshAgent x86
-        10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32' } // Unsigned version of the Windows MeshAgent x64
+        0: { id: 0, localname: 'Unknown', rname: 'meshconsole.exe', desc: 'Unknown agent', update: false, amt: true, platform: 'unknown', core: 'linux-noamt' },
+        1: { id: 1, localname: 'MeshConsole.exe', rname: 'meshconsole.exe', desc: 'Windows x86-32 console', update: true, amt: true, platform: 'win32', core: 'windows-amt' },
+        2: { id: 2, localname: 'MeshConsole64.exe', rname: 'meshconsole.exe', desc: 'Windows x86-64 console', update: true, amt: true, platform: 'win32', core: 'windows-amt' },
+        3: { id: 3, localname: 'MeshService-signed.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt' },
+        4: { id: 4, localname: 'MeshService64-signed.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt' },
+        5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true, amt: true, platform: 'linux', core: 'linux-amt' },
+        6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true, amt: true, platform: 'linux', core: 'linux-amt' },
+        7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        8: { id: 8, localname: 'MeshAgent-Linux-XEN-x86-32', rname: 'meshagent', desc: 'XEN x86-64', update: true, amt: false, platform: 'linux', core: 'linux-amt' },
+        9: { id: 9, localname: 'meshagent_arm', rname: 'meshagent', desc: 'Linux ARM5', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        10: { id: 10, localname: 'MeshAgent-Linux-ARM-PlugPC', rname: 'meshagent', desc: 'Linux ARM PlugPC', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        11: { id: 11, localname: 'meshagent_osx-x86-32', rname: 'meshosx', desc: 'Apple OSX x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        12: { id: 12, localname: 'MeshAgent-Android-x86', rname: 'meshandroid', desc: 'Android x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        13: { id: 13, localname: 'meshagent_pogo', rname: 'meshagent', desc: 'Linux ARM PogoPlug', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        14: { id: 14, localname: 'MeshAgent-Android-APK', rname: 'meshandroid', desc: 'Android Market', update: false, amt: false, platform: 'android', core: 'linux-noamt' }, // Get this one from Google Play
+        15: { id: 15, localname: 'meshagent_poky', rname: 'meshagent', desc: 'Linux Poky x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        16: { id: 16, localname: 'meshagent_osx-x86-64', rname: 'meshagent', desc: 'Apple OSX x86-64', update: true, amt: false, platform: 'osx', core: 'linux-noamt' },
+        17: { id: 17, localname: 'MeshAgent-ChromeOS', rname: 'meshagent', desc: 'Google ChromeOS', update: false, amt: false, platform: 'chromeos', core: 'linux-noamt' }, // Get this one from Chrome store
+        18: { id: 18, localname: 'meshagent_poky64', rname: 'meshagent', desc: 'Linux Poky x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        19: { id: 19, localname: 'meshagent_x86_nokvm', rname: 'meshagent', desc: 'Linux x86-32 NoKVM', update: true, amt: true, platform: 'linux', core: 'linux-amt' },
+        20: { id: 20, localname: 'meshagent_x86-64_nokvm', rname: 'meshagent', desc: 'Linux x86-64 NoKVM', update: true, amt: true, platform: 'linux', core: 'linux-amt' },
+        21: { id: 21, localname: 'MeshAgent-WinMinCore-Console-x86-32.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Console x86-32', update: true, amt: false, platform: 'win32', core: 'windows-amt' },
+        22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Service x86-32', update: true, amt: false, platform: 'win32', core: 'windows-amt' },
+        23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node', core: 'linux-noamt' }, // Get this one from NPM
+        24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux', core: 'linux-noamt' },
+        25: { id: 25, localname: 'meshagent_pi', rname: 'meshagent', desc: 'Linux ARM - Raspberry Pi', update: true, amt: false, platform: 'linux', core: 'linux-noamt' }, // "armv6l" and "armv7l"
+        10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt' }, // Unsigned version of the Windows MeshAgent x86
+        10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt' } // Unsigned version of the Windows MeshAgent x64
     };
 
     // Update the list of available mesh agents

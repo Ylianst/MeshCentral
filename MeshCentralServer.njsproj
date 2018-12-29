@@ -21,7 +21,9 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="agents\meshcmd.js" />
+    <Compile Include="agents\meshcmd.min.js" />
     <Compile Include="agents\meshcore.js" />
+    <Compile Include="agents\meshcore.min.js" />
     <Compile Include="agents\modules_meshcmd\amt-lme.js" />
     <Compile Include="agents\modules_meshcmd\amt-mei.js" />
     <Compile Include="agents\modules_meshcmd\amt-scanner.js" />
@@ -35,6 +37,19 @@
     <Compile Include="agents\modules_meshcmd\service-manager.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
     <Compile Include="agents\modules_meshcmd\user-sessions.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-lme.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-mei.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-scanner.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-script.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-wsman-duk.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-wsman.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt-xml.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\amt.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\process-manager.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\service-host.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\service-manager.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\smbios.min.js" />
+    <Compile Include="agents\modules_meshcmd_min\user-sessions.min.js" />
     <Compile Include="agents\modules_meshcore\amt-lme.js" />
     <Compile Include="agents\modules_meshcore\amt-mei.js" />
     <Compile Include="agents\modules_meshcore\amt-scanner.js" />
@@ -57,6 +72,28 @@
     <Compile Include="agents\modules_meshcore\win-message-pump.js" />
     <Compile Include="agents\modules_meshcore\win-registry.js" />
     <Compile Include="agents\modules_meshcore\win-terminal.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-lme.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-mei.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-scanner.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-wsman-duk.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-wsman.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt-xml.min.js" />
+    <Compile Include="agents\modules_meshcore_min\amt.min.js" />
+    <Compile Include="agents\modules_meshcore_min\linux-dbus.min.js" />
+    <Compile Include="agents\modules_meshcore_min\monitor-border.min.js" />
+    <Compile Include="agents\modules_meshcore_min\monitor-info.min.js" />
+    <Compile Include="agents\modules_meshcore_min\power-monitor.min.js" />
+    <Compile Include="agents\modules_meshcore_min\process-manager.min.js" />
+    <Compile Include="agents\modules_meshcore_min\service-manager.min.js" />
+    <Compile Include="agents\modules_meshcore_min\smbios.min.js" />
+    <Compile Include="agents\modules_meshcore_min\toaster.min.js" />
+    <Compile Include="agents\modules_meshcore_min\user-sessions.min.js" />
+    <Compile Include="agents\modules_meshcore_min\wifi-scanner-windows.min.js" />
+    <Compile Include="agents\modules_meshcore_min\wifi-scanner.min.js" />
+    <Compile Include="agents\modules_meshcore_min\win-console.min.js" />
+    <Compile Include="agents\modules_meshcore_min\win-message-pump.min.js" />
+    <Compile Include="agents\modules_meshcore_min\win-registry.min.js" />
+    <Compile Include="agents\modules_meshcore_min\win-terminal.min.js" />
     <Compile Include="agents\testsuite.js" />
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amtevents.js" />
@@ -97,7 +134,11 @@
     <Compile Include="redirserver.js" />
     <Compile Include="webserver.js" />
     <Compile Include="winservice.js" />
+    <Content Include="agents\compressModules.bat" />
+    <Content Include="agents\MeshAgentOSXPackager.zip" />
     <Content Include="agents\meshagent_arm" />
+    <Content Include="agents\meshagent_arm-linaro" />
+    <Content Include="agents\meshagent_osx-x86-64" />
     <Content Include="agents\meshagent_pi" />
     <Content Include="agents\meshagent_pogo" />
     <Content Include="agents\meshagent_poky" />
@@ -113,8 +154,11 @@
     <Content Include="agents\meshinstall-linux.sh" />
     <Content Include="agents\MeshService-signed.exe" />
     <Content Include="agents\MeshService.exe" />
+    <Content Include="agents\MeshService.pdb" />
     <Content Include="agents\MeshService64-signed.exe" />
     <Content Include="agents\MeshService64.exe" />
+    <Content Include="agents\MeshService64.pdb" />
+    <Content Include="CreateSourcePackage.bat" />
     <Content Include="LICENSE" />
     <Content Include="package.json" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.application" />
@@ -125,6 +169,8 @@
     <Content Include="public\clickonce\minirouter\MeshMiniRouter.application" />
     <Content Include="public\clickonce\minirouter\publish.htm" />
     <Content Include="public\commander.htm" />
+    <Content Include="public\compress.bat" />
+    <Content Include="public\compress.wcc" />
     <Content Include="public\favicon.ico" />
     <Content Include="public\images-isdu\ComputerIcon.png" />
     <Content Include="public\images-isdu\ComputerIcon2.png" />
@@ -232,7 +278,9 @@
   <ItemGroup>
     <Folder Include="agents\" />
     <Folder Include="agents\modules_meshcmd\" />
+    <Folder Include="agents\modules_meshcmd_min\" />
     <Folder Include="agents\modules_meshcore\" />
+    <Folder Include="agents\modules_meshcore_min\" />
     <Folder Include="public" />
     <Folder Include="public\clickonce\" />
     <Folder Include="public\clickonce\minirouter\" />
