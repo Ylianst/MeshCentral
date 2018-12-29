@@ -528,7 +528,7 @@ function CreateMeshCentralServer(config, args) {
                 // Load the login cookie encryption key from the database if allowed
                 if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
                     obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                        if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
+                        if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
                             obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                         } else {
                             obj.loginCookieEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() });
@@ -1067,7 +1067,7 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // Load the login cookie encryption key from the database
                 obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
+                    if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
                         // Key is present, use it.
                         obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');
                         func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey));
@@ -1085,7 +1085,7 @@ function CreateMeshCentralServer(config, args) {
     obj.showLoginTokenKey = function (func) {
         // Load the login cookie encryption key from the database
         obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
-            if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 96)) {
+            if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
                 // Key is present, use it.
                 func(docs[0].key);
             } else {
@@ -1098,8 +1098,8 @@ function CreateMeshCentralServer(config, args) {
 
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {
-        return new Buffer(obj.crypto.randomBytes(48), 'binary');
-        //return Buffer.alloc(48, 0); // Sets the key to zeros, debug only.
+        return new Buffer(obj.crypto.randomBytes(80), 'binary');
+        //return Buffer.alloc(80, 0); // Sets the key to zeros, debug only.
     };
 
     // Encode an object as a cookie using a key using AES-GCM. (key must be 32 bytes or more)
@@ -1113,14 +1113,14 @@ function CreateMeshCentralServer(config, args) {
         } catch (e) { return null; }
     };
 
-    // Decode a cookie back into an object using a key using AES-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
+    // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
         const r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { return obj.decodeCookieAESSHA(cookie, key, timeout); }
         return r;
     }
 
-    // Decode a cookie back into an object using a key using AES-GCM. Return null if it's not a valid cookie. (key must be 32 bytes or more)
+    // Decode a cookie back into an object using a key using AES256-GCM. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookieAESGCM = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
@@ -1137,19 +1137,19 @@ function CreateMeshCentralServer(config, args) {
         } catch (e) { return null; }
     };
 
-    // Decode a cookie back into an object using a key using AES128 / HMAC-SHA256. Return null if it's not a valid cookie. (key must be 48 bytes or more)
-    // We do this because poor .NET does not support AES-GCM.
+    // Decode a cookie back into an object using a key using AES256 / HMAC-SHA386. Return null if it's not a valid cookie. (key must be 80 bytes or more)
+    // We do this because poor .NET does not support AES256-GCM.
     obj.decodeCookieAESSHA = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
-            if (key.length < 48) return null;
+            if (key.length < 80) { return null; }
             cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
-            const decipher = obj.crypto.createDecipheriv('aes-128-cbc', key.slice(32, 48), cookie.slice(0, 16));
+            const decipher = obj.crypto.createDecipheriv('aes-256-cbc', key.slice(48, 80), cookie.slice(0, 16));
             const rawmsg = decipher.update(cookie.slice(16), 'binary', 'binary') + decipher.final('binary');
-            const hmac = obj.crypto.createHmac('sha256', key.slice(0, 32));
-            hmac.update(rawmsg.slice(32));
-            if (Buffer.compare(hmac.digest(), Buffer.from(rawmsg.slice(0, 32))) == false) { return null; }
-            const o = JSON.parse(rawmsg.slice(32).toString('utf8'));
+            const hmac = obj.crypto.createHmac('sha384', key.slice(0, 48));
+            hmac.update(rawmsg.slice(48));
+            if (Buffer.compare(hmac.digest(), Buffer.from(rawmsg.slice(0, 48))) == false) { return null; }
+            const o = JSON.parse(rawmsg.slice(48).toString('utf8'));
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { Debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
