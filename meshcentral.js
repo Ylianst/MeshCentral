@@ -912,8 +912,9 @@ function CreateMeshCentralServer(config, args) {
                         var moduleData = 'try { addModule("' + moduleName + '", "' + obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')) + '"); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
 
                         // Merge this module
-                        if (moduleName.startsWith('amt-')) {
-                            // Add to Intel AMT cores only
+                        // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
+                        if (moduleName.startsWith('amt-') || (moduleName == 'smbios')) {
+                            // Add to IA / Intel AMT cores only
                             modulesAdd['windows-amt'] += moduleData;
                             modulesAdd['linux-amt'] += moduleData;
                         } else if (moduleName.startsWith('win-')) {
