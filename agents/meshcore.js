@@ -151,16 +151,20 @@ function createMeshCore(agent) {
     var SMBiosTables = null;
     var SMBiosTablesRaw = null;
     try {
-        require('smbios').get(function (data) {
-            if (data != null) {
-                SMBiosTablesRaw = data;
-                SMBiosTables = require('smbios').parse(data)
-                if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
+        var SMBiosModule = null;
+        try { SMBiosModule = require('smbios'); } catch (ex) { }
+        if (SMBiosModule != null) {
+            SMBiosModule.get(function (data) {
+                if (data != null) {
+                    SMBiosTablesRaw = data;
+                    SMBiosTables = require('smbios').parse(data)
+                    if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
 
-                // If SMBios tables say that AMT is present, try to connect MEI
-                if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) { resetMei(); }
-            }
-        });
+                    // If SMBios tables say that AMT is present, try to connect MEI
+                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) { resetMei(); }
+                }
+            });
+        }
     } catch (ex) { sendConsoleText(ex); }
     
     // Try to load up the WIFI scanner
