@@ -879,7 +879,6 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Update the default mesh core
-    obj.updateMeshCoreTimer = 'notset';
     obj.updateMeshCore = function (func) {
         // Figure out where meshcore.js is
         var meshcorePath = obj.datapath;
@@ -946,52 +945,48 @@ function CreateMeshCentralServer(config, args) {
 
         // We are done creating all the mesh cores.
         if (func != null) { func(true); }
-
-        // If meshcore.js is in the data folder, monitor the file for changes.
-        if ((obj.updateMeshCoreTimer === 'notset') && (meshcorePath == obj.datapath)) {
-            obj.updateMeshCoreTimer = null;
-            obj.fs.watch(obj.path.join(meshcorePath, 'meshcore.js'), function (eventType, filename) {
-                if (obj.updateMeshCoreTimer != null) { clearTimeout(obj.updateMeshCoreTimer); obj.updateMeshCoreTimer = null; }
-                obj.updateMeshCoreTimer = setTimeout(function () { obj.updateMeshCore(); console.log('Updated meshcore.js.'); }, 5000);
-            });
-        }
     };
 
     // Update the default meshcmd
     obj.updateMeshCmdTimer = 'notset';
     obj.updateMeshCmd = function (func) {
-        // Figure out where meshcmd.js is
-        var meshcmdPath = obj.datapath;
-        if (obj.fs.existsSync(obj.path.join(meshcmdPath, 'meshcmd.js')) == false) {
-            meshcmdPath = obj.path.join(__dirname, 'agents');
-            if (obj.fs.existsSync(obj.path.join(meshcmdPath, 'meshcmd.js')) == false) {
-                obj.defaultMeshCmd = null; if (func != null) { func(false); } // meshcmd.js not found
-            }
-        }
+        // Figure out where meshcmd.js is and read it.
+        var meshCmd = null, meshcmdPath, moduleAdditions = 'var addedModules = [];\r\n', moduleDirPath, modulesDir = null;
+        if (obj.fs.existsSync(obj.path.join(obj.datapath, 'meshcmd.min.js'))) { meshcmdPath = obj.path.join(obj.datapath, 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
+        else if (obj.fs.existsSync(obj.path.join(obj.datapath, 'meshcmd.js'))) { meshcmdPath = obj.path.join(obj.datapath, 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
+        else if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.min.js'))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
+        else if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.js'))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
+        else { obj.defaultMeshCmd = null; if (func != null) { func(false); } } // meshcmd.js not found
+        meshCmd = meshCmd.replace("'***Mesh*Cmd*Version***'", '\'' + obj.currentVer + '\'');
 
-        // Read meshcore.js and all .js files in the modules folder.
-        var moduleAdditions = 'var addedModules = [];', modulesDir = null;
-        var meshCmd = obj.fs.readFileSync(obj.path.join(meshcmdPath, 'meshcmd.js')).toString().replace("'***Mesh*Cmd*Version***'", '\'' + obj.currentVer + '\'');
-        try { modulesDir = obj.fs.readdirSync(obj.path.join(meshcmdPath, 'modules_meshcmd')); } catch (e) { }
+        // Figure out where the modules_meshcmd folder is.
+        try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } // Favor minified modules if present.
+        if (modulesDir == null) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
+        if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Favor minified modules if present.
+        if (modulesDir == null) { try { moduleDirPath = obj.path.join(__dirname, 'agents', 'modules_meshcmd'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Use non-minified mofules.
+
+        // Read all .js files in the meshcmd modules folder.
         if (modulesDir != null) {
             for (var i in modulesDir) {
                 if (modulesDir[i].toLowerCase().endsWith('.js')) {
                     // Merge this module
                     var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
-                    var moduleDataB64 = obj.fs.readFileSync(obj.path.join(meshcmdPath, 'modules_meshcmd', modulesDir[i])).toString('base64');
-                    moduleAdditions += 'try { addModule("' + moduleName + '", Buffer.from("' + moduleDataB64 + '", "base64")); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                    if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
+                    moduleAdditions += 'try { addModule("' + moduleName + '", "' + obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')) + '"); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
                 }
             }
         }
 
         // Set the new default meshcmd.js
         obj.defaultMeshCmd = moduleAdditions + meshCmd;
+        //console.log('MeshCmd is ' + obj.defaultMeshCmd.length + ' bytes.'); // DEBUG, Print the merged meshcmd.js size
+        //obj.fs.writeFile("C:\\temp\\meshcmd.js", obj.defaultMeshCmd.substring(4)); // DEBUG, Write merged meshcmd.js to file
         if (func != null) { func(true); }
 
-        // If meshcore.js is in the data folder, monitor the file for changes.
-        if ((obj.updateMeshCmdTimer === 'notset') && (meshcmdPath == obj.datapath)) {
+        // Monitor for changes in meshcmd.js
+        if (obj.updateMeshCmdTimer === 'notset') {
             obj.updateMeshCmdTimer = null;
-            obj.fs.watch(obj.path.join(meshcmdPath, 'meshcmd.js'), function (eventType, filename) {
+            obj.fs.watch(meshcmdPath, function (eventType, filename) {
                 if (obj.updateMeshCmdTimer != null) { clearTimeout(obj.updateMeshCmdTimer); obj.updateMeshCmdTimer = null; }
                 obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); console.log('Updated meshcmd.js.'); }, 5000);
             });
