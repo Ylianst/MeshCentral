@@ -159,7 +159,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                         obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                             if (err) { return console.error(err); }
-                            obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.from(agentUpdateBlockSize + 4), fd: fd };
+                            obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), fd: fd };
 
                             // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
                             //console.log("Agent update file open.");
