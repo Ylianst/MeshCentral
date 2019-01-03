@@ -229,7 +229,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.send(obj.common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
-                    if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (new Buffer(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                    if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
                 }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce

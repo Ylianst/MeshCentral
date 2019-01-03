@@ -256,7 +256,7 @@ function amt_heci() {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
 
-        var data = new Buffer(4);
+        var data = Buffer.alloc(4);
         data.writeUInt32LE(handle, 0);
 
         this.sendCommand(0x2D, data, function (header, fn, opt) {
@@ -356,7 +356,7 @@ function amt_heci() {
     this.unprovision = function unprovision(mode, callback) {
         var optional = [];
         for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        var data = new Buffer(4);
+        var data = Buffer.alloc(4);
         data.writeUInt32LE(mode, 0);
         this.sendCommand(16, data, function (header, fn, opt) {
             opt.unshift(header.Status);

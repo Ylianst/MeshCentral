@@ -1220,7 +1220,7 @@ function createMeshCore(agent) {
                         var max = 4096;
                         if ((args['_'].length > 1) && (typeof args['_'][1] == 'number')) { max = args['_'][1]; }
                         if (max > 4096) max = 4096;
-                        var buf = new Buffer(max), fd = fs.openSync(args['_'][0], "r"), r = fs.readSync(fd, buf, 0, max); // Read the file content
+                        var buf = Buffer.alloc(max), fd = fs.openSync(args['_'][0], "r"), r = fs.readSync(fd, buf, 0, max); // Read the file content
                         response = buf.toString();
                         var i = response.indexOf('\n');
                         if ((i > 0) && (response[i - 1] != '\r')) { response = response.split('\n').join('\r\n'); }
@@ -1843,7 +1843,7 @@ function createMeshCore(agent) {
                 // Send the next download block(s)
                 while (sendNextBlock > 0) {
                     sendNextBlock--;
-                    var buf = new Buffer(4096);
+                    var buf = Buffer.alloc(4096);
                     var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
                     this.filedownload.ptr += len;
                     if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }

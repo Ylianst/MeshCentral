@@ -271,7 +271,7 @@ function run(argv) {
         SMBiosTables.get(function (data) {
             var r = SMBiosTables.parse(data);
             var out = objToString(r, 0, '\r\n');
-            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
             exit(1);
         });
     } else if (settings.action == 'rawsmbios') {
@@ -280,7 +280,7 @@ function run(argv) {
         SMBiosTables.get(function (data) {
             var out = '';
             for (var i in data) { var header = false; for (var j in data[i]) { if (data[i][j].length > 0) { if (header == false) { out += ('Table type #' + i + ((SMBiosTables.smTableTypes[i] == null) ? '' : (', ' + SMBiosTables.smTableTypes[i]))) + '\r\n'; header = true; } out += ('  ' + data[i][j].toString('hex')) + '\r\n'; } } }
-            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+            if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
             exit(1);
         });
     } else if (settings.action == 'route') {
@@ -568,7 +568,7 @@ function readAmtAuditLogEx2(stack, response, status) {
             var name = ((response[i].Initiator != '') ? (response[i].Initiator + ': ') : '')
             out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
         }
-        if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, new Buffer(out, 'utf8')); fs.closeSync(file); }
+        if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
     }
     exit(1);
 }
@@ -802,7 +802,7 @@ function saveEntireAmtStateOk4(stack, messages, tag, status) { if (status == 600
 function saveEntireAmtStateDone() {
     if (--IntelAmtEntireStateCalls != 0) return;
     var out = fs.openSync(settings.output, 'w');
-    fs.writeSync(out, new Buffer(JSON.stringify(IntelAmtEntireState), 'utf8'));
+    fs.writeSync(out, Buffer.from(JSON.stringify(IntelAmtEntireState), 'utf8'));
     fs.closeSync(out);
     console.log('Done, results written to ' + settings.output + '.');
     exit(1);
@@ -1187,7 +1187,7 @@ function kvmCtrlData(channel, cmd) {
             // Send the next download block(s)
             while (sendNextBlock > 0) {
                 sendNextBlock--;
-                var buf = new Buffer(4096);
+                var buf = Buffer.alloc(4096);
                 var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
                 this.filedownload.ptr += len;
                 if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
@@ -1280,19 +1280,19 @@ function processLmsControlData(data) {
         case 1: // Request basic Intel AMT information (CMD = 1)
             { getAmtInfo(function (meinfo, socket) { meinfo.LoginMode = 2; socket.write(Buffer.concat([Buffer.from('0100', 'hex'), Buffer.from(JSON.stringify(meinfo))])); }, this); break; }
         case 2: // Intel AMT MEI Unprovision (CMD = 2)
-            { if (data.length < 6) break; amtMei.unprovision(data.readUInt32LE(2), function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(2, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
+            { if (data.length < 6) break; amtMei.unprovision(data.readUInt32LE(2), function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(2, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 3: // Intel AMT MEI GetLocalSystemAccount (CMD = 3)
             { amtMei.getLocalSystemAccount(function (account, socket) { socket.write(Buffer.concat([Buffer.from('030000000000', 'hex'), account.raw])); }, this); break; }
         case 4: // Instruct Intel AMT to start remote configuration (CMD = 4)
-            { amtMei.startConfiguration(function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
+            { amtMei.startConfiguration(function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 5: // Instruct Intel AMT to stop remote configuration (CMD = 5)
-            { amtMei.stopConfiguration(function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
+            { amtMei.stopConfiguration(function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 6: // Instruct Intel AMT connect CIRA (CMD = 6)
-            { amtMei.openUserInitiatedConnection(function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
+            { amtMei.openUserInitiatedConnection(function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 7: // Instruct Intel AMT disconnect CIRA (CMD = 7)
-            { amtMei.closeUserInitiatedConnection(function (status, socket) { var data = new Buffer(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
+            { amtMei.closeUserInitiatedConnection(function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 8: // Get Intel AMT CIRA State (CMD = 8)
-            { amtMei.getRemoteAccessConnectionStatus(function (state, socket) { var data = new Buffer(6); data.writeUInt16LE(8, 0); data.writeUInt32LE(state.status, 2); socket.write(Buffer.concat([data, state.raw])); }, this); break; }
+            { amtMei.getRemoteAccessConnectionStatus(function (state, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(8, 0); data.writeUInt32LE(state.status, 2); socket.write(Buffer.concat([data, state.raw])); }, this); break; }
     }
 }
 

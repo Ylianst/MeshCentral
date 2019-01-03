@@ -191,13 +191,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
     });
 
-    // If error, do nothing.
+    // If error, close both sides of the relay.
     ws.on('error', function (err) {
         console.log('Relay error from ' + obj.remoteaddr + ', ' + err.toString().split('\r')[0] + '.');
         closeBothSides();
     });
 
-    // If the mesh relay web socket is closed.
+    // If the relay web socket is closed, close both sides.
     ws.on('close', function (req) {
         closeBothSides();
     });
