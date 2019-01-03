@@ -1,3 +1,4 @@
+@ECHO OFF
 DEL meshcmd.min.js
 DEL meshcore.min.js
 DEL modules_meshcmd_min\*.min.js
