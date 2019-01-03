@@ -104,19 +104,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Perform hash on web certificate and agent certificate
     obj.webCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
     obj.webCertificateHashs = { '': obj.webCertificateHash };
-    obj.webCertificateHashBase64 = new Buffer(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.webCertificateHashBase64 = Buffer.from(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
     obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
     obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
-    obj.agentCertificateHashBase64 = new Buffer(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+    obj.agentCertificateHashBase64 = Buffer.from(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
 
     // Compute the hash of all of the web certificates for each domain
     for (var i in obj.parent.config.domains) {
         if (obj.parent.config.domains[i].certhash != null) {
             // If the web certificate hash is provided, use it.
-            obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i] = new Buffer(obj.parent.config.domains[i].certhash, 'hex').toString('binary');
-            if (obj.parent.config.domains[i].certkeyhash != null) { obj.webCertificateHashs[i] = new Buffer(obj.parent.config.domains[i].certkeyhash, 'hex').toString('binary'); }
+            obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i] = Buffer.from(obj.parent.config.domains[i].certhash, 'hex').toString('binary');
+            if (obj.parent.config.domains[i].certkeyhash != null) { obj.webCertificateHashs[i] = Buffer.from(obj.parent.config.domains[i].certkeyhash, 'hex').toString('binary'); }
         } else if ((obj.parent.config.domains[i].dns != null) && (obj.parent.config.domains[i].certs != null)) {
             // If the domain has a different DNS name, use a different certificate hash.
             // Hash the full certificate
@@ -181,8 +181,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_NO_TLSv1 | obj.constants.SSL_OP_NO_TLSv11 };
         if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
         obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
-        obj.tlsServer.on('secureConnection', function () { });
-        obj.tlsServer.on('error', function (a, b, c) { console.log('tlsServer error', a, b, c); });
+        obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
+        obj.tlsServer.on('error', function () { console.log('tlsServer error'); });
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
 
@@ -783,14 +783,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.minify && !req.query.nominify) {
                 // Try to server the minified version if we can.
                 try {
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile-min' : 'views/default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile-min' : 'views/default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 } catch (ex) {
                     // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 }
             } else {
                 // Serve non-minified version of web pages.
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: new Buffer(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
             }
         } else {
             // Send back the login application
@@ -880,14 +880,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (i >= 0) { rootcert = rootcert.substring(i + 29); }
         i = rootcert.indexOf("-----END CERTIFICATE-----");
         if (i >= 0) { rootcert = rootcert.substring(i, 0); }
-        return new Buffer(rootcert, 'base64').toString('base64');
+        return Buffer.from(rootcert, 'base64').toString('base64');
     }
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
         if (checkUserIpAddress(req, res, true) == false) { return; }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
-        res.send(new Buffer(getRootCertBase64(), 'base64'));
+        res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
     // Returns an mescript for Intel AMT configuration
@@ -922,11 +922,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Compile the script
                     var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
                     var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                    scriptFile.mescript = new Buffer(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                    scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                     scriptFile.scriptText = runscript;
 
                     // Send the script
-                    res.send(new Buffer(JSON.stringify(scriptFile, null, ' ')));
+                    res.send(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
                 });
             } else {
                 // Server name is a hostname
@@ -948,11 +948,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Compile the script
                     var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
                     var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                    scriptFile.mescript = new Buffer(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                    scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                     scriptFile.scriptText = runscript;
 
                     // Send the script
-                    res.send(new Buffer(JSON.stringify(scriptFile, null, ' ')));
+                    res.send(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
                 });
             }
         }
@@ -962,7 +962,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var filepath = obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript');
             readEntireTextFile(filepath, function (data) {
                 if (data == null) { res.sendStatus(404); return; }
-                res.send(new Buffer(data));
+                res.send(Buffer.from(data));
             });
         }
     }
@@ -1099,7 +1099,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
                         for (var i = 0; i < names.length; i++) {
                             if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
-                            var filedata = new Buffer(datas[i].split(',')[1], 'base64');
+                            var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
                             if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
                                 // Create the user folder if needed
                                 (function (fullpath, filename, filedata) {
@@ -1280,7 +1280,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.forwardclient.onData = function (ciraconn, data) {
                     Debug(4, 'Relay CIRA data', data.length);
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    if (data.length > 0) { try { ws.send(new Buffer(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
+                    if (data.length > 0) { try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
                 };
 
                 ws.forwardclient.onSendOk = function (ciraconn) {
@@ -1315,7 +1315,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
-                    ws.forwardclient.write(new Buffer(msg, 'binary')); // Forward data to the associated TCP connection.
+                    ws.forwardclient.write(Buffer.from(msg, 'binary')); // Forward data to the associated TCP connection.
                 });
 
                 // If error, do nothing
@@ -1357,10 +1357,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.forwardclient.on('data', function (data) {
                     if (obj.parent.debugLevel >= 1) { // DEBUG
                         Debug(1, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
-                        if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + new Buffer(data, 'binary').toString('hex')); }
+                        if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    try { ws.send(new Buffer(data, 'binary')); } catch (e) { }
+                    try { ws.send(Buffer.from(data, 'binary')); } catch (e) { }
                 });
 
                 // If the TCP connection closes, disconnect the associated web socket.
@@ -1592,8 +1592,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (domain.id != mesh.domain) { res.sendStatus(401); return; }
                 }
 
-                var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-                var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+                var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
                 // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -1637,7 +1637,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.sendFile(argentInfo.signedMeshCmdPath);
             } else {
                 // Merge JavaScript to a unsigned agent and send that.
-                obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: new Buffer(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
+                obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
             }
         } else if (req.query.meshaction != null) {
             var domain = checkUserIpAddress(req, res);
@@ -1657,7 +1657,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         username: '',
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                        serverHttpsHash: new Buffer(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                        serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                         debugLevel: 0
                     };
                     if (user != null) { meshaction.username = user.name; }
@@ -1672,7 +1672,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     username: '',
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                    serverHttpsHash: new Buffer(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                    serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                     debugLevel: 0
                 };
                 if (user != null) { meshaction.username = user.name; }
@@ -1730,8 +1730,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.id != mesh.domain) { res.sendStatus(401); return; }
         }
 
-        var meshidhex = new Buffer(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-        var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -1811,8 +1811,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.id != mesh.domain) { res.sendStatus(401); return; }
         }
 
-        var meshidhex = new Buffer(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-        var serveridhex = new Buffer(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var meshidhex = Buffer.from(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+        var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
@@ -2078,7 +2078,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are not using a custom core.
                 // Perform a SHA384 hash on the core module
-                var hash = obj.crypto.createHash('sha384').update(new Buffer(core, 'binary')).digest().toString('binary');
+                var hash = obj.crypto.createHash('sha384').update(Buffer.from(core, 'binary')).digest().toString('binary');
 
                 // Send the code module to the agent
                 agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + core);
@@ -2101,7 +2101,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try {
             obj.fs.open(filepath, 'r', function (err, fd) {
                 obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = new Buffer(bufferSize), bytesRead = 0;
+                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.alloc(bufferSize), bytesRead = 0;
                     while (bytesRead < bufferSize) {
                         if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
                         obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);

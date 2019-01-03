@@ -153,7 +153,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         Debug(1, 'SWARM:New legacy agent connection');
 
         socket.addListener("data", function (data) {
-            if (args.swarmdebug) { var buf = new Buffer(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
+            if (args.swarmdebug) { var buf = Buffer.from(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
             socket.tag.accumulator += data;
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
@@ -333,11 +333,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     function Write(socket, data) {
         if (args.swarmdebug) {
             // Print out sent bytes
-            var buf = new Buffer(data, "binary");
+            var buf = Buffer.from(data, "binary");
             console.log('SWARM --> (' + buf.length + '):' + buf.toString('hex'));
             socket.write(buf);
         } else {
-            socket.write(new Buffer(data, "binary"));
+            socket.write(Buffer.from(data, "binary"));
         }
     }
 

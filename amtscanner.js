@@ -39,7 +39,7 @@ module.exports.CreateAmtScanner = function (parent) {
 
     // Build a RMCP packet with a given tag field
     obj.buildRmcpPing = function (tag) {
-        var packet = new Buffer(obj.common.hex2rstr('06000006000011BE80000000'), 'ascii');
+        var packet = Buffer.from(obj.common.hex2rstr('06000006000011BE80000000'), 'ascii');
         packet[9] = tag;
         return packet;
     };

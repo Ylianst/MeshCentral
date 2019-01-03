@@ -43,7 +43,7 @@ module.exports.CertificateOperations = function () {
                 if (err) { func(url, null, tag); return; }
                 var x1 = data.indexOf('-----BEGIN CERTIFICATE-----'), x2 = data.indexOf('-----END CERTIFICATE-----');
                 if ((x1 >= 0) && (x2 > x1)) {
-                    func(url, new Buffer(data.substring(x1 + 27, x2), 'base64').toString('binary'), tag);
+                    func(url, Buffer.from(data.substring(x1 + 27, x2), 'base64').toString('binary'), tag);
                 } else {
                     func(url, data, tag);
                 }
@@ -67,7 +67,7 @@ module.exports.CertificateOperations = function () {
             // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
             var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
             if ((x1 >= 0) && (x2 > x1)) {
-                return obj.crypto.createHash('sha384').update(new Buffer(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
+                return obj.crypto.createHash('sha384').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
             } else { console.log('ERROR: Unable to decode certificate.'); return null; }
         }
     };
@@ -89,7 +89,7 @@ module.exports.CertificateOperations = function () {
             // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
             var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
             if ((x1 >= 0) && (x2 > x1)) {
-                return obj.crypto.createHash('sha384').update(new Buffer(cert.substring(x1 + 27, x2), 'base64')).digest('binary');
+                return obj.crypto.createHash('sha384').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('binary');
             } else { console.log('ERROR: Unable to decode certificate.'); return null; }
         }
     };
@@ -497,7 +497,7 @@ module.exports.CertificateOperations = function () {
             // No accelerators available
             if (typeof privatekey == "number") { privatekey = obj.acceleratorCertStore[privatekey].key; }
             const sign = obj.crypto.createSign("SHA384");
-            sign.end(new Buffer(data, "binary"));
+            sign.end(Buffer.from(data, "binary"));
             func(tag, sign.sign(privatekey).toString("binary"));
         } else {
             var acc = obj.getAccelerator();

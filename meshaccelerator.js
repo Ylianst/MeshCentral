@@ -23,7 +23,7 @@ process.on('message', function (message) {
             if (typeof message.key == 'number') { message.key = certStore[message.key].key; }
             try {
                 const sign = crypto.createSign('SHA384');
-                sign.end(new Buffer(message.data, 'binary'));
+                sign.end(Buffer.from(message.data, 'binary'));
                 process.send(sign.sign(message.key).toString('binary'));
             } catch (e) { process.send(null); }
             break;

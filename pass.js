@@ -53,7 +53,7 @@ exports.iishash = function (type, pwd, salt, fn) {
         fn(null, pwd);
     } else if (type == 1) {
         const hash = crypto.createHash('sha1');
-        hash.update(Buffer.concat([new Buffer(salt, 'base64'), new Buffer(pwd, 'utf16le')]));
+        hash.update(Buffer.concat([Buffer.from(salt, 'base64'), Buffer.from(pwd, 'utf16le')]));
         fn(null, hash.digest().toString('base64'));
     } else {
         fn('invalid type');

@@ -1088,7 +1088,6 @@
                 r += '</div></div>';
             }
 
-            //meshcount = count;
             QH('p3meshes', r);
             QV('p3noMeshFound', count == 0);
         }
@@ -1456,7 +1455,11 @@
                 }
             }
 
-            QH('xdevices', r);
+            if (count == 0) {
+                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">No devices</span><br /><br />Use the desktop version of this website to add devices.</div>');
+            } else {
+                QH('xdevices', r);
+            }
             deviceHeaderSet();
             for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
