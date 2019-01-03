@@ -40,7 +40,7 @@ function SerialTunnel(options) {
 if (!String.prototype.startsWith) { String.prototype.startsWith = function (searchString, position) { position = position || 0; return this.substr(position, searchString.length) === searchString; }; }
 if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchString, position) { var subjectString = this.toString(); if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) { position = subjectString.length; } position -= searchString.length; var lastIndex = subjectString.lastIndexOf(searchString, position); return lastIndex !== -1 && lastIndex === position; }; }
 
-// Construct a HTTP web server object
+// Construct a HTTP server object
 module.exports.CreateWebServer = function (parent, db, args, certificates) {
     var obj = {}, i  = 0;
 
@@ -1263,8 +1263,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
                 });
 
-                // If error, do nothing
-                ws.on('error', function (err) { console.log('WEBSERVER WSERR1: ' + err); });
+                // If error, close the associated TCP connection.
+                ws.on('error', function (err) {
+                    console.log('CIRA server websocket error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
+                    Debug(1, 'Websocket relay closed on error.');
+                    if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
+                });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function (req) {
@@ -1318,8 +1322,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws.forwardclient.write(Buffer.from(msg, 'binary')); // Forward data to the associated TCP connection.
                 });
 
-                // If error, do nothing
-                ws.on('error', function (err) { console.log('WEBSERVER WSERR2: ' + err); });
+                // If error, close the associated TCP connection.
+                ws.on('error', function (err) {
+                    console.log('Error with relay web socket connection from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
+                    Debug(1, 'Error with relay web socket connection from ' + ws._socket.remoteAddress + '.');
+                    if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
+                });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function () {
@@ -1409,8 +1417,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         });
 
-        // If error, do nothing
-        ws.on('error', function (err) { console.log('WEBSERVER WSERR3: ' + err); });
+        // If error, do nothing.
+        ws.on('error', function (err) { console.log('Echo server error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.'); });
 
         // If closed, do nothing
         ws.on('close', function (req) { });
@@ -1523,8 +1531,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user.siteadmin & 1) == 0) { res.sendStatus(401); return; } // Check if we have server backup rights
 
         // Require modules
-        var fs = require('fs');
-        var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
+        const fs = require('fs');
+        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
 
         // Good practice to catch this error explicitly 
         archive.on('error', function (err) { throw err; });
@@ -2018,7 +2026,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function CheckListenPort(port, func) {
         var s = obj.net.createServer(function (socket) { });
         obj.tcpServer = s.listen(port, function () { s.close(function () { if (func) { func(port); } }); }).on('error', function (err) {
-            if (args.exactports) { console.error('ERROR: MeshCentral HTTPS web server port ' + port + ' not available.'); process.exit(); }
+            if (args.exactports) { console.error('ERROR: MeshCentral HTTPS server port ' + port + ' not available.'); process.exit(); }
             else { if (port < 65535) { CheckListenPort(port + 1, func); } else { if (func) { func(0); } } }
         });
     }
@@ -2029,15 +2037,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.args.port = port;
         if (obj.tlsServer != null) {
             if (obj.args.lanonly == true) {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             } else {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS web server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
             obj.parent.updateServerState('https-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('https-aliasport', args.aliasport); }
         } else {
-            obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP web server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }
         }
