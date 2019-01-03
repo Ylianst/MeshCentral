@@ -56,7 +56,7 @@ function CreateMeshCentralServer(config, args) {
     obj.maintenanceTimer = null;
     obj.serverId = null;
     obj.currentVer = null;
-    obj.serverKey = new Buffer(obj.crypto.randomBytes(48), 'binary');
+    obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
@@ -1138,7 +1138,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Generate a cryptographic key used to encode and decode cookies
     obj.generateCookieKey = function () {
-        return new Buffer(obj.crypto.randomBytes(80), 'binary');
+        return Buffer.from(obj.crypto.randomBytes(80), 'binary');
         //return Buffer.alloc(80, 0); // Sets the key to zeros, debug only.
     };
 
@@ -1147,7 +1147,7 @@ function CreateMeshCentralServer(config, args) {
         try {
             if (key == null) { key = obj.serverKey; }
             o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
-            const iv = new Buffer(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
+            const iv = Buffer.from(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
             const crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
             return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
         } catch (e) { return null; }
@@ -1164,7 +1164,7 @@ function CreateMeshCentralServer(config, args) {
     obj.decodeCookieAESGCM = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
-            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
             const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
             decipher.setAuthTag(cookie.slice(12, 16));
             const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
@@ -1183,7 +1183,7 @@ function CreateMeshCentralServer(config, args) {
         try {
             if (key == null) { key = obj.serverKey; }
             if (key.length < 80) { return null; }
-            cookie = new Buffer(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
             const decipher = obj.crypto.createDecipheriv('aes-256-cbc', key.slice(48, 80), cookie.slice(0, 16));
             const rawmsg = decipher.update(cookie.slice(16), 'binary', 'binary') + decipher.final('binary');
             const hmac = obj.crypto.createHmac('sha384', key.slice(0, 48));
@@ -1238,7 +1238,7 @@ function CreateMeshCentralServer(config, args) {
             obj.fs.open(filepath, 'r', function (err, fd) {
                 if (fd == null) { func(null); return; }
                 obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = new Buffer(bufferSize), bytesRead = 0;
+                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.from(bufferSize), bytesRead = 0;
                     while (bytesRead < bufferSize) {
                         if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
                         obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);

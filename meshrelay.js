@@ -191,14 +191,19 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
     });
 
-    // If error, do nothing
+    // If error, do nothing.
     ws.on('error', function (err) {
-        console.log('Relay Error', err);
-        obj.close();
+        console.log('Relay error from ' + obj.remoteaddr + ', ' + err.toString().split('\r')[0] + '.');
+        closeBothSides();
     });
 
-    // If the mesh relay web socket is closed
+    // If the mesh relay web socket is closed.
     ws.on('close', function (req) {
+        closeBothSides();
+    });
+
+    // Close both our side and the peer side.
+    function closeBothSides() {
         if (obj.id != null) {
             var relayinfo = parent.wsrelays[obj.id];
             if (relayinfo != null) {
@@ -217,7 +222,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             obj.peer = null;
             obj.id = null;
         }
-    });
+    }
 
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (obj.user != null);

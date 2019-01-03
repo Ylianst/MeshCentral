@@ -113,7 +113,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.on("timeout", () => { Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
         socket.addListener("data", function (data) {
-            if (args.mpsdebug) { var buf = new Buffer(data, "binary"); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+            if (args.mpsdebug) { var buf = Buffer.from(data, "binary"); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
             socket.tag.accumulator += data;
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
@@ -249,7 +249,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (mesh.mtype == 1) {
                             // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
                             var systemid = socket.tag.SystemId.split('-').join('');
-                            var nodeid = new Buffer(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            var nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             socket.tag.name = '';
                             socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
                             socket.tag.meshid = mesh._id;
@@ -630,11 +630,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     function Write(socket, data) {
         if (args.mpsdebug) {
             // Print out sent bytes
-            var buf = new Buffer(data, "binary");
+            var buf = Buffer.from(data, "binary");
             console.log('MPS --> (' + buf.length + '):' + buf.toString('hex'));
             socket.write(buf);
         } else {
-            socket.write(new Buffer(data, "binary"));
+            socket.write(Buffer.from(data, "binary"));
         }
     }
 

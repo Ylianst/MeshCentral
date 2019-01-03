@@ -55,7 +55,7 @@ module.exports.CreateDB = function (parent) {
             if ((docs.length == 1) && (docs[0].value != null)) {
                 obj.identifier = docs[0].value;
             } else {
-                obj.identifier = new Buffer(require('crypto').randomBytes(48), 'binary').toString('hex');
+                obj.identifier = Buffer.from(require('crypto').randomBytes(48), 'binary').toString('hex');
                 obj.Set({ _id: 'DatabaseIdentifier', value: obj.identifier });
             }
         });

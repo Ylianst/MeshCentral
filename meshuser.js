@@ -28,7 +28,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.serverStatsTimer = null;
 
     // Send a message to the user
-    //obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
+    //obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(Buffer.from(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
 
     // Disconnect this user
     obj.close = function (arg) {
@@ -1391,7 +1391,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try {
             obj.fs.open(filepath, 'r', function (err, fd) {
                 obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = new Buffer(bufferSize), bytesRead = 0;
+                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.from(bufferSize), bytesRead = 0;
                     while (bytesRead < bufferSize) {
                         if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
                         obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);

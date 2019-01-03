@@ -111,21 +111,21 @@ module.exports.CreateMultiServer = function (parent, args) {
                         case 2: {
                             // Server certificate
                             var certlen = obj.common.ReadShort(msg, 2), serverCert = null;
-                            var serverCertPem = '-----BEGIN CERTIFICATE-----\r\n' + new Buffer(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
+                            var serverCertPem = '-----BEGIN CERTIFICATE-----\r\n' + Buffer.from(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
                             try { serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { }
                             if (serverCert == null) { obj.parent.parent.debug(1, 'OutPeer: Invalid server certificate.'); disconnect(); return; }
-                            var serverid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            var serverid = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             if (serverid !== obj.agentCertificateHashBase64) { obj.parent.parent.debug(1, 'OutPeer: Server hash mismatch.'); disconnect(); return; }
 
                             // Server signature, verify it. This is the fast way, without using forge. (TODO: Use accelerator for this?)
                             const verify = obj.parent.crypto.createVerify('SHA384');
-                            verify.end(new Buffer(obj.serverCertHash + obj.nonce + obj.servernonce, 'binary'));
-                            if (verify.verify(serverCertPem, new Buffer(msg.substring(4 + certlen), 'binary')) !== true) { obj.parent.parent.debug(1, 'OutPeer: Server sign check failed.'); disconnect(); return; }
+                            verify.end(Buffer.from(obj.serverCertHash + obj.nonce + obj.servernonce, 'binary'));
+                            if (verify.verify(serverCertPem, Buffer.from(msg.substring(4 + certlen), 'binary')) !== true) { obj.parent.parent.debug(1, 'OutPeer: Server sign check failed.'); disconnect(); return; }
 
                             // Connection is a success, clean up
                             delete obj.nonce;
                             delete obj.servernonce;
-                            obj.serverCertHash = new Buffer(obj.serverCertHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); // Change this value to base64
+                            obj.serverCertHash = Buffer.from(obj.serverCertHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); // Change this value to base64
                             obj.connectionState |= 4;
                             obj.retryBackoff = 0; // Set backoff connection timer back to fast.
                             obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
@@ -189,7 +189,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             if (command.dbid != obj.parent.parent.db.identifier) { console.log('ERROR: Database ID mismatch. Trying to peer to a server with the wrong database. (' + obj.url + ', ' + command.serverid + ').'); return; }
                             if (obj.serverCertHash != command.serverCertHash) { console.log('ERROR: Outer certificate hash mismatch (2). (' + obj.url + ', ' + command.serverid + ').'); return; }
                             obj.peerServerId = command.serverid;
-                            obj.peerServerKey = new Buffer(command.key, 'hex');
+                            obj.peerServerKey = Buffer.from(command.key, 'hex');
                             obj.authenticated = 3;
                             obj.parent.SetupPeerServer(obj, obj.peerServerId);
                         }
@@ -228,7 +228,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         // Send a message to the peer server
         obj.send = function (data) {
             try {
-                if (typeof data == 'string') { obj.ws.send(new Buffer(data, 'binary')); return; }
+                if (typeof data == 'string') { obj.ws.send(Buffer.from(data, 'binary')); return; }
                 if (typeof data == 'object') { obj.ws.send(JSON.stringify(data)); return; }
                 obj.ws.send(data);
             } catch (e) { }
@@ -282,8 +282,8 @@ module.exports.CreateMultiServer = function (parent, args) {
                     // Decode the certificate
                     var certlen = obj.common.ReadShort(msg, 2);
                     obj.unauth = {};
-                    try { obj.unauth.nodeid = new Buffer(obj.forge.pki.getPublicKeyFingerprint(obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))).publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } catch (e) { console.log(e); return; }
-                    obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + new Buffer(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
+                    try { obj.unauth.nodeid = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))).publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } catch (e) { console.log(e); return; }
+                    obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + Buffer.from(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
 
                     // Check the peer server signature if we can
                     if (obj.peernonce == null) {
@@ -325,8 +325,8 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processPeerSignature(msg) {
             // Verify the signature. This is the fast way, without using forge.
             const verify = obj.parent.crypto.createVerify('SHA384');
-            verify.end(new Buffer(obj.parent.parent.webserver.webCertificateHash + obj.nonce + obj.peernonce, 'binary'));
-            if (verify.verify(obj.unauth.nodeCertPem, new Buffer(msg, 'binary')) !== true) { console.log('Peer sign fail 1'); return false; }
+            verify.end(Buffer.from(obj.parent.parent.webserver.webCertificateHash + obj.nonce + obj.peernonce, 'binary'));
+            if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) { console.log('Peer sign fail 1'); return false; }
             if (obj.unauth.nodeid !== obj.agentCertificateHashBase64) { console.log('Peer sign fail 2'); return false; }
 
             // Connection is a success, clean up
@@ -353,7 +353,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             if (command.dbid != obj.parent.parent.db.identifier) { console.log('ERROR: Database ID mismatch. Trying to peer to a server with the wrong database. (' + obj.remoteaddr + ', ' + command.serverid + ').'); return; }
                             if (obj.parent.peerConfig.servers[command.serverid] == null) { console.log('ERROR: Unknown peer serverid: ' + command.serverid + ' (' + obj.remoteaddr + ').'); return; }
                             obj.peerServerId = command.serverid;
-                            obj.peerServerKey = new Buffer(command.key, 'hex');
+                            obj.peerServerKey = Buffer.from(command.key, 'hex');
                             obj.serverCertHash = command.serverCertHash;
                             obj.authenticated = 3;
                             obj.parent.SetupPeerServer(obj, obj.peerServerId);
@@ -599,7 +599,7 @@ module.exports.CreateMultiServer = function (parent, args) {
 
                 // Get the peer server's certificate and compute the server public key hash
                 var serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(peerTunnel.ws2._socket.getPeerCertificate().raw.toString('binary')));
-                var serverCertHashHex = new Buffer(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                var serverCertHashHex = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
                 // Check if the peer certificate is the expected one for this serverid
                 if (obj.peerServers[serverid] == null || obj.peerServers[serverid].serverCertHash != serverCertHashHex) { console.log('ERROR: Outer certificate hash mismatch (1). (' + peerTunnel.url + ', ' + peerTunnel.serverid + ').'); peerTunnel.close(); return; }
