@@ -1,7 +1,7 @@
 /**
 * @description MeshCentral main module
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018
+* @copyright Intel Corporation 2018-2019
 * @license Apache-2.0
 * @version v0.0.1
 */
@@ -989,7 +989,7 @@ function CreateMeshCentralServer(config, args) {
             obj.updateMeshCmdTimer = null;
             obj.fs.watch(meshcmdPath, function (eventType, filename) {
                 if (obj.updateMeshCmdTimer != null) { clearTimeout(obj.updateMeshCmdTimer); obj.updateMeshCmdTimer = null; }
-                obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); console.log('Updated meshcmd.js.'); }, 5000);
+                obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); /*console.log('Updated meshcmd.js.');*/ }, 5000);
             });
         }
     };
