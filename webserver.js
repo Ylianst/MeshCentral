@@ -292,8 +292,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.connection) { type = 1; ip = req.ip; } // HTTP(S) request
             else if (req._socket) { type = 2; ip = req._socket.remoteAddress; } // WebSocket request
             if (!ip) return false;
-            if (ip.startsWith('::ffff:')) { ip = ip.substring(7); } // Fix IPv4 IP's encoded in IPv6 form
-            if ((ip != null) && (allowedIpList.indexOf(ip) >= 0)) { return true; }
+            for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } }
             if (type == 1) { res.sendStatus(401); }
             else if (type == 2) { try { req.close(); } catch (e) { } }
         } catch (e) { console.log(e); }
@@ -302,15 +301,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Check if the source IP address is allowed, return domain if allowed
     function checkUserIpAddress(req, res, rootonly) {
-        if (obj.userAllowedIp != null) {
-            if (typeof obj.userAllowedIp == 'string') { if (obj.userAllowedIp == "") { obj.userAllowedIp = null; return true; } else { obj.userAllowedIp = obj.userAllowedIp.split(','); } }
-            if (checkUserIpAddressEx(req, res, obj.userAllowedIp) == false) return null;
-        }
-        if (rootonly == true) return;
+        if ((obj.userAllowedIp != null) && (checkUserIpAddressEx(req, res, obj.userAllowedIp) == false)) { return null; }
+        if (rootonly == true) { return; }
         var domain;
         if (req.url) { domain = getDomain(req); } else { domain = getDomain(res); }
         if (domain.userallowedip == null) return domain;
-        if (checkUserIpAddressEx(req, res, domain.userallowedip) == false) return null;
+        if (checkUserIpAddressEx(req, res, domain.userallowedip) == false) { return null; }
         return domain;
     }
 
@@ -321,7 +317,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
         var y = parent.config.domains[x[1].toLowerCase()];
-        if ((y != null) && (y.dns == null)) return parent.config.domains[x[1].toLowerCase()];
+        if ((y != null) && (y.dns == null)) { return parent.config.domains[x[1].toLowerCase()]; }
         return parent.config.domains[''];
     }
 
