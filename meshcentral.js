@@ -234,7 +234,8 @@ function CreateMeshCentralServer(config, args) {
         for (i in obj.config.domains) {
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
-            if (typeof obj.config.domains[i].userallowedip == 'string') { obj.config.domains[i].userallowedip = null; if (obj.config.domains[i].userallowedip != "") { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); } }
+            if ((typeof obj.config.domains[i].userallowedip != 'string') || (obj.config.domains[i].userallowedip == '')) { obj.config.domains[i].userallowedip = null; }
+            else { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); }
         }
 
         // Log passed arguments into Windows Service Log
@@ -1301,7 +1302,12 @@ function getConfig() {
     for (i in args) { config.settings[i] = args[i]; }
 
     // Lower case all keys in the config file
-    require('./common.js').objKeysToLower(config);
+    try {
+        require('./common.js').objKeysToLower(config);
+    } catch (ex) {
+        console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
+        process.exit();
+    }
     return config;
 }
 
