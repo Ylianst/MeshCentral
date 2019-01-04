@@ -1965,7 +1965,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             ws._socket.pause();
 
             // Check IP filtering and domain
-            var domain = checkUserIpAddress(ws, req);
+            var domain = null;
+            if (noAuthOk == true) { domain = getDomain(req); } else { domain = checkUserIpAddress(ws, req); } // If auth is required, enforce IP address filtering.
             if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth' })); ws.close(); return; } catch (e) { return; } }
 
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.

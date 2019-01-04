@@ -558,7 +558,9 @@ function createMeshCore(agent) {
         s.httprequest = this;
         s.end = onTunnelClosed;
         s.tunnel = this;
-        
+
+        //sendConsoleText('onTunnelUpgrade');
+
         if (this.tcpport != null) {
             // This is a TCP relay connection, pause now and try to connect to the target.
             s.pause();
