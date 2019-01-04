@@ -31,6 +31,7 @@
       "NewAccounts": 1,
       "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_CertUrl": "https://192.168.2.106:443/",
+      "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
       "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
     },
     "customer1": {
