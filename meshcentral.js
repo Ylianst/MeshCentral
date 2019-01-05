@@ -1235,27 +1235,6 @@ function CreateMeshCentralServer(config, args) {
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
 
-    // Read entire file and return it in callback function
-    obj.readEntireTextFile = function(filepath, func) {
-        var called = false;
-        try {
-            obj.fs.open(filepath, 'r', function (err, fd) {
-                if (fd == null) { func(null); return; }
-                obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.from(bufferSize), bytesRead = 0;
-                    while (bytesRead < bufferSize) {
-                        if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
-                        obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);
-                        bytesRead += chunkSize;
-                    }
-                    obj.fs.close(fd);
-                    called = true;
-                    func(buffer.toString('utf8', 0, bufferSize));
-                });
-            });
-        } catch (e) { console.log(e); if (called == false) { func(null); } }
-    }
-
     // Return the path of a file into the meshcentral-data path
     obj.getConfigFilePath = function (filename) {
         if ((obj.config != null) && (obj.config.configfiles != null) && (obj.config.configfiles[filename] != null) && (typeof obj.config.configfiles[filename] == 'string')) {

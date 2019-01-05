@@ -300,12 +300,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check if the source IP address is allowed, return domain if allowed
-    function checkUserIpAddress(req, res, rootonly) {
-        if ((obj.userAllowedIp != null) && (checkUserIpAddressEx(req, res, obj.userAllowedIp) == false)) { return null; }
-        if (rootonly == true) { return; }
-        var domain;
-        if (req.url) { domain = getDomain(req); } else { domain = getDomain(res); }
-        if (domain.userallowedip == null) return domain;
+    function checkUserIpAddress(req, res) {
+        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) == false) { return null; }
+        const domain = (req.url ? getDomain(req) : getDomain(res));
         if (checkUserIpAddressEx(req, res, domain.userallowedip) == false) { return null; }
         return domain;
     }
@@ -322,7 +319,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleLogoutRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         // Destroy the user's session to log them out will be re-created next request
@@ -335,7 +332,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleLoginRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         obj.authenticate(req.body.username, req.body.password, domain, function (err, userid, passhint) {
             if (userid) {
@@ -391,7 +388,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleCreateAccountRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
@@ -445,7 +442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!req.body.email || checkEmail(req.body.email) == false) {
@@ -477,7 +474,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -577,7 +574,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleDeleteAccountRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -621,7 +618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -645,7 +642,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if (!obj.args) { res.sendStatus(500); return; }
 
@@ -829,14 +826,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Render the terms of service.
     function handleTermsRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
 
         // See if there is a terms.txt file in meshcentral-data
         var p = obj.path.join(obj.parent.datapath, 'terms.txt');
         if (obj.fs.existsSync(p)) {
-            readEntireTextFile(p, function (data) {
-                if (data == null) { res.sendStatus(404); return; }
+            obj.fs.readFile(p, 'utf8', function (err, data) {
+                if (err != null) { res.sendStatus(404); return; }
 
                 // Send the terms
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -881,14 +878,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
-        if (checkUserIpAddress(req, res, true) == false) { return; }
+        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) === false) { return; } // Check server-wide IP filter only.
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
-        if (checkUserIpAddress(req, res, true) == false) { return; }
+        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) === false) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
             var filename = 'cira_setup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
@@ -899,8 +896,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
                 // Server name is an IPv4 address
-                readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript'), function (data) {
-                    if (data == null) { res.sendStatus(404); return; }
+                obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
+                    if (err != null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
                     // Change a few things in the script
@@ -925,8 +922,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             } else {
                 // Server name is a hostname
-                readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_dns.mescript'), function (data) {
-                    if (data == null) { res.sendStatus(404); return; }
+                obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
+                    if (err != null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
                     // Change a few things in the script
@@ -953,8 +950,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         else if (req.query.type == 2) {
             var filename = 'cira_cleanup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript'), function (data) {
-                if (data == null) { res.sendStatus(404); return; }
+            obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
+                if (err != null) { res.sendStatus(404); return; }
                 res.send(Buffer.from(data));
             });
         }
@@ -962,7 +959,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
@@ -987,7 +984,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle logo request
     function handleLogoRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
 
         res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if ((domain != null) && domain.titlepicture) {
@@ -1034,12 +1031,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Download a file from the server
     function handleDownloadFile(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
-        var user = obj.users[req.session.userid];
+        const user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(404); return; }
-        var file = obj.getServerFilePath(user, domain, req.query.link);
+        const file = obj.getServerFilePath(user, domain, req.query.link);
         if (file == null) { res.sendStatus(404); return; }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + file.name + '\"' });
         try { res.sendFile(file.fullpath); } catch (e) { res.sendStatus(404); }
@@ -1047,20 +1044,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
+        const user = obj.users[req.session.userid];
         if (user.siteadmin != 0xFFFFFFFF) { res.sendStatus(401); return; } // Check if we have mesh core upload rights (Full admin only)
 
-        var multiparty = require('multiparty');
-        var form = new multiparty.Form();
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
             if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
             for (var i in files.files) {
                 var file = files.files[i];
-                readEntireTextFile(file.path, function (data) {
-                    if (data == null) return;
+                obj.fs.readFile(file.path, 'utf8', function (err, data) {
+                    if (err != null) return;
                     data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                     obj.sendMeshAgentCore(user, domain, fields.attrib[0], data); // Upload the core
                     try { obj.fs.unlinkSync(file.path); } catch (e) { }
@@ -1072,14 +1069,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Upload a file to the server
     function handleUploadFile(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
+        const user = obj.users[req.session.userid];
         if ((user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
 
-        var multiparty = require('multiparty');
-        var form = new multiparty.Form();
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
             if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ res.sendStatus(404); return; }
             var xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0]));
@@ -1127,8 +1124,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Subscribe to all events we are allowed to receive
     obj.subscribe = function (userid, target) {
-        var user = obj.users[userid];
-        var subscriptions = [userid, 'server-global'];
+        const user = obj.users[userid];
+        const subscriptions = [userid, 'server-global'];
         if (user.siteadmin != null) {
             if (user.siteadmin == 0xFFFFFFFF) subscriptions.push('*');
             if ((user.siteadmin & 2) != 0) subscriptions.push('server-users');
@@ -1221,9 +1218,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     };
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                    var TLSSocket = require('tls').TLSSocket;
-                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                    var tlsock = new TLSSocket(ser, tlsoptions);
+                    const TLSSocket = require('tls').TLSSocket;
+                    const tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                    const tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
 
@@ -1397,14 +1394,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle the web socket echo request, just echo back the data sent
     function handleEchoWebSocket(ws, req) {
-        var domain = checkUserIpAddress(ws, req);
+        const domain = checkUserIpAddress(ws, req);
         if (domain == null) return;
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
         // When data is received from the web socket, echo it back
         ws.on('message', function (data) {
-            var cmd = data.toString('utf8');
-            if (cmd == 'close') {
+            if (data.toString('utf8') == 'close') {
                 try { ws.close(); } catch (e) { console.log(e); }
             } else {
                 try { ws.send(data); } catch (e) { console.log(e); }
@@ -1442,7 +1438,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle Intel AMT events
     // To subscribe, add "http://server:port/amtevents.ashx" to Intel AMT subscriptions.
     obj.handleAmtEventRequest = function (req, res) {
-        var domain = getDomain(req);
+        const domain = getDomain(req);
         try {
             if (req.headers.authorization) {
                 var authstr = req.headers.authorization;
@@ -1518,14 +1514,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a server backup request
     function handleBackupRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
         if ((user.siteadmin & 1) == 0) { res.sendStatus(401); return; } // Check if we have server backup rights
 
         // Require modules
-        const fs = require('fs');
         const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
 
         // Good practice to catch this error explicitly 
@@ -1542,7 +1537,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         for (var i in backupList) {
             var filename = backupList[i];
             var filepath = obj.path.join(obj.parent.datapath, filename);
-            if (fs.existsSync(filepath)) { archive.file(filepath, { name: filename }); }
+            if (obj.fs.existsSync(filepath)) { archive.file(filepath, { name: filename }); }
         }
 
         // Finalize the archive (ie we are done appending files but streams have to finish yet) 
@@ -1551,14 +1546,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a server restore request
     function handleRestoreRequest(req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
+        const user = obj.users[req.session.userid];
         if ((user.siteadmin & 4) == 0) { res.sendStatus(401); return; } // Check if we have server restore rights
 
-        var multiparty = require('multiparty');
-        var form = new multiparty.Form();
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
             res.send('Server must be restarted, <a href="' + domain.url + '">click here to login</a>.');
             parent.Stop(files.datafile[0].path);
@@ -1567,7 +1562,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
 
         // If required, check if this user has rights to do this
@@ -1642,7 +1637,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
             }
         } else if (req.query.meshaction != null) {
-            var domain = checkUserIpAddress(req, res);
+            const domain = checkUserIpAddress(req, res);
             if (domain == null) { res.sendStatus(404); return; }
             var user = obj.users[req.session.userid];
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
@@ -1709,7 +1704,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Create a OSX mesh agent installer
     obj.handleMeshOsxAgentRequest = function (req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (req.query.id == null)) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
@@ -1794,7 +1789,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
-        var domain = checkUserIpAddress(req, res);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
 
@@ -2096,26 +2091,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (splitname.length != 3) return null;
         if (obj.domain !== '') domainname = 'domain-' + obj.domain;
         return obj.path.join(obj.filespath, domainname + "/" + splitname[0] + "-" + splitname[2]);
-    }
-
-    // Read entire file and return it in callback function
-    function readEntireTextFile(filepath, func) {
-        var called = false;
-        try {
-            obj.fs.open(filepath, 'r', function (err, fd) {
-                obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.alloc(bufferSize), bytesRead = 0;
-                    while (bytesRead < bufferSize) {
-                        if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
-                        obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);
-                        bytesRead += chunkSize;
-                    }
-                    obj.fs.close(fd);
-                    called = true;
-                    func(buffer.toString('utf8', 0, bufferSize));
-                });
-            });
-        } catch (e) { if (called == false) { func(null); } }
     }
 
     // Return true is the input string looks like an email address
