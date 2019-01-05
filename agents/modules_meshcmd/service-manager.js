@@ -46,6 +46,9 @@ function parseServiceStatus(token)
         case 0x00000001:
             j.state = 'STOPPED';
             break;
+        default:
+            // Unknown service state
+            break;
     }
     var controlsAccepted = token.Deref((2 * 4), 4).toBuffer().readUInt32LE();
     j.controlsAccepted = [];

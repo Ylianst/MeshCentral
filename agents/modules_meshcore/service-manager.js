@@ -46,6 +46,9 @@ function parseServiceStatus(token)
         case 0x00000001:
             j.state = 'STOPPED';
             break;
+        default:
+            // Unknown service status.
+            break;
     }
     var controlsAccepted = token.Deref((2 * 4), 4).toBuffer().readUInt32LE();
     j.controlsAccepted = [];
@@ -316,7 +319,7 @@ function serviceManager()
                     this._update.stdin.write('exit\n');
 
                     break;
-                default: // unknown platform service type
+                default: // Unknown platform service type
                     break;
             }
         }
@@ -449,7 +452,7 @@ function serviceManager()
                     this._update.stdin.write('systemctl disable ' + name + '.service\n');
                     this._update.stdin.write('exit\n');
                     break;
-                default: // unknown platform service type
+                default: // Unknown platform service type
                     break;
             }
         }

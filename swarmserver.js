@@ -239,6 +239,10 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                             }
                             break;
                         }
+                        default: {
+                            // All other state commands from the legacy agent must be ignored.
+                            break;
+                        }
                     }
                     break;
                 }
@@ -307,6 +311,10 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                         xx = info.agentosdesc.indexOf('\u0000');
                         if (xx >= 0) { info.agentosdesc = info.agentosdesc.substring(0, xx); }
                         return info;
+                    }
+                    default: {
+                        // All other commands from the legacy agent must be ignored.
+                        break;
                     }
                 }
                 ptr += blen;

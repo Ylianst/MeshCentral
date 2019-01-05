@@ -32,5 +32,9 @@ process.on('message', function (message) {
             certStore = message.certs;
             break;
         }
+        default: {
+            console.log('Unknown accelerator action: ' + message.action + '.');
+            break;
+        }
     }
 });

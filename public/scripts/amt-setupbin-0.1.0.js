@@ -152,7 +152,7 @@ var AmtSetupBinDecode = function (file) {
 
         var ptr2 = 0, recbin = file.substring(ptr + 24, ptr + 512);
         if ((r.flags & 2) != 0) { recbin = AmtSetupBinDescrambleRecordData(recbin); } // De-Scramble the record
-        while (1) {
+        while (true) {
 
             // Format of a data record entry:
             // ModuleIdentifier(2)           - identifies the target ME module for the entry.

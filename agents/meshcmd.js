@@ -1226,6 +1226,9 @@ function kvmCtrlData(channel, cmd) {
             }
             break;
         }
+        default:
+            // Unknown action, ignore it.
+            break;
     }
 }
 
@@ -1293,6 +1296,9 @@ function processLmsControlData(data) {
             { amtMei.closeUserInitiatedConnection(function (status, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(7, 0); data.writeUInt32LE(status, 2); socket.write(data); }, this); break; }
         case 8: // Get Intel AMT CIRA State (CMD = 8)
             { amtMei.getRemoteAccessConnectionStatus(function (state, socket) { var data = Buffer.alloc(6); data.writeUInt16LE(8, 0); data.writeUInt32LE(state.status, 2); socket.write(Buffer.concat([data, state.raw])); }, this); break; }
+        default:
+            // Unknown action, ignore it.
+            break;
     }
 }
 

@@ -462,6 +462,9 @@ function createMeshCore(agent) {
                             if (data.url) { mesh.SendCommand({ "action": "msg", "type":"openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                             break;
                         }
+                        default:
+                            // Unknown action, ignore it.
+                            break;
                     }
                     break;
                 }
@@ -499,6 +502,9 @@ function createMeshCore(agent) {
                     if (data.url) { mesh.SendCommand({ "action": "openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                     break;
                 }
+                default:
+                    // Unknown action, ignore it.
+                    break;
             }
         }
     }
@@ -888,6 +894,9 @@ function createMeshCore(agent) {
                         }
                         break;
                     }
+                    default:
+                        // Unknown action, ignore it.
+                        break;
                 }
             }
             //sendConsoleText("Got tunnel #" + this.httprequest.index + " data: " + data, this.httprequest.sessionid);
@@ -927,6 +936,9 @@ function createMeshCore(agent) {
                     } catch (e) { }
                     break;
                 }
+                default:
+                    // Unknown action, ignore it.
+                    break;
             }
             return;
         }
@@ -1044,6 +1056,9 @@ function createMeshCore(agent) {
                     break;
                 case 'darwin':
                     child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
+                    break;
+                default:
+                    // Unknown platform, ignore this command.
                     break;
             }
         } catch (ex) { }
@@ -1605,6 +1620,7 @@ function createMeshCore(agent) {
         switch (amtMessage) {
             case 'iAMT0050': { if (amtMessageArg == '48') { notify = 'Intel&reg; AMT Serial-over-LAN connected'; } else if (amtMessageArg == '49') { notify = 'Intel&reg; AMT Serial-over-LAN disconnected'; } break; } // SOL
             case 'iAMT0052': { if (amtMessageArg == '1') { notify = 'Intel&reg; AMT KVM connected'; } else if (amtMessageArg == '2') { notify = 'Intel&reg; AMT KVM disconnected'; } break; } // KVM
+            default: { break; }
         }
 
         // Send to the entire mesh, no sessionid or userid specified.
@@ -1896,6 +1912,11 @@ function createMeshCore(agent) {
                     var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
                     if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
                 }
+                break;
+            }
+            default: {
+                console.log('Invalid KVM command', cmd);
+                sendConsoleText('Invalid KVM command: ' + cmd);
                 break;
             }
         }

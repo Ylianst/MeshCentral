@@ -899,9 +899,15 @@
                             //addNotification(n);
                             break;
                         }
+                        default:
+                            console.log('Unknown message.event.action', message.event.action);
+                            break;
                     }
                     break;
                 }
+                default:
+                    console.log('Unknown message.action', message.action);
+                    break;
             }
         }
 
@@ -1192,7 +1198,7 @@
                     var link = shortname;
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
-                    if (f.s > 0) { link = "<a target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
+                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
                     h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
@@ -2020,6 +2026,9 @@
                     break;
                 case 2:
                     break;
+                default:
+                    console.log('Unknown onDesktopStateChange state', state);
+                    break;
             }
             updateDesktopButtons();
             deskAdjust();
@@ -2260,6 +2269,9 @@
                     p13targetpath = '';
                     files.sendText({ action: 'ls', reqid: 1, path: '' });
                     break;
+                default:
+                    console.log('Unknown onFilesStateChange state', state);
+                    break;
             }
         }
 
@@ -2359,7 +2371,7 @@
                     h = "<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p13folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
                 } else {
                     var link = shortname;
-                    if (f.s > 0) { link = "<a target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile('" + encodeURIComponent(newlinkpath + '/' + name) + "','" + encodeURIComponent(name) + "'," + f.s + ")\">" + shortname + "</a>"; }
+                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile('" + encodeURIComponent(newlinkpath + '/' + name) + "','" + encodeURIComponent(name) + "'," + f.s + ")\">" + shortname + "</a>"; }
                     h = "<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
@@ -2533,6 +2545,9 @@
                 case 3: // Transport as connected, send a command to indicate we want to start a file download
                     downloadFile.send(JSON.stringify({ action: 'download', reqid: 1, path: downloadFile.xpath }));
                     break;
+                default:
+                    console.log('Unknown onFileDownloadStateChange state', state);
+                    break;
             }
         }
 
@@ -2578,6 +2593,9 @@
                     break;
                 case 3:
                     p13uploadNextFile();
+                    break;
+                default:
+                    console.log('Unknown onFileUploadStateChange state', state);
                     break;
             }
         }
