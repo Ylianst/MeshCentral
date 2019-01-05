@@ -717,7 +717,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Load the server error log
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.readEntireTextFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+                    obj.parent.parent.fs.readFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
                     break;
                 }
             case 'serverclearerrorlog':
@@ -1213,8 +1213,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Send a mesh agent core to the mesh agent
                             var file = obj.parent.getServerFilePath(user, domain, command.path);
                             if (file != null) {
-                                obj.parent.readEntireTextFile(file.fullpath, function (data) {
-                                    if (data != null) {
+                                obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                    if (err != null) {
                                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                                         obj.parent.sendMeshAgentCore(user, domain, command.nodeid, data);
                                     }
@@ -1238,8 +1238,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'close':
                 {
                     // Close the web socket session
-                    console.log('CLOSING1');
-                    if (obj.req.session && obj.req.session.ws && obj.req.session.ws == ws) { console.log('CLOSING2'); delete obj.req.session.ws; }
+                    if (obj.req.session && obj.req.session.ws && obj.req.session.ws == ws) { delete obj.req.session.ws; }
                     try { ws.close(); } catch (e) { }
                     break;
                 }
@@ -1395,26 +1394,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
         }
-    }
-
-    // Read entire file and return it in callback function
-    function readEntireTextFile(filepath, func) {
-        var called = false;
-        try {
-            obj.fs.open(filepath, 'r', function (err, fd) {
-                obj.fs.fstat(fd, function (err, stats) {
-                    var bufferSize = stats.size, chunkSize = 512, buffer = Buffer.from(bufferSize), bytesRead = 0;
-                    while (bytesRead < bufferSize) {
-                        if ((bytesRead + chunkSize) > bufferSize) { chunkSize = (bufferSize - bytesRead); }
-                        obj.fs.readSync(fd, buffer, bytesRead, chunkSize, bytesRead);
-                        bytesRead += chunkSize;
-                    }
-                    obj.fs.close(fd);
-                    called = true;
-                    func(buffer.toString('utf8', 0, bufferSize));
-                });
-            });
-        } catch (e) { if (called == false) { func(null); } }
     }
 
     // Read the folder and all sub-folders and serialize that into json.

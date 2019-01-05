@@ -14,6 +14,7 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const fs = require("fs");
 const crypto = require("crypto");
 
 // Binary encoding and decoding functions
