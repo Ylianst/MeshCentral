@@ -21,15 +21,22 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.args = args;
     obj.certificates = certificates;
     obj.ciraConnections = {};
+    var tlsSessionStore = {};       // Store TLS session information for quick resume.
+    var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
+    const constants = require('constants');
     const common = require("./common.js");
     const net = require("net");
     const tls = require("tls");
-    const MAX_IDLE = 90000;      // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
+    const MAX_IDLE = 90000;         // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
 
     if (obj.args.mpstlsoffload) {
         obj.server = net.createServer(onConnection);
     } else {
-        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false }, onConnection);
+        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION }, onConnection);
+        //obj.server.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
+        //obj.server.on('error', function () { console.log('MPS tls server error'); });
+        obj.server.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+        obj.server.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
     }
 
     obj.server.listen(args.mpsport, function () { console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + "."); }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });

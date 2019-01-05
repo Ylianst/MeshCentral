@@ -49,7 +49,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.net = require('net');
     obj.tls = require('tls');
     obj.path = require('path');
-    obj.constants = require('constants');
     obj.bodyParser = require('body-parser');
     obj.session = require('cookie-session');
     obj.exphbs = require('express-handlebars');
@@ -60,6 +59,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.meshRelayHandler = require('./meshrelay.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
+    const constants = require('constants');
 
     // Variables
     obj.parent = parent;
@@ -140,14 +140,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Main lists
     obj.wsagents = {};
-    obj.wssessions = {};         // UserId --> Array Of Sessions
-    obj.wssessions2 = {};        // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
-    obj.wsPeerSessions = {};     // ServerId --> Array Of "UserId + SessionRnd"
-    obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
-    obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
-    obj.sessionsCount = {};      // Merged session counters, used when doing server peering. UserId --> SessionCount
-    obj.wsrelays = {};           // Id -> Relay
-    obj.wsPeerRelays = {};       // Id -> { ServerId, Time }
+    obj.wssessions = {};            // UserId --> Array Of Sessions
+    obj.wssessions2 = {};           // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
+    obj.wsPeerSessions = {};        // ServerId --> Array Of "UserId + SessionRnd"
+    obj.wsPeerSessions2 = {};       // "UserId + SessionRnd" --> ServerId
+    obj.wsPeerSessions3 = {};       // ServerId --> UserId --> [ SessionId ]
+    obj.sessionsCount = {};         // Merged session counters, used when doing server peering. UserId --> SessionCount
+    obj.wsrelays = {};              // Id -> Relay
+    obj.wsPeerRelays = {};          // Id -> { ServerId, Time }
+    var tlsSessionStore = {};       // Store TLS session information for quick resume.
+    var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -177,12 +179,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Setup the HTTP server without TLS
         obj.expressWs = require('express-ws')(obj.app);
     } else {
-        // Setup the HTTP server with TLS, use only TLS 1.2 and higher.
-        var tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_NO_TLSv1 | obj.constants.SSL_OP_NO_TLSv11 };
+        // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
+        const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
         if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
         obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
         obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
         obj.tlsServer.on('error', function () { console.log('tlsServer error'); });
+        obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+        obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
         obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
     }
 
@@ -288,13 +292,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function checkUserIpAddressEx(req, res, allowedIpList) {
         if (allowedIpList == null) { return true; }
         try {
-            var ip, type = 0;
-            if (req.connection) { type = 1; ip = req.ip; } // HTTP(S) request
-            else if (req._socket) { type = 2; ip = req._socket.remoteAddress; } // WebSocket request
-            if (!ip) return false;
-            for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } }
-            if (type == 1) { res.sendStatus(401); }
-            else if (type == 2) { try { req.close(); } catch (e) { } }
+            var ip;
+            if (req.connection) { // HTTP(S) request
+                ip = req.ip;
+                if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
+                res.sendStatus(401);
+            } else if (req._socket) { // WebSocket request
+                ip = req._socket.remoteAddress;
+
+                // If a trusted reverse-proxy is sending us the remote IP address, use it.
+                // This is not done automatically for web socket like it's done for HTTP requests.
+                if ((obj.args.tlsoffload) && (res.headers['x-forwarded-for']) && ((obj.args.tlsoffload === true) || (obj.args.tlsoffload === ip) || (('::ffff:') + obj.args.tlsoffload === ip))) { ip = res.headers['x-forwarded-for']; }
+
+                if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
+                try { req.close(); } catch (e) { }
+            } 
         } catch (e) { console.log(e); }
         return false;
     }
@@ -1219,7 +1231,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                     const TLSSocket = require('tls').TLSSocket;
-                    const tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                    const tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     const tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
@@ -1340,7 +1352,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws._socket.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS connected to ' + node.host + ':' + port + '.');
