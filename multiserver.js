@@ -548,6 +548,11 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 break;
             }
+            default: {
+                // Unknown peer server command
+                console.log('Unknown action from peer server ' + peerServerId + ': ' + msg.action + '.');
+                break;
+            }
         }
     };
 

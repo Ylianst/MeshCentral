@@ -162,7 +162,7 @@
             }
 
             function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } } } return r; }
+            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = parsedUri[x]; break; } case 1: { r[name] = parsedUri[x]; var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
 
             // Update user controls
             function updateControls() {
@@ -295,6 +295,7 @@
                                 case 0: { performWebRtcSwitch(); break; } // Other side is ready for switch over to WebRTC
                                 case 1: { sendws({ action: 'rtcSwitch', v: 2 }); break; } // Other side no longer sending data on websocket, confirm we got the end marker
                                 case 2: { for (var i in webchannel.xoutBuffer) { webchannel.send(webchannel.xoutBuffer[i]); } delete webchannel.xoutBuffer; break; } // Send any pending data over WebRTC and start using WebRTC with all traffic
+                                default: { console.log('Unknown rtcSwitch value: ' + data.action); break; } //
                             }
                             break;
                         }

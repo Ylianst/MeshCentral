@@ -103,7 +103,7 @@ var CreateAmtRemoteIder = function (serverurl) {
             case 'C': { obj.parent.Start(obj.host, obj.port, obj.user, obj.pass, obj.tls); break; } // Session Start
             case 'E': { obj.Stop(); break; } // Stop IDER
             case 'F': { obj.parent.xxSend(data.substring(1)); obj.bytesToAmt += (data.length - 1); break; } // IDER Data
-            case 'H': { if (obj.onDialogPrompt) obj.onDialogPrompt(obj, JSON.parse(data.substring(1))); } // IDER Dialog Prompt
+            case 'H': { if (obj.onDialogPrompt) obj.onDialogPrompt(obj, JSON.parse(data.substring(1))); break; } // IDER Dialog Prompt
         }
     }
 

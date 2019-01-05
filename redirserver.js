@@ -37,7 +37,11 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             if ((obj.certificates.CommonName == "sample.org") || (obj.certificates.CommonName == "un-configured")) { host = req.headers.host; }
         }
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (req.headers && req.headers.host && (req.headers.host.split(":")[0].toLowerCase() == "localhost")) { res.redirect("https://localhost:" + httpsPort + req.url); } else { res.redirect("https://" + host + ":" + httpsPort + req.url); }
+        if (req.headers && req.headers.host && (req.headers.host.split(":")[0].toLowerCase() == "localhost")) {
+            res.redirect("https://localhost:" + httpsPort + req.url);
+        } else {
+            res.redirect("https://" + host + ":" + httpsPort + req.url);
+        }
     }
 
     /*

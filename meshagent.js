@@ -636,6 +636,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         });
                         break;
                     }
+                default: {
+                    console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
+                    break;
+                }
             }
         }
     }

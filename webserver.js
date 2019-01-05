@@ -192,7 +192,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
     obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
     var sessionOptions = {
-        name: 'xid', // Recommanded security practice to not use the default cookie name
+        name: 'xid', // Recommended security practice to not use the default cookie name
         httpOnly: true,
         keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
         secure: (obj.args.notls != true) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
@@ -899,8 +899,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
                 // Server name is an IPv4 address
-                var filepath = obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript');
-                readEntireTextFile(filepath, function (data) {
+                readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript'), function (data) {
                     if (data == null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
@@ -926,8 +925,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             } else {
                 // Server name is a hostname
-                var filepath = obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_dns.mescript');
-                readEntireTextFile(filepath, function (data) {
+                readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_dns.mescript'), function (data) {
                     if (data == null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
@@ -955,8 +953,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         else if (req.query.type == 2) {
             var filename = 'cira_cleanup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            var filepath = obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript');
-            readEntireTextFile(filepath, function (data) {
+            readEntireTextFile(obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript'), function (data) {
                 if (data == null) { res.sendStatus(404); return; }
                 res.send(Buffer.from(data));
             });
@@ -967,6 +964,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleDownloadUserFiles(req, res) {
         var domain = checkUserIpAddress(req, res);
         if (domain == null) return;
+        if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         if (domain.id != '') { domainname = 'domain-' + domain.id; }
@@ -1694,9 +1692,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var agentid in obj.parent.meshAgentBinaries) {
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
-                response += '<td><a target=_blank href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
+                response += '<td><a rel="noreferrer noopener" target=_blank href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hash + '</td>';
-                response += '<td><a target=_blank href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
+                response += '<td><a rel="noreferrer noopener" target=_blank href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table></body></html>';
             res.send(response);

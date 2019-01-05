@@ -301,6 +301,9 @@ function serviceHost(serviceName)
                         }
                         process.exit();
                         break;
+                    default:
+                        // Unknown arguments, skip it.
+                        break;
                 }
             }
 
