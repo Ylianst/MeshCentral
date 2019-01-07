@@ -259,14 +259,101 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15 };
     obj.Alternate = 0;
 
+    var convertKeyCodeTable = {
+        "Pause": 19,
+        "CapsLock": 20,
+        "Space": 32,
+        "Quote": 222,
+        "Minus": 189,
+        "NumpadMultiply": 106,
+        "NumpadAdd": 107,
+        "PrintScreen": 44,
+        "Comma": 188,
+        "NumpadSubtract": 109,
+        "NumpadDecimal": 110,
+        "Period": 190,
+        "Slash": 191,
+        "NumpadDivide": 111,
+        "Semicolon": 186,
+        "Equal": 187,
+        "OSLeft": 91,
+        "BracketLeft": 219,
+        "OSRight": 91,
+        "Backslash": 220,
+        "BracketRight": 221,
+        "ContextMenu": 93,
+        "Backquote": 192,
+        "NumLock": 144,
+        "ScrollLock": 145,
+        "Backspace": 8,
+        "Tab": 9,
+        "Enter": 13,
+        "NumpadEnter": 13,
+        "Escape": 27,
+        "Delete": 46,
+        "Home": 36,
+        "PageUp": 33,
+        "PageDown": 34,
+        "ArrowLeft": 37,
+        "ArrowUp": 38,
+        "ArrowRight": 39,
+        "ArrowDown": 40,
+        "End": 35,
+        "Insert": 45,
+        "F1": 112,
+        "F2": 113,
+        "F3": 114,
+        "F4": 115,
+        "F5": 116,
+        "F6": 117,
+        "F7": 118,
+        "F8": 119,
+        "F9": 120,
+        "F10": 121,
+        "F11": 122,
+        "F12": 123,
+        "ShiftLeft": 16,
+        "ShiftRight": 16,
+        "ControlLeft": 17,
+        "ControlRight": 17,
+        "AltLeft": 18,
+        "AltRight": 18,
+        "MetaLeft": 91,
+        "MetaRight": 92,
+        "VolumeMute": 181
+        //"LaunchMail": 
+        //"LaunchApp1":
+        //"LaunchApp2":
+        //"BrowserStop":
+        //"MediaStop":
+        //"MediaTrackPrevious":
+        //"MediaTrackNext":
+        //"MediaPlayPause":
+        //"MediaSelect":
+    }
+
+    function convertKeyCode(e) {
+        if (e.code.startsWith('Key') && e.code.length == 4) { return e.code.charCodeAt(3); }
+        if (e.code.startsWith('Digit') && e.code.length == 6) { return e.code.charCodeAt(5); }
+        if (e.code.startsWith('Numpad') && e.code.length == 7) { return e.code.charCodeAt(6) + 48; }
+        return convertKeyCodeTable[e.code];
+    }
+
     obj.SendKeyMsg = function (action, event) {
         if (action == null) return;
-        if (!event) { var event = window.event; }
-        var kc = event.keyCode;
-        if (kc == 59) kc = 186; // Correct for ';' key in Firefox
-        if (kc == 61) kc = 187; // Correct for '=' key in Firefox
-        if (kc == 173) kc = 189; // Correct for '-' key in Firefox
-        obj.SendKeyMsgKC(action, kc);
+        if (!event) { event = window.event; }
+        if (event.code) {
+            // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.
+            // Older browsers will not support this.
+            var kc = convertKeyCode(event);
+            if (kc != null) { obj.SendKeyMsgKC(action, kc); }
+        } else {
+            // Use this keycode, this works best with "US-EN" keyboards.
+            // Older browser support this.
+            var kc = event.keyCode;
+            if (kc == 0x3B) { kc = 0xBA; } // Fix the ';' key
+            obj.SendKeyMsgKC(action, kc);
+        }
     }
 
     obj.SendMessage = function (msg) {

@@ -548,6 +548,75 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         obj.parent.send(x);
     }
 
+    var convertAmtKeyCodeTable = {
+        "Pause": 19,
+        "CapsLock": 20,
+        "Space": 32,
+        "Quote": 39,
+        "Minus": 45,
+        "NumpadMultiply": 42,
+        "NumpadAdd": 43,
+        "PrintScreen": 44,
+        "Comma": 44,
+        "NumpadSubtract": 45,
+        "NumpadDecimal": 46,
+        "Period": 46,
+        "Slash": 47,
+        "NumpadDivide": 47,
+        "Semicolon": 59,
+        "Equal": 61,
+        "OSLeft": 91,
+        "BracketLeft": 91,
+        "OSRight": 91,
+        "Backslash": 92,
+        "BracketRight": 93,
+        "ContextMenu": 93,
+        "Backquote": 96,
+        "NumLock": 144,
+        "ScrollLock": 145,
+        "Backspace": 0xff08,
+        "Tab": 0xff09,
+        "Enter": 0xff0d,
+        "NumpadEnter": 0xff0d,
+        "Escape": 0xff1b,
+        "Delete": 0xffff,
+        "Home": 0xff50,
+        "PageUp": 0xff55,
+        "PageDown": 0xff56,
+        "ArrowLeft": 0xff51,
+        "ArrowUp": 0xff52,
+        "ArrowRight": 0xff53,
+        "ArrowDown": 0xff54,
+        "End": 0xff57,
+        "Insert": 0xff63,
+        "F1": 0xffbe,
+        "F2": 0xffbf,
+        "F3": 0xffc0,
+        "F4": 0xffc1,
+        "F5": 0xffc2,
+        "F6": 0xffc3,
+        "F7": 0xffc4,
+        "F8": 0xffc5,
+        "F9": 0xffc6,
+        "F10": 0xffc7,
+        "F11": 0xffc8,
+        "F12": 0xffc9,
+        "ShiftLeft": 0xffe1,
+        "ShiftRight": 0xffe2,
+        "ControlLeft": 0xffe3,
+        "ControlRight": 0xffe4,
+        "AltLeft": 0xffe9,
+        "AltRight": 0xffea,
+        "MetaLeft": 0xffe7,
+        "MetaRight": 0xffe8
+    }
+    function convertAmtKeyCode(e) {
+        if (e.code.startsWith('Key') && e.code.length == 4) { return e.code.charCodeAt(3) + ((e.shiftKey == false) ? 32 : 0); }
+        if (e.code.startsWith('Digit') && e.code.length == 6) { return e.code.charCodeAt(5); }
+        if (e.code.startsWith('Numpad') && e.code.length == 7) { return e.code.charCodeAt(6); }
+        return convertAmtKeyCodeTable[e.code];
+    }
+
     /*
     Intel AMT only recognizes a small subset of keysym characters defined in the keysymdef.h so you don’t need to
     implement all the languages (this is taken care by the USB Scancode Extension in RFB4.0 protocol).
@@ -564,45 +633,53 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     function _keyevent(d, e) {
         if (!e) { e = window.event; }
-        var k = e.keyCode, kk = k;
-        if (e.shiftKey == false && k >= 65 && k <= 90) kk = k + 32;
-        if (k >= 112 && k <= 124) kk = k + 0xFF4E;
-        if (k == 8) kk = 0xff08; // Backspace
-        if (k == 9) kk = 0xff09; // Tab
-        if (k == 13) kk = 0xff0d; // Return
-        if (k == 16) kk = 0xffe1; // Shift (Left)
-        if (k == 17) kk = 0xffe3; // Ctrl (Left)
-        if (k == 18) kk = 0xffe9; // Alt (Left)
-        if (k == 27) kk = 0xff1b; // ESC
-        if (k == 33) kk = 0xff55; // PageUp
-        if (k == 34) kk = 0xff56; // PageDown
-        if (k == 35) kk = 0xff57; // End
-        if (k == 36) kk = 0xff50; // Home
-        if (k == 37) kk = 0xff51; // Left
-        if (k == 38) kk = 0xff52; // Up
-        if (k == 39) kk = 0xff53; // Right
-        if (k == 40) kk = 0xff54; // Down
-        if (k == 45) kk = 0xff63; // Insert
-        if (k == 46) kk = 0xffff; // Delete
-        if (k >= 96 && k <= 105) kk = k - 48; // Key pad numbers
-        if (k == 106) kk = 42; // Pad *
-        if (k == 107) kk = 43; // Pad +
-        if (k == 109) kk = 45; // Pad -
-        if (k == 110) kk = 46; // Pad .
-        if (k == 111) kk = 47; // Pad /
-        if (k == 186) kk = 59; // ;
-        if (k == 187) kk = 61; // =
-        if (k == 188) kk = 44; // ,
-        if (k == 189) kk = 45; // -
-        if (k == 190) kk = 46; // .
-        if (k == 191) kk = 47; // /
-        if (k == 192) kk = 96; // `
-        if (k == 219) kk = 91; // [
-        if (k == 220) kk = 92; // \
-        if (k == 221) kk = 93; // ]t
-        if (k == 222) kk = 39; // '
-        //console.log('Key' + d + ": " + k + " = " + kk);
-        obj.sendkey(kk, d);
+
+        if (e.code) {
+            // For new browsers, this mapping is keyboard language independent
+            var k = convertAmtKeyCode(e);
+            if (k != null) { obj.sendkey(k, d); }
+        } else {
+            // For older browsers, this mapping works best for EN-US keyboard
+            var k = e.keyCode, kk = k;
+            if (e.shiftKey == false && k >= 65 && k <= 90) kk = k + 32;
+            if (k >= 112 && k <= 124) kk = k + 0xFF4E;
+            if (k == 8) kk = 0xff08; // Backspace
+            if (k == 9) kk = 0xff09; // Tab
+            if (k == 13) kk = 0xff0d; // Return
+            if (k == 16) kk = 0xffe1; // Shift (Left)
+            if (k == 17) kk = 0xffe3; // Ctrl (Left)
+            if (k == 18) kk = 0xffe9; // Alt (Left)
+            if (k == 27) kk = 0xff1b; // ESC
+            if (k == 33) kk = 0xff55; // PageUp
+            if (k == 34) kk = 0xff56; // PageDown
+            if (k == 35) kk = 0xff57; // End
+            if (k == 36) kk = 0xff50; // Home
+            if (k == 37) kk = 0xff51; // Left
+            if (k == 38) kk = 0xff52; // Up
+            if (k == 39) kk = 0xff53; // Right
+            if (k == 40) kk = 0xff54; // Down
+            if (k == 45) kk = 0xff63; // Insert
+            if (k == 46) kk = 0xffff; // Delete
+            if (k >= 96 && k <= 105) kk = k - 48; // Key pad numbers
+            if (k == 106) kk = 42; // Pad *
+            if (k == 107) kk = 43; // Pad +
+            if (k == 109) kk = 45; // Pad -
+            if (k == 110) kk = 46; // Pad .
+            if (k == 111) kk = 47; // Pad /
+            if (k == 186) kk = 59; // ;
+            if (k == 187) kk = 61; // =
+            if (k == 188) kk = 44; // ,
+            if (k == 189) kk = 45; // -
+            if (k == 190) kk = 46; // .
+            if (k == 191) kk = 47; // /
+            if (k == 192) kk = 96; // `
+            if (k == 219) kk = 91; // [
+            if (k == 220) kk = 92; // \
+            if (k == 221) kk = 93; // ]t
+            if (k == 222) kk = 39; // '
+            //console.log('Key' + d + ": " + k + " = " + kk);
+            obj.sendkey(kk, d);
+        }
         return obj.haltEvent(e);
     }
 
