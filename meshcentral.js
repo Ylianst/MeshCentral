@@ -580,12 +580,6 @@ function CreateMeshCentralServer(config, args) {
             if (restoreFile) {
                 obj.debug(1, 'Server stopped, updating settings: ' + restoreFile);
                 console.log('Updating settings folder...');
-                /*
-                var unzip = require('unzip');
-                var rs = obj.fs.createReadStream(restoreFile);
-                rs.on('end', () => { setTimeout(function () { fs.unlinkSync(restoreFile); process.exit(123); }, 500); });
-                rs.pipe(unzip.Extract({ path: obj.datapath }));
-                */
 
                 var yauzl = require("yauzl");
                 yauzl.open(restoreFile, { lazyEntries: true }, function (err, zipfile) {

@@ -384,7 +384,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             for (i in command.names) {
                                 var s = obj.path.join(scpath, command.names[i]), d = obj.path.join(path, command.names[i]);
                                 sendUpdate = false;
-                                copyFile(s, d, function (op) { if (op != null) { obj.fs.unlink(op, function () { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                copyFile(s, d, function (op) { if (op != null) { obj.fs.unlink(op, function (err) { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                             }
                         }
 
@@ -724,7 +724,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Clear the server error log
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.fs.unlink(obj.parent.parent.getConfigFilePath('mesherrors.txt'));
+                    obj.parent.parent.fs.unlink(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
                     break;
                 }
             case 'createmesh':
