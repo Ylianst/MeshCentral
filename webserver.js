@@ -1125,7 +1125,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                             });
                         } else {
-                            try { obj.fs.unlink(file.path); } catch (e) { }
+                            try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
                         }
                     }
                 }
