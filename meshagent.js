@@ -266,7 +266,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Decode the certificate
                 var certlen = obj.common.ReadShort(msg, 2);
                 obj.unauth = {};
-                try { obj.unauth.nodeid = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))).publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } catch (e) { return; }
+                try { obj.unauth.nodeid = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))).publicKey, { md: obj.forge.md.sha384.create() }).data, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } catch (ex) { console.log(ex); return; }
                 obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + Buffer.from(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
 
                 // Check the agent signature if we can
@@ -462,13 +462,43 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Verify the agent signature
     function processAgentSignature(msg) {
         if (obj.args.ignoreagenthashcheck !== true) {
-            // Verify the signature. This is the fast way, without using forge.
-            const verify = obj.parent.crypto.createVerify('SHA384');
-            verify.end(Buffer.from(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
-            if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
-                const verify2 = obj.parent.crypto.createVerify('SHA384');
-                verify2.end(Buffer.from(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
-                if (verify2.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) { return false; }
+            var verified = false;
+
+            if (msg.length != 384) {
+                // Verify a PKCS7 signature.
+                var msgDer = null;
+                try { msgDer = obj.forge.asn1.fromDer(obj.forge.util.createBuffer(msg, 'binary')); } catch (ex) { }
+                if (msgDer != null) {
+                    try {
+                        var p7 = obj.forge.pkcs7.messageFromAsn1(msgDer);
+                        var sig = p7.rawCapture.signature;
+
+                        // Verify with key hash
+                        var buf = Buffer.from(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary');
+                        var verifier = obj.parent.crypto.createVerify('RSA-SHA384');
+                        verifier.update(buf);
+                        verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
+                        if (verified == false) {
+                            // Verify with full hash
+                            buf = Buffer.from(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary');
+                            verifier = obj.parent.crypto.createVerify('RSA-SHA384');
+                            verifier.update(buf);
+                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
+                        }
+                        if (verified == false) { return false; } // Not a valid signature
+                    } catch (ex) { };
+                }
+            }
+
+            if (verified == false) {
+                // Verify the RSA signature. This is the fast way, without using forge.
+                const verify = obj.parent.crypto.createVerify('SHA384');
+                verify.end(Buffer.from(getWebCertHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
+                if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
+                    const verify2 = obj.parent.crypto.createVerify('SHA384');
+                    verify2.end(Buffer.from(getWebCertFullHash(obj.domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
+                    if (verify2.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) { return false; }
+                }
             }
         }
 
