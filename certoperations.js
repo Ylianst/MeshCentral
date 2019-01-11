@@ -146,6 +146,12 @@ module.exports.CertificateOperations = function () {
         return { cert: cert, key: keys.privateKey };
     };
 
+    // Make sure a string with Mac style CR endo of line is changed to Linux LF style.
+    function fixEndOfLines(str) {
+        if ((typeof(str) != 'string') || (str.indexOf('\n') > 0)) return str; // If there is a \n in the file, keep the file as-is.
+        return str.split('\r').join('\n'); // If there is no \n, replace all \r with \n.
+    }
+
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (parent, args, config, func) {
         var i = 0;
@@ -166,8 +172,8 @@ module.exports.CertificateOperations = function () {
 
         // If the root certificate already exist, load it
         if (obj.fileExists(parent.getConfigFilePath("root-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("root-cert-private.key"))) {
-            var rootCertificate = obj.fs.readFileSync(parent.getConfigFilePath("root-cert-public.crt"), "utf8");
-            var rootPrivateKey = obj.fs.readFileSync(parent.getConfigFilePath("root-cert-private.key"), "utf8");
+            var rootCertificate = fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("root-cert-public.crt"), "utf8"));
+            var rootPrivateKey = fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("root-cert-private.key"), "utf8"));
             r.root = { cert: rootCertificate, key: rootPrivateKey };
             rcount++;
         }
@@ -175,44 +181,44 @@ module.exports.CertificateOperations = function () {
         if (args.tlsoffload) {
             // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
             if (obj.fileExists(parent.getConfigFilePath("webserver-cert-public.crt"))) {
-                r.web = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-public.crt"), "utf8") };
+                r.web = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-public.crt"), "utf8")) };
                 rcount++;
             }
         } else {
             // If the web certificate already exist, load it. Load both certificate and private key
             if (obj.fileExists(parent.getConfigFilePath("webserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("webserver-cert-private.key"))) {
-                r.web = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-private.key"), "utf8") };
+                r.web = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-public.crt"), "utf8")), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-private.key"), "utf8")) };
                 rcount++;
             }
         }
 
         // If the mps certificate already exist, load it
         if (obj.fileExists(parent.getConfigFilePath("mpsserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("mpsserver-cert-private.key"))) {
-            r.mps = { cert: obj.fs.readFileSync(parent.getConfigFilePath("mpsserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("mpsserver-cert-private.key"), "utf8") };
+            r.mps = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("mpsserver-cert-public.crt")), "utf8"), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("mpsserver-cert-private.key"), "utf8")) };
             rcount++;
         }
 
         // If the agent certificate already exist, load it
         if (obj.fileExists(parent.getConfigFilePath("agentserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("agentserver-cert-private.key"))) {
-            r.agent = { cert: obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-private.key"), "utf8") };
+            r.agent = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-public.crt")), "utf8"), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("agentserver-cert-private.key"), "utf8")) };
             rcount++;
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
         if (obj.fileExists(parent.getConfigFilePath("swarmserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("swarmserver-cert-private.key"))) {
-            r.swarmserver = { cert: obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-private.key"), "utf8") };
+            r.swarmserver = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-public.crt"), "utf8")), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-private.key"), "utf8")) };
         }
 
         // If the swarm server root certificate exist, load it (This is an optional certificate)
         if (obj.fileExists(parent.getConfigFilePath("swarmserverroot-cert-public.crt"))) {
-            r.swarmserverroot = { cert: obj.fs.readFileSync(parent.getConfigFilePath("swarmserverroot-cert-public.crt"), "utf8") };
+            r.swarmserverroot = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserverroot-cert-public.crt"), "utf8")) };
         }
 
         // If CA certificates are present, load them
         do {
             caok = false;
             if (obj.fileExists(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"))) {
-                calist.push(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"), "utf8"));
+                calist.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"), "utf8")));
                 caok = true;
             }
             caindex++;
@@ -251,7 +257,7 @@ module.exports.CertificateOperations = function () {
                 if (args.tlsoffload) {
                     // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
                     if (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"))) {
-                        r.dns[i] = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), "utf8") };
+                        r.dns[i] = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), "utf8")) };
                         config.domains[i].certs = r.dns[i];
                     } else {
                         console.log("WARNING: File \"webserver-" + i + "-cert-public.crt\" missing, domain \"" + i + "\" will not work correctly.");
@@ -259,7 +265,7 @@ module.exports.CertificateOperations = function () {
                 } else {
                     // If the web certificate already exist, load it. Load both certificate and private key
                     if (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-private.key"))) {
-                        r.dns[i] = { cert: obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-private.key"), "utf8") };
+                        r.dns[i] = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), "utf8")), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-private.key"), "utf8")) };
                         config.domains[i].certs = r.dns[i];
                         // If CA certificates are present, load them
                         caindex = 1;
@@ -267,7 +273,7 @@ module.exports.CertificateOperations = function () {
                         do {
                             caok = false;
                             if (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"))) {
-                                r.dns[i].ca.push(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8"));
+                                r.dns[i].ca.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8")));
                                 caok = true;
                             }
                             caindex++;
@@ -413,7 +419,7 @@ module.exports.CertificateOperations = function () {
                         do {
                             caok = false;
                             if (obj.fileExists(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"))) {
-                                r.dns[i].ca.push(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8"));
+                                r.dns[i].ca.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8")));
                                 caok = true;
                             }
                             caindex++;
@@ -425,12 +431,12 @@ module.exports.CertificateOperations = function () {
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
         if (obj.fileExists(parent.getConfigFilePath("swarmserver-cert-public.crt")) && obj.fileExists(parent.getConfigFilePath("swarmserver-cert-private.key"))) {
-            r.swarmserver = { cert: obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-public.crt"), "utf8"), key: obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-private.key"), "utf8") };
+            r.swarmserver = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-public.crt"), "utf8")), key: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserver-cert-private.key"), "utf8")) };
         }
 
         // If the swarm server root certificate exist, load it (This is an optional certificate)
         if (obj.fileExists(parent.getConfigFilePath("swarmserverroot-cert-public.crt"))) {
-            r.swarmserverroot = { cert: obj.fs.readFileSync(parent.getConfigFilePath("swarmserverroot-cert-public.crt"), "utf8") };
+            r.swarmserverroot = { cert: fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("swarmserverroot-cert-public.crt"), "utf8")) };
         }
 
         // If CA certificates are present, load them
@@ -440,7 +446,7 @@ module.exports.CertificateOperations = function () {
             do {
                 caok = false;
                 if (obj.fileExists(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"))) {
-                    r.web.ca.push(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"), "utf8"));
+                    r.web.ca.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-cert-chain" + caindex + ".crt"), "utf8")));
                     caok = true;
                 }
                 caindex++;
