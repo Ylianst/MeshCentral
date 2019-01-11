@@ -122,7 +122,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         GUESTWEBRTCMESH: 2002      // Guest usage: WebRTC Mesh
     };
 
-    obj.server = tls.createServer({ key: certificates.swarmserver.key, cert: certificates.swarmserver.cert, requestCert: true }, onConnection);
+    obj.server = tls.createServer({ key: certificates.swarmserver.key, cert: certificates.swarmserver.cert, requestCert: true, rejectUnauthorized: false }, onConnection);
     obj.server.listen(args.swarmport, function () { console.log('MeshCentral Legacy Swarm Server running on ' + certificates.CommonName + ':' + args.swarmport + '.'); obj.parent.updateServerState('swarm-port', args.swarmport); }).on('error', function (err) { console.error('ERROR: MeshCentral Swarm Server server port ' + args.swarmport + ' is not available.'); if (args.exactports) { process.exit(); } });
     loadMigrationAgents();
 
@@ -147,6 +147,9 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
     // Called when a legacy agent connects to this server
     function onConnection(socket) {
+        // Check for blocked IP address
+        if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { Debug(1, "SWARM:New blocked agent connection"); return; }
+
         socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", socket: socket };
         socket.setEncoding('binary');
         socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
@@ -347,6 +350,16 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         } else {
             socket.write(Buffer.from(data, "binary"));
         }
+    }
+
+    // Check if the source IP address is allowed for a given allowed list, return false if not
+    function checkSwarmIpAddress(socket, allowedIpList) {
+        if (allowedIpList == null) { return true; }
+        try {
+            var ip = socket.remoteAddress;
+            if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
+        } catch (e) { console.log(e); }
+        return false;
     }
 
     // Debug
