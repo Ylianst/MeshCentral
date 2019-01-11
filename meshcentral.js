@@ -1297,7 +1297,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     } catch (e) {
         console.log('Installing ' + modulename + '...');
         var child_process = require('child_process');
-        child_process.exec('npm install ' + modulename + ' --save', { maxBuffer: 512000 }, function (error, stdout, stderr) {
+        child_process.exec('npm install ' + modulename + ' --no-optional --save', { maxBuffer: 512000 }, function (error, stdout, stderr) {
             if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed.'); process.exit(); return; }
             func(tag1, tag2);
             return;

@@ -16,8 +16,16 @@
 
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
-        const greenlock = require('greenlock');
+        // Try to delete the "./ursa-optional" or "./node_modules/ursa-optional" folder if present.
+        // This is an optional module that GreenLock uses that causes issues.
+        try {
+            const fs = require('fs');
+            if (fs.existsSync(obj.path.join(__dirname, 'ursa-optional'))) { fs.unlinkSync(obj.path.join(__dirname, 'ursa-optional')); }
+            if (fs.existsSync(obj.path.join(__dirname, 'node_modules', 'ursa-optional'))) { fs.unlinkSync(obj.path.join(__dirname, 'node_modules', 'ursa-optional')); }
+        } catch (ex) { }
 
+        // Get GreenLock setup and running.
+        const greenlock = require('greenlock');
         var obj = {};
         obj.parent = parent;
         obj.redirWebServerHooked = false;
