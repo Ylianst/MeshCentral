@@ -24,6 +24,7 @@
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
@@ -239,7 +240,8 @@
                         <p><strong><img alt="" width=150 height=103 src=images/mainaccount.jpg style=margin-bottom:10px;margin-right:20px;float:right />Account actions</strong></p>
                         <p style="margin-left:40px">
                             <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
-                            <span id="addTwoFactorAuth" style="display:none"><a onclick="account_addTwoFactor()" style="cursor:pointer">Add two-factor authentication</a><br /></span>
+                            <span id="otpAuth" style="display:none"><a onclick="account_addOtp()" style="cursor:pointer">Add 2-step login</a><br /></span>
+                            <span id="otpAuthRemove" style="display:none"><a onclick="account_removeOtp()" style="cursor:pointer">Remove 2-step login</a><br /></span>
                             <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
                             <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
@@ -1119,7 +1121,10 @@
                     updateSiteAdmin();
                     QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-                    //QV('addTwoFactorAuth', (userinfo.secauth != true) && ((features & 4096) != 0));
+                    if ((features & 4096) != 0) {
+                        QV('otpAuth', (userinfo.otpsecret != 1));
+                        QV('otpAuthRemove', (userinfo.otpsecret == 1));
+                    }
                     break;
                 }
                 case 'users': {
@@ -1306,6 +1311,26 @@
                             focusTextBox('d2devNotes');
                         }
                     }
+                    break;
+                }
+                case 'otpauth-request': {
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.<br /><br />Secret<br /><tt id=d2optsecret style=font-size:12px>' + message.secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />Enter the token here for 2-step login: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck() onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type="text"></td></table>');
+                        new QRCode(Q("qrcode"), { text: message.url, width: 128, height: 128, colorDark: "#000000", colorLight: "#EEE", correctLevel: QRCode.CorrectLevel.H });
+                        QV('idx_dlgOkButton', true);
+                        QE('idx_dlgOkButton', false);
+                        Q('d2otpauthinput').focus();
+                    }
+                    break;
+                }
+                case 'otpauth-setup': {
+                    if (xxdialogMode) return;
+                    setDialogMode(2, "Add 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    break;
+                }
+                case 'otpauth-clear': {
+                    if (xxdialogMode) return;
+                    setDialogMode(2, "Remove 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
                     break;
                 }
                 case 'event': {
@@ -5029,15 +5054,19 @@
         // MY ACCOUNT
         //
 
-        function account_addTwoFactor() {
-            if (xxdialogMode || (userinfo.secauth == true) || ((features & 4096) == 0)) return;
-            var x = "Loading...";
-            setDialogMode(2, "Add Two-Factor Authentication", 2, account_addTwoFactorEx, x);
-            meshserver.send({ action: 'secauth-request' });
+        function account_addOtp() {
+            if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
+            setDialogMode(2, "Add 2-Step Login", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').innerHTML, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
+            meshserver.send({ action: 'otpauth-request' });
         }
 
-        function account_addTwoFactorEx() {
+        function account_addOtpCheck() {
+            QE('idx_dlgOkButton', Q('d2otpauthinput').value.length == 6);
+        }
 
+        function account_removeOtp() {
+            if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
+            setDialogMode(2, "Remove 2-Step Login", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of 2-step login?");
         }
 
         function account_showVerifyEmail() {
