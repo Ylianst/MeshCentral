@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2019 Intel Corporation
+Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ function UserSessions()
         }
 
         this._user32 = this._marshal.CreateNativeProxy('user32.dll');
-        this._user32.CreateMethod('RegisterPowerSettingNotification');
+        this._user32.CreateMethod({ method: 'RegisterPowerSettingNotification', threadDispatch: 1});
         this._user32.CreateMethod('UnregisterPowerSettingNotification');
         this._rpcrt = this._marshal.CreateNativeProxy('Rpcrt4.dll');
         this._rpcrt.CreateMethod('UuidFromStringA');
@@ -653,7 +653,7 @@ function UserSessions()
         }
         this.consoleUid = function consoleUid()
         {
-            var checkstr = process.platform == 'darwin' ? 'console' : ':0';
+            var checkstr = process.platform == 'darwin' ? 'console' : process.env['DISPLAY'];
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = '';
             child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
@@ -667,12 +667,13 @@ function UserSessions()
                 tokens = lines[i].split(' ');
                 for (j = 1; j < tokens.length; ++j)
                 {
-                    if (tokens[j].length > 0 && tokens[j] == checkstr)
+                    if (tokens[j].length > 0 && (tokens[j] == checkstr || tokens[j] == ('(' + checkstr + ')')))
                     {
                         return (parseInt(this._users()[tokens[0]]));
                     }
                 }
             }
+            
             throw ('nobody logged into console');
         }
     }

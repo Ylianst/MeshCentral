@@ -1052,7 +1052,7 @@ function createMeshCore(agent) {
                     child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER });
                     break;
                 case 'linux':
-                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { type: require('child_process').SpawnTypes.DETACHED, uid: require('user-sessions').consoleUid() });
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });
                     break;
                 case 'darwin':
                     child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
