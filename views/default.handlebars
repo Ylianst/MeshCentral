@@ -239,6 +239,7 @@
                         <p><strong><img alt="" width=150 height=103 src=images/mainaccount.jpg style=margin-bottom:10px;margin-right:20px;float:right />Account actions</strong></p>
                         <p style="margin-left:40px">
                             <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
+                            <span id="addTwoFactorAuth" style="display:none"><a onclick="account_addTwoFactor()" style="cursor:pointer">Add two-factor authentication</a><br /></span>
                             <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
                             <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
@@ -1118,6 +1119,7 @@
                     updateSiteAdmin();
                     QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    //QV('addTwoFactorAuth', (userinfo.secauth != true) && ((features & 4096) != 0));
                     break;
                 }
                 case 'users': {
@@ -5026,6 +5028,17 @@
         //
         // MY ACCOUNT
         //
+
+        function account_addTwoFactor() {
+            if (xxdialogMode || (userinfo.secauth == true) || ((features & 4096) == 0)) return;
+            var x = "Loading...";
+            setDialogMode(2, "Add Two-Factor Authentication", 2, account_addTwoFactorEx, x);
+            meshserver.send({ action: 'secauth-request' });
+        }
+
+        function account_addTwoFactorEx() {
+
+        }
 
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;

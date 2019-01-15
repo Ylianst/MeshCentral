@@ -780,6 +780,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 1024; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
+            if (domain.auth != 'sspi') { features += 4096; } // Two-factor auth supported
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button

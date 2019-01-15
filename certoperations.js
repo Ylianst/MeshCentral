@@ -148,6 +148,9 @@ module.exports.CertificateOperations = function () {
 
     // Make sure a string with Mac style CR endo of line is changed to Linux LF style.
     function fixEndOfLines(str) {
+        if (typeof (str) != 'string') return str; // If this is not a string, do nothing.
+        var i = str.indexOf('-----'); // Remove everything before "-----".
+        if (i > 0) { str = str.substring(i); } // this solves problems with editors that save text file type indicators ahead of the text.
         if ((typeof(str) != 'string') || (str.indexOf('\n') > 0)) return str; // If there is a \n in the file, keep the file as-is.
         return str.split('\r').join('\n'); // If there is no \n, replace all \r with \n.
     }
