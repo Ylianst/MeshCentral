@@ -207,8 +207,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Send user information to web socket, this is the first thing we send
             var userinfo = obj.common.Clone(obj.parent.users[user._id]);
-            delete userinfo.salt;
             delete userinfo.hash;
+            delete userinfo.passhint;
+            delete userinfo.salt;
+            delete userinfo.type;
+            delete userinfo.domain;
+            delete userinfo.subscriptions;
+            delete userinfo.passtype;
+            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
 
             // We are all set, start receiving data
@@ -454,6 +460,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             delete userinfo.domain;
                             delete userinfo.subscriptions;
                             delete userinfo.passtype;
+                            delete userinfo.otpsecret;
                             docs.push(userinfo);
                         }
                     }
@@ -486,6 +493,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 delete userinfo.domain;
                                 delete userinfo.subscriptions;
                                 delete userinfo.passtype;
+                                delete userinfo.otpsecret;
                                 var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
                                 if (oldemail != null) {
                                     message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
@@ -619,6 +627,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 delete userinfo.domain;
                                 delete userinfo.subscriptions;
                                 delete userinfo.passtype;
+                                delete userinfo.otpsecret;
                                 obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
                             }
                             if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
@@ -1329,6 +1338,63 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    break;
+                }
+            case 'otpauth-request':
+                {
+                    // Request a one time password to be setup
+                    const otplib = require('otplib');
+                    const secret = otplib.authenticator.generateSecret();
+                    ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, 'MeshCentral', secret) }));
+                    break;
+                }
+            case 'otpauth-setup':
+                {
+                    // Perform the one time password setup
+                    if (require('otplib').authenticator.check(command.token, command.secret) === true) {
+                        // Token is valid, activate 2-step login on this account.
+                        user.otpsecret = command.secret;
+                        obj.parent.db.SetUser(user);
+                        ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
+
+                        // Notify change
+                        var userinfo = obj.common.Clone(user);
+                        delete userinfo.hash;
+                        delete userinfo.passhint;
+                        delete userinfo.salt;
+                        delete userinfo.type;
+                        delete userinfo.domain;
+                        delete userinfo.subscriptions;
+                        delete userinfo.passtype;
+                        if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
+                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                    } else {
+                        ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
+                    }
+                    break;
+                }
+            case 'otpauth-clear':
+                {
+                    // Clear the one time password secret
+                    if (user.otpsecret) {
+                        delete user.otpsecret;
+                        obj.parent.db.SetUser(user);
+
+                        // Notify change
+                        var userinfo = obj.common.Clone(user);
+                        delete userinfo.hash;
+                        delete userinfo.passhint;
+                        delete userinfo.salt;
+                        delete userinfo.type;
+                        delete userinfo.domain;
+                        delete userinfo.subscriptions;
+                        delete userinfo.passtype;
+                        if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
+                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                        ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
+                    } else {
+                        ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
+                    }
                     break;
                 }
             case 'getNotes':
