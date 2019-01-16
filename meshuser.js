@@ -199,7 +199,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var httpport = ((obj.args.aliasport != null) ? obj.args.aliasport : obj.args.port);
 
             // Build server information object
-            var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: obj.parent.parent.mailserver != null };
+            var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi')), domainauth: (domain.auth == 'sspi') };
             if (obj.args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
 
             // Send server information
@@ -470,6 +470,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'changeemail':
                 {
                     // Change the email address
+                    if (domain.auth == 'sspi') return;
                     if (obj.common.validateEmail(command.email, 1, 256) == false) return;
                     if (obj.parent.users[req.session.userid].email != command.email) {
                         // Check if this email is already validated on a different account
@@ -501,6 +502,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
                                 }
                                 obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+
+                                // Send the verification email
+                                if ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi')) { obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                             }
                         });
                     }
@@ -509,15 +513,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'verifyemail':
                 {
                     // Send a account email verification email
+                    if (domain.auth == 'sspi') return;
                     if (obj.common.validateString(command.email, 3, 1024) == false) return;
-                    var x = command.email.split('@');
-                    if ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2)) {
-                        if (obj.parent.users[req.session.userid].email == command.email) {
-                            // Send the verification email
-                            if (obj.parent.parent.mailserver != null) {
-                                obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
-                            }
-                        }
+                    if ((obj.parent.parent.mailserver != null) && (obj.parent.users[req.session.userid].email == command.email)) {
+                        // Send the verification email
+                        obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
                     }
                     break;
                 }
@@ -738,6 +738,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createmesh':
                 {
+                    // In some situations, we need a verified email address to create a device group.
+                    if ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
+
                     // Create mesh
                     if (obj.common.validateString(command.meshname, 1, 64) == false) break; // Meshname is between 1 and 64 characters
                     if (obj.common.validateString(command.desc, 0, 1024) == false) break; // Mesh description is between 0 and 1024 characters

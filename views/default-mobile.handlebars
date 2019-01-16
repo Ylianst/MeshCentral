@@ -237,12 +237,16 @@
                                 <p><strong>Account actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
                                     <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
+                                    <div style="margin-top:5px">
+                                        <span id="otpAuth" style="display:none"><a onclick="account_addOtp()" style="cursor:pointer">Add 2-step login</a><br /></span>
+                                        <span id="otpAuthRemove" style="display:none"><a onclick="account_removeOtp()" style="cursor:pointer">Remove 2-step login</a><br /></span>
+                                    </div>
                                     <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
                                 </div>
+                                <br style=clear:both />
                             </div>
-                            <br style=clear:both />
                             <strong>Device Groups</strong>
                             ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
                             <br /><br />
@@ -560,7 +564,7 @@
     <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Files</div>
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
-        <a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a>
+        <div id="logoutMenuOption"><a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
     </div>
     <iframe name="fileUploadFrame" style=display:none></iframe>
     <script>
@@ -647,14 +651,17 @@
             switch (message.action) {
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
+                    QV('p3AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
+                    QV('logoutMenuOption', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide logout if in single user mode or domain authentication
                     break;
                 }
                 case 'userinfo': {
                     userinfo = message.userinfo;
                     QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
-                    //QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-                    //QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                    QV('otpAuth', ((features & 4096) != 0) && (userinfo.otpsecret != 1));
+                    QV('otpAuthRemove', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
                     break;
                 }
                 case 'users': {
@@ -713,6 +720,28 @@
                     if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
                     break;
                 }
+                case 'otpauth-request': {
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
+                        var secret = message.secret;
+                        if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
+                        else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
+                        QH('d2optinfo', 'Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                        QV('idx_dlgOkButton', true);
+                        QE('idx_dlgOkButton', false);
+                        Q('d2otpauthinput').focus();
+                    }
+                    break;
+                }
+                case 'otpauth-setup': {
+                    if (xxdialogMode) return;
+                    setDialogMode(2, "Add 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    break;
+                }
+                case 'otpauth-clear': {
+                    if (xxdialogMode) return;
+                    setDialogMode(2, "Remove 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    break;
+                }
                 case 'event': {
                     /*
                     if (!message.event.nolog) {
@@ -723,6 +752,18 @@
                     }
                     */
                     switch (message.event.action) {
+                        case 'accountchange': {
+                            // An account was created or changed
+                            if (userinfo.name == message.event.account.name) {
+                                var newsiteadmin = message.event.account.siteadmin ? message.event.account.siteadmin : 0;
+                                var oldsiteadmin = userinfo.siteadmin ? userinfo.siteadmin : 0;
+                                if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
+                                userinfo = message.event.account;
+                                if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
+                                QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                            }
+                            break;
+                        }
                         case 'createmesh': {
                             // A new mesh was created
                             if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
@@ -952,6 +993,23 @@
         // MY ACCOUNT
         //
 
+        function account_addOtp() {
+            if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
+            setDialogMode(2, "Add 2-Step Login", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
+            meshserver.send({ action: 'otpauth-request' });
+        }
+
+        function account_addOtpCheck(e) {
+            var tokenIsValid = (Q('d2otpauthinput').value.length == 6);
+            QE('idx_dlgOkButton', tokenIsValid);
+            if (e && (e.keyCode == 13) && tokenIsValid) { dialogclose(1); }
+        }
+
+        function account_removeOtp() {
+            if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
+            setDialogMode(2, "Remove 2-Step Login", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of 2-step login?");
+        }
+
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
             var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
@@ -973,7 +1031,7 @@
 
         function account_validateEmail(e, email) {
             QE('idx_dlgOkButton', validateEmail(Q('dp3email').value) && (Q('dp3email').value != userinfo.email));
-            if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
+            if ((e != null) && (e.keyCode == 13)) { dialogclose(1); }
         }
 
         function account_changeEmail() {
@@ -1011,6 +1069,11 @@
 
         function account_createMesh() {
             if (xxdialogMode) return;
+
+            // Check if we are allowed to create a new device group
+            if ((userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until the email address is verified. Go to the \"My Account\" menu option to change and verify an email address."); return; }
+
+            // We are allowed, let's prompt to information
             var x = addHtmlValue('Name', '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
             x += addHtmlValue('Type', '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Software Agent Group</option><option value=1>Intel&reg; AMT only</option></select></div>');
             x += addHtmlValue('Description', '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
