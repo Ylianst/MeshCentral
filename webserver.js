@@ -241,6 +241,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
+        if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
         var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
         // Query the db for the given username
@@ -346,9 +347,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleLoginRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        obj.authenticate(req.body.username, req.body.password, domain, function (err, userid, passhint) {
+
+        // Normally, use the body username/password. If this is a token, use the username/password in the session.
+        var xusername = req.body.username, xpassword = req.body.password;
+        if ((xusername == null) && (xpassword == null) && (req.body.token != null)) { xusername = req.session.tokenusername; xpassword = req.session.tokenpassword; }
+
+        // Authenticate the user
+        obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint) {
             if (userid) {
                 var user = obj.users[userid];
+
+                // Check if this user has 2-step login active
+                var tokenValid = 0;
+                const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                const otplib = require('otplib')
+                otplib.authenticator.options = { window: 6 }; // Set +/- 3 minute window
+                if (twoStepLoginSupported && user.otpsecret && ((typeof (req.body.token) != 'string') || ((tokenValid = otplib.authenticator.check(req.body.token, user.otpsecret)) !== true))) {
+                    // 2-step auth is required, but the token is not present or not valid.
+                    if (tokenValid === false) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                    req.session.loginmode = '4';
+                    req.session.tokenusername = xusername;
+                    req.session.tokenpassword = xpassword;
+                    res.redirect(domain.url);
+                    return;
+                }
 
                 // Save login time
                 user.login = Date.now();
@@ -359,6 +381,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
                 // req.session.success = 'Authenticated as ' + user.name + 'click to <a href="/logout">logout</a>. You may now access <a href="/restricted">/restricted</a>.';
                 delete req.session.loginmode;
+                delete req.session.tokenusername;
+                delete req.session.tokenpassword;
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
@@ -526,6 +550,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 delete userinfo.domain;
                                                 delete userinfo.subscriptions;
                                                 delete userinfo.passtype;
+                                                if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id });
 
                                                 // Send the confirmation page
@@ -554,6 +579,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 userinfo.hash = hash;
                                                 userinfo.passchange = Date.now();
                                                 userinfo.passhint = null;
+                                                delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
                                                 obj.db.SetUser(userinfo);
 
                                                 // Event the change
@@ -565,6 +591,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 delete userinfo.domain;
                                                 delete userinfo.subscriptions;
                                                 delete userinfo.passtype;
+                                                if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id });
 
                                                 // Send the new password
@@ -780,7 +807,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 1024; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
-            if (domain.auth != 'sspi') { features += 4096; } // Two-factor auth supported
+            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 4096; } // 2-step login supported
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
@@ -1883,6 +1910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.get(url, handleRootRequest);
         obj.app.get(url + 'terms', handleTermsRequest);
         obj.app.post(url + 'login', handleLoginRequest);
+        obj.app.post(url + 'tokenlogin', handleLoginRequest);
         obj.app.get(url + 'logout', handleLogoutRequest);
         obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
         obj.app.get(url + 'mescript.ashx', handleMeScriptRequest);

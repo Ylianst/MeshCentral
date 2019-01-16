@@ -1121,10 +1121,8 @@
                     updateSiteAdmin();
                     QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
                     QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-                    if ((features & 4096) != 0) {
-                        QV('otpAuth', (userinfo.otpsecret != 1));
-                        QV('otpAuthRemove', (userinfo.otpsecret == 1));
-                    }
+                    QV('otpAuth', ((features & 4096) != 0) && (userinfo.otpsecret != 1));
+                    QV('otpAuthRemove', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
                     break;
                 }
                 case 'users': {
@@ -1315,7 +1313,10 @@
                 }
                 case 'otpauth-request': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-request')) {
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.<br /><br />Secret<br /><tt id=d2optsecret style=font-size:12px>' + message.secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />Enter the token here for 2-step login: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck() onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type="text"></td></table>');
+                        var secret = message.secret;
+                        if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
+                        else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />Enter the token here for 2-step login: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                         new QRCode(Q("qrcode"), { text: message.url, width: 128, height: 128, colorDark: "#000000", colorLight: "#EEE", correctLevel: QRCode.CorrectLevel.H });
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
@@ -5056,12 +5057,14 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Add 2-Step Login", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').innerHTML, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
+            setDialogMode(2, "Add 2-Step Login", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
-        function account_addOtpCheck() {
-            QE('idx_dlgOkButton', Q('d2otpauthinput').value.length == 6);
+        function account_addOtpCheck(e) {
+            const v = (Q('d2otpauthinput').value.length == 6);
+            QE('idx_dlgOkButton', v);
+            if (e && (e.keyCode == 13) && v) { dialogclose(1); }
         }
 
         function account_removeOtp() {

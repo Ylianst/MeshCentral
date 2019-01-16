@@ -1342,58 +1342,72 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-request':
                 {
-                    // Request a one time password to be setup
-                    const otplib = require('otplib');
-                    const secret = otplib.authenticator.generateSecret();
-                    ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, 'MeshCentral', secret) }));
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported) {
+                        // Request a one time password to be setup
+                        const otplib = require('otplib');
+                        const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
+                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, obj.parent.certificates.CommonName, secret) }));
+                    }
                     break;
                 }
             case 'otpauth-setup':
                 {
-                    // Perform the one time password setup
-                    if (require('otplib').authenticator.check(command.token, command.secret) === true) {
-                        // Token is valid, activate 2-step login on this account.
-                        user.otpsecret = command.secret;
-                        obj.parent.db.SetUser(user);
-                        ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported) {
+                        // Perform the one time password setup
+                        const otplib = require('otplib');
+                        otplib.authenticator.options = { window: 6 }; // Set +/- 3 minute window
+                        if (otplib.authenticator.check(command.token, command.secret) === true) {
+                            // Token is valid, activate 2-step login on this account.
+                            user.otpsecret = command.secret;
+                            obj.parent.db.SetUser(user);
+                            ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
-                        // Notify change
-                        var userinfo = obj.common.Clone(user);
-                        delete userinfo.hash;
-                        delete userinfo.passhint;
-                        delete userinfo.salt;
-                        delete userinfo.type;
-                        delete userinfo.domain;
-                        delete userinfo.subscriptions;
-                        delete userinfo.passtype;
-                        if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
-                    } else {
-                        ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
+                            // Notify change
+                            var userinfo = obj.common.Clone(user);
+                            delete userinfo.hash;
+                            delete userinfo.passhint;
+                            delete userinfo.salt;
+                            delete userinfo.type;
+                            delete userinfo.domain;
+                            delete userinfo.subscriptions;
+                            delete userinfo.passtype;
+                            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                        } else {
+                            ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
+                        }
                     }
                     break;
                 }
             case 'otpauth-clear':
                 {
-                    // Clear the one time password secret
-                    if (user.otpsecret) {
-                        delete user.otpsecret;
-                        obj.parent.db.SetUser(user);
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported) {
+                        // Clear the one time password secret
+                        if (user.otpsecret) {
+                            delete user.otpsecret;
+                            obj.parent.db.SetUser(user);
 
-                        // Notify change
-                        var userinfo = obj.common.Clone(user);
-                        delete userinfo.hash;
-                        delete userinfo.passhint;
-                        delete userinfo.salt;
-                        delete userinfo.type;
-                        delete userinfo.domain;
-                        delete userinfo.subscriptions;
-                        delete userinfo.passtype;
-                        if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
-                        ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
-                    } else {
-                        ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
+                            // Notify change
+                            var userinfo = obj.common.Clone(user);
+                            delete userinfo.hash;
+                            delete userinfo.passhint;
+                            delete userinfo.salt;
+                            delete userinfo.type;
+                            delete userinfo.domain;
+                            delete userinfo.subscriptions;
+                            delete userinfo.passtype;
+                            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                            ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
+                        } else {
+                            ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
+                        }
                     }
                     break;
                 }

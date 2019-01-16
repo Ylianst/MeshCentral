@@ -117,7 +117,7 @@
                                     </form>
                                 </div>
                             </div>
-                            <div id=resetpanel style="background-color: #979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
+                            <div id=resetpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
                                 <form action=resetaccount method=post>
                                     <div id=message3>
                                         {{{message}}}
@@ -134,6 +134,25 @@
                                             <td colspan=2>
                                                 <div style=float:right><input id=eresetButton type=submit value="Reset Account" disabled="disabled" /></div>
                                                 <div id=passWarning style="padding-top:6px"></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                </form>
+                            </div>
+                            <div id=tokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
+                                <form action=tokenlogin method=post autocomplete=off>
+                                    <div id=message4>
+                                        {{{message}}}
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td align=right width=100>Login token:</td>
+                                            <td><input id=tokenInput type=text name=token maxlength=6 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) /></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan=2>
+                                                <div style=float:right><input id=tokenOkButton type=submit value="Login" disabled="disabled" /></div>
                                             </td>
                                         </tr>
                                     </table>
@@ -218,9 +237,11 @@
             QV('loginpanel', x == 1);
             QV('createpanel', x == 2);
             QV('resetpanel', x == 3);
+            QV('tokenpanel', x == 4);
             if (x == 1) { Q('username').focus(); }
             if (x == 2) { Q('ausername').focus(); }
             if (x == 3) { Q('remail').focus(); }
+            if (x == 4) { Q('tokenInput').focus(); }
         }
 
         function validateLogin(box, e) {
@@ -306,6 +327,8 @@
             if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
             return true;
         }
+
+        function checkToken() { QE('tokenOkButton', Q('tokenInput').value.length == 6); }
 
         //
         // POPUP DIALOG
