@@ -246,8 +246,8 @@
                             <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
                         </p>
+                        <br style=clear:both />
                     </div>
-                    <br style=clear:both />
                     <strong>Device Groups</strong>
                     ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
                     <br /><br />
@@ -1074,7 +1074,7 @@
             if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
             // Update account actions
-            QV('p2AccountActions', (features & 4) == 0); // Hide Account Actions if in single user mode
+            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
             QV('p2ServerActions', siteRights & 21);
             QV('LeftMenuMyServer', siteRights & 21);
             QV('MainMenuMyServer', siteRights & 21);
@@ -1297,7 +1297,7 @@
                     }
                     break;
                 }
-                case 'getNotes':{
+                case 'getNotes': {
                     var n = Q('d2devNotes');
                     if (n && (message.id == decodeURIComponent(n.attributes['noteid'].value))) {
                         if (message.notes) { QH('d2devNotes', decodeURIComponent(message.notes)); } else { QH('d2devNotes', ''); }
@@ -5062,9 +5062,9 @@
         }
 
         function account_addOtpCheck(e) {
-            const v = (Q('d2otpauthinput').value.length == 6);
-            QE('idx_dlgOkButton', v);
-            if (e && (e.keyCode == 13) && v) { dialogclose(1); }
+            var tokenIsValid = (Q('d2otpauthinput').value.length == 6);
+            QE('idx_dlgOkButton', tokenIsValid);
+            if (e && (e.keyCode == 13) && tokenIsValid) { dialogclose(1); }
         }
 
         function account_removeOtp() {
@@ -5134,6 +5134,11 @@
 
         function account_createMesh() {
             if (xxdialogMode) return;
+
+            // Check if we are allowed to create a new device group
+            if ((userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until the email address is verified. Go to the \"My Account\" tab to change and verify an email address."); return; }
+
+            // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below.<br /><br />";
             x += addHtmlValue('Name', '<input id=dp2meshname style=width:230px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
             x += addHtmlValue('Type', '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Manage using a software agent</option><option value=1>Intel&reg; AMT only, no agent</option></select></div>');

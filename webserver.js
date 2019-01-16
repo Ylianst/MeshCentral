@@ -333,7 +333,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         // Destroy the user's session to log them out will be re-created next request
         if (req.session.userid) {
@@ -425,7 +426,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
             req.session.loginmode = 2;
@@ -466,7 +468,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user.salt = salt;
                             user.hash = hash;
                             obj.db.SetUser(user);
-                            if (obj.parent.mailserver != null) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+
+                            // Send the verification email
+                            if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+
                         });
                         obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: user, action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                     }
@@ -479,7 +484,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
         if (!req.body.email || checkEmail(req.body.email) == false) {
             req.session.loginmode = 3;
@@ -511,7 +517,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
             if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
@@ -614,7 +621,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
         var user = obj.users[req.session.userid];
@@ -658,7 +666,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if ((domain == null) || (domain.auth == 'sspi')) return;
+
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
 
@@ -795,19 +804,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Give the web page a list of supported server features
             features = 0;
-            if (obj.args.wanonly == true) { features += 1; } // WAN-only mode
-            if (obj.args.lanonly == true) { features += 2; } // LAN-only mode
-            if (obj.args.nousers == true) { features += 4; } // Single user mode
-            if (domain.userQuota == -1) { features += 8; } // No server files mode
-            if (obj.args.mpstlsoffload) { features += 16; } // No mutual-auth CIRA
-            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
-            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 64; } // Email invites
-            if (obj.args.webrtc == true) { features += 128; } // Enable WebRTC (Default false for now)
-            if (obj.args.clickonce !== false) { features += 256; } // Enable ClickOnce (Default true)
-            if (obj.args.allowhighqualitydesktop == true) { features += 512; } // Enable AllowHighQualityDesktop (Default false)
-            if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 1024; } // No CIRA
-            if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 2048; } // Server can self-write (Allows self-update)
-            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 4096; } // 2-step login supported
+            if (obj.args.wanonly == true) { features += 0x0001; } // WAN-only mode
+            if (obj.args.lanonly == true) { features += 0x0002; } // LAN-only mode
+            if (obj.args.nousers == true) { features += 0x0004; } // Single user mode
+            if (domain.userQuota == -1) { features += 0x0008; } // No server files mode
+            if (obj.args.mpstlsoffload) { features += 0x0010; } // No mutual-auth CIRA
+            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 0x0020; } // Allow site within iframe
+            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 0x0040; } // Email invites
+            if (obj.args.webrtc == true) { features += 0x0080; } // Enable WebRTC (Default false for now)
+            if (obj.args.clickonce !== false) { features += 0x0100; } // Enable ClickOnce (Default true)
+            if (obj.args.allowhighqualitydesktop == true) { features += 0x0200; } // Enable AllowHighQualityDesktop (Default false)
+            if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x0400; } // No CIRA
+            if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x0800; } // Server can self-write (Allows self-update)
+            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
             
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
