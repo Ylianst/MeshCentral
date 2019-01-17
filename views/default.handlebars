@@ -2264,12 +2264,12 @@
 
             if (serverinfo.https == true) {
                 var portStr = (serverinfo.port == 443)?'':(":" + serverinfo.port);
-                Q('agins_linux_area').value = "wget -q https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
-                Q('agins_linux_area_un').value = "wget -q https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                Q('agins_linux_area').value = "wget https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
+                Q('agins_linux_area_un').value = "wget https://" + servername + portStr + "/meshagents?script=1 --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             } else {
                 var portStr = (serverinfo.port == 80)?'':(":" + serverinfo.port);
-                Q('agins_linux_area').value = "wget -q http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
-                Q('agins_linux_area_un').value = "wget -q http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                Q('agins_linux_area').value = "wget http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + " '" + meshid.split('/')[2] + "'\r\n";
+                Q('agins_linux_area_un').value = "wget http://" + servername + portStr + "/meshagents?script=1 -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
             }
             Q('aginsSelect').focus();
             addAgentToMeshClick();

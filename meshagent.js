@@ -112,18 +112,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (agentMeshCoreHash != meshcorehash) {
                         if (obj.agentCoreCheck < 5) {
                             if (meshcorehash == null) {
-                                // Update no core
-                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
+                                // Clear the core
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
                                 obj.parent.parent.debug(1, 'Clearing core');
                             } else {
                                 // Update new core
-                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]);
+                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
                                 obj.parent.parent.debug(1, 'Updating code ' + corename);
                             }
                             obj.agentCoreCheck++;
                         }
                     } else {
                         obj.agentCoreCheck = 0;
+                        obj.send(obj.common.ShortToStr(16) + obj.common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                     }
                 }
 
