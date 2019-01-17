@@ -672,10 +672,9 @@ function createMeshCore(agent) {
                         this.httprequest._term = require('win-terminal').Start(80, 25);
                         this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                         this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
-                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed');}); });
+                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
                         //this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
-                    } else
-                    {
+                    } else {
                         this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
@@ -684,6 +683,26 @@ function createMeshCore(agent) {
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                         this.prependListener('end', function () { this.httprequest.process.kill(); });
                     }
+
+                    this.end = function () {
+                        if (process.platform == "win32") {
+                            // Unpipe the web socket
+                            this.unpipe(this.httprequest._term);
+                            this.httprequest._term.unpipe(this);
+
+                            // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
+                            if (this.rtcchannel) {
+                                this.rtcchannel.unpipe(this.httprequest._term);
+                                this.httprequest._term.unpipe(this.rtcchannel);
+                            }
+
+                            // Clean up
+                            this.httprequest._term.end();
+                            this.httprequest._term = null;
+                        } else {
+                            // TODO!!
+                        }
+                    };
 
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -1007,6 +1026,7 @@ function createMeshCore(agent) {
             }
         } else if (obj.type == 'offer') {
             // This is a WebRTC offer.
+            if (ws.httprequest.protocol == 1) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
             ws.webrtc = rtc.createConnection();
             ws.webrtc.websocket = ws;
             ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
@@ -1020,9 +1040,11 @@ function createMeshCore(agent) {
                 this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
                 this.websocket.rtcchannel.on('end', function () {
                     // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
-                    /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');*/
-                    this.unpipe(this.websocket.desktop.kvm);
-                    this.websocket.httprequest.desktop.kvm.unpipe(this);
+                    //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
+                    if (this.websocket.desktop && this.websocket.desktop.kvm) {
+                        this.unpipe(this.websocket.desktop.kvm);
+                        this.websocket.httprequest.desktop.kvm.unpipe(this);
+                    }
                 });
                 this.websocket.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}"); // Indicate we are ready for WebRTC switch-over.
             });
