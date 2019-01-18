@@ -197,8 +197,8 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
                         // Figure out what is the next agent version we need.
                         var nextAgentVersion = 0;
-                        if (nodeblock.agentversion < 200) { nextAgentVersion = 200; } // If less then 200, move to transitional MC1 agent.
-                        if (nodeblock.agentversion == 200) { nextAgentVersion = 201; } // If at 200, move to first MC2 agent.
+                        if (nodeblock.agentversion < 201) { nextAgentVersion = 201; } // If less then 201, move to transitional MC1 agent.
+                        if (nodeblock.agentversion == 201) { nextAgentVersion = 202; } // If at 201, move to first MC2 agent.
 
                         // See if we need to start the agent update
                         if ((nextAgentVersion > 0) && (obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
