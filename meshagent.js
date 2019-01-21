@@ -106,11 +106,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 const agentMeshCoreHash = (msg.length == 52) ? msg.substring(4, 52) : null;
 
                 // We need to check if the core is current. First, figure out what core we need.
-                const corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                var corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                if (obj.agentCoreCheck == 1001) { corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore; } // Use the recovery core.
                 if (corename != null) {
                     const meshcorehash = obj.parent.parent.defaultMeshCoresHash[corename];
                     if (agentMeshCoreHash != meshcorehash) {
-                        if (obj.agentCoreCheck < 5) {
+                        if ((obj.agentCoreCheck < 5) || (obj.agentCoreCheck == 1001)) {
                             if (meshcorehash == null) {
                                 // Clear the core
                                 obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
@@ -184,6 +185,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                             }
                         });
+                    } else {
+                        // Check the mesh core, if the agent is capable of running one
+                        if (((obj.agentInfo.capabilities & 16) != 0) && (obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
+                            obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                        } 
                     }
                 }
             }
@@ -398,51 +404,60 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Command 4, inform mesh agent that it's authenticated.
             obj.send(obj.common.ShortToStr(4));
 
-            // Check the mesh core, if the agent is capable of running one
-            if ((obj.agentInfo.capabilities & 16) != 0) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
-
             // Check if we need to make an native update check
             obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) { obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0)); } // Ask the agent for it's executable binary hash
+            const corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+            if (corename == null) { obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
 
-            // Check if we already have IP location information for this node
-            obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
-                if (iplocs.length == 1) {
-                    // We have a location in the database for this remote IP
-                    var iploc = nodes[0], x = {};
-                    if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
-                        x.publicip = iploc.ip;
-                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
-                        ChangeAgentLocationInfo(x);
-                    }
-                } else {
-                    // Check if we need to ask for the IP location
-                    var doIpLocation = 0;
-                    if (device.iploc == null) {
-                        doIpLocation = 1;
+            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
+                // Ask the agent for it's executable binary hash
+                obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0));
+            } else {
+                // Check the mesh core, if the agent is capable of running one
+                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
+            }
+
+            // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
+            if (domain.iplocation == true) {
+                // Check if we already have IP location information for this node
+                obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
+                    if (iplocs.length == 1) {
+                        // We have a location in the database for this remote IP
+                        var iploc = nodes[0], x = {};
+                        if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
+                            x.publicip = iploc.ip;
+                            x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
+                            ChangeAgentLocationInfo(x);
+                        }
                     } else {
-                        var loc = device.iploc.split(',');
-                        if (loc.length < 3) {
-                            doIpLocation = 2;
+                        // Check if we need to ask for the IP location
+                        var doIpLocation = 0;
+                        if (device.iploc == null) {
+                            doIpLocation = 1;
                         } else {
-                            var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
-                            t.setDate(t.getDate() + 20);
-                            if (t < now) { doIpLocation = 3; }
+                            var loc = device.iploc.split(',');
+                            if (loc.length < 3) {
+                                doIpLocation = 2;
+                            } else {
+                                var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
+                                t.setDate(t.getDate() + 20);
+                                if (t < now) { doIpLocation = 3; }
+                            }
+                        }
+
+                        // If we need to ask for IP location, see if we have the quota to do it.
+                        if (doIpLocation > 0) {
+                            obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                                if (ipLocationLimitor.value > 0) {
+                                    ipLocationLimitor.value--;
+                                    obj.db.Set(ipLocationLimitor);
+                                    obj.send(JSON.stringify({ action: 'iplocation' }));
+                                }
+                            });
                         }
                     }
-
-                    // If we need to ask for IP location, see if we have the quota to do it.
-                    if (doIpLocation > 0) {
-                        obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
-                            if (ipLocationLimitor.value > 0) {
-                                ipLocationLimitor.value--;
-                                obj.db.Set(ipLocationLimitor);
-                                obj.send(JSON.stringify({ action: 'iplocation' }));
-                            }
-                        });
-                    }
-                }
-            });
+                });
+            }
         });
     }
 

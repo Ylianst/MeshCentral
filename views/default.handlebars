@@ -939,7 +939,7 @@
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
             // Display the page devices
-            onSortSelectChange();
+            onSortSelectChange(true);
             onSearchInputChanged();
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
@@ -1106,6 +1106,34 @@
             if ((siteRights & 21) != 0) { meshserver.send({ action: 'serverstats', interval: 10000 }); }
         }
 
+        // When the list of events needs to be updated, put a small delay so that the browser
+        // performs much less work when event storms happen.
+        var updateEventsNaggleTimer = null;
+        function updateEventsNaggle() {
+            if (updateEventsNaggleTimer == null) {
+                updateEventsNaggleTimer = setTimeout(function () {
+                    events_update();
+                    updateEventsNaggleTimer = null;
+                }, 100);
+            }
+        }
+
+        // When the list of devices needs to be updated, put a small delay so that the browser
+        // performs much less work when event storms happen.
+        var updateDevicesNaggleTimer = null;
+        function updateDevicesNaggle() {
+            if (updateDevicesNaggleTimer == null) {
+                updateDevicesNaggleTimer = setTimeout(function () {
+                    onSortSelectChange(true);
+                    drawNotifications();
+                    onSearchInputChanged();
+                    updateDevices();
+                    updateMapMarkers();
+                    updateDevicesNaggleTimer = null;
+                }, 100);
+            }
+        }
+
         function onMessage(server, message) {
             switch (message.action) {
                 case 'serverstats': {
@@ -1166,9 +1194,10 @@
                             nodes.push(message.nodes[m][n]);
                         }
                     }
-                    onSortSelectChange();
-                    onSearchInputChanged();
-                    updateDevices();
+                    //onSortSelectChange(true);
+                    //onSearchInputChanged();
+                    //updateDevices();
+                    updateDevicesNaggle();
                     refreshMap(false, true);
                     if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
@@ -1284,7 +1313,8 @@
                         userEvents_update();
                     } else {
                         events = message.events;
-                        events_update();
+                        updateEventsNaggle();
+                        //events_update();
                     }
                     break;
                 }
@@ -1339,7 +1369,8 @@
                         events.unshift(message.event);
                         var eventLimit = parseInt(p3limitdropdown.value);
                         while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
-                        events_update();
+                        updateEventsNaggle();
+                        //events_update();
                     }
                     switch (message.event.action) {
                         case 'accountcreate':
@@ -1442,10 +1473,14 @@
                             if (!node.icon) node.icon = 1;
                             node.ident = ++nodeShortIdent;
                             nodes.push(node);
-                            onSortSelectChange();
-                            onSearchInputChanged();
-                            updateDevices();
-                            updateMapMarkers();
+
+                            // Web page update
+                            updateDevicesNaggle();
+                            //onSortSelectChange(true);
+                            //onSearchInputChanged();
+                            //updateDevices();
+                            //updateMapMarkers();
+
                             break;
                         }
                         case 'removenode': {
@@ -1459,8 +1494,11 @@
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
                                 nodes.splice(index, 1);
-                                updateDevices();
-                                updateMapMarkers();
+
+                                // Web page update
+                                updateDevicesNaggle();
+                                //updateDevices();
+                                //updateMapMarkers();
                             }
                             break;
                         }
@@ -1503,10 +1541,13 @@
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
 
-                                onSortSelectChange(true);
-                                drawNotifications();
+                                // Web page update
+                                updateDevicesNaggle();
+                                //onSortSelectChange(true);
+                                //drawNotifications();
+                                //updateMapMarkers();
+
                                 refreshDevice(node._id);
-                                updateMapMarkers();
 
                                 if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
                             }
@@ -1522,8 +1563,12 @@
                                 // Change the node connection state
                                 node.conn = message.event.conn;
                                 node.pwr = message.event.pwr;
-                                updateDevices();
-                                updateMapMarkers();
+
+                                // Web page update
+                                updateDevicesNaggle();
+                                //updateDevices();
+                                //updateMapMarkers();
+
                                 refreshDevice(node._id);
                             }
                             break;
@@ -1542,7 +1587,8 @@
                         }
                         case 'clearevents': {
                             events = [];
-                            events_update();
+                            updateEventsNaggle();
+                            //events_update();
                             break;
                         }
                         case 'login': {
@@ -1601,7 +1647,7 @@
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore("showRealNames", showRealNames ? 1 : 0);
-            onSortSelectChange();
+            onSortSelectChange(true);
             return;
         }
 
@@ -1635,7 +1681,7 @@
                 showRealNames = !showRealNames;
                 Q('RealNameCheckBox').value = showRealNames;
                 putstore("showRealNames", showRealNames ? 1 : 0);
-                onSortSelectChange();
+                onSortSelectChange(true);
                 return;
             }
             if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
@@ -5008,16 +5054,16 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select><div>Change Core</div>'); }
+            else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=6>Upload recovery core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select><div>Change Core</div>'); }
         }
 
         function p15uploadCoreEx() {
             if (Q('d3coreMode').value == 1) {
                 // Upload default core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path:'*' });
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' });
             } else if (Q('d3coreMode').value == 2) {
                 // Clear the core
-                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id });
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' });
             } else if (Q('d3coreMode').value == 3) {
                 // Upload file as core
                 p15uploadCore2();
@@ -5027,6 +5073,9 @@
             } else if (Q('d3coreMode').value == 5) {
                 // Hard disconnect the mesh agent
                 meshserver.send({ action: 'agentdisconnect', nodeid: consoleNode._id, disconnectMode: 2 });
+            } else if (Q('d3coreMode').value == 6) {
+                // Upload a recovery core
+                meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type:'recovery' });
             }
         }
 
@@ -5047,7 +5096,7 @@
             } else {
                 // Upload server mesh agent code
                 var files = d3getFileSel();
-                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, path: d3filetreelocation.join('/') + '/' + files[0] }); }
+                if (files.length == 1) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'custom', path: d3filetreelocation.join('/') + '/' + files[0] }); }
             }
         }
 

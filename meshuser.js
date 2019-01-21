@@ -1215,27 +1215,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if (user.siteadmin != 0xFFFFFFFF) break;
                     if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if (command.path) {
-                        if (obj.common.validateString(command.path, 1, 4096) == false) break; // Check path
-                        if (command.path == '*') {
-                            // Update the server default core and send a core hash request
-                            // Load default mesh agent core if present, then perform a core update
-                            obj.parent.parent.updateMeshCore(function () { obj.parent.sendMeshAgentCore(user, domain, command.nodeid, '*'); });
-                        } else {
-                            // Send a mesh agent core to the mesh agent
-                            var file = obj.parent.getServerFilePath(user, domain, command.path);
-                            if (file != null) {
-                                obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
-                                    if (err != null) {
-                                        data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, data);
-                                    }
-                                });
-                            }
-                        }
-                    } else {
+                    if (obj.common.validateString(command.type, 1, 40) == false) break; // Check path
+                    if (command.type == 'default') {
+                        // Send the default core to the agent
+                        obj.parent.parent.updateMeshCore(function () { obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
+                    } else if (command.type == 'clear') {
                         // Clear the mesh agent core on the mesh agent
-                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, null);
+                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
+                    } else if (command.type == 'recovery') {
+                        // Send the recovery core to the agent
+                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
+                    } else if ((command.type == 'custom') && (obj.common.validateString(command.path, 1, 2048) == true)) {
+                        // Send a mesh agent core to the mesh agent
+                        var file = obj.parent.getServerFilePath(user, domain, command.path);
+                        if (file != null) {
+                            obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                if (err != null) {
+                                    data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                                    obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
+                                }
+                            });
+                        }
                     }
                     break;
                 }

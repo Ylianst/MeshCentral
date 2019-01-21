@@ -1417,6 +1417,7 @@
         var deviceHeaders = {};
         var deviceHeadersTitles = {};
         function updateDevicesEx() {
+            if (updateDevicesTimer != null) { clearTimeout(updateDevicesTimer); updateDevicesTimer = null; }
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, groups = {}, groupCount = {};
 
             // 3 wide, list view or desktop view

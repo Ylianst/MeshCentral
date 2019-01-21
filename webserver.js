@@ -754,7 +754,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.sendStatus(404); return;
             } else {
                 nologout = true;
-                req.session.userid = 'user/' + domain.id + '/' + req.connection.user;
+                req.session.userid = 'user/' + domain.id + '/' + req.connection.user.toLowerCase();
                 req.session.usersid = req.connection.userSid;
                 req.session.usersGroups = req.connection.userGroups;
                 req.session.domainid = domain.id;
@@ -1108,7 +1108,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.fs.readFile(file.path, 'utf8', function (err, data) {
                     if (err != null) return;
                     data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                    obj.sendMeshAgentCore(user, domain, fields.attrib[0], data); // Upload the core
+                    obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
                     try { obj.fs.unlinkSync(file.path); } catch (e) { }
                 });
             }
@@ -2105,31 +2105,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     };
 
     // Send the core module to the mesh agent
-    obj.sendMeshAgentCore = function (user, domain, nodeid, core) {
+    obj.sendMeshAgentCore = function (user, domain, nodeid, coretype, coredata) {
         if (nodeid == null) return;
-        var splitnode = nodeid.split('/');
+        const splitnode = nodeid.split('/');
         if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
-        var agent = obj.wsagents[nodeid];
+
+        // TODO: This command only works if the agent is connected on the same server. Will not work with multi server peering.
+        const agent = obj.wsagents[nodeid];
         if (agent == null) return;
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
         if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) && (user.siteadmin == 0xFFFFFFFF)) {
-            if (core == null) {
+            if (coretype == 'clear') {
                 // Clear the mesh agent core
-                agent.agentCoreCheck = 1000; // Tell the agent object we are not using a custom core.
+                agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
                 agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
-            } else if (core == '*') {
+            } else if (coretype == 'default') {
+                // Reset to default code
                 agent.agentCoreCheck = 0; // Tell the agent object we are using a default code
-                // Reset the core to the server default
                 agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-            } else {
-                agent.agentCoreCheck = 1000; // Tell the agent object we are not using a custom core.
-                // Perform a SHA384 hash on the core module
-                var hash = obj.crypto.createHash('sha384').update(Buffer.from(core, 'binary')).digest().toString('binary');
-
-                // Send the code module to the agent
-                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + core);
+            } else if (coretype == 'recovery') {
+                // Reset to recovery core
+                agent.agentCoreCheck = 1001; // Tell the agent object we are using the recovery core.
+                agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+            } else if (coretype == 'custom') {
+                agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
+                const hash = obj.crypto.createHash('sha384').update(Buffer.from(core, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
+                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + core); // Send the code module to the agent
             }
         }
     };
