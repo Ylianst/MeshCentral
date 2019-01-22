@@ -175,35 +175,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
-    if (obj.args.notls || obj.args.tlsoffload) {
-        // Setup the HTTP server without TLS
-        obj.expressWs = require('express-ws')(obj.app);
-    } else {
-        // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
-        const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
-        if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
-        obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
-        obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
-        obj.tlsServer.on('error', function () { console.log('tlsServer error'); });
-        obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
-        obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-        obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
-    }
-
-    // Setup middleware
-    obj.app.engine('handlebars', obj.exphbs({})); // defaultLayout: 'main'
-    obj.app.set('view engine', 'handlebars');
-    if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
-    obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
-    var sessionOptions = {
-        name: 'xid', // Recommended security practice to not use the default cookie name
-        httpOnly: true,
-        keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-        secure: (obj.args.notls != true) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
-    }
-    if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); } 
-    obj.app.use(obj.session(sessionOptions));
-
     // Session-persisted message middleware
     obj.app.use(function (req, res, next) {
         var err = null, msg = null, passhint = null;
@@ -234,10 +205,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
             }
         }
-    });
 
-    // Fetch all meshes from the database, keep this in memory
-    obj.db.GetAllType('mesh', function (err, docs) { obj.common.unEscapeAllLinksFieldName(docs); for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } });
+        // Fetch all meshes from the database, keep this in memory
+        obj.db.GetAllType('mesh', function (err, docs) {
+            obj.common.unEscapeAllLinksFieldName(docs);
+            for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; }
+
+            // We loaded the users and mesh state, start the server
+            serverStart();
+        });
+    });
 
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
@@ -764,7 +741,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 user = obj.users[req.session.userid];
                 if ((user == null) || (user.sid != req.session.usersid)) {
                     // Create the domain user
-                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid };
+                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Date.now() };
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                     if (usercount == 0) { user2.siteadmin = 0xFFFFFFFF; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
@@ -1873,128 +1850,164 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.send(meshsettings);
     };
 
-    // Add HTTP security headers to all responses
-    obj.app.use(function (req, res, next) {
-        res.removeHeader("X-Powered-By");
-        var domain = req.xdomain = getDomain(req);
-
-        // Detect if this is a file sharing domain, if so, just share files.
-        if ((domain != null) && (domain.share != null)) {
-            var rpath;
-            if (domain.dns == null) { rpath = req.url.split('/'); rpath.splice(1, 1); rpath = rpath.join('/'); } else { rpath = req.url; }
-            if ((res.headers != null) && (res.headers.upgrade)) {
-                // If this is a websocket, stop here.
-                res.sendStatus(404);
-            } else {
-                // Check if the file exists, if so, serve it.
-                obj.fs.exists(obj.path.join(domain.share, rpath), function (exists) { if (exists == true) { res.sendfile(rpath, { root: domain.share }); } else { res.sendStatus(404); } });
-            }
+    // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
+    function serverStart() {
+        // Start the server, only after users and meshes are loaded from the database.
+        if (obj.args.notls || obj.args.tlsoffload) {
+            // Setup the HTTP server without TLS
+            obj.expressWs = require('express-ws')(obj.app);
         } else {
-            // Two more headers to take a look at:
-            //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
-            //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
-            /*
-            var headers = null;
-            if (obj.args.notls) {
-                // Default headers if no TLS is used
-                headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
-            } else {
-                // Default headers if TLS is used
-                headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" };
-            }
-            if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
-            res.set(headers);
-            */
-            return next();
+            // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
+            const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
+            if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
+            obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
+            obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
+            obj.tlsServer.on('error', function () { console.log('tlsServer error'); });
+            obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+            obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
         }
-    });
 
-    // Setup all HTTP handlers
-    obj.app.get('/backup.zip', handleBackupRequest);
-    obj.app.post('/restoreserver.ashx', handleRestoreRequest);
-    if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
-    for (var i in parent.config.domains) {
-        if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
-        var url = parent.config.domains[i].url;
-        obj.app.get(url, handleRootRequest);
-        obj.app.get(url + 'terms', handleTermsRequest);
-        obj.app.post(url + 'login', handleLoginRequest);
-        obj.app.post(url + 'tokenlogin', handleLoginRequest);
-        obj.app.get(url + 'logout', handleLogoutRequest);
-        obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
-        obj.app.get(url + 'mescript.ashx', handleMeScriptRequest);
-        obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
-        obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
-        obj.app.post(url + 'createaccount', handleCreateAccountRequest);
-        obj.app.post(url + 'resetaccount', handleResetAccountRequest);
-        obj.app.get(url + 'checkmail', handleCheckMailRequest);
-        obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
-        obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
-        obj.app.get(url + 'messenger', handleMessengerRequest);
-        obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
-        obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
-        obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
-        obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
-        obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
-        obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
-        obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
-        obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
-        obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
-        obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
-        obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
-        obj.app.get(url + 'logo.png', handleLogoRequest);
+        // Setup middleware
+        obj.app.engine('handlebars', obj.exphbs({})); // defaultLayout: 'main'
+        obj.app.set('view engine', 'handlebars');
+        if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
+        obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
+        var sessionOptions = {
+            name: 'xid', // Recommended security practice to not use the default cookie name
+            httpOnly: true,
+            keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
+            secure: (obj.args.notls != true) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
+        }
+        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
+        obj.app.use(obj.session(sessionOptions));
 
-        // Server picture
-        obj.app.get(url + 'serverpic.ashx', function (req, res) {
-            // Check if we have "server.png" in the data folder, if so, use that.
-            var p = obj.path.join(obj.parent.datapath, 'server.jpg');
-            if (obj.fs.existsSync(p)) {
-                // Use the data folder server picture
-                try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+        // Add HTTP security headers to all responses
+        obj.app.use(function (req, res, next) {
+            res.removeHeader("X-Powered-By");
+            var domain = req.xdomain = getDomain(req);
+
+            // Detect if this is a file sharing domain, if so, just share files.
+            if ((domain != null) && (domain.share != null)) {
+                var rpath;
+                if (domain.dns == null) { rpath = req.url.split('/'); rpath.splice(1, 1); rpath = rpath.join('/'); } else { rpath = req.url; }
+                if ((res.headers != null) && (res.headers.upgrade)) {
+                    // If this is a websocket, stop here.
+                    res.sendStatus(404);
+                } else {
+                    // Check if the file exists, if so, serve it.
+                    obj.fs.exists(obj.path.join(domain.share, rpath), function (exists) { if (exists == true) { res.sendfile(rpath, { root: domain.share }); } else { res.sendStatus(404); } });
+                }
             } else {
-                // Use the default server picture
-                try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                // Two more headers to take a look at:
+                //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
+                //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
+                /*
+                var headers = null;
+                if (obj.args.notls) {
+                    // Default headers if no TLS is used
+                    headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
+                } else {
+                    // Default headers if TLS is used
+                    headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" };
+                }
+                if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
+                res.set(headers);
+                */
+                return next();
             }
         });
 
-        // Receive mesh agent connections
-        obj.app.ws(url + 'agent.ashx', function (ws, req) {
-            //console.log(++obj.agentConnCount);
-            /*
-            var ip, port, type;
-            if (req.connection) { ip = req.connection.remoteAddress; port = req.connection.remotePort; type = 1; } // HTTP(S) request
-            else if (req._socket) { ip = req._socket.remoteAddress; port = req._socket.remotePort; type = 2; } // WebSocket request
-            console.log('AgentConnect', ip, port, type);
-            */
-            try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); }
-        });
+        // Setup all HTTP handlers
+        obj.app.get('/backup.zip', handleBackupRequest);
+        obj.app.post('/restoreserver.ashx', handleRestoreRequest);
+        if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
+        for (var i in parent.config.domains) {
+            if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
+            var url = parent.config.domains[i].url;
+            obj.app.get(url, handleRootRequest);
+            obj.app.get(url + 'terms', handleTermsRequest);
+            obj.app.post(url + 'login', handleLoginRequest);
+            obj.app.post(url + 'tokenlogin', handleLoginRequest);
+            obj.app.get(url + 'logout', handleLogoutRequest);
+            obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
+            obj.app.get(url + 'mescript.ashx', handleMeScriptRequest);
+            obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
+            obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
+            obj.app.post(url + 'createaccount', handleCreateAccountRequest);
+            obj.app.post(url + 'resetaccount', handleResetAccountRequest);
+            obj.app.get(url + 'checkmail', handleCheckMailRequest);
+            obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
+            obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
+            obj.app.get(url + 'messenger', handleMessengerRequest);
+            obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
+            obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
+            obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
+            obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
+            obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
+            obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
+            obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
+            obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
+            obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
+            obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
+            obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
+            obj.app.get(url + 'logo.png', handleLogoRequest);
 
-        // Creates a login token using the user/pass that is passed in as URL arguments.
-        // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
-        // It's not advised to use this to create login tokens since the URL is often logged and you got credentials in the URL.
-        // However, people want it so here it is.
-        obj.app.get(url + 'createLoginToken.ashx', function (req, res) {
-            // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
-            if ((req.query.user != null) && (req.query.pass != null)) {
-                // A user/pass is provided in URL arguments
-                obj.authenticate(req.query.user, req.query.pass, getDomain(req), function (err, userid) {
-                    if ((err == null) && (obj.users[userid])) {
-                        // User is authenticated, create a token
-                        var x = { a: 3 }; for (var i in req.query) { if ((i != 'user') && (i != 'pass')) { x[i] = obj.common.toNumber(req.query[i]); } } x.u = userid;
-                        res.send(obj.parent.encodeCookie(x, obj.parent.loginCookieEncryptionKey));
-                    } else {
-                        res.sendStatus(404);
-                    }
-                });
-            } else {
-                res.sendStatus(404);
-            }
-        });
+            // Server picture
+            obj.app.get(url + 'serverpic.ashx', function (req, res) {
+                // Check if we have "server.png" in the data folder, if so, use that.
+                var p = obj.path.join(obj.parent.datapath, 'server.jpg');
+                if (obj.fs.existsSync(p)) {
+                    // Use the data folder server picture
+                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                } else {
+                    // Use the default server picture
+                    try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                }
+            });
 
-        obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
+            // Receive mesh agent connections
+            obj.app.ws(url + 'agent.ashx', function (ws, req) {
+                //console.log(++obj.agentConnCount);
+                /*
+                var ip, port, type;
+                if (req.connection) { ip = req.connection.remoteAddress; port = req.connection.remotePort; type = 1; } // HTTP(S) request
+                else if (req._socket) { ip = req._socket.remoteAddress; port = req._socket.remotePort; type = 2; } // WebSocket request
+                console.log('AgentConnect', ip, port, type);
+                */
+                try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); }
+            });
 
-        // Indicates to ExpressJS that the public folder should be used to serve static files.
-        obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));
+            // Creates a login token using the user/pass that is passed in as URL arguments.
+            // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
+            // It's not advised to use this to create login tokens since the URL is often logged and you got credentials in the URL.
+            // However, people want it so here it is.
+            obj.app.get(url + 'createLoginToken.ashx', function (req, res) {
+                // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
+                if ((req.query.user != null) && (req.query.pass != null)) {
+                    // A user/pass is provided in URL arguments
+                    obj.authenticate(req.query.user, req.query.pass, getDomain(req), function (err, userid) {
+                        if ((err == null) && (obj.users[userid])) {
+                            // User is authenticated, create a token
+                            var x = { a: 3 }; for (var i in req.query) { if ((i != 'user') && (i != 'pass')) { x[i] = obj.common.toNumber(req.query[i]); } } x.u = userid;
+                            res.send(obj.parent.encodeCookie(x, obj.parent.loginCookieEncryptionKey));
+                        } else {
+                            res.sendStatus(404);
+                        }
+                    });
+                } else {
+                    res.sendStatus(404);
+                }
+            });
+
+            obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
+
+            // Indicates to ExpressJS that the public folder should be used to serve static files.
+            obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));
+        }
+
+        // Start server on a free port
+        CheckListenPort(obj.args.port, StartWebServer);
     }
 
     // Authenticates a session and forwards
@@ -2131,8 +2144,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else if (coretype == 'custom') {
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
-                const hash = obj.crypto.createHash('sha384').update(Buffer.from(core, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
-                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + core); // Send the code module to the agent
+                const hash = obj.crypto.createHash('sha384').update(Buffer.from(coredata, 'binary')).digest().toString('binary'); // Perform a SHA384 hash on the core module
+                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + coredata); // Send the code module to the agent
             }
         }
     };
@@ -2164,9 +2177,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         else if (arguments.length == 6) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]); }
         else if (arguments.length == 7) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]); }
     }
-
-    // Start server on a free port
-    CheckListenPort(obj.args.port, StartWebServer);
 
     /*
         obj.wssessions = {};         // UserId --> Array Of Sessions
