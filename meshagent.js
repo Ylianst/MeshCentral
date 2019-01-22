@@ -156,7 +156,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
-                    if (agenthash != obj.agentExeInfo.hash) {
+                    if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')) {
                         // Mesh agent update required
                         if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                         obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
@@ -193,7 +193,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Check the mesh core, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-                        } 
+                        }
                     }
                 }
             }

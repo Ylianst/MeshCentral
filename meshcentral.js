@@ -90,7 +90,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'swarmallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'swarmallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -276,6 +276,16 @@ function CreateMeshCentralServer(config, args) {
                 obj.db.GetAll(function (err, docs) {
                     obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs));
                     console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexport + '.'); process.exit();
+                });
+                return;
+            }
+            if (obj.args.dbexportmin) {
+                // Export a minimal database to a JSON file. Export only users, meshes and nodes.
+                // This is a useful command to look at the database.
+                if (obj.args.dbexportmin == true) { obj.args.dbexportmin = obj.getConfigFilePath('meshcentral.db.json'); }
+                obj.db.GetAllType({ $in: ['user', 'node', 'mesh'] }, function (err, docs) {
+                    obj.fs.writeFileSync(obj.args.dbexportmin, JSON.stringify(docs));
+                    console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexportmin + '.'); process.exit();
                 });
                 return;
             }
