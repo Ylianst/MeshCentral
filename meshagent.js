@@ -163,6 +163,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (err) { return console.error(err); }
                             obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), fd: fd };
 
+                            // MeshCommand_CoreModule, ask mesh agent to clear the core.
+                            // The new core will only be sent after the agent updates.
+                            obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
+
                             // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
                             //console.log("Agent update file open.");
                             obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0)); // Command 13, start mesh agent download
