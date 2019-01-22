@@ -162,7 +162,7 @@
                             <td id=devListToolbar class=style14>
                                 &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                                 <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                                <input id=SearchInput type=text style=width:120px placeholder=Filter onchange=onSearchInputChanged() onkeyup=onSearchInputChanged() autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                                <input id=SearchInput type=text style=width:120px placeholder=Filter onchange=masterUpdate(5) onkeyup=masterUpdate(5) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                                 <input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span>
                             </td>
                             <td id=kvmListToolbar class=style14 style=height:100%>
@@ -188,7 +188,7 @@
                                 </div>
                                 <div style=float:right id=devListToolbarSort>
                                     Sort
-                                    <select id=sortselect onchange=onSortSelectChange()>
+                                    <select id=sortselect onchange=masterUpdate(6)>
                                         <option>Group</option>
                                         <option>Power</option>
                                         <option>Device</option>
@@ -920,8 +920,8 @@
             document.onkeypress = ondockeypress;
             document.onkeydown = ondockeydown;
             document.onkeyup = ondockeyup;
-            window.onresize = center;
-            center();
+            window.onresize = function () { masterUpdate(512); }
+            masterUpdate(512);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
@@ -939,8 +939,7 @@
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
             // Display the page devices
-            onSortSelectChange(true);
-            onSearchInputChanged();
+            masterUpdate(3)
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
 
@@ -1018,7 +1017,8 @@
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 QV('page_leftbar', true);
             }
-            center();
+            //center();
+            masterUpdate(512);
             QV('body', true);
         }
 
@@ -1106,31 +1106,28 @@
             if ((siteRights & 21) != 0) { meshserver.send({ action: 'serverstats', interval: 10000 }); }
         }
 
-        // When the list of events needs to be updated, put a small delay so that the browser
-        // performs much less work when event storms happen.
-        var updateEventsNaggleTimer = null;
-        function updateEventsNaggle() {
-            if (updateEventsNaggleTimer == null) {
-                updateEventsNaggleTimer = setTimeout(function () {
-                    events_update();
-                    updateEventsNaggleTimer = null;
-                }, 100);
-            }
-        }
-
-        // When the list of devices needs to be updated, put a small delay so that the browser
-        // performs much less work when event storms happen.
-        var updateDevicesNaggleTimer = null;
-        function updateDevicesNaggle() {
-            if (updateDevicesNaggleTimer == null) {
-                updateDevicesNaggleTimer = setTimeout(function () {
-                    onSortSelectChange(true);
-                    drawNotifications();
-                    onSearchInputChanged();
-                    updateDevices();
-                    updateMapMarkers();
-                    updateDevicesNaggleTimer = null;
-                }, 100);
+        // To boost the speed of the web page when even floods occur, this method perform a delayed update on the web page.
+        var updateNaggleTimer = null;
+        var updateNaggleFlags = 0;
+        function masterUpdate(flags) {
+            updateNaggleFlags |= flags;
+            if (updateNaggleTimer == null) {
+                updateNaggleTimer = setTimeout(function () {
+                    if (updateNaggleFlags & 512) { center(); }
+                    if (updateNaggleFlags & 1) { onSearchInputChanged(); }
+                    if (updateNaggleFlags & 2) { onSortSelectChange(true); }
+                    if (updateNaggleFlags & 128) { updateMeshes(); }
+                    if (updateNaggleFlags & 4) { updateDevices(); }
+                    if (updateNaggleFlags & 8) { drawNotifications(); }
+                    if (updateNaggleFlags & 16) { updateMapMarkers(); }
+                    if (updateNaggleFlags & 32) { eventsUpdate(); }
+                    if (updateNaggleFlags & 64) { refreshMap(false, true); }
+                    if (updateNaggleFlags & 256) { drawDeviceTimeline(); }
+                    if (updateNaggleFlags & 1024) { deviceEventsUpdate(); }
+                    if (updateNaggleFlags & 2048) { userEventsUpdate(); }
+                    updateNaggleTimer = null;
+                    updateNaggleFlags = 0;
+                }, 150);
             }
         }
 
@@ -1167,8 +1164,7 @@
                 case 'meshes': {
                     meshes = {};
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
-                    updateMeshes();
-                    updateDevices();
+                    masterUpdate(4 + 128);
                     break;
                 }
                 case 'files': {
@@ -1194,11 +1190,8 @@
                             nodes.push(message.nodes[m][n]);
                         }
                     }
-                    //onSortSelectChange(true);
-                    //onSearchInputChanged();
-                    //updateDevices();
-                    updateDevicesNaggle();
-                    refreshMap(false, true);
+                    masterUpdate(1 | 2 | 4 | 64);
+
                     if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
                     break;
@@ -1208,7 +1201,7 @@
                     powerTimelineNode = message.nodeid;
                     powerTimeline = message.timeline;
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
-                    if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
+                    if (currentNode._id == message.nodeid) { masterUpdate(256); }
                     break;
                 }
                 case 'lastconnect': {
@@ -1307,14 +1300,13 @@
                 case 'events': {
                     if ((message.nodeid != null) && (message.nodeid == currentNode._id)) {
                         currentDeviceEvents = message.events;
-                        devevents_update();
+                        masterUpdate(1024);
                     } else if ((message.user != null) && (message.user == currentUser.name)) {
                         currentUserEvents = message.events;
-                        userEvents_update();
+                        masterUpdate(2048);
                     } else {
                         events = message.events;
-                        updateEventsNaggle();
-                        //events_update();
+                        masterUpdate(32);
                     }
                     break;
                 }
@@ -1369,8 +1361,7 @@
                         events.unshift(message.event);
                         var eventLimit = parseInt(p3limitdropdown.value);
                         while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
-                        updateEventsNaggle();
-                        //events_update();
+                        masterUpdate(32);
                     }
                     switch (message.event.action) {
                         case 'accountcreate':
@@ -1401,8 +1392,7 @@
                             // A new mesh was created
                             if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
-                                updateMeshes();
-                                updateDevices();
+                                masterUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
                             }
                             break;
@@ -1434,8 +1424,7 @@
                                     if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
                                 }
                             }
-                            updateMeshes();
-                            updateDevices();
+                            masterUpdate(4 + 128);
                             meshserver.send({ action: 'files' });
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -1446,7 +1435,7 @@
                             // Delete the mesh
                             if (meshes[message.event.meshid]) {
                                 delete meshes[message.event.meshid];
-                                updateMeshes();
+                                masterUpdate(128);
                                 meshserver.send({ action: 'files' });
                             }
 
@@ -1454,7 +1443,7 @@
                             var newnodes = [];
                             for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
                             nodes = newnodes;
-                            updateDevices();
+                            masterUpdate(4);
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
@@ -1475,11 +1464,7 @@
                             nodes.push(node);
 
                             // Web page update
-                            updateDevicesNaggle();
-                            //onSortSelectChange(true);
-                            //onSearchInputChanged();
-                            //updateDevices();
-                            //updateMapMarkers();
+                            masterUpdate(1 | 2 | 4 | 16);
 
                             break;
                         }
@@ -1496,9 +1481,7 @@
                                 nodes.splice(index, 1);
 
                                 // Web page update
-                                updateDevicesNaggle();
-                                //updateDevices();
-                                //updateMapMarkers();
+                                masterUpdate(4 | 16);
                             }
                             break;
                         }
@@ -1542,10 +1525,10 @@
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
 
                                 // Web page update
-                                updateDevicesNaggle();
                                 //onSortSelectChange(true);
                                 //drawNotifications();
                                 //updateMapMarkers();
+                                masterUpdate(2 | 8 | 16);
 
                                 refreshDevice(node._id);
 
@@ -1565,9 +1548,7 @@
                                 node.pwr = message.event.pwr;
 
                                 // Web page update
-                                updateDevicesNaggle();
-                                //updateDevices();
-                                //updateMapMarkers();
+                                masterUpdate(4 | 16);
 
                                 refreshDevice(node._id);
                             }
@@ -1587,8 +1568,7 @@
                         }
                         case 'clearevents': {
                             events = [];
-                            updateEventsNaggle();
-                            //events_update();
+                            masterUpdate(32);
                             break;
                         }
                         case 'login': {
@@ -1647,7 +1627,7 @@
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore("showRealNames", showRealNames ? 1 : 0);
-            onSortSelectChange(true);
+            masterUpdate(6)
             return;
         }
 
@@ -1657,7 +1637,7 @@
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
             putstore("deviceView", Q('viewselect').value);
             putstore("viewsize", Q('sizeselect').value);
-            updateDevices();
+            masterUpdate(4);
         }
 
         function ondockeypress(e) {
@@ -1681,7 +1661,7 @@
                 showRealNames = !showRealNames;
                 Q('RealNameCheckBox').value = showRealNames;
                 putstore("showRealNames", showRealNames ? 1 : 0);
-                onSortSelectChange(true);
+                masterUpdate(6)
                 return;
             }
             if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
@@ -1694,7 +1674,7 @@
                 } else {
                     if (e.charCode != 0 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
                 }
-                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+                if (processed > 0) { if (processed == 1) { masterUpdate(5); } return haltEvent(e); }
             }
             if (Q('viewselect').value == 3) {
                 if (e.key) {
@@ -1716,14 +1696,14 @@
             if (!xxdialogMode && xxcurrentView == 4) {
                 if (e.keyCode === 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('UserSearchInput').value = ''; processed = 1; }
-                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+                if (processed > 0) { if (processed == 1) { masterUpdate(5); } return haltEvent(e); }
             }
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             var processed = 0;
             if (Q('viewselect').value < 3) {
                 if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('SearchInput').value = ''; processed = 1; }
-                if (processed > 0) { if (processed == 1) { onSearchInputChanged(); } return haltEvent(e); }
+                if (processed > 0) { if (processed == 1) { masterUpdate(5); } return haltEvent(e); }
             }
             if (Q('viewselect').value == 3) {
                 if (e.keyCode === 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = (x.substring(0, x.length - 1)); processed = 1; }
@@ -1741,10 +1721,6 @@
             if (Q('viewselect').value < 3) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (Q('viewselect').value == 3) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
         }
-
-        // Since the update device call can be quite frequent, we can moderate it and only call it at most 5 times a second.
-        var updateDevicesTimer = null;
-        function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
 
         // Highlights the device being hovered
         function devMouseHover(element, over) {
@@ -1778,8 +1754,8 @@
         var deviceHeaderCount;
         var deviceHeaders = {};
         var oldviewmode = 0;
-        function updateDevicesEx() {
-            if (updateDevicesTimer != null) { clearTimeout(updateDevicesTimer); updateDevicesTimer = null; }
+        function updateDevices() {
+            if (xxcurrentView != 1) return;
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view < 4);
             QV('xdevicesmap', view == 4);
@@ -2444,7 +2420,6 @@
         function onSortSelectChange(skipsave) {
             sort = document.getElementById("sortselect").selectedIndex;
             if (!skipsave) { putstore("sort", sort); }
-            updateDevicesEx();
         }
 
         function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
@@ -2478,9 +2453,7 @@
                     }
                 } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
             }
-            updateDevices();
         }
-
 
         var contextelement = null;
         function handleContextMenu(event) {
@@ -3302,7 +3275,7 @@
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
-                drawDeviceTimeline();
+                masterUpdate(256);
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small>';
@@ -4460,7 +4433,7 @@
                     files.sendText({ action: 'ls', reqid: 1, path: '' });
                     break;
                 default:
-                    console.log('Unknown onFilesStateChange state', state);
+                    //console.log('Unknown onFilesStateChange state', state);
                     break;
             }
         }
@@ -4897,7 +4870,7 @@
         //
 
         var currentDeviceEvents = null;
-        function devevents_update() {
+        function deviceEventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in currentDeviceEvents) {
                 var event = currentDeviceEvents[i];
@@ -5788,7 +5761,7 @@
             if (over == 1) { e.children[1].classList.add('g1s'); e.children[3].classList.add('g2s'); }
         }
 
-        function events_update() {
+        function eventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in events) {
                 var event = events[i];
@@ -6219,7 +6192,7 @@
         //
 
         var currentUserEvents = null;
-        function userEvents_update() {
+        function userEventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in currentUserEvents) {
                 var event = currentUserEvents[i];
@@ -6538,9 +6511,9 @@
 
         function center() {
             QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px");
-            if (xxcurrentView == 11) { deskAdjust(); deskAdjust(); }
-            else if (xxcurrentView == 10) { drawDeviceTimeline(); }
-            else if (xxcurrentView == 1) { updateDevicesEx(); }
+            if (xxcurrentView == 11) { deskAdjust(); } //deskAdjust(); }
+            else if (xxcurrentView == 10) { masterUpdate(256); }
+            else if (xxcurrentView == 1) { masterUpdate(4); }
         }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
@@ -6615,7 +6588,7 @@
                 Q(panels[i]).classList.add((x == i) ? 'style3sel' : 'style3x');
             }
 
-            if (x == 1) updateDevicesEx();
+            if (x == 1) masterUpdate(4);
         }
 
         // Generic methods
