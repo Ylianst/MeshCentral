@@ -1,13 +1,55 @@
 
 var http = require('http');
 var childProcess = require('child_process');
-var meshCoreObj = { "action": "coreinfo", "value": "MeshCore Recovery", "caps": 10 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
+var meshCoreObj = { "action": "coreinfo", "value": "MeshCore Recovery", "caps": 14 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript
 var nextTunnelIndex = 1;
 var tunnels = {};
+var fs = require('fs');
+
+//attachDebugger({ webport: 9994, wait: 1 }).then(function (p) { console.log('Debug on port: ' + p); });
 
 function sendConsoleText(msg)
 {
     require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": msg });
+}
+// Return p number of spaces 
+function addPad(p, ret) { var r = ''; for (var i = 0; i < p; i++) { r += ret; } return r; }
+
+var path =
+    {
+        join: function ()
+        {
+            var x = [];
+            for (var i in arguments)
+            {
+                var w = arguments[i];
+                if (w != null)
+                {
+                    while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
+                    if (i != 0)
+                    {
+                        while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); }
+                    }
+                    x.push(w);
+                }
+            }
+            if (x.length == 0) return '/';
+            return x.join('/');
+        }
+    };
+// Convert an object to string with all functions
+function objToString(x, p, pad, ret) {
+    if (ret == undefined) ret = '';
+    if (p == undefined) p = 0;
+    if (x == null) { return '[null]'; }
+    if (p > 8) { return '[...]'; }
+    if (x == undefined) { return '[undefined]'; }
+    if (typeof x == 'string') { if (p == 0) return x; return '"' + x + '"'; }
+    if (typeof x == 'buffer') { return '[buffer]'; }
+    if (typeof x != 'object') { return x; }
+    var r = '{' + (ret ? '\r\n' : ' ');
+    for (var i in x) { if (i != '_ObjectID') { r += (addPad(p + 2, pad) + i + ': ' + objToString(x[i], p + 2, pad, ret) + (ret ? '\r\n' : ' ')); } }
+    return r + addPad(p, pad) + '}';
 }
 
 // Split a string taking into account the quoats. Used for command line parsing
@@ -122,6 +164,12 @@ require('MeshAgent').AddCommandHandler(function (data)
                                     s.on('end', function ()
                                     {
                                         if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
+
+                                        // If there is a upload or download active on this connection, close the file
+                                        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
+                                        if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; }
+
+
                                         //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
                                         delete tunnels[this.httprequest.index];
 
@@ -130,6 +178,14 @@ require('MeshAgent').AddCommandHandler(function (data)
                                     });
                                     s.on('data', function (data)
                                     {
+                                        // If this is upload data, save it to file
+                                        if (this.httprequest.uploadFile)
+                                        {
+                                            try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                                            this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
+                                            return;
+                                        }
+
                                         if (this.httprequest.state == 0) {
                                             // Check if this is a relay connection
                                             if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
@@ -173,6 +229,76 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                             this.httprequest._term = null;
                                                         }
                                                     });
+                                                }
+                                            }
+                                            else if (this.httprequest.protocol == 5)
+                                            {
+                                                // Process files commands
+                                                var cmd = null;
+                                                try { cmd = JSON.parse(data); } catch (e) { };
+                                                if (cmd == null) { return; }
+                                                if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { return; } // If this is control data, handle it now.
+                                                if (cmd.action == undefined) { return; }
+                                                console.log('action: ', cmd.action);
+
+                                                //sendConsoleText('CMD: ' + JSON.stringify(cmd));
+
+                                                if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
+                                                //console.log(objToString(cmd, 0, ' '));
+                                                switch (cmd.action)
+                                                {
+                                                    case 'ls':
+                                                        // Send the folder content to the browser
+                                                        var response = getDirectoryInfo(cmd.path);
+                                                        if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
+                                                        this.write(new Buffer(JSON.stringify(response)));
+                                                        break;
+                                                    case 'mkdir': {
+                                                        // Create a new empty folder
+                                                        fs.mkdirSync(cmd.path);
+                                                        break;
+                                                    }
+                                                    case 'rm': {
+                                                        // Delete, possibly recursive delete
+                                                        for (var i in cmd.delfiles)
+                                                        {
+                                                            try { deleteFolderRecursive(path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
+                                                        }
+                                                        break;
+                                                    }
+                                                    case 'rename': {
+                                                        // Rename a file or folder
+                                                        var oldfullpath = path.join(cmd.path, cmd.oldname);
+                                                        var newfullpath = path.join(cmd.path, cmd.newname);
+                                                        try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
+                                                        break;
+                                                    }
+                                                    case 'upload': {
+                                                        // Upload a file, browser to agent
+                                                        if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
+                                                        if (cmd.path == undefined) break;
+                                                        var filepath = cmd.name ? path.join(cmd.path, cmd.name) : cmd.path;
+                                                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                                                        this.httprequest.uploadFileid = cmd.reqid;
+                                                        if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
+                                                        break;
+                                                    }
+                                                    case 'copy': {
+                                                        // Copy a bunch of files from scpath to dspath
+                                                        for (var i in cmd.names) {
+                                                            var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                                                            if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
+                                                        }
+                                                        break;
+                                                    }
+                                                    case 'move': {
+                                                        // Move a bunch of files from scpath to dspath
+                                                        for (var i in cmd.names) {
+                                                            var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
+                                                            if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
+                                                        }
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
@@ -281,3 +407,60 @@ function processConsoleCommand(cmd, args, rights, sessionid)
     } catch (e) { response = 'Command returned an exception error: ' + e; console.log(e); }
     if (response != null) { sendConsoleText(response, sessionid); }
 }
+
+// Get a formated response for a given directory path
+function getDirectoryInfo(reqpath)
+{
+    var response = { path: reqpath, dir: [] };
+    if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
+        // List all the drives in the root, or the root itself
+        var results = null;
+        try { results = fs.readDrivesSync(); } catch (e) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+        if (results != null) {
+            for (var i = 0; i < results.length; ++i) {
+                var drive = { n: results[i].name, t: 1 };
+                if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
+                response.dir.push(drive);
+            }
+        }
+    } else {
+        // List all the files and folders in this path
+        if (reqpath == '') { reqpath = '/'; }
+        var results = null, xpath = path.join(reqpath, '*');
+        //if (process.platform == "win32") { xpath = xpath.split('/').join('\\'); }
+        try { results = fs.readdirSync(xpath); } catch (e) { }
+        if (results != null) {
+            for (var i = 0; i < results.length; ++i) {
+                if ((results[i] != '.') && (results[i] != '..')) {
+                    var stat = null, p = path.join(reqpath, results[i]);
+                    //if (process.platform == "win32") { p = p.split('/').join('\\'); }
+                    try { stat = fs.statSync(p); } catch (e) { } // TODO: Get file size/date
+                    if ((stat != null) && (stat != undefined)) {
+                        if (stat.isDirectory() == true) {
+                            response.dir.push({ n: results[i], t: 2, d: stat.mtime });
+                        } else {
+                            response.dir.push({ n: results[i], t: 3, s: stat.size, d: stat.mtime });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return response;
+}
+// Delete a directory with a files and directories within it
+function deleteFolderRecursive(path, rec) {
+    if (fs.existsSync(path)) {
+        if (rec == true) {
+            fs.readdirSync(path.join(path, '*')).forEach(function (file, index) {
+                var curPath = path.join(path, file);
+                if (fs.statSync(curPath).isDirectory()) { // recurse
+                    deleteFolderRecursive(curPath, true);
+                } else { // delete file
+                    fs.unlinkSync(curPath);
+                }
+            });
+        }
+        fs.unlinkSync(path);
+    }
+};

@@ -322,7 +322,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
 
     // If the mesh agent web socket is closed, clean up.
-    ws.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } obj.close(0); });
+    ws.on('close', function (req) {
+        if (obj.nodeid != null) {
+            //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
+            obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
+        }
+        obj.close(0);
+    });
     // obj.ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
