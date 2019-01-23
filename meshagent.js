@@ -326,6 +326,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.nodeid != null) {
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
             obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
+
+            // Log the agent disconnection
+            if (obj.parent.wsagentsDisconnections[obj.nodeid] == null) {
+                obj.parent.wsagentsDisconnections[obj.nodeid] = 1;
+            } else {
+                obj.parent.wsagentsDisconnections[obj.nodeid] = ++obj.parent.wsagentsDisconnections[obj.nodeid];
+            }
         }
         obj.close(0);
     });
@@ -411,8 +418,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
 
+            // Check how many times this agent disconnected in the last few minutes.
+            var disconnectCount = obj.parent.wsagentsDisconnections[obj.nodeid];
+            if (disconnectCount > 6) {
+                console.log('Agent in big trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+                // TODO: Log or do something to recover?
+                return;
+            }
+
             // Command 4, inform mesh agent that it's authenticated.
             obj.send(obj.common.ShortToStr(4));
+
+            if (disconnectCount > 4) {
+                // Too many disconnections, this agent has issues. Just clear the core.
+                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
+                console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+                // TODO: Log or do something to recover?
+                return;
+            }
 
             // Check if we need to make an native update check
             obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
@@ -468,6 +491,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 });
             }
+            
         });
     }
 
