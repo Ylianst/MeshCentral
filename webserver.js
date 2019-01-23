@@ -140,6 +140,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Main lists
     obj.wsagents = {};
+    obj.wsagentsDisconnections = {};
+    obj.wsagentsDisconnectionsTimer = null;
     obj.wssessions = {};            // UserId --> Array Of Sessions
     obj.wssessions2 = {};           // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
     obj.wsPeerSessions = {};        // ServerId --> Array Of "UserId + SessionRnd"
@@ -2004,6 +2006,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Indicates to ExpressJS that the public folder should be used to serve static files.
             obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));
+
+            // Start regular disconnection list flush every 2 minutes.
+            obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
         }
 
         // Start server on a free port
