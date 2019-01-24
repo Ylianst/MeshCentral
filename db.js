@@ -31,6 +31,7 @@ module.exports.CreateDB = function (parent) {
     obj.path = require('path');
     obj.parent = parent;
     obj.identifier = null;
+    obj.dbKey = null;
 
     if (obj.parent.args.mongodb) {
         // Use MongoDB
@@ -44,7 +45,32 @@ module.exports.CreateDB = function (parent) {
         // Use NeDB (The default)
         obj.databaseType = 1;
         Datastore = require('nedb');
-        obj.file = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true });
+        var datastoreOptions = { filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true };
+
+        // If a DB encryption key is provided, perform database encryption
+        if (typeof obj.parent.args.dbencryptkey == 'string') {
+            // Hash the database password into a AES256 key and setup encryption and decryption.
+            obj.dbKey = obj.parent.crypto.createHash('sha384').update(obj.parent.args.dbencryptkey).digest("raw").slice(0, 32);
+            datastoreOptions.afterSerialization = function (plaintext) {
+                const iv = obj.parent.crypto.randomBytes(16);
+                const aes = obj.parent.crypto.createCipheriv('aes-256-cbc', obj.dbKey, iv);
+                var ciphertext = aes.update(plaintext);
+                ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+                return ciphertext.toString('base64');
+            }
+            datastoreOptions.beforeDeserialization = function (ciphertext) {
+                const ciphertextBytes = Buffer.from(ciphertext, 'base64');
+                const iv = ciphertextBytes.slice(0, 16);
+                const data = ciphertextBytes.slice(16);
+                const aes = obj.parent.crypto.createDecipheriv('aes-256-cbc', obj.dbKey, iv);
+                var plaintextBytes = Buffer.from(aes.update(data));
+                plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+                return plaintextBytes.toString();
+            }
+        }
+
+        // Start NeDB
+        obj.file = new Datastore(datastoreOptions);
         obj.file.persistence.setAutocompactionInterval(3600);
     }
 

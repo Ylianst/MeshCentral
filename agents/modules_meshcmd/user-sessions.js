@@ -653,7 +653,7 @@ function UserSessions()
         }
         this.consoleUid = function consoleUid()
         {
-            var checkstr = process.platform == 'darwin' ? 'console' : process.env['DISPLAY'];
+            var checkstr = process.platform == 'darwin' ? 'console' : ((process.env['DISPLAY'])?process.env['DISPLAY']:':0')
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = '';
             child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });

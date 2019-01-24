@@ -716,6 +716,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         });
                         break;
                     }
+                case 'openUrl':
+                    {
+                        // Sent by the agent to return the status of a open URL action.
+                        // Nothing is done right now.
+                        break;
+                    }
                 default: {
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
                     break;

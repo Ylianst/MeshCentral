@@ -250,8 +250,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (obj.onMessage != null) obj.onMessage(str.substring(4, cmdsize), obj);
                 break;
             case 65: // Alert
-                console.error(str.substring(4));
-                alert(str.substring(4));
+                str = str.substring(4);
+                if (str[0] != '.') { console.log(str); alert('KVM: ' + str); } else { console.log('KVM: ' + str.substring(1)); }
                 break;
         }
         return cmdsize;
