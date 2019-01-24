@@ -160,7 +160,6 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ProcessScreenMsg = function (width, height) {
         if (obj.debugmode > 0) { console.log("ScreenSize: " + width + " x " + height); }
-        console.log("ScreenSize: " + width + " x " + height);
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
@@ -183,7 +182,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2);
         if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
-        if (command >= 18) { if (command == 65) { console.error(str); alert(str); } else { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; } }
+        if ((command >= 18) && (command != 65)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; }
         if (cmdsize > str.length) { console.error("KVM invalid command size", cmdsize, str.length); return; }
         //meshOnDebug("KVM Command: " + command + " Len:" + cmdsize);
 
@@ -250,13 +249,17 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 //obj.Debug("Got KVM Message: " + str.substring(4, cmdsize));
                 if (obj.onMessage != null) obj.onMessage(str.substring(4, cmdsize), obj);
                 break;
+            case 65: // Alert
+                console.error(str.substring(4));
+                alert(str.substring(4));
+                break;
         }
         return cmdsize;
     }
 
     // Keyboard and Mouse I/O.
     obj.MouseButton = { "NONE": 0x00, "LEFT": 0x02, "RIGHT": 0x08, "MIDDLE": 0x20 };
-    obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5 };
+    obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 };
     obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15 };
     obj.Alternate = 0;
 
@@ -433,9 +436,19 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 }
 
                 var MouseMsg = "";
-                if (Action == obj.KeyAction.SCROLL) MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0C, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF), ((Delta / 256) & 0xFF), (Delta & 0xFF));
-                else MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
-                if (obj.Action == obj.KeyAction.NONE) { if (obj.Alternate == 0 || obj.ipad) { obj.send(MouseMsg); obj.Alternate = 1; } else { obj.Alternate = 0; } } else { obj.send(MouseMsg); }
+                if (Action == obj.KeyAction.DBLCLICK) {
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, 0x88, ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
+                } else if (Action == obj.KeyAction.SCROLL) {
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0C, 0x00, 0x00, ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF), ((Delta / 256) & 0xFF), (Delta & 0xFF));
+                } else {
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
+                }
+
+                if (obj.Action == obj.KeyAction.NONE) {
+                    if (obj.Alternate == 0 || obj.ipad) { obj.send(MouseMsg); obj.Alternate = 1; } else { obj.Alternate = 0; }
+                } else {
+                    obj.send(MouseMsg);
+                }
             }
         }
     }
@@ -463,6 +476,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxMouseMove = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.NONE, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
     obj.xxMouseUp = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.UP, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
     obj.xxMouseDown = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DOWN, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseDblClick = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DBLCLICK, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
     obj.xxDOMMouseScroll = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxKeyUp = function (e) { if (obj.State == 3) { obj.SendKeyMsg(obj.KeyAction.UP, e); } if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
@@ -481,6 +495,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.handleKeyDown = function (e) { if (obj.stopInput == true || desktop.State != 3) return false; return obj.xxKeyDown(e); }
 
     // Mouse handlers
+    obj.mousedblclick = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDblClick(e); }
     obj.mousedown = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDown(e); }
     obj.mouseup = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseUp(e); }
     obj.mousemove = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseMove(e); }
