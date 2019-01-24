@@ -503,24 +503,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
-                    res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
+                    res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
                 } else {
                     obj.db.Get('user/' + cookie.u, function (err, docs) {
                         if (docs.length == 0) {
-                            res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid username \"' + EscapeHtml(cookie.u) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                            res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid username \"' + EscapeHtml(cookie.u) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                         } else {
                             var user = docs[0];
                             if (user.email != cookie.e) {
-                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                                res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                             } else {
                                 if (cookie.a == 1) {
                                     // Account email verification
                                     if (user.emailVerified == true) {
-                                        res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                        res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
                                             if (docs.length > 0) {
-                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
                                             } else {
                                                 // Set the verified flag
                                                 obj.users[user._id].emailVerified = true;
@@ -540,7 +540,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id });
 
                                                 // Send the confirmation page
-                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
 
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(userinfo.email) + '</b>.', nolog: 1 });
@@ -550,7 +550,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 } else if (cookie.a == 2) {
                                     // Account reset
                                     if (user.emailVerified != true) {
-                                        res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                        res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         // Set a temporary password
                                         obj.crypto.randomBytes(16, function (err, buf) {
@@ -581,19 +581,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id });
 
                                                 // Send the new password
-                                                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
                                             });
                                         });
                                     }
                                 } else {
-                                    res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check. <a href="' + domain.url + '">Go to login page</a>.' });
+                                    res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check. <a href="' + domain.url + '">Go to login page</a>.' });
                                 }
                             }
                         }
                     });
                 }
             } else {
-                res.render(obj.path.join(__dirname, 'views/message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check, verification url is only valid for 30 minutes. <a href="' + domain.url + '">Go to login page</a>.' });
+                res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'ERROR: Invalid account check, verification url is only valid for 30 minutes. <a href="' + domain.url + '">Go to login page</a>.' });
             }
         }
     }
@@ -804,14 +804,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.minify && !req.query.nominify) {
                 // Try to server the minified version if we can.
                 try {
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile-min' : 'views/default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile-min' : 'default-min'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 } catch (ex) {
                     // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 }
             } else {
                 // Serve non-minified version of web pages.
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/default-mobile' : 'views/default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
             }
         } else {
             // Send back the login application
@@ -824,19 +824,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.minify && !req.query.nominify) {
                 // Try to server the minified version if we can.
                 try {
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile-min' : 'views/login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
                 } catch (ex) {
                     // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile' : 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
                 }
             } else {
                 // Serve non-minified version of web pages.
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile' : 'views/login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer });
             }
 
             /*
             var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
-            var xpath = obj.path.join(__dirname, isMobileBrowser(req) ? 'views/login-mobile' : 'views/login');
+            var xpath = obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login');
             console.log('Render...');
             res.render(xpath, xoptions, function (err, html) {
                 console.log(err, html);
@@ -868,9 +868,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.session && req.session.userid) {
                     if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                     var user = obj.users[req.session.userid];
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
                 } else {
-                    res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
                 }
             });
         } else {
@@ -879,9 +879,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.session && req.session.userid) {
                 if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                 var user = obj.users[req.session.userid];
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
             } else {
-                res.render(obj.path.join(__dirname, isMobileBrowser(req) ? 'views/terms-mobile' : 'views/terms'), { title: domain.title, title2: domain.title2 });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2 });
             }
         }
     }
@@ -891,7 +891,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        res.render(obj.path.join(__dirname, 'views/messenger'), { webrtconfig: webRtcConfig });
+        res.render(obj.path.join(obj.parent.webViewsPath, 'messenger'), { webrtconfig: webRtcConfig });
     }
 
     // Returns the server root certificate encoded in base64
@@ -924,7 +924,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
                 // Server name is an IPv4 address
-                obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
+                obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
                     if (err != null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
@@ -950,7 +950,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             } else {
                 // Server name is a hostname
-                obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
+                obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
                     if (err != null) { res.sendStatus(404); return; }
                     var scriptFile = JSON.parse(data);
 
@@ -978,7 +978,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         else if (req.query.type == 2) {
             var filename = 'cira_cleanup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            obj.fs.readFile(obj.parent.path.join(__dirname, 'public/scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
+            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
                 if (err != null) { res.sendStatus(404); return; }
                 res.send(Buffer.from(data));
             });
@@ -1003,10 +1003,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + filename + '\"' });
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                res.render(obj.path.join(__dirname, 'views/download'), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." });
+                res.render(obj.path.join(obj.parent.webViewsPath, 'download'), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." });
             }
         } else {
-            res.render(obj.path.join(__dirname, 'views/download'), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, message: "Invalid file link, please check the URL again." });
+            res.render(obj.path.join(obj.parent.webViewsPath, 'download'), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, message: "Invalid file link, please check the URL again." });
         }
     }
 
@@ -1017,10 +1017,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if ((domain != null) && domain.titlepicture) {
             try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); } catch (e) {
-                try { res.sendFile(obj.path.join(__dirname, 'public/images/logoback.png')); } catch (e) { res.sendStatus(404); }
+                try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
             }
         } else {
-            try { res.sendFile(obj.path.join(__dirname, 'public/images/logoback.png')); } catch (e) { res.sendStatus(404); }
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
         }
     }
 
@@ -1964,7 +1964,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                 } else {
                     // Use the default server picture
-                    try { res.sendFile(obj.path.join(__dirname, 'public/images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
                 }
             });
 
@@ -2005,7 +2005,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
 
             // Indicates to ExpressJS that the public folder should be used to serve static files.
-            obj.app.use(url, obj.express.static(obj.path.join(__dirname, 'public')));
+            obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);

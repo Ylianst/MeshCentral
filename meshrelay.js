@@ -96,7 +96,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
         // If this is a MeshMessenger session, the ID is the two userid's and authentication must match one of them.
         if (obj.id.startsWith('meshmessenger/')) {
-            if (obj.user == null) { try { obj.close(); } catch (e) { } return null; }
+            if ((obj.id.startsWith('meshmessenger/user/') == true) && (obj.user == null)) { try { obj.close(); } catch (e) { } return null; } // If user-to-user, both sides need to be authenticated.
             var x = obj.id.split('/'), user1 = x[1] + '/' + x[2] + '/' + x[3], user2 = x[4] + '/' + x[5] + '/' + x[6];
             if ((x[1] != 'user') && (x[4] != 'user')) { try { obj.close(); } catch (e) { } return null; } // MeshMessenger session must have at least one authenticated user
             if ((x[1] == 'user') && (x[4] == 'user')) {

@@ -65,9 +65,13 @@ function CreateMeshCentralServer(config, args) {
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
         obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     } else {
         obj.datapath = obj.path.join(__dirname, '../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../meshcentral-files');
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     }
 
     // Create data and files folders if needed
