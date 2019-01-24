@@ -773,6 +773,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.haltEvent = function (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
 
     // RFB "PointerEvent" and mouse handlers
+    obj.mousedblclick = function (e) { }
     obj.mousedown = function (e) { obj.buttonmask |= (1 << e.button); return obj.mousemove(e); }
     obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e); }
     obj.mousemove = function (e) {
