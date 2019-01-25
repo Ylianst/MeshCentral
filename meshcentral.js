@@ -100,7 +100,8 @@ function CreateMeshCentralServer(config, args) {
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
-            console.log('MeshCentral2 Beta 2, a web-based remote computer management web portal.\r\n');
+            console.log('MeshCentral v' + obj.currentVer + ', a open source remote computer management web portal.');
+            console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
             if (obj.platform == 'win32') {
                 console.log('Run as a Windows Service');
                 console.log('   --install/uninstall               Install Meshcentral as a background service.');
@@ -361,16 +362,16 @@ function CreateMeshCentralServer(config, args) {
             // Read or setup database configuration values
             obj.db.Get('dbconfig', function (err, dbconfig) {
                 if (dbconfig.length == 1) { obj.dbconfig = dbconfig[0]; } else { obj.dbconfig = { _id: 'dbconfig', version: 1 }; }
-                if (obj.dbconfig.amtWsEventSecret == null) { require('crypto').randomBytes(32, function (err, buf) { obj.dbconfig.amtWsEventSecret = buf.toString('hex'); obj.db.Set(obj.dbconfig); }); }
+                if (obj.dbconfig.amtWsEventSecret == null) { obj.crypto.randomBytes(32, function (err, buf) { obj.dbconfig.amtWsEventSecret = buf.toString('hex'); obj.db.Set(obj.dbconfig); }); }
 
                 // This is used by the user to create a username/password for a Intel AMT WSMAN event subscription
                 if (obj.args.getwspass) {
                     if (obj.args.getwspass.length == 64) {
-                        require('crypto').randomBytes(6, function (err, buf) {
+                        obj.crypto.randomBytes(6, function (err, buf) {
                             while (obj.dbconfig.amtWsEventSecret == null) { process.nextTick(); }
                             var username = buf.toString('hex');
                             var nodeid = obj.args.getwspass;
-                            var pass = require('crypto').createHash('sha384').update(username.toLowerCase() + ":" + nodeid + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
+                            var pass = obj.crypto.createHash('sha384').update(username.toLowerCase() + ":" + nodeid + ":" + obj.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
                             console.log('--- Intel(r) AMT WSMAN eventing credentials ---');
                             console.log('Username: ' + username);
                             console.log('Password: ' + pass);
@@ -489,7 +490,7 @@ function CreateMeshCentralServer(config, args) {
             obj.updateMeshAgentInstallScripts();
 
             // Setup and start the web server
-            require('crypto').randomBytes(48, function (err, buf) {
+            obj.crypto.randomBytes(48, function (err, buf) {
                 // Setup Mesh Multi-Server if needed
                 obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
                 if (obj.multiServer != null) {

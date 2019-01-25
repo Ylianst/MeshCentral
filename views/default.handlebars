@@ -1568,7 +1568,7 @@
                         }
                         case 'login': {
                             // Update the last login time
-                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) { users['user/' + domain + '/' + message.event.username.toLowerCase()].login = message.event.time; }
+                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) { users['user/' + domain + '/' + message.event.username.toLowerCase()].login = Math.floor(message.event.time / 1000); }
                             break;
                         }
                         case 'scanamtdevice': {
@@ -5247,7 +5247,8 @@
                 count++;
 
                 // Mesh rights
-                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = 0;
+                if (meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()]) { meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; }
                 var rights = 'Partial Rights';
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
@@ -5882,7 +5883,7 @@
                 }
                 if (sessions == 1) { msg += '1 active session'; } else { msg += sessions + ' active sessions'; }
             } else {
-                if (user.login) { msg += '<span title="Last login: ' + new Date(user.login).toLocaleString() + '">' + new Date(user.login).toLocaleDateString() + '</span>'; }
+                if (user.login) { msg += '<span title="Last login: ' + new Date(user.login * 1000).toLocaleString() + '">' + new Date(user.login * 1000).toLocaleDateString() + '</span>'; }
             }
             if (msg != '') msg += ', ';
             if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
@@ -6058,8 +6059,8 @@
             x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
-            x += addDeviceAttribute('Creation', new Date(user.creation).toLocaleString());
-            if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login).toLocaleString());
+            x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
+            if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
 
             x += '</table></div><br />';
 

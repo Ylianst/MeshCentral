@@ -353,7 +353,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Save login time
-                user.login = Date.now();
+                user.login = Math.floor(Date.now() / 1000);
                 obj.db.SetUser(user);
 
                 // Regenerate session when signing in to prevent fixation
@@ -434,7 +434,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     } else {
                         var hint = req.body.apasswordhint;
                         if (hint.length > 250) hint = hint.substring(0, 250);
-                        var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Date.now(), login: Date.now(), domain: domain.id, passhint: hint };
+                        var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id, passhint: hint };
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
@@ -563,7 +563,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 userinfo = obj.users[user._id];
                                                 userinfo.salt = salt;
                                                 userinfo.hash = hash;
-                                                userinfo.passchange = Date.now();
+                                                userinfo.passchange = Math.floor(Date.now() / 1000);
                                                 userinfo.passhint = null;
                                                 delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
                                                 obj.db.SetUser(userinfo);
@@ -658,7 +658,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var user = obj.users[req.session.userid];
             user.salt = salt;
             user.hash = hash;
-            user.passchange = Date.now();
+            user.passchange = Math.floor(Date.now() / 1000);
             user.passhint = req.body.apasswordhint;
             obj.db.SetUser(user);
             req.session.viewmode = 2;
@@ -743,7 +743,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 user = obj.users[req.session.userid];
                 if ((user == null) || (user.sid != req.session.usersid)) {
                     // Create the domain user
-                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Date.now() };
+                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000) };
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                     if (usercount == 0) { user2.siteadmin = 0xFFFFFFFF; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
