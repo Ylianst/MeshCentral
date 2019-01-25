@@ -587,7 +587,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                     if (newusername == '~') break; // This is a reserved user name
                     if (!obj.parent.users[newuserid]) {
-                        var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Date.now(), domain: domain.id };
+                        var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                         if (command.email != null) { newuser.email = command.email; } // Email
                         obj.parent.users[newuserid] = newuser;
                         // Create a user, generate a salt and hash the password

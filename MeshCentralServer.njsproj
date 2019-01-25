@@ -94,6 +94,7 @@
     <Compile Include="agents\modules_meshcore_min\win-message-pump.min.js" />
     <Compile Include="agents\modules_meshcore_min\win-registry.min.js" />
     <Compile Include="agents\modules_meshcore_min\win-terminal.min.js" />
+    <Compile Include="agents\recoverycore.js" />
     <Compile Include="agents\testsuite.js" />
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amtevents.js" />

@@ -99,7 +99,7 @@ module.exports.CreateDB = function (parent) {
         });
     };
 
-    obj.cleanup = function () {
+    obj.cleanup = function (func) {
         // TODO: Remove all mesh links to invalid users
         // TODO: Remove all meshes that dont have any links
 
@@ -108,14 +108,43 @@ module.exports.CreateDB = function (parent) {
             var meshlist = [];
             if (err == null && docs.length > 0) { for (var i in docs) { meshlist.push(docs[i]._id); } }
             obj.file.remove({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
-        });
 
-        // Clear up all users
-        /*
-        obj.GetAllType('user', function (err, docs) {
-            for (var i in docs) { if (docs[i].subscriptions != null) { console.log('Clean user: ' + docs[i].name); obj.SetUser(docs[i]); } } // Remove "subscriptions" that should not be there.
+            // Fix all of the creating & login to ticks by seconds, not milliseconds.
+            obj.GetAllType('user', function (err, docs) {
+                if (err == null && docs.length > 0) {
+                    for (var i in docs) {
+                        var fixed = false;
+
+                        // Fix account creation
+                        if (docs[i].creation) {
+                            if (docs[i].creation > 1300000000000) { docs[i].creation = Math.floor(docs[i].creation / 1000); fixed = true; }
+                            if ((docs[i].creation % 1) != 0) { docs[i].creation = Math.floor(docs[i].creation); fixed = true; }
+                        }
+
+                        // Fix last account login
+                        if (docs[i].login) {
+                            if (docs[i].login > 1300000000000) { docs[i].login = Math.floor(docs[i].login / 1000); fixed = true; }
+                            if ((docs[i].login % 1) != 0) { docs[i].login = Math.floor(docs[i].login); fixed = true; }
+                        }
+
+                        // Fix last password change
+                        if (docs[i].passchange) {
+                            if (docs[i].passchange > 1300000000000) { docs[i].passchange = Math.floor(docs[i].passchange / 1000); fixed = true; }
+                            if ((docs[i].passchange % 1) != 0) { docs[i].passchange = Math.floor(docs[i].passchange); fixed = true; }
+                        }
+
+                        // Fix subscriptions
+                        if (docs[i].subscriptions != null) { delete docs[i].subscriptions; fixed = true; }
+
+                        // Save the user if needed
+                        if (fixed) { obj.Set(docs[i]); }
+
+                        // We are done
+                        if (func) { func(); }
+                    }
+                }
+            });
         });
-        */
     };
 
     obj.Set = function (data, func) { obj.file.update({ _id: data._id }, data, { upsert: true }, func); };
