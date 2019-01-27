@@ -94,7 +94,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'selfupdate', 'tlsoffload', 'userallowedip', 'swarmallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'swarmallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -168,12 +168,15 @@ function CreateMeshCentralServer(config, args) {
                 process.exit(); // User CTRL-C exit.
             } else if (xprocess.xrestart == 3) {
                 // Server self-update exit
+                var version = '';
+                if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 var child_process = require('child_process');
-                var xxprocess = child_process.exec('npm install meshcentral', { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
-                xxprocess.data = '';
-                xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
+                console.log('npm install meshcentral' + version);
+                //var xxprocess = child_process.exec('npm install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                //xxprocess.data = '';
+                //xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+                //xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
+                //xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
@@ -195,6 +198,7 @@ function CreateMeshCentralServer(config, args) {
     // Get current and latest MeshCentral server versions using NPM
     obj.getLatestServerVersion = function (callback) {
         if (callback == null) return;
+        if (typeof obj.args.selfupdate == 'string') { callback(obj.currentVer, obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
         var child_process = require('child_process');
         var xprocess = child_process.exec('npm view meshcentral dist-tags.latest', { maxBuffer: 512000 }, function (error, stdout, stderr) { });
         xprocess.data = '';
@@ -217,6 +221,12 @@ function CreateMeshCentralServer(config, args) {
         var i;
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
+
+        // If we are targetting a specific version, update now.
+        if (typeof obj.args.selfupdate == 'string') {
+            obj.args.selfupdate = obj.args.selfupdate.toLowerCase();
+            if (obj.currentVer !== obj.args.selfupdate) { obj.performServerUpdate(); return; } // We are targetting a specific version, run self update now.
+        }
 
         // Write the server state
         obj.updateServerState('state', 'starting');
@@ -561,8 +571,11 @@ function CreateMeshCentralServer(config, args) {
 
     // Perform maintenance operations (called every hour)
     obj.maintenanceActions = function () {
+        // Check for self-update that targets a specific version
+        if ((typeof obj.args.selfupdate == 'string') && (obj.currentVer === obj.args.selfupdate)) { obj.args.selfupdate = false; }
+
         // Check if we need to perform server self-update
-        if ((obj.args.selfupdate == true) && (obj.serverSelfWriteAllowed == true)) {
+        if ((obj.args.selfupdate) && (obj.serverSelfWriteAllowed == true)) {
             obj.db.getValueOfTheDay('performSelfUpdate', 1, function (performSelfUpdate) {
                 if (performSelfUpdate.value > 0) {
                     performSelfUpdate.value--;

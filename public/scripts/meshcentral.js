@@ -10,35 +10,38 @@ var MeshServerCreateControl = function (domain) {
     obj.connectstate = 0;
     obj.pingTimer = null;
     
-    obj.xxStateChange = function (newstate) {
+    obj.xxStateChange = function (newstate, errCode) {
         if (obj.State == newstate) return;
+        var previousState = obj.State;
         obj.State = newstate;
-        if (obj.onStateChanged) obj.onStateChanged(obj, obj.State);
+        if (obj.onStateChanged) obj.onStateChanged(obj, obj.State, previousState, errCode);
     }
 
     obj.Start = function () {
+        if (obj.connectstate != 0) return;
         obj.connectstate = 0;
         obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + domain + "control.ashx");
-        obj.socket.onopen = function () { obj.connectstate = 1; obj.xxStateChange(2); }
+        obj.socket.onopen = function (e) { obj.connectstate = 1; }
         obj.socket.onmessage = obj.xxOnMessage;
-        obj.socket.onclose = function () { obj.Stop(); }
-        obj.xxStateChange(1);
+        obj.socket.onclose = function(e) { obj.Stop(e.code); }
+        obj.xxStateChange(1, 0);
         if (obj.pingTimer != null) { clearInterval(obj.pingTimer); }
         obj.pingTimer = setInterval(function () { obj.send({ action: 'ping' }); }, 29000); // Ping the server every 29 seconds, stops corporate proxies from disconnecting.
     }
     
-    obj.Stop = function () {
+    obj.Stop = function (errCode) {
         obj.connectstate = 0;
         if (obj.socket) { obj.socket.close(); delete obj.socket; }
         if (obj.pingTimer != null) { clearInterval(obj.pingTimer); obj.pingTimer = null; }
-        obj.xxStateChange(0);
+        obj.xxStateChange(0, errCode);
     }
     
     obj.xxOnMessage = function (e) {
-        // console.log('xxOnMessage', e.data);
+        if (obj.State == 1) { obj.xxStateChange(2); }
+        //console.log('xxOnMessage', e.data);
         var message;
         try { message = JSON.parse(e.data); } catch (e) { return; }
-        if (message.action == 'pong') { return; }
+        if ((typeof message != 'object') || (message.action == 'pong')) { return; }
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     

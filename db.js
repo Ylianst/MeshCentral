@@ -48,7 +48,7 @@ module.exports.CreateDB = function (parent) {
         var datastoreOptions = { filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
-        if (typeof obj.parent.args.dbencryptkey == 'string') {
+        if ((typeof obj.parent.args.dbencryptkey == 'string') && (obj.parent.args.dbencryptkey.length != 0)) {
             // Hash the database password into a AES256 key and setup encryption and decryption.
             obj.dbKey = obj.parent.crypto.createHash('sha384').update(obj.parent.args.dbencryptkey).digest("raw").slice(0, 32);
             datastoreOptions.afterSerialization = function (plaintext) {
