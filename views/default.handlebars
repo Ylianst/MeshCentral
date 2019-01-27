@@ -147,7 +147,7 @@
             </div>
             <div id="column_l">
                 <div id=p0 style=display:none>
-                    <div id=p0message style=margin:50px;text-align:center>Server disconnected, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
+                    <div id=p0message style=margin:50px;text-align:center><span id=p0span>Server disconnected</span>, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
                 </div>
                 <div id=p1 style=display:none>
                     <div style="float:right;display:none" id="devListToolbarViewIcons">
@@ -1025,7 +1025,7 @@
         function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
         function reload() { window.location.href = window.location.href; }
 
-        function onStateChanged(server, state) {
+        function onStateChanged(server, state, prevState, errorCode) {
             if (state == 0) {
                 // Control web socket disconnected
                 setDialogMode(0); // Close any dialog boxes if present
@@ -1040,12 +1040,13 @@
                 hideContextMenu(); // Hide the context menu if present
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
-                setTimeout(serverPoll, 5000);
+                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes' });
                 meshserver.send({ action: 'files' });
+                go(1);
             }
         }
 
@@ -6493,7 +6494,7 @@
         var xxdialogFunc;
         var xxdialogButtons;
         var xxdialogTag;
-        var xxcurrentView = 0;
+        var xxcurrentView = -1;
 
         // Display a dialog box
         // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
