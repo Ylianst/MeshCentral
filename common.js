@@ -173,3 +173,58 @@ module.exports.checkPasswordRequirements = function(password, requirements) {
     if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
     return true;
 }
+
+
+// Limits the number of tasks running to a fixed limit placing the rest in a pending queue.
+// This is useful to limit the number of agents upgrading at the same time, to not swamp 
+// the network with traffic.
+
+// taskLimiterQueue.launch(somethingToDo, argument);
+//
+// function somethingToDo(argument, taskid, taskLimiterQueue) {
+//     setTimeout(function () { taskLimiterQueue.completed(taskid); }, Math.random() * 2000);
+// }
+
+module.exports.createTaskLimiterQueue = function(maxTasks, maxTaskTime, cleaningInterval) {
+    var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [], timer: null };
+
+    // Add a task to the super queue
+    obj.launch = function (func, arg) {
+        if (obj.currentCount < obj.maxTasks) {
+            // Run this task now
+            const id = obj.nextTaskId++;
+            obj.current[id] = Date.now() + obj.maxTaskTime;
+            obj.currentCount++;
+            //console.log('ImmidiateLaunch ' + id);
+            func(arg, id, obj); // Start the task
+            if (obj.timer == null) { obj.timer = setInterval(obj.clean, cleaningInterval * 1000); }
+        } else {
+            // Hold this task
+            //console.log('Holding');
+            obj.pending.push({ func: func, arg: arg });
+        }
+    }
+
+    // Called when a task is completed
+    obj.completed = function (taskid) {
+        //console.log('Completed ' + taskid);
+        if (obj.current[taskid]) { delete obj.current[taskid]; obj.currentCount--; } else { return; }
+        while ((obj.pending.length > 0) && (obj.currentCount < obj.maxTasks)) {
+            // Run this task now
+            const t = obj.pending.shift(), id = obj.nextTaskId++;
+            obj.current[id] = Date.now() + obj.maxTaskTime;
+            obj.currentCount++;
+            //console.log('PendingLaunch ' + id);
+            t.func(t.arg, id, obj); // Start the task
+        }
+        if ((obj.pending.length == 0) && (obj.timer != null)) { clearInterval(obj.timer); obj.timer = null; } // All done, clear the timer
+    }
+
+    // Look for long standing tasks and clean them up
+    obj.clean = function () {
+        const t = Date.now();
+        for (var i in obj.current) { if (obj.current[i] < t) { obj.completed(parseInt(i)); } }
+    }
+
+    return obj;
+}

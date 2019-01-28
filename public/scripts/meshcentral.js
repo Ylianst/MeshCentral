@@ -4,11 +4,12 @@
 * @version v0.0.1
 */
 
-var MeshServerCreateControl = function (domain) {
+var MeshServerCreateControl = function (domain, authCookie) {
     var obj = {};
     obj.State = 0;
     obj.connectstate = 0;
     obj.pingTimer = null;
+    obj.authCookie = authCookie;
     
     obj.xxStateChange = function (newstate, errCode) {
         if (obj.State == newstate) return;
@@ -20,7 +21,9 @@ var MeshServerCreateControl = function (domain) {
     obj.Start = function () {
         if (obj.connectstate != 0) return;
         obj.connectstate = 0;
-        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + domain + "control.ashx");
+        var url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + domain + "control.ashx";
+        if (obj.authCookie && (obj.authCookie != '')) { url += '?auth=' + obj.authCookie; }
+        obj.socket = new WebSocket(url);
         obj.socket.onopen = function (e) { obj.connectstate = 1; }
         obj.socket.onmessage = obj.xxOnMessage;
         obj.socket.onclose = function(e) { obj.Stop(e.code); }
@@ -42,6 +45,7 @@ var MeshServerCreateControl = function (domain) {
         var message;
         try { message = JSON.parse(e.data); } catch (e) { return; }
         if ((typeof message != 'object') || (message.action == 'pong')) { return; }
+        if (message.action == 'close') { if (message.msg) { console.log(message.msg); } obj.Stop(message.cause); return; }
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     
