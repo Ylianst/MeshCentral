@@ -813,7 +813,9 @@ function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, 
                 // Get started
                 updateControls();
                 if ((typeof args.id == 'string') && (args.id.length > 0)) {
-                    socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id);
+                    var url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id;
+                    if ((args.auth != null) && (args.auth != '')) { url += '&auth=' + args.auth; }
+                    socket = new WebSocket(url);
                     socket.onopen = function () { state = 1; displayControl('Waiting for other user...'); }
                     socket.onerror = function (e) { /*console.error(e);*/ }
                     socket.onclose = function () { disconnect(); }
