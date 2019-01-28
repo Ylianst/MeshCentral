@@ -45,7 +45,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
 
     // Send a message to the mesh agent
-    obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(Buffer.from(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } };
+    obj.send = function (data, func) { try { if (typeof data == 'string') { obj.ws.send(Buffer.from(data, 'binary'), func); } else { obj.ws.send(data, func); } } catch (e) { } };
 
     // Disconnect this agent
     obj.close = function (arg) {
@@ -118,8 +118,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.parent.parent.debug(1, 'Clearing core');
                             } else {
                                 // Update new core
-                                obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
-                                obj.parent.parent.debug(1, 'Updating code ' + corename);
+                                //obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
+                                //obj.parent.parent.debug(1, 'Updating code ' + corename);
+
+                                // Update new core with task limiting so not to flood the server.
+                                obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
+                                    obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
+                                    obj.parent.parent.debug(1, 'Updating code ' + argument.name);
+                                }, { hash: meshcorehash, core: obj.parent.parent.defaultMeshCores[corename], name: corename });
                             }
                             obj.agentCoreCheck++;
                         }

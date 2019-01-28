@@ -574,6 +574,7 @@
         var sessionTime = parseInt("{{{sessiontime}}}");
         var domain = "{{{domain}}}";
         var domainUrl = "{{{domainurl}}}";
+        var authCookie = "{{{authCookie}}}";
         var meshserver = null;
         var xdr = null;
         var serverinfo = null;
@@ -606,7 +607,7 @@
             go(1);
 
             // Connect to the mesh server
-            meshserver = MeshServerCreateControl(domainUrl);
+            meshserver = MeshServerCreateControl(domainUrl, authCookie);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
             meshserver.Start();
@@ -622,6 +623,7 @@
                 // Control web socket disconnected
                 setDialogMode(0); // Close any dialog boxes if present
                 go(0); // Go to disconnection panel
+                if (errorCode == 'noauth') { QH('p0span', 'Unable to perform authentication'); return; }
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
                 // Clean up here
 
@@ -2042,7 +2044,7 @@
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
                     if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
-                    desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'));
+                    desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'), authCookie);
                     desktop.debugmode = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
@@ -2053,7 +2055,7 @@
                     desktop.contype = 2;
                 } else {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -2354,7 +2356,7 @@
         function connectFiles(e) {
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
@@ -2579,7 +2581,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort); // Create our websocket file transport
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie); // Create our websocket file transport
             downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
@@ -2666,7 +2668,7 @@
 
         // Connect again
         function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort);
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie);
             uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;

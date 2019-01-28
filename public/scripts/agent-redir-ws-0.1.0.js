@@ -5,11 +5,12 @@
 */
 
 // Construct a MeshServer agent direction object
-var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
+var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, authCookie) {
     var obj = {};
     obj.m = module; // This is the inner module (Terminal or Desktop)
     module.parent = obj;
     obj.meshserver = meshserver;
+    obj.authCookie = authCookie;
     obj.State = 0;
     obj.nodeid = null;
     obj.socket = null;
@@ -31,6 +32,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort) {
     obj.Start = function (nodeid) {
         var url2, url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/meshrelay.ashx?id=" + obj.tunnelid;
         //if (serverPublicNamePort) { url2 = window.location.protocol.replace("http", "ws") + "//" + serverPublicNamePort + "/meshrelay.ashx?id=" + obj.tunnelid; } else { url2 = url; }
+        if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
         obj.nodeid = nodeid;
         obj.connectstate = 0;
         obj.socket = new WebSocket(url);

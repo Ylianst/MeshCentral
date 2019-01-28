@@ -5,10 +5,11 @@
 */
 
 // Construct a MeshServer object
-var CreateAmtRedirect = function (module) {
+var CreateAmtRedirect = function (module, authCookie) {
     var obj = {};
     obj.m = module; // This is the inner module (Terminal or Desktop)
     module.parent = obj;
+    obj.authCookie = authCookie;
     obj.State = 0;
     obj.socket = null;
     // ###BEGIN###{!Mode-Firmware}
@@ -40,7 +41,9 @@ var CreateAmtRedirect = function (module) {
         obj.pass = pass;
         obj.connectstate = 0;
         obj.inDataCount = 0;
-        obj.socket = new WebSocket(window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : "")); // The "p=2" indicates to the relay that this is a REDIRECTION session
+        var url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/webrelay.ashx?p=2&host=" + host + "&port=" + port + "&tls=" + tls + ((user == '*') ? "&serverauth=1" : "") + ((typeof pass === "undefined") ? ("&serverauth=1&user=" + user) : ""); // The "p=2" indicates to the relay that this is a REDIRECTION session
+        if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
+        obj.socket = new WebSocket(url);
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
         obj.socket.onclose = obj.xxOnSocketClosed;

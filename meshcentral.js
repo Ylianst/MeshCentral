@@ -59,6 +59,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
+    obj.taskLimiter = obj.common.createTaskLimiterQueue(10, 20, 60); // This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -1214,13 +1215,13 @@ function CreateMeshCentralServer(config, args) {
             const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
             decipher.setAuthTag(cookie.slice(12, 16));
             const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { Debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
             if (timeout == null) { timeout = 2; }
-            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { Debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             return o;
-        } catch (e) { return null; }
+        } catch (ex) { obj.debug(1, 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
     };
 
     // Decode a cookie back into an object using a key using AES256 / HMAC-SHA386. Return null if it's not a valid cookie. (key must be 80 bytes or more)
@@ -1236,13 +1237,13 @@ function CreateMeshCentralServer(config, args) {
             hmac.update(rawmsg.slice(48));
             if (Buffer.compare(hmac.digest(), Buffer.from(rawmsg.slice(0, 48))) == false) { return null; }
             const o = JSON.parse(rawmsg.slice(48).toString('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { Debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
             if (timeout == null) { timeout = 2; }
             if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             return o;
-        } catch (ex) { console.log(ex); return null; }
+        } catch (ex) { obj.debug(1, 'ERR: Bad AESSHA cookie due to exception: ' + ex); return null; }
     };
 
     // Debug
