@@ -214,7 +214,12 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                                 socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
                                 socket.tag.updatePtr = 0;
                                 //console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
-                                obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+
+                                // Start the agent download using the task limiter so not to flood the server.
+                                obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
+                                    socket.tag.taskid = taskid;
+                                    obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                                }, socket);
                             } else {
                                 //console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
                             }
@@ -248,6 +253,8 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                                     // Send end-of-transfer
                                     obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(7) + common.IntToStr(socket.tag.update.binary.length)); //agent.SendQuery(7, AgentFileLen);
                                     Debug(3, 'Swarm:Sending end of agent, ptr = ' + socket.tag.updatePtr);
+                                    obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
+                                    delete socket.tag.taskid;
                                     delete socket.tag.update;
                                     delete socket.tag.updatePtr;
                                 }
@@ -274,9 +281,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
         socket.addListener("close", function () {
             Debug(1, 'Swarm:Connection closed');
-            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
             if (socket.pingTimer != null) { clearInterval(socket.pingTimer); delete socket.pingTimer; }
+            if (socket.tag && (typeof socket.tag.taskid == 'number')) {
+                obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
+                delete socket.tag.taskid;
+            }
         });
 
         socket.addListener("error", function () {
@@ -344,8 +353,6 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     // Disconnect legacy agent connection
     obj.close = function (socket) {
         try { socket.close(); } catch (e) { }
-        try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-        obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
     };
 
     obj.SendCommand = function (socket, cmdid, data) {
