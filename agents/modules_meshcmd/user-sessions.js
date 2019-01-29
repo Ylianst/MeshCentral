@@ -92,6 +92,11 @@ function UserSessions()
         {
         }
 
+        this._advapi = this._marshal.CreateNativeProxy('Advapi32.dll');
+        this._advapi.CreateMethod('AllocateAndInitializeSid');
+        this._advapi.CreateMethod('CheckTokenMembership');
+        this._advapi.CreateMethod('FreeSid');
+
         this._user32 = this._marshal.CreateNativeProxy('user32.dll');
         this._user32.CreateMethod({ method: 'RegisterPowerSettingNotification', threadDispatch: 1});
         this._user32.CreateMethod('UnregisterPowerSettingNotification');
@@ -149,6 +154,26 @@ function UserSessions()
                 'WTSSessionAddressV4': 28,
                 'WTSIsRemoteSession': 29
             };
+
+        this.isRoot = function isRoot()
+        {
+            var NTAuthority = this._marshal.CreateVariable(6);
+            NTAuthority.toBuffer().writeInt8(5, 5);
+
+            var AdministratorsGroup = this._marshal.CreatePointer();
+            var admin = false;
+
+            if (this._advapi.AllocateAndInitializeSid(NTAuthority, 2, 32, 544, 0, 0, 0, 0, 0, 0, AdministratorsGroup).Val != 0)
+            {
+                var member = this._marshal.CreateInteger();
+                if (this._advapi.CheckTokenMembership(0, AdministratorsGroup.Deref(), member).Val != 0)
+                {
+                    if (member.toBuffer().readUInt32LE() != 0) { admin = true; }
+                }
+                this._advapi.FreeSid(AdministratorsGroup.Deref());
+            }
+            return admin;
+        }
 
         this.getSessionAttribute = function getSessionAttribute(sessionId, attr)
         {

@@ -151,7 +151,7 @@ module.exports.CreateDB = function (parent) {
     obj.Get = function (id, func) { obj.file.find({ _id: id }, func); };
     obj.GetAll = function (func) { obj.file.find({}, func); };
     obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, func); };
-    obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, func) { obj.file.find({ type: type, domain: domain, meshid: { $in: meshes } }, { type: 0 }, func); };
+    obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, func); };
     obj.GetAllType = function (type, func) { obj.file.find({ type: type }, func); };
     obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, func); };
     obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, func); };
