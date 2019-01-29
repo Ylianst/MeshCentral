@@ -230,6 +230,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         switch (command.action) {
             case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
+            case 'authcookie':
+                {
+                    // Renew the authentication cookie
+                    try { ws.send(JSON.stringify({ action: 'authcookie', cookie: obj.parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    break;
+                }
             case 'serverstats':
                 {
                     if ((user.siteadmin) != 0) {
@@ -267,7 +273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', function (err, docs) {
+                    obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
                         var r = {};
                         for (i in docs) {
                             // Add the connection state

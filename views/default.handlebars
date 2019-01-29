@@ -33,21 +33,21 @@
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none">
     <!-- right click menu -->
-    <div id="contextMenu" class="contextMenu" style="display:none">
-        <div id="cxinfo" class="cmtext" onclick="cmaction(1)"><b>Information</b></div>
-        <div id="cxdesktop" class="cmtext" onclick="cmaction(3)">Desktop</div>
-        <div id="cxterminal" class="cmtext" onclick="cmaction(2)">Terminal</div>
-        <div id="cxfiles" class="cmtext" onclick="cmaction(4)">Files</div>
-        <div id="cxevents" class="cmtext" onclick="cmaction(5)">Events</div>
-        <div id="cxconsole" class="cmtext" onclick="cmaction(6)">Console</div>
+    <div id="contextMenu" class="contextMenu noselect" style="display:none">
+        <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
+        <div id="cxdesktop" class="cmtext" onclick="cmaction(3,event)">Desktop</div>
+        <div id="cxterminal" class="cmtext" onclick="cmaction(2,event)">Terminal</div>
+        <div id="cxfiles" class="cmtext" onclick="cmaction(4,event)">Files</div>
+        <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
+        <div id="cxconsole" class="cmtext" onclick="cmaction(6,event)">Console</div>
         <hr id="cxmgroupsplit" />
-        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7)" style=display:none>Multi-Desktop</div>
+        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style=display:none>Multi-Desktop</div>
     </div>
-    <div id="meshContextMenu" class="contextMenu" style="display: none; min-width: 0px">
-        <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1)">Select All</div>
-        <div id="cxselectnone" class="cmtext" onclick="cmmeshaction(2)">Select None</div>
+    <div id="meshContextMenu" class="contextMenu,noselect" style="display: none; min-width: 0px">
+        <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1,event)">Select All</div>
+        <div id="cxselectnone" class="cmtext" onclick="cmmeshaction(2,event)">Select None</div>
         <hr id="cxmgroupsplit2" style=display:none />
-        <div id="cxmmdesktop" class="cmtext" style=display:none onclick="cmmeshaction(3)">Multi-Desktop</div>
+        <div id="cxmmdesktop" class="cmtext" style=display:none onclick="cmmeshaction(3,event)">Multi-Desktop</div>
     </div>
     <!-- main page -->
     <div id=container style=max-height:100vh;position:relative>
@@ -156,7 +156,7 @@
                         <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
                         <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
                     </div><div><h1>My Devices</h1></div>
-                    <table style=width:100%;height:24px;background-color:#d3d9d6;vertical-align:middle;border-spacing:0>
+                    <table class="noselect" style=width:100%;height:24px;background-color:#d3d9d6;vertical-align:middle;border-spacing:0>
                         <tr>
                             <td class=h1></td>
                             <td id=devListToolbar class=style14 style=display:none>
@@ -221,7 +221,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="xdevices" style="max-height:calc(100vh - 239px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none"></div>
+                    <div id="xdevices" class="noselect" style="max-height:calc(100vh - 239px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none"></div>
                     <div id="xdevicesmap" style="height:calc(100vh - 239px);width:100%;overflow:hidden;position:relative;display:none">
                         <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
                             <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
@@ -371,7 +371,7 @@
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id=p10title>
-                                    <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                                    <div id="p10BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                                     <h1>General - <span id=p10deviceName></span></h1>
                                 </div>
                                 <div id=p10html></div>
@@ -389,7 +389,7 @@
                 <div id=p11 class=noselect style=display:none>
                     <div id="p11title">
                         <div id=p11deviceNameHeader>
-                            <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                            <div id="p11BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                             <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                             <h1>Desktop - <span id=p11deviceName></span></h1>
                         </div>
@@ -475,7 +475,7 @@
                 </div>
                 <div id=p12 style="display:none">
                     <div id="p12title">
-                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p12BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Terminal - <span id=p12deviceName></span></h1>
                     </div>
                     <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
@@ -536,7 +536,7 @@
                 </div>
                 <div id=p13 style=display:none>
                     <div id="p13title">
-                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p13BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Files - <span id=p13deviceName></span></h1>
                     </div>
                     <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
@@ -596,14 +596,14 @@
                 </div>
                 <div id=p14 style=display:none>
                     <div id="p14title">
-                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p14BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
                     </div>
                     <iframe id=p14iframe style="width:100%;height:calc(100vh - 242px);border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style=display:none>
                     <div id="p15title">
-                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p15BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Console - <span id=p15deviceName></span></h1>
                     </div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
@@ -643,7 +643,7 @@
                 </div>
                 <div id=p16 style=display:none>
                     <div id="p16title">
-                        <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p16BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Events - <span id=p16deviceName></span></h1>
                     </div>
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
@@ -849,7 +849,7 @@
         var meshserver = null;
         var meshes = {};
         var meshcount = 0;
-        var nodes = [];
+        var nodes = null;
         var filetree = {};
         var userinfo = null;
         var serverinfo = null;
@@ -868,6 +868,7 @@
         var domain = "{{{domain}}}";
         var domainUrl = "{{{domainurl}}}";
         var authCookie = "{{{authCookie}}}";
+        var authCookieRenewTimer = null;
         var multiDesktop = {};
         var multiDesktopFilter = null;
         var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
@@ -889,8 +890,6 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
-            toggleFullScreen();
-
             // Check if we are in debug mode
             args = parseUriArgs();
             debugmode = args.debug;
@@ -899,12 +898,13 @@
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
 
+            toggleFullScreen();
+
             // Setup page visuals
             if (args.hide) {
                 var hide = parseInt(args.hide);
                 QV('masthead', !(hide & 1));
                 QV('topbarmaster', !(hide & 2));
-                QV('page_leftbar', !(hide & 2));
                 QV('footer', !(hide & 4));
                 QV('p10title', !(hide & 8));
                 QV('p11title', !(hide & 8));
@@ -913,6 +913,21 @@
                 QV('p14title', !(hide & 8));
                 QV('p15title', !(hide & 8));
                 QV('p16title', !(hide & 8));
+                if (hide & 16) {
+                    QV('page_leftbar', false);
+                    QS('page_content').left = '0px';
+                }
+            }
+
+            // We are looking at a single device, remove all the back buttons
+            if ('{{currentNode}}' != '') {
+                QV('p10BackButton', false);
+                QV('p11BackButton', false);
+                QV('p12BackButton', false);
+                QV('p13BackButton', false);
+                QV('p14BackButton', false);
+                QV('p15BackButton', false);
+                QV('p16BackButton', false);
             }
             p1updateInfo();
 
@@ -980,6 +995,8 @@
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            var hide = 0;
+            if (args.hide) { hide = parseInt(args.hide); }
             if (webPageFullScreen == false) {
                 QS('container').width = '960px';
                 QS('container')['border-right'] = '1px solid #b7b7b7';
@@ -1007,7 +1024,7 @@
                 QS('container')['overflow'] = 'hidden';
                 QS('page_content').position = 'absolute';
                 QS('page_content').top = '66px';
-                QS('page_content').left = '90px';
+                QS('page_content').left = (hide & 16)?'0px':'90px';
                 QS('page_content').right = '0px';
                 QS('page_content').bottom = '0px';
                 QS('column_l').height = 'calc(100vh - 135px)';
@@ -1016,14 +1033,14 @@
                 QS('column_l')["max-height"] = 'calc(100vh - 135px)';
                 QV('MainMenuSpan', false);
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
-                QV('page_leftbar', true);
+                QV('page_leftbar', !(hide & 16));
             }
             //center();
             masterUpdate(512);
             QV('body', true);
         }
 
-        function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
+        function getNodeFromId(id) { if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } } return null; }
         function reload() { window.location.href = window.location.href; }
 
         function onStateChanged(server, state, prevState, errorCode) {
@@ -1043,12 +1060,14 @@
                 QV('logoutControl', false);
                 if (errorCode == 'noauth') { QH('p0span', 'Unable to perform authentication'); return; }
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
+                if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes' });
-                meshserver.send({ action: 'files' });
+                meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
                 go(1);
+                authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
         }
 
@@ -1140,6 +1159,11 @@
                     updateServerStats(message);
                     break;
                 }
+                case 'authcookie': {
+                    // Got an authentication cookie refresh
+                    authCookie = message.cookie;
+                    break;
+                }
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
                     break;
@@ -1221,7 +1245,7 @@
                     // Check if this is a message from a node
                     if (message.nodeid != null) {
                         var index = -1;
-                        for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } }
+                        if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
                         if (index != -1) {
                             // Node was found, dispatch the message
                             if (message.type == 'console') { p15consoleReceive(nodes[index], message.value); } // This is a console message.
@@ -1444,7 +1468,7 @@
 
                             // Delete all nodes in that mesh
                             var newnodes = [];
-                            for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
+                            if (nodes != null) { for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } } }
                             nodes = newnodes;
                             masterUpdate(4);
 
@@ -1464,6 +1488,7 @@
                             node.state = 0;
                             if (!node.icon) node.icon = 1;
                             node.ident = ++nodeShortIdent;
+                            if (nodes == null) { }
                             nodes.push(node);
 
                             // Web page update
@@ -1753,6 +1778,7 @@
         var deviceHeaders = {};
         var oldviewmode = 0;
         function updateDevices() {
+            if (nodes == null) { return; }
             var r = '', c = 0, current = null, count = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view < 4);
             QV('xdevicesmap', view == 4);
@@ -1842,19 +1868,19 @@
                     var nodestate = NodeStateStr(nodes[i]);
                     if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
+                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
                         r += '<tr><td><div id=devs class=bar18 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium>';
                         r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
-                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\')><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\')><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
+                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
                     } else if ((view == 3) && (nodes[i].conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((nodes[i].agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0)) {
-                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11)>';
+                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11,null,event)>';
                             //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
                             r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                            r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\')></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
+                            r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
                             r += '</div>';
                             kvmDivs.push(nodes[i]._id);
                         }
@@ -2479,7 +2505,7 @@
 
             // Get the node and set the menu options
             var nodeid = contextelement.children[1].attributes.onclick.value;
-            var node = getNodeFromId(nodeid.substring(12, nodeid.length - 2));
+            var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
             var mesh = meshes[node.meshid];
             var meshlinks = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
             var meshrights = meshlinks.rights;
@@ -2493,16 +2519,20 @@
             return haltEvent(event);
         }
 
-        function cmaction(action) {
+        function cmaction(action,event) {
             var nodeid = contextelement.children[1].attributes.onclick.value;
-            nodeid = nodeid.substring(12, nodeid.length - 2);
-            if (action == 1) gotoDevice(nodeid, 10); // General
-            if (action == 2) gotoDevice(nodeid, 12); // Desktop
-            if (action == 3) gotoDevice(nodeid, 11); // Terminal
-            if (action == 4) gotoDevice(nodeid, 13); // Files
-            if (action == 5) gotoDevice(nodeid, 16); // Events
-            if (action == 6) gotoDevice(nodeid, 15); // Console
+            nodeid = nodeid.substring(12, nodeid.length - 18);
             if (action == 7) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
+            if ((action > 0) && (action < 7)) {
+                var panel = [0, 10, 12, 11, 13, 16, 15][action]; // (invalid), General, Desktop, Terminal, Files, Events, Console
+                if (event && (event.shiftKey == true)) {
+                    // Open the device in a different tab
+                    window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16', 'meshcentral:' + nodeid);
+                } else {
+                    // Go to the right panel
+                    gotoDevice(nodeid, panel);
+                }
+            }
         }
 
         function cmmeshaction(action) {
@@ -3145,7 +3175,13 @@
         var powerTimelineUpdate = null;
         var powerTimeline = null;
         function getCurrentNode() { return currentNode; };
-        function gotoDevice(nodeid, panel, refresh) {
+        function gotoDevice(nodeid, panel, refresh, event) {
+            if (event && (event.shiftKey == true)) {
+                // Open the device in a different tab
+                window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16', 'meshcentral:' + nodeid);
+                return;
+            }
+
             //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
             var mesh = meshes[node.meshid];
@@ -3355,6 +3391,9 @@
 
                 // Ask for device events
                 refreshDeviceEvents();
+
+                // Update the web page title
+                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = 'MeshCentral - ' + currentNode.name; } else { document.title = 'MeshCentral'; }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -6605,6 +6644,9 @@
             }
 
             if (x == 1) masterUpdate(4);
+
+            // Update the web page title
+            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = 'MeshCentral - ' + currentNode.name; } else { document.title = 'MeshCentral'; }
         }
 
         // Generic methods

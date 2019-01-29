@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2019 Intel Corporation
+Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 var KEY_QUERY_VALUE = 0x0001;
+var KEY_ENUMERATE_SUB_KEYS = 0x0008;
 var KEY_WRITE = 0x20006;
 
 var KEY_DATA_TYPES =
@@ -39,7 +40,10 @@ function windows_registry()
     this._marshal = require('_GenericMarshal');
     this._AdvApi = this._marshal.CreateNativeProxy('Advapi32.dll');
     this._AdvApi.CreateMethod('RegCreateKeyExA');
+    this._AdvApi.CreateMethod('RegEnumKeyExA');
+    this._AdvApi.CreateMethod('RegEnumValueA');
     this._AdvApi.CreateMethod('RegOpenKeyExA');
+    this._AdvApi.CreateMethod('RegQueryInfoKeyA');
     this._AdvApi.CreateMethod('RegQueryValueExA');
     this._AdvApi.CreateMethod('RegCloseKey');
     this._AdvApi.CreateMethod('RegDeleteKeyA');
@@ -49,18 +53,65 @@ function windows_registry()
 
     this.QueryKey = function QueryKey(hkey, path, key)
     {
+        var err;
         var h = this._marshal.CreatePointer();
         var len = this._marshal.CreateVariable(4);
         var valType = this._marshal.CreateVariable(4);
-        key = this._marshal.CreateVariable(key);
         var HK = this._marshal.CreatePointer(hkey);
         var retVal = null;
+        if (key) { key = this._marshal.CreateVariable(key); }
+        if (!path) { path = ''; }
 
-        if (this._AdvApi.RegOpenKeyExA(HK, this._marshal.CreateVariable(path), 0, KEY_QUERY_VALUE, h).Val != 0)
+
+        if ((err = this._AdvApi.RegOpenKeyExA(HK, this._marshal.CreateVariable(path), 0, KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS, h).Val) != 0)
         {
-            throw ('Error Opening Registry Key: ' + path);
+            throw ('Opening Registry Key: ' + path + ' => Returned Error: ' + err);
         }
   
+        if ((path == '' && !key) || !key)
+        {
+            var result = { subkeys: [], values: [] };
+
+            // Enumerate  keys
+            var achClass = this._marshal.CreateVariable(1024);
+            var achKey = this._marshal.CreateVariable(1024);
+            var achValue = this._marshal.CreateVariable(32768);
+            var achValueSize = this._marshal.CreateVariable(4);
+            var nameSize = this._marshal.CreateVariable(4); 
+            var achClassSize = this._marshal.CreateVariable(4); achClassSize.toBuffer().writeUInt32LE(1024);
+            var numSubKeys = this._marshal.CreateVariable(4);
+            var numValues = this._marshal.CreateVariable(4);
+            var longestSubkeySize = this._marshal.CreateVariable(4);
+            var longestClassString = this._marshal.CreateVariable(4);
+            var longestValueName = this._marshal.CreateVariable(4);
+            var longestValueData = this._marshal.CreateVariable(4);
+            var securityDescriptor = this._marshal.CreateVariable(4);
+            var lastWriteTime = this._marshal.CreateVariable(8);
+
+            retVal = this._AdvApi.RegQueryInfoKeyA(h.Deref(), achClass, achClassSize, 0,
+                numSubKeys, longestSubkeySize, longestClassString, numValues,
+                longestValueName, longestValueData, securityDescriptor, lastWriteTime);
+            if (retVal.Val != 0) { throw ('RegQueryInfoKeyA() returned error: ' + retVal.Val); }
+            for(var i = 0; i < numSubKeys.toBuffer().readUInt32LE(); ++i)
+            {
+                nameSize.toBuffer().writeUInt32LE(1024);
+                retVal = this._AdvApi.RegEnumKeyExA(h.Deref(), i, achKey, nameSize, 0, 0, 0, lastWriteTime);
+                if(retVal.Val == 0)
+                {
+                    result.subkeys.push(achKey.String);
+                }
+            }
+            for (var i = 0; i < numValues.toBuffer().readUInt32LE() ; ++i)
+            {
+                achValueSize.toBuffer().writeUInt32LE(32768);
+                if(this._AdvApi.RegEnumValueA(h.Deref(), i, achValue, achValueSize, 0, 0, 0, 0).Val == 0)
+                {
+                    result.values.push(achValue.String);
+                }
+            }
+            return (result);
+        }
+
         if(this._AdvApi.RegQueryValueExA(h.Deref(), key, 0, 0, 0, len).Val == 0)
         {
             var data = this._marshal.CreateVariable(len.toBuffer().readUInt32LE());
