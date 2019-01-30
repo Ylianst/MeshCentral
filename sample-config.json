@@ -15,7 +15,10 @@
     "_WebRTC": false,
     "_ClickOnce": false,
     "_SelfUpdate": true,
-    "_UserAllowedIP": "127.0.0.1,::1,192.168.0.100",
+    "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
+    "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
+    "_AgentAllowedIP": "192.168.0.100/24",
+    "_AgentBlockedIP": "127.0.0.1,::1",
     "_LocalDiscovery": { "name": "Local server name", "info": "Information about this server" },
     "_TlsOffload": true,
     "_MpsTlsOffload": true,
@@ -31,8 +34,12 @@
       "NewAccounts": 1,
       "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_CertUrl": "https://192.168.2.106:443/",
+      "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 },
+      "_AgentNoProxy": true,
       "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
-      "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 }
+      "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
+      "_AgentAllowedIP": "192.168.0.100/24",
+      "_AgentBlockedIP": "127.0.0.1,::1"
     },
     "customer1": {
       "DNS": "customer1.myserver.com",
