@@ -74,9 +74,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.users = {};
     obj.meshes = {};
     obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
+    obj.agentAllowedIp = args.agentallowedip;  // List of allowed IP addresses for agents
+    obj.agentBlockedIp = args.agentblockedip;  // List of blocked IP addresses for agents
     obj.tlsSniCredentials = null;
     obj.dnsDomains = {};
-    //obj.agentConnCount = 0;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -268,15 +269,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     };
     */
 
-    // Check if the source IP address is allowed for a given allowed list, return false if not
-    function checkUserIpAddressEx(req, res, allowedIpList) {
-        if (allowedIpList == null) { return true; }
+    // Check if the source IP address is in the IP list, return false if not.
+    function checkIpAddressEx(req, res, ipList, closeIfThis) {
         try {
             var ip;
             if (req.connection) { // HTTP(S) request
                 ip = req.ip;
-                if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
-                res.sendStatus(401);
+                if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { res.sendStatus(401); } return true; } } }
+                if (closeIfThis === false) { res.sendStatus(401); }
             } else if (req._socket) { // WebSocket request
                 ip = req._socket.remoteAddress;
 
@@ -284,18 +284,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This is not done automatically for web socket like it's done for HTTP requests.
                 if ((obj.args.tlsoffload) && (res.headers['x-forwarded-for']) && ((obj.args.tlsoffload === true) || (obj.args.tlsoffload === ip) || (('::ffff:') + obj.args.tlsoffload === ip))) { ip = res.headers['x-forwarded-for']; }
 
-                if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
-                try { req.close(); } catch (e) { }
+                if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
+                if (closeIfThis === false) { try { req.close(); } catch (e) { } }
             } 
-        } catch (e) { console.log(e); }
+        } catch (e) { console.log(e); } // Should never happen
         return false;
     }
 
     // Check if the source IP address is allowed, return domain if allowed
     function checkUserIpAddress(req, res) {
-        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) == false) { return null; }
+        if ((obj.userBlockedIp != null) && (checkIpAddressEx(req, res, obj.userBlockedIp, true) == true)) { return null; }
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) == false)) { return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
-        if (checkUserIpAddressEx(req, res, domain.userallowedip) == false) { return null; }
+        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true) == true)) { return null; }
+        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false) == false)) { return null; }
+        return domain;
+    }
+
+    // Check if the source IP address is allowed, return domain if allowed
+    function checkAgentIpAddress(req, res) {
+        if ((obj.agentBlockedIp != null) && (checkIpAddressEx(req, res, obj.agentBlockedIp, null) == true)) { return null; }
+        if ((obj.agentAllowedIp != null) && (checkIpAddressEx(req, res, obj.agentAllowedIp, null) == false)) { return null; }
+        const domain = (req.url ? getDomain(req) : getDomain(res));
+        if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { return null; }
+        if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { return null; }
         return domain;
     }
 
@@ -796,6 +808,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x0400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x0800; } // Server can self-write (Allows self-update)
             if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
+            if (domain.agentnoproxy === true) { features += 0x2000; } // Indicates that agents should be installed without using a HTTP proxy
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -909,14 +922,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
-        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) === false) { return; } // Check server-wide IP filter only.
+        if (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false) { return; } // Check server-wide IP filter only.
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
-        if (checkUserIpAddressEx(req, res, obj.userAllowedIp) === false) { return; } // Check server-wide IP filter only.
+        if (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
             var filename = 'cira_setup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
@@ -1631,6 +1644,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
                 if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
+                if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
 
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
@@ -1640,7 +1654,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
             if (scriptInfo == null) { res.sendStatus(404); return; }
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=' + scriptInfo.rname });
-            res.sendFile(scriptInfo.path);
+            res.send(scriptInfo.data.split('{{{noproxy}}}').join((domain.agentnoproxy === true)?'--no-proxy ':''));
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
             var agentid = parseInt(req.query.meshcmd);
@@ -1850,6 +1864,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
+        if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
         res.send(meshsettings);
@@ -1973,14 +1988,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Receive mesh agent connections
             obj.app.ws(url + 'agent.ashx', function (ws, req) {
-                //console.log(++obj.agentConnCount);
-                /*
-                var ip, port, type;
-                if (req.connection) { ip = req.connection.remoteAddress; port = req.connection.remotePort; type = 1; } // HTTP(S) request
-                else if (req._socket) { ip = req._socket.remoteAddress; port = req._socket.remotePort; type = 2; } // WebSocket request
-                console.log('AgentConnect', ip, port, type);
-                */
-                try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, getDomain(req)); } catch (e) { console.log(e); }
+                var domain = checkAgentIpAddress(ws, req);
+                if (domain == null) { Debug(1, 'Got agent connection from blocked IP address ' + ws._socket.remoteAddress + ', holding.'); return; }
+                // console.log('Agent connect: ' + ws._socket.remoteAddress);
+                try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
 
             // Creates a login token using the user/pass that is passed in as URL arguments.

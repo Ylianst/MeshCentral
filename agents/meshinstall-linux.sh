@@ -95,13 +95,13 @@ DownloadAgent() {
   mkdir -p /usr/local/mesh
   cd /usr/local/mesh
   echo "Downloading Mesh agent #$machineid..."
-  wget $url/meshagents?id=$machineid -q --no-check-certificate -O /usr/local/mesh/meshagent
+  wget $url/meshagents?id=$machineid --no-check-certificate {{{noproxy}}}-O /usr/local/mesh/meshagent
 
   # If it did not work, try again using http
   if [ $? != 0 ]
   then
     url=${url/"https://"/"http://"}
-    wget $url/meshagents?id=$machineid -q -O /usr/local/mesh/meshagent
+    wget $url/meshagents?id=$machineid {{{noproxy}}}-O /usr/local/mesh/meshagent
   fi
 
   if [ $? -eq 0 ]
@@ -109,12 +109,12 @@ DownloadAgent() {
     echo "Mesh agent downloaded."
     # TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
-    wget $url/meshsettings?id=$meshid -q --no-check-certificate -O /usr/local/mesh/meshagent.msh
+    wget $url/meshsettings?id=$meshid --no-check-certificate {{{noproxy}}}-O /usr/local/mesh/meshagent.msh
 
     # If it did not work, try again using http
     if [ $? -ne 0 ]
     then
-      wget $url/meshsettings?id=$meshid -q -O /usr/local/mesh/meshagent.msh
+      wget $url/meshsettings?id=$meshid {{{noproxy}}}-O /usr/local/mesh/meshagent.msh
     fi
 
     if [ $? -eq 0 ]
@@ -141,7 +141,7 @@ DownloadAgent() {
         if [ $starttype -eq 3 ]
         then
 		  # initd
-	      wget $url/meshagents?script=2 -q --no-check-certificate -O /etc/init.d/meshagent
+	      wget $url/meshagents?script=2 --no-check-certificate {{{noproxy}}}-O /etc/init.d/meshagent
 		  chmod +x /etc/init.d/meshagent
 		  update-rc.d meshagent defaults # creates symlinks for rc.d
 		  service meshagent start

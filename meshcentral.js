@@ -59,7 +59,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
-    obj.taskLimiter = obj.common.createTaskLimiterQueue(10, 20, 60); // This is a task limiter queue to smooth out server work.
+    obj.taskLimiter = obj.common.createTaskLimiterQueue(30, 20, 60); // This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -95,7 +95,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'swarmallowedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -251,6 +251,9 @@ function CreateMeshCentralServer(config, args) {
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
             if (typeof obj.config.domains[i].userallowedip == 'string') { if (obj.config.domains[i].userallowedip == '') { obj.config.domains[i].userallowedip = null; } else { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); } }
+            if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { obj.config.domains[i].userblockedip = null; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userallowedip.split(','); } }
+            if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { obj.config.domains[i].agentallowedip = null; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(','); } }
+            if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { obj.config.domains[i].agentblockedip = null; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(','); } }
         }
 
         // Log passed arguments into Windows Service Log
@@ -268,6 +271,9 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (obj.args.minifycore === 0) obj.args.minifycore = false;
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { obj.args.userallowedip = null; } else { obj.args.userallowedip = obj.args.userallowedip.split(','); } }
+        if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { obj.args.userblockedip = null; } else { obj.args.userblockedip = obj.args.userblockedip.split(','); } }
+        if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { obj.args.agentallowedip = null; } else { obj.args.agentallowedip = obj.args.agentallowedip.split(','); } }
+        if (typeof obj.args.agentblockedip == 'string') { if (obj.args.agentblockedip == '') { obj.args.agentblockedip = null; } else { obj.args.agentblockedip = obj.args.agentblockedip.split(','); } }
         if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(','); } }
         if (typeof obj.args.debug == 'number') obj.debugLevel = obj.args.debug;
         if (obj.args.debug == true) obj.debugLevel = 1;
@@ -1053,7 +1059,8 @@ function CreateMeshCentralServer(config, args) {
             var stream = null;
             try {
                 stream = obj.fs.createReadStream(scriptpath);
-                stream.on('data', function (data) { this.hash.update(data, 'binary'); });
+                stream.xdata = '';
+                stream.on('data', function (data) { this.hash.update(data, 'binary'); this.xdata += data; });
                 stream.on('error', function (data) {
                     // If there is an error reading this file, make sure this agent is not in the agent table
                     if (obj.meshAgentInstallScripts[this.info.id] != null) { delete obj.meshAgentInstallScripts[this.info.id]; }
@@ -1063,6 +1070,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshAgentInstallScripts[this.info.id] = obj.common.Clone(this.info);
                     obj.meshAgentInstallScripts[this.info.id].hash = this.hash.digest('hex');
                     obj.meshAgentInstallScripts[this.info.id].path = this.agentpath;
+                    obj.meshAgentInstallScripts[this.info.id].data = this.xdata;
                     obj.meshAgentInstallScripts[this.info.id].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?script=' + this.info.id;
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
