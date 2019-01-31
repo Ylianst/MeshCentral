@@ -172,12 +172,11 @@ function CreateMeshCentralServer(config, args) {
                 var version = '';
                 if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 var child_process = require('child_process');
-                console.log('npm install meshcentral' + version);
-                //var xxprocess = child_process.exec('npm install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
-                //xxprocess.data = '';
-                //xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
-                //xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                //xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
+                var xxprocess = child_process.exec('npm install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                xxprocess.data = '';
+                xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+                xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
+                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
