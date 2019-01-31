@@ -1276,18 +1276,16 @@
                             QH('d2netinfo', 'No network interface information available for this device.');
                         } else {
                             var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow-y:auto;line-height:160%>';
-                            if (currentNode.publicip) {
-                                x += addHtmlValue2('Public IP address', currentNode.publicip);
-                            } else {
-                                if (currentNode.lastconnect) { x += addHtmlValue2('Last agent connection', new Date(currentNode.lastconnect).toLocaleString()); }
-                                if (currentNode.lastaddr) {
-                                    if (isPrivateIP(currentNode.lastaddr)) {
-                                        x += addHtmlValue2('Last agent address:port', currentNode.lastaddr);
-                                    } else {
-                                        x += addHtmlValue2('Last agent address:port', '<a href="https://iplocation.com/?ip=' + currentNode.lastaddr.split(':')[0] + '" rel="noreferrer noopener" target=_blank>' + currentNode.lastaddr + '</a>');
-                                    }
+
+                            if (currentNode.lastconnect) { x += addHtmlValue2('Last agent connection', new Date(currentNode.lastconnect).toLocaleString()); }
+                            if (currentNode.lastaddr) {
+                                if (isPrivateIP(currentNode.lastaddr)) {
+                                    x += addHtmlValue2('Last agent address', currentNode.lastaddr.split(':')[0]);
+                                } else {
+                                    x += addHtmlValue2('Last agent address', '<a href="https://iplocation.com/?ip=' + currentNode.lastaddr.split(':')[0] + '" rel="noreferrer noopener" target=_blank>' + currentNode.lastaddr.split(':')[0] + '</a>');
                                 }
                             }
+
                             x += addHtmlValue2('Last interfaces update', new Date(message.updateTime).toLocaleString());
                             for (var i in message.netif) {
                                 var net = message.netif[i];
