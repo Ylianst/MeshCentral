@@ -692,7 +692,7 @@ function UserSessions()
                 tokens = lines[i].split(' ');
                 for (j = 1; j < tokens.length; ++j)
                 {
-                    if (tokens[j].length > 0 && (tokens[j] == checkstr || tokens[j] == ('(' + checkstr + ')')))
+                    if (tokens[j].length > 0)
                     {
                         return (parseInt(this._users()[tokens[0]]));
                     }
