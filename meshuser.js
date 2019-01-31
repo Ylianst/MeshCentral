@@ -354,7 +354,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Query the database for the last time this node connected
                     obj.db.Get('lc' + command.nodeid, function (err, docs) {
-                        if ((docs != null) && (docs.length > 0)) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time })); } catch (ex) { } }
+                        if ((docs != null) && (docs.length > 0)) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { } }
                     });
                     break;
                 }

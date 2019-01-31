@@ -87,7 +87,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         } else {
             // Update the last connect time
-            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime });
+            if (obj.authenticated == 2) { obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
         }
         delete obj.nodeid;
     };
@@ -377,7 +377,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
             // Mark when we connected to this agent
             obj.connectTime = Date.now();
-            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime });
+            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
 
             // See if this node exists in the database
             if (nodes.length == 0) {
