@@ -1282,7 +1282,7 @@
                                 if (isPrivateIP(currentNode.lastaddr)) {
                                     x += addHtmlValue2('Last agent address', currentNode.lastaddr.split(':')[0]);
                                 } else {
-                                    x += addHtmlValue2('Last agent address', '<a href="https://iplocation.com/?ip=' + currentNode.lastaddr.split(':')[0] + '" rel="noreferrer noopener" target=_blank>' + currentNode.lastaddr.split(':')[0] + '</a>');
+                                    x += addHtmlValue2('Last agent address', '<a href="https://iplocation.com/?ip=' + currentNode.lastaddr.split(':')[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + currentNode.lastaddr.split(':')[0] + '</a>');
                                 }
                             }
 
@@ -1293,11 +1293,11 @@
                                 if (net.name) { x += addHtmlValue2('Name', '<b>' + EscapeHtml(net.name) + '</b>'); }
                                 if (net.desc) { x += addHtmlValue2('Description', EscapeHtml(net.desc).replace('(R)', '&reg;').replace('(r)', '&reg;')); }
                                 if (net.dnssuffix) { x += addHtmlValue2('DNS suffix', EscapeHtml(net.dnssuffix)); }
-                                if (net.mac) { x += addHtmlValue2('MAC address', EscapeHtml(net.mac.toUpperCase())); }
+                                if (net.mac) { x += addHtmlValue2('MAC address', '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0,6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a>'); }
                                 if (net.v4addr) { x += addHtmlValue2('IPv4 address', EscapeHtml(net.v4addr)); }
                                 if (net.v4mask) { x += addHtmlValue2('IPv4 mask', EscapeHtml(net.v4mask)); }
                                 if (net.v4gateway) { x += addHtmlValue2('IPv4 gateway', EscapeHtml(net.v4gateway)); }
-                                if (net.gatewaymac) { x += addHtmlValue2('Gateway MAC', EscapeHtml(net.gatewaymac)); }
+                                if (net.gatewaymac) { x += addHtmlValue2('Gateway MAC', '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a>'); }
                             }
                             x += '</div>';
                             QH('d2netinfo', x);
