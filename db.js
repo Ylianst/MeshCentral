@@ -176,6 +176,15 @@ module.exports.CreateDB = function (parent) {
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
 
+    // Read a file from the database
+    obj.getFile = function (path, func) { obj.Get('cfile/' + path, func); }
+
+    // Write a file to the database
+    obj.setFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
+
+    // List all files
+    obj.listFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
+
     // Get the number of records in the database for various types, this is the slow NeDB way. TODO: MongoDB can use group() to do this faster.
     obj.getStats = function (func) {
         obj.file.count({ type: 'node' }, function (err, nodeCount) {

@@ -95,7 +95,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -291,6 +291,61 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
             if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
+            if (obj.args.dblistconfigfiles) { obj.db.GetAllType('cfile', function (err, docs) { if (err == null) { if (docs.length == 0) { console.log('No files found.'); } else { for (var i in docs) { console.log(docs[i]._id.split('/')[1] + ', ' + Buffer.from(docs[i].data, 'base64').length + ' bytes.'); } } } else { console.log('Unable to read from database.'); } process.exit(); }); return; }
+            if (obj.args.dbshowconfigfile) { obj.db.getFile(obj.args.dbshowconfigfile, function (err, docs) { if (err == null) { if (docs.length == 0) { console.log('File not found.'); } else { console.log(Buffer.from(docs[0].data, 'base64').toString()); } } else { console.log('Unable to read from database.'); } process.exit(); }); return; }
+            if (obj.args.dbdeleteconfigfiles) { console.log('Delating all configuration files from the database...'); obj.db.RemoveAllOfType('cfile', function () { console.log('Done.'); process.exit(); }); } // Delete all configuration files from database
+
+            // Push all relevent files from meshcentral-data into the database
+            if (obj.args.dbpushconfigfiles) {
+                if (typeof obj.args.dbpushconfigfiles != 'string') {
+                    console.log('Usage: --dbpulldatafiles (path)     This will import files from folder into the database');
+                    console.log('       --dbpulldatafiles *          This will import files from meshcentral-data into the db.');
+                    process.exit();
+                } else {
+                    if (obj.args.dbpushconfigfiles == '*') { obj.args.dbpushconfigfiles = obj.datapath; }
+                    obj.fs.readdir(obj.datapath, (err, files) => {
+                        var lockCount = 1
+                        for (var i in files) {
+                            const file = files[i];
+                            if (file.endsWith('.json') || file.endsWith('.key') || file.endsWith('.crt')) {
+                                const path = obj.path.join(obj.args.dbpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
+                                console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
+                                lockCount++;
+                                obj.db.setFile(file, binary, function () { if ((--lockCount) == 0) { console.log('Done.'); process.exit(); } });
+                            }
+                        }
+                        if (--lockCount == 0) { process.exit(); }
+                    })
+                }
+                return;
+            }
+
+            // Pull all database files into meshcentral-data
+            if (obj.args.dbpullconfigfiles) {
+                if (typeof obj.args.dbpullconfigfiles != 'string') {
+                    console.log('Usage: --dbpulldatafiles (path)');
+                    process.exit();
+                } else {
+                    obj.db.GetAllType('cfile', function (err, docs) {
+                        if (err == null) {
+                            if (docs.length == 0) {
+                                console.log('File not found.');
+                            } else {
+                                for (var i in docs) {
+                                    const file = docs[i]._id.split('/')[1], binary = Buffer.from(docs[i].data, 'base64');
+                                    obj.fs.writeFileSync(obj.path.join(obj.args.dbpullconfigfiles, file), binary);
+                                    console.log('Pulling ' + file + ', ' + binary.length + ' bytes.');
+                                }
+                            }
+                        } else {
+                            console.log('Unable to read from database.');
+                        }
+                        process.exit();
+                    });
+                }
+                return;
+            }
+
             if (obj.args.dbexport) {
                 // Export the entire database to a JSON file
                 if (obj.args.dbexport == true) { obj.args.dbexport = obj.getConfigFilePath('meshcentral.db.json'); }
