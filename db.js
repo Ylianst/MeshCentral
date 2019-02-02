@@ -176,14 +176,60 @@ module.exports.CreateDB = function (parent) {
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
 
-    // Read a file from the database
-    obj.getFile = function (path, func) { obj.Get('cfile/' + path, func); }
+    // Read a configuration file from the database
+    obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
 
-    // Write a file to the database
-    obj.setFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
+    // Write a configuration file to the database
+    obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-    // List all files
-    obj.listFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
+    // List all configuration files
+    obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
+
+    // Get all configuration files
+    obj.getAllConfigFiles = function (password, func) {
+        obj.file.find({ type: 'cfile' }, function (err, docs) {
+            if (err != null) { func(null); return; }
+            var r = null;
+            for (var i = 0; i < docs.length; i++) {
+                var name = docs[i]._id.split('/')[1];
+                var data = obj.decryptData(password, docs[i].data);
+                if (data != null) { if (r == null) { r = {}; } r[name] = data; }
+            }
+            func(r);
+        });
+    }
+
+    // Get encryption key
+    obj.getEncryptDataKey = function (password) {
+        if (typeof password != 'string') return null;
+        return obj.parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
+    }
+
+    // Encrypt data 
+    obj.encryptData = function (password, plaintext) {
+        var key = obj.getEncryptDataKey(password);
+        if (key == null) return null;
+        const iv = obj.parent.crypto.randomBytes(16);
+        const aes = obj.parent.crypto.createCipheriv('aes-256-cbc', key, iv);
+        var ciphertext = aes.update(plaintext);
+        ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+        return ciphertext.toString('base64');
+    }
+
+    // Decrypt data 
+    obj.decryptData = function (password, ciphertext) {
+        try {
+            var key = obj.getEncryptDataKey(password);
+            if (key == null) return null;
+            const ciphertextBytes = Buffer.from(ciphertext, 'base64');
+            const iv = ciphertextBytes.slice(0, 16);
+            const data = ciphertextBytes.slice(16);
+            const aes = obj.parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
+            var plaintextBytes = Buffer.from(aes.update(data));
+            plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+            return plaintextBytes;
+        } catch (ex) { return null; }
+    }
 
     // Get the number of records in the database for various types, this is the slow NeDB way. TODO: MongoDB can use group() to do this faster.
     obj.getStats = function (func) {

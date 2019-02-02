@@ -873,31 +873,44 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
 
-        // See if there is a terms.txt file in meshcentral-data
-        var p = obj.path.join(obj.parent.datapath, 'terms.txt');
-        if (obj.fs.existsSync(p)) {
-            obj.fs.readFile(p, 'utf8', function (err, data) {
-                if (err != null) { res.sendStatus(404); return; }
-
-                // Send the terms
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-                if (req.session && req.session.userid) {
-                    if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
-                    var user = obj.users[req.session.userid];
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
-                } else {
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
-                }
-            });
-        } else {
-            // Send the terms
+        // See if term.txt was loaded from the database
+        if ((parent.configurationFiles != null) && (parent.configurationFiles['terms.txt'] != null)) {
+            // Send the terms from the database
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
             if (req.session && req.session.userid) {
                 if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                 var user = obj.users[req.session.userid];
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
             } else {
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2 });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
+            }
+        } else {
+            // See if there is a terms.txt file in meshcentral-data
+            var p = obj.path.join(obj.parent.datapath, 'terms.txt');
+            if (obj.fs.existsSync(p)) {
+                obj.fs.readFile(p, 'utf8', function (err, data) {
+                    if (err != null) { res.sendStatus(404); return; }
+
+                    // Send the terms from terms.txt
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+                    if (req.session && req.session.userid) {
+                        if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
+                        var user = obj.users[req.session.userid];
+                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                    } else {
+                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
+                    }
+                });
+            } else {
+                // Send the default terms
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+                if (req.session && req.session.userid) {
+                    if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
+                    var user = obj.users[req.session.userid];
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                } else {
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2 });
+                }
             }
         }
     }
@@ -1032,8 +1045,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if ((domain != null) && domain.titlepicture) {
-            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); } catch (e) {
-                try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
+            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
+                // Use the logo in the database
+                res.set({ 'Content-Type': 'image/jpeg' });
+                res.send(parent.configurationFiles[domain.titlepicture]);
+            } else {
+                // Use the logo on file
+                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); } catch (e) {
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
+                }
             }
         } else {
             try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
@@ -1975,14 +1995,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
-                // Check if we have "server.png" in the data folder, if so, use that.
-                var p = obj.path.join(obj.parent.datapath, 'server.jpg');
-                if (obj.fs.existsSync(p)) {
-                    // Use the data folder server picture
-                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                // Check if we have "server.jpg" in the data folder, if so, use that.
+                if ((parent.configurationFiles != null) && (parent.configurationFiles['server.jpg'] != null)) {
+                    res.set({ 'Content-Type': 'image/jpeg' });
+                    res.send(parent.configurationFiles['server.jpg']);
                 } else {
-                    // Use the default server picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                    // Check if we have "server.jpg" in the data folder, if so, use that.
+                    var p = obj.path.join(obj.parent.datapath, 'server.jpg');
+                    if (obj.fs.existsSync(p)) {
+                        // Use the data folder server picture
+                        try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                    } else {
+                        // Use the default server picture
+                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                    }
                 }
             });
 
