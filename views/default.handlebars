@@ -136,6 +136,15 @@
                                     </tr>
                                 </table>
                             </div>
+                            <div id=ServerSubMenuSpan style=display:none>
+                                <table id=ServerSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td id=ServerGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(6)>General</td>
+                                        <td id=ServerConsole style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(115)>Console</td>
+                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
                             <div id=UserDummyMenuSpan>
                                 <table id=UserDummyMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                     <tr><td class=style3 style="text-align:right;height:24px">&nbsp;</td></tr>
@@ -604,7 +613,7 @@
                 <div id=p15 style=display:none>
                     <div id="p15title">
                         <div id="p15BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
-                        <h1>Console - <span id=p15deviceName></span></h1>
+                        <h1><span id=p15deviceName></span></h1>
                     </div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr>
@@ -1334,6 +1343,10 @@
                     }
                     break;
                 }
+                case 'serverconsole': {
+                    p15consoleReceive('serverconsole', message.value);
+                    break;
+                }
                 case 'events': {
                     if ((message.nodeid != null) && (message.nodeid == currentNode._id)) {
                         currentDeviceEvents = message.events;
@@ -1676,7 +1689,7 @@
         function ondockeypress(e) {
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeys(e);
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
-            if (!xxdialogMode && xxcurrentView == 15) return agentConsoleHandleKeys(e);
+            if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) return agentConsoleHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 4) {
                 if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
                 var processed = 0;
@@ -1725,7 +1738,7 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
-            if (!xxdialogMode && xxcurrentView == 15) { return agentConsoleHandleKeys(e); }
+            if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
             if (!xxdialogMode && xxcurrentView == 4) {
                 if (e.keyCode === 8 && userSearchFocus == 0) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('UserSearchInput').value = ''; processed = 1; }
@@ -3209,7 +3222,7 @@
                 QH('p12deviceName', nname);
                 QH('p13deviceName', nname);
                 QH('p14deviceName', nname);
-                QH('p15deviceName', nname);
+                QH('p15deviceName', 'Console - ' + nname);
                 QH('p16deviceName', nname);
 
                 // Node attributes
@@ -5022,27 +5035,43 @@
         }
 
         var consoleNode;
+        var consoleServerText = '';
         function setupConsole() {
-            // Setup the console
-            var samenode = (consoleNode == currentNode);
-            consoleNode = currentNode;
+            if (xxcurrentView == 115) {
+                // Setup server console
+                var samenode = (consoleNode == 'server');
+                consoleNode = 'server';
 
-            var mesh = meshes[consoleNode.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
-            if ((meshrights & 16) != 0) {
-                if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
+                QH('p15deviceName', 'My Server Console');
+                QH('p15statetext', '');
+                QH('p15coreName', '');
+
                 if (samenode == false) {
-                    QH('p15agentConsoleText', consoleNode.consoleText);
+                    QH('p15agentConsoleText', consoleServerText);
                     Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                 }
-                var online = ((consoleNode.conn & 1) != 0)?true:false;
-                QH('p15statetext', online?"Agent is online":"Agent is offline");
-                QE('p15consoleText', online);
-                QE('p15uploadCore', online);
             } else {
-                QH('p15statetext', 'Access Denied');
-                QE('p15consoleText', false);
-                QE('p15uploadCore', false);
+                // Setup the console
+                var samenode = (consoleNode == currentNode);
+                consoleNode = currentNode;
+
+                var mesh = meshes[consoleNode.meshid];
+                var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                if ((meshrights & 16) != 0) {
+                    if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
+                    if (samenode == false) {
+                        QH('p15agentConsoleText', consoleNode.consoleText);
+                        Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                    }
+                    var online = ((consoleNode.conn & 1) != 0) ? true : false;
+                    QH('p15statetext', online ? "Agent is online" : "Agent is offline");
+                    QE('p15consoleText', online);
+                    QE('p15uploadCore', online);
+                } else {
+                    QH('p15statetext', 'Access Denied');
+                    QE('p15consoleText', false);
+                    QE('p15uploadCore', false);
+                }
             }
         }
 
@@ -5050,7 +5079,11 @@
         function p15consoleClear() {
             QH('p15agentConsoleText', '');
             Q('id_p15consoleClear').blur();
-            consoleNode.consoleText = '';
+            if (xxcurrentView == 115) {
+                consoleServerText = '';
+            } else {
+                consoleNode.consoleText = '';
+            }
         }
 
         // Send a command to the agent
@@ -5059,12 +5092,18 @@
             if (e && e.keyCode != 13) return;
             var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(Q('p15consoleText').value) + '<br/></div>';
             Q('p15agentConsoleText').innerHTML += t;
-            consoleNode.consoleText += t;
             Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
             Q('p15consoleText').value = '';
 
-            // Send the command to the mesh agent
-            meshserver.send({ action: 'msg', type:'console', nodeid: consoleNode._id, value: v });
+            if (xxcurrentView == 115) {
+                // Send the command to the server - TODO: In the future, we may support multiple servers.
+                consoleServerText += t;
+                meshserver.send({ action: 'serverconsole', value: v });
+            } else {
+                // Send the command to the mesh agent
+                consoleNode.consoleText += t;
+                meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value: v });
+            }
 
             // Add command to history list
             if (v.length > 0) {
@@ -5079,10 +5118,20 @@
         // Handle Mesh Agent console data
         function p15consoleReceive(node, data) {
             data = '<div>' + data + '</div>'
-            if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
-            if (consoleNode == node) {
-                Q('p15agentConsoleText').innerHTML += data;
-                Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+            if (node === 'serverconsole') {
+                // Server console data
+                consoleServerText += data;
+                if (consoleNode == 'server') {
+                    Q('p15agentConsoleText').innerHTML += data;
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                }
+            } else {
+                // Agent console data
+                if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
+                if (consoleNode == node) {
+                    Q('p15agentConsoleText').innerHTML += data;
+                    Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+                }
             }
         }
 
@@ -6627,8 +6676,8 @@
             if (x == 5) { Q('LeftMenuMyFiles').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
 
             // My Server
-            QS('MainMenuMyServer').backgroundColor = ((x == 6) ? "#003366" : "#808080");
-            if (x == 6) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+            QS('MainMenuMyServer').backgroundColor = (((x == 6) || (x == 115)) ? "#003366" : "#808080");
+            if (((x == 6) || (x == 115))) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
 
             // column_l max-height
             if (webPageFullScreen) {
@@ -6644,15 +6693,22 @@
             }
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
-            QV('UserDummyMenuSpan', (x < 10) && webPageFullScreen);
+            QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents' };
+            QV('ServerSubMenuSpan', x == 6 || x == 115);
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 115: 'ServerConsole' };
             for (var i in panels) {
                 Q(panels[i]).classList.remove('style3x');
                 Q(panels[i]).classList.remove('style3sel');
                 Q(panels[i]).classList.add((x == i) ? 'style3sel' : 'style3x');
             }
+
+            // Panel 115 is weird, it's panel 15 for device console but used as a server console.
+            if (x == 115) { QV('p15', true); }
+            QV('p15uploadCore', x != 115);
+            QV('p15BackButton', x != 115);
+            if ((x == 15) || (x == 115)) { setupConsole(); }
 
             if (x == 1) masterUpdate(4);
 

@@ -404,6 +404,55 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'serverconsole':
+                {
+                    // This is a server console message, only process this if full administrator
+                    if (user.siteadmin != 0xFFFFFFFF) break;
+
+                    var r = '';
+                    var args = splitArgs(command.value);
+                    if (args.length == 0) break;
+                    const cmd = args[0].toLowerCase();
+                    args = parseArgs(args);
+
+                    switch (cmd) {
+                        case 'help': {
+                            r = 'Available commands: help, args, resetserver, showconfig, usersessions.';
+                            break;
+                        }
+                        case 'args': {
+                            r = cmd + ': ' + JSON.stringify(args);
+                            break;
+                        }
+                        case 'usersessions': {
+                            for (var i in obj.parent.wssessions) {
+                                r += (i + ', ' + obj.parent.wssessions[i].length + ' session' + ((obj.parent.wssessions[i].length > 1) ? 'a' : '') + '.<br />');
+                                for (var j in obj.parent.wssessions[i]) {
+                                    var addr = obj.parent.wssessions[i][j]._socket.remoteAddress;
+                                    if (addr.startsWith('::ffff:')) { addr = addr.substring(7); }
+                                    r += '    ' + addr + ' --> ' + obj.parent.wssessions[i][j].sessionId + '.<br />';
+                                }
+                            }
+                            break;
+                        }
+                        case 'resetserver': {
+                            console.log('Server restart...');
+                            process.exit(0);
+                            break;
+                        }
+                        case 'showconfig': {
+                            r = JSON.stringify(obj.parent.parent.config, null, 4);
+                            break;
+                        }
+                        default: { // This is an unknown command, return an error message
+                            r = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
+                            break;
+                        }
+                    }
+
+                    if (r != '') { try { ws.send(JSON.stringify({ action: 'serverconsole', value: r, tag: command.tag })); } catch (ex) { } }
+                    break;
+                }
             case 'msg':
                 {
                     // Route this command to a target node
@@ -893,7 +942,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             obj.db.Set(obj.common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
-                            obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id });
+                            if (deluser != null) {
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id });
+                            } else {
+                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id });
+                            }
                         }
                     }
                     break;
@@ -1564,6 +1617,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+
+    // Split a string taking into account the quoats. Used for command line parsing
+    function splitArgs(str) { var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi; do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null); return myArray; }
+    function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
+
+    // Parse arguments string array into an object
+    function parseArgs(argv) {
+        var results = { '_': [] }, current = null;
+        for (var i = 1, len = argv.length; i < len; i++) {
+            var x = argv[i];
+            if (x.length > 2 && x[0] == '-' && x[1] == '-') {
+                if (current != null) { results[current] = true; }
+                current = x.substring(2);
+            } else {
+                if (current != null) { results[current] = toNumberIfNumber(x); current = null; } else { results['_'].push(toNumberIfNumber(x)); }
+            }
+        }
+        if (current != null) { results[current] = true; }
+        return results;
+    }
 
     return obj;
 };
