@@ -51,9 +51,11 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.onDebugMessage = null;
     obj.onTouchEnabledChanged = null;
     obj.onDisplayinfo = null;
+    obj.accumulator = null;
 
     obj.Start = function () {
         obj.State = 0;
+        obj.accumulator = null;
     }
 
     obj.Stop = function () {
@@ -178,6 +180,11 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessDataEx = function (str) {
+        if (obj.accumulator != null) {
+            str = obj.accumulator + str;
+            console.log('KVM using accumulated data, total size is now ' + str.length + ' bytes.');
+            obj.accumulator = null;
+        }
         if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2), jumboAdd = 0;
@@ -186,14 +193,23 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (str.length < 12) return;
             command = ReadShort(str, 8)
             cmdsize = ReadInt(str, 4);
+            console.log('JUMBO cmd=' + command + ', cmdsize=' + cmdsize + ', data received=' + str.length);
+            if ((cmdsize + 8) > str.length) {
+                console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
+                obj.accumulator = str;
+                return;
+            }
             str = str.substring(8);
             jumboAdd = 8;
-            //console.log('JUMBO', command, cmdsize, str.length);
         }
         if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
         if ((command >= 18) && (command != 65)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; }
-        if (cmdsize > str.length) { console.error("KVM invalid command size", cmdsize, str.length); return; }
-        //meshOnDebug("KVM Command: " + command + " Len:" + cmdsize);
+        if (cmdsize > str.length) {
+            console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
+            obj.accumulator = str;
+            return;
+        }
+        //console.log("KVM Command: " + command + " Len:" + cmdsize);
 
         if (command == 3 || command == 4 || command == 7) {
             cmdmsg = str.substring(4, cmdsize);

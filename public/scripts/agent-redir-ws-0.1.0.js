@@ -99,7 +99,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                         obj.webchannel = obj.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
                         obj.webchannel.onmessage = function (event) { obj.xxOnMessage({ data: event.data }); };
                         obj.webchannel.onopen = function () { obj.webRtcActive = true; performWebRtcSwitch(); };
-                        obj.webchannel.onclose = function (event) { /*console.log('WebRTC close');*/ if (obj.webRtcActive) { obj.Stop(); } }
+                        obj.webchannel.onclose = function (event) { if (obj.webRtcActive) { obj.Stop(); } }
                         obj.webrtc.onicecandidate = function (e) {
                             if (e.candidate == null) {
                                 try { obj.socket.send(JSON.stringify(obj.webrtcoffer)); } catch (ex) { } // End of candidates, send the offer

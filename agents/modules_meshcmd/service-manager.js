@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2019 Intel Corporation
+Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,9 +45,6 @@ function parseServiceStatus(token)
             break;
         case 0x00000001:
             j.state = 'STOPPED';
-            break;
-        default:
-            // Unknown service state
             break;
     }
     var controlsAccepted = token.Deref((2 * 4), 4).toBuffer().readUInt32LE();
@@ -295,12 +292,13 @@ function serviceManager()
                     require('fs').chmodSync('/etc/init.d/' + options.name, m);
                     this._update = require('child_process').execFile('/bin/sh', ['sh'], { type: require('child_process').SpawnTypes.TERM });
                     this._update._moduleName = options.name;
-                    this._update.on('exit', function onUpdateRC_d() { console.log(this._moduleName + ' installed'); process.exit(); });
                     this._update.stdout.on('data', function (chunk) { });
                     this._update.stdin.write('update-rc.d ' + options.name + ' defaults\n');
                     this._update.stdin.write('exit\n');
                     //update-rc.d meshagent defaults # creates symlinks for rc.d
                     //service meshagent start
+
+                    this._update.waitExit();
 
                     break;
                 case 'systemd':
@@ -313,11 +311,10 @@ function serviceManager()
                     require('fs').writeFileSync('/lib/systemd/system/' + options.name + '.service', '[Unit]\nDescription=' + serviceDescription + '\n[Service]\nExecStart=/usr/local/mesh/' + options.name + '\nStandardOutput=null\nRestart=always\nRestartSec=3\n[Install]\nWantedBy=multi-user.target\nAlias=' + options.name + '.service\n', { flags: 'w' });
                     this._update = require('child_process').execFile('/bin/sh', ['sh'], { type: require('child_process').SpawnTypes.TERM });
                     this._update._moduleName = options.name;
-                    this._update.on('exit', function onUpdateRC_d() { console.log(this._moduleName + ' installed'); process.exit(); });
                     this._update.stdout.on('data', function (chunk) { });
                     this._update.stdin.write('systemctl enable ' + options.name + '.service\n');
                     this._update.stdin.write('exit\n');
-
+                    this._update.waitExit();
                     break;
                 default: // unknown platform service type
                     break;
@@ -416,41 +413,39 @@ function serviceManager()
             {
                 case 'init':
                     this._update = require('child_process').execFile('/bin/sh', ['sh'], { type: require('child_process').SpawnTypes.TERM });
-                    this._update._svcname = name;
-                    this._update.on('exit', function onUninstallExit() {
-                        try {
-                            require('fs').unlinkSync('/etc/init.d/' + this._svcname);
-                            console.log(this._svcname + ' uninstalled');
-
-                        }
-                        catch (e) {
-                            console.log(this._svcname + ' could not be uninstalled')
-                        }
-                        process.exit();
-                    });
                     this._update.stdout.on('data', function (chunk) { });
                     this._update.stdin.write('service ' + name + ' stop\n');
                     this._update.stdin.write('update-rc.d -f ' + name + ' remove\n');
                     this._update.stdin.write('exit\n');
+                    this._update.waitExit();
+                    try
+                    {
+                        require('fs').unlinkSync('/etc/init.d/' + name);
+                        console.log(name + ' uninstalled');
+
+                    }
+                    catch (e)
+                    {
+                        console.log(name + ' could not be uninstalled', e)
+                    }
                     break;
                 case 'systemd':
                     this._update = require('child_process').execFile('/bin/sh', ['sh'], { type: require('child_process').SpawnTypes.TERM });
-                    this._update._svcname = name;
-                    this._update.on('exit', function onUninstallExit() {
-                        try {
-                            require('fs').unlinkSync('/usr/local/mesh/' + this._svcname);
-                            require('fs').unlinkSync('/lib/systemd/system/' + this._svcname + '.service');
-                            console.log(this._svcname + ' uninstalled');
-                        }
-                        catch (e) {
-                            console.log(this._svcname + ' could not be uninstalled')
-                        }
-                        process.exit();
-                    });
                     this._update.stdout.on('data', function (chunk) { });
                     this._update.stdin.write('systemctl stop ' + name + '.service\n');
                     this._update.stdin.write('systemctl disable ' + name + '.service\n');
                     this._update.stdin.write('exit\n');
+                    this._update.waitExit();
+                    try
+                    {
+                        require('fs').unlinkSync('/usr/local/mesh/' + name);
+                        require('fs').unlinkSync('/lib/systemd/system/' + name + '.service');
+                        console.log(name + ' uninstalled');
+                    }
+                    catch (e)
+                    {
+                        console.log(name + ' could not be uninstalled', e)
+                    }
                     break;
                 default: // unknown platform service type
                     break;

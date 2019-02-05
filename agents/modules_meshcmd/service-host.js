@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2019 Intel Corporation
+Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -187,14 +187,9 @@ function serviceHost(serviceName)
                         console.log(e);
                         process.exit();
                     }
-                    if (process.platform == 'win32' || process.platform == 'darwin')
-                    {
-                        // Only do this on Windows/MacOS, becuase Linux is async... It'll complete later
-                        console.log(this._ServiceOptions.name + ' installed');
-                        process.exit();
-                    }
-                    i = process.argv.length;
-                    serviceOperation = 1;
+
+                    console.log(this._ServiceOptions.name + ' installed');
+                    process.exit();
                     break;
                 case '-uninstall':
                     if (!this._svcManager) { this._svcManager = new serviceManager(); }
@@ -300,9 +295,6 @@ function serviceHost(serviceName)
                             console.log(moduleName + ' not running');
                         }
                         process.exit();
-                        break;
-                    default:
-                        // Unknown arguments, skip it.
                         break;
                 }
             }
