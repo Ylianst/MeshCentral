@@ -355,13 +355,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const otplib = require('otplib')
                 otplib.authenticator.options = { window: 6 }; // Set +/- 3 minute window
                 if (twoStepLoginSupported && user.otpsecret && ((typeof (req.body.token) != 'string') || ((tokenValid = otplib.authenticator.check(req.body.token, user.otpsecret)) !== true))) {
-                    // 2-step auth is required, but the token is not present or not valid.
-                    if (tokenValid === false) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
-                    req.session.loginmode = '4';
-                    req.session.tokenusername = xusername;
-                    req.session.tokenpassword = xpassword;
-                    res.redirect(domain.url);
-                    return;
+                    // Failed OTP, check user's one time passwords
+                    if ((req.body.token != null) && (user.otpkeys != null) && (user.otpkeys.keys != null)) {
+                        var found = null;
+                        var tokenNumber = parseInt(req.body.token);
+                        for (var i = 0; i < user.otpkeys.keys.length; i++) { if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) { user.otpkeys.keys[i].u = false; found = i; } }
+                        if (found == null) {
+                            // 2-step auth is required, but the token is not present or not valid.
+                            if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                            req.session.loginmode = '4';
+                            req.session.tokenusername = xusername;
+                            req.session.tokenpassword = xpassword;
+                            res.redirect(domain.url);
+                            return;
+                        }
+                    } else {
+                        // 2-step auth is required, but the token is not present or not valid.
+                        if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                        req.session.loginmode = '4';
+                        req.session.tokenusername = xusername;
+                        req.session.tokenpassword = xpassword;
+                        res.redirect(domain.url);
+                        return;
+                    }
                 }
 
                 // Save login time
@@ -464,7 +480,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
 
                         });
-                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: user, action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                     }
                     res.redirect(domain.url);
                 }
@@ -540,22 +556,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(user);
 
                                                 // Event the change
-                                                var userinfo = obj.common.Clone(user);
-                                                delete userinfo.hash;
-                                                delete userinfo.passhint;
-                                                delete userinfo.salt;
-                                                delete userinfo.type;
-                                                delete userinfo.domain;
-                                                delete userinfo.subscriptions;
-                                                delete userinfo.passtype;
-                                                if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id });
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id });
 
                                                 // Send the confirmation page
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
 
                                                 // Send a notification
-                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(userinfo.email) + '</b>.', nolog: 1 });
+                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(user.email) + '</b>.', nolog: 1 });
                                             }
                                         });
                                     }
@@ -581,16 +588,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(userinfo);
 
                                                 // Event the change
-                                                userinfo = obj.common.Clone(userinfo);
-                                                delete userinfo.hash;
-                                                delete userinfo.passhint;
-                                                delete userinfo.salt;
-                                                delete userinfo.type;
-                                                delete userinfo.domain;
-                                                delete userinfo.subscriptions;
-                                                delete userinfo.passtype;
-                                                if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id });
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id });
 
                                                 // Send the new password
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
@@ -760,7 +758,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (usercount == 0) { user2.siteadmin = 0xFFFFFFFF; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
                     obj.db.SetUser(user2);
-                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: req.connection.user, account: user2, action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id });
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id });
                 }
             }
         }
@@ -2288,6 +2286,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
     };
+
+    // Clone a safe version of a user object, remove everything that is secret.
+    obj.CloneSafeUser = function(user) {
+        if (typeof user != 'object') { return user; }
+        var user2 = obj.common.Clone(user);
+        delete user2.hash;
+        delete user2.passhint;
+        delete user2.salt;
+        delete user2.type;
+        delete user2.domain;
+        delete user2.subscriptions;
+        delete user2.passtype;
+        if (user2.otpsecret) { user2.otpsecret = 1; } // Indicates a time secret is present.
+        if (user2.otpkeys) { user2.otpkeys = 1; } // Indicates a set of one time passwords are present.
+        return user2;
+    }
 
     // Return true if a mobile browser is detected.
     // This code comes from "http://detectmobilebrowsers.com/" and was modified, This is free and unencumbered software released into the public domain. For more information, please refer to the http://unlicense.org/

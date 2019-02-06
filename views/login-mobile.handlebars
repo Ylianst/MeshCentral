@@ -148,7 +148,7 @@
                                     <table>
                                         <tr>
                                             <td align=right width=100>Login token:</td>
-                                            <td><input id=tokenInput type=text name=token maxlength=6 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) /></td>
+                                            <td><input id=tokenInput type=text name=token maxlength=12 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) /></td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
@@ -328,7 +328,12 @@
             return true;
         }
 
-        function checkToken() { QE('tokenOkButton', Q('tokenInput').value.length == 6); }
+        function checkToken() {
+            var t1 = Q('tokenInput').value;
+            var t2 = t1.replace(/\D/g, '');
+            if (t1 != t2) { Q('tokenInput').value = t2; }
+            QE('tokenOkButton', (Q('tokenInput').value.length == 6) || (Q('tokenInput').value.length == 8));
+        }
 
         //
         // POPUP DIALOG
