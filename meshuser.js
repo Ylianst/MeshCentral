@@ -1604,7 +1604,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Generate a 8 digit integer with even random probability for each value.
     function getRandomEightDigitInteger() {
         var bigInt;
-        do { bigInt = obj.parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt > 4200000000);
+        do { bigInt = obj.parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000);
         return bigInt % 100000000;
     }
 

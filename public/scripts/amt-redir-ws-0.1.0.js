@@ -60,7 +60,7 @@ var CreateAmtRedirect = function (module, authCookie) {
     }
 
     obj.xxOnMessage = function (e) {
-        if (obj.debugmode == 1) { console.log('Recv', e.data); }
+        //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         obj.inDataCount++;
         if (typeof e.data == 'object') {
             var f = new FileReader();
@@ -88,6 +88,7 @@ var CreateAmtRedirect = function (module, authCookie) {
     };
    
     obj.xxOnSocketData = function (data) {
+        //if (obj.debugmode == 1) { console.log('Recv', data.length, rstr2hex(data)); }
         if (!data || obj.connectstate == -1) return;
 
         if (typeof data === 'object') {
@@ -249,7 +250,7 @@ var CreateAmtRedirect = function (module, authCookie) {
     obj.xxSend = function (x) {
         //obj.Debug("Redir Send(" + x.length + "): " + rstr2hex(x));
         if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
-            if (obj.debugmode == 1) { console.log('Send', x); }
+            //if (obj.debugmode == 1) { console.log('Send', x.length, rstr2hex(x)); }
             var b = new Uint8Array(x.length);
             for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
             obj.socket.send(b.buffer);
