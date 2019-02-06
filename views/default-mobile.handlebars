@@ -241,6 +241,7 @@
                                         <span id="otpAuth" style="display:none"><a onclick="account_addOtp()" style="cursor:pointer">Add 2-step login</a><br /></span>
                                         <span id="otpAuthRemove" style="display:none"><a onclick="account_removeOtp()" style="cursor:pointer">Remove 2-step login</a><br /></span>
                                     </div>
+                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">One-time passwords</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
@@ -649,6 +650,13 @@
             xdr.send();
         }
 
+        function updateSelf() {
+            QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+            QV('otpAuth', ((features & 4096) != 0) && (userinfo.otpsecret != 1));
+            QV('otpAuthRemove', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
+            QV('manageOtp', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
+        }
+
         function onMessage(server, message) {
             switch (message.action) {
                 case 'serverinfo': {
@@ -661,9 +669,7 @@
                     userinfo = message.userinfo;
                     QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
-                    QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-                    QV('otpAuth', ((features & 4096) != 0) && (userinfo.otpsecret != 1));
-                    QV('otpAuthRemove', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
+                    updateSelf();
                     break;
                 }
                 case 'users': {
@@ -744,6 +750,29 @@
                     setDialogMode(2, "Remove 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
                     break;
                 }
+                case 'otpauth-getpasswords': {
+                    if (xxdialogMode) return;
+                    var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
+                    x += "<div style='border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px'><div style='padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold'><table style=width:100%;text-align:center>";
+                    if (message.passwords) {
+                        var j = 0;
+                        for (var i in message.passwords) {
+                            if (++j % 2) { x += '<tr>'; }
+                            var p = '' + message.passwords[i].p;
+                            while (p.length < 8) { p = '0' + p; }
+                            if (message.passwords[i].u === true) { x += '<td>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); } else { x += '<td><strike style=color:#BBB>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); + '</strike>'; }
+                        }
+                    } else {
+                        x += '<tr><td>No Active Tokens';
+                    }
+                    x += "</table></div></div><br />";
+                    x += "<div><input type=button value='Close' onclick=setDialogMode(0) style=float:right></input>";
+                    x += "<input type=button value='New Tokens' onclick='account_manageOtp(1);'></input>";
+                    if (message.passwords != null) { x += "<input type=button value='Clear' onclick='account_manageOtp(2);'></input>"; }
+                    x += "</div><br />";
+                    setDialogMode(2, "One-Time Passwords", 8, null, x, 'otpauth-manage');
+                    break;
+                }
                 case 'event': {
                     /*
                     if (!message.event.nolog) {
@@ -762,7 +791,7 @@
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
-                                QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+                                updateSelf();
                             }
                             break;
                         }
@@ -1010,6 +1039,12 @@
         function account_removeOtp() {
             if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
             setDialogMode(2, "Remove 2-Step Login", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of 2-step login?");
+        }
+
+        function account_manageOtp(action) {
+            if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-manage')) { dialogclose(0); }
+            if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
+            meshserver.send({ action: 'otpauth-getpasswords', subaction: action });
         }
 
         function account_showVerifyEmail() {

@@ -119,7 +119,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.ws.domainid = domain.id;
 
         // Create a new session id for this user.
-        require('crypto').randomBytes(20, function (err, randombuf) {
+        obj.parent.crypto.randomBytes(20, function (err, randombuf) {
             obj.ws.sessionId = user._id + '/' + randombuf.toString('hex');
 
             // Add this web socket session to session list
@@ -206,16 +206,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
 
             // Send user information to web socket, this is the first thing we send
-            var userinfo = obj.common.Clone(obj.parent.users[user._id]);
-            delete userinfo.hash;
-            delete userinfo.passhint;
-            delete userinfo.salt;
-            delete userinfo.type;
-            delete userinfo.domain;
-            delete userinfo.subscriptions;
-            delete userinfo.passtype;
-            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(obj.parent.users[user._id]) })); } catch (ex) { }
 
             // We are all set, start receiving data
             ws._socket.resume();
@@ -441,7 +432,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'showconfig': {
-                            r = JSON.stringify(obj.parent.parent.config, null, 4);
+                            var config = obj.common.Clone(obj.parent.parent.config);
+                            if (config.settings) {
+                                if (config.settings.configkey) { config.settings.configkey = '(present)'; }
+                                if (config.settings.sessionkey) { config.settings.sessionkey = '(present)'; }
+                                if (config.settings.dbencryptkey) { config.settings.dbencryptkey = '(present)'; }
+                            }
+                            r = JSON.stringify(removeAllUnderScore(config), null, 4);
                             break;
                         }
                         default: { // This is an unknown command, return an error message
@@ -507,16 +504,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var docs = [];
                     for (i in obj.parent.users) {
                         if ((obj.parent.users[i].domain == domain.id) && (obj.parent.users[i].name != '~')) {
-                            var userinfo = obj.common.Clone(obj.parent.users[i]);
-                            delete userinfo.hash;
-                            delete userinfo.passhint;
-                            delete userinfo.salt;
-                            delete userinfo.type;
-                            delete userinfo.domain;
-                            delete userinfo.subscriptions;
-                            delete userinfo.passtype;
-                            delete userinfo.otpsecret;
-                            docs.push(userinfo);
+                            docs.push(obj.parent.CloneSafeUser(obj.parent.users[i]));
                         }
                     }
                     try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
@@ -541,20 +529,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 obj.parent.db.SetUser(user);
 
                                 // Event the change
-                                var userinfo = obj.common.Clone(user);
-                                delete userinfo.hash;
-                                delete userinfo.passhint;
-                                delete userinfo.salt;
-                                delete userinfo.type;
-                                delete userinfo.domain;
-                                delete userinfo.subscriptions;
-                                delete userinfo.passtype;
-                                delete userinfo.otpsecret;
-                                var message = { etype: 'user', username: userinfo.name, account: userinfo, action: 'accountchange', domain: domain.id };
+                                var message = { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
                                 if (oldemail != null) {
-                                    message.msg = 'Changed email of user ' + userinfo.name + ' from ' + oldemail + ' to ' + user.email;
+                                    message.msg = 'Changed email of user ' + user.name + ' from ' + oldemail + ' to ' + user.email;
                                 } else {
-                                    message.msg = 'Set email of user ' + userinfo.name + ' to ' + user.email;
+                                    message.msg = 'Set email of user ' + user.name + ' to ' + user.email;
                                 }
                                 obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
 
@@ -651,11 +630,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             newuser.salt = salt;
                             newuser.hash = hash;
                             obj.db.SetUser(newuser);
-                            var newuser2 = obj.common.Clone(newuser);
-                            if (newuser2.subscriptions) { delete newuser2.subscriptions; }
-                            if (newuser2.salt) { delete newuser2.salt; }
-                            if (newuser2.hash) { delete newuser2.hash; }
-                            obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: newuser2, action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
+                            obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: obj.parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
                         });
                     }
                     break;
@@ -674,16 +649,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (change == 1) {
                                 obj.db.SetUser(chguser);
                                 obj.parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                var userinfo = obj.common.Clone(chguser);
-                                delete userinfo.hash;
-                                delete userinfo.passhint;
-                                delete userinfo.salt;
-                                delete userinfo.type;
-                                delete userinfo.domain;
-                                delete userinfo.subscriptions;
-                                delete userinfo.passtype;
-                                delete userinfo.otpsecret;
-                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: userinfo, action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
+                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
                             }
                             if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
                                 obj.parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
@@ -1429,16 +1395,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
                             // Notify change
-                            var userinfo = obj.common.Clone(user);
-                            delete userinfo.hash;
-                            delete userinfo.passhint;
-                            delete userinfo.salt;
-                            delete userinfo.type;
-                            delete userinfo.domain;
-                            delete userinfo.subscriptions;
-                            delete userinfo.passtype;
-                            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
                         }
@@ -1456,21 +1413,41 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             obj.parent.db.SetUser(user);
 
                             // Notify change
-                            var userinfo = obj.common.Clone(user);
-                            delete userinfo.hash;
-                            delete userinfo.passhint;
-                            delete userinfo.salt;
-                            delete userinfo.type;
-                            delete userinfo.domain;
-                            delete userinfo.subscriptions;
-                            delete userinfo.passtype;
-                            if (userinfo.otpsecret) { userinfo.otpsecret = 1; }
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: userinfo })); } catch (ex) { }
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
                         }
                     }
+                    break;
+                }
+            case 'otpauth-getpasswords':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+
+                    // Perform a sub-action
+                    var actionTaken = false;
+                    if (command.subaction == 1) { // Generate a new set of tokens
+                        var randomNumbers = [];
+                        for (var i = 0; i < 10; i++) {
+                            var v; // TODO: This random generation does not produce equal changes for all values. FIX IT!
+                            do { v = (obj.parent.crypto.randomBytes(4).readUInt32BE(0) % 100000000); } while (randomNumbers.indexOf(v) >= 0);
+                            randomNumbers.push(v);
+                        }
+                        user.otpkeys = { keys: [] };
+                        for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
+                        actionTaken = true;
+                    } else if (command.subaction == 2) { // Clear all tokens
+                        actionTaken = (user.otpkeys != null);
+                        user.otpkeys = null;
+                    }
+
+                    // Save the changed user
+                    if (actionTaken) { obj.parent.db.SetUser(user); }
+
+                    // Return one time passwords for this user
+                    if (twoStepLoginSupported && user.otpsecret) { ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys?user.otpkeys.keys:null })); }
                     break;
                 }
             case 'getNotes':
@@ -1621,6 +1598,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Split a string taking into account the quoats. Used for command line parsing
     function splitArgs(str) { var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi; do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null); return myArray; }
     function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
+
+    function removeAllUnderScore(obj) {
+        if (typeof obj != 'object') return obj;
+        for (var i in obj) { if (i.startsWith('_')) { delete obj[i]; } else if (typeof obj[i] == 'object') { removeAllUnderScore(obj[i]); } }
+        return obj;
+    }
 
     // Parse arguments string array into an object
     function parseArgs(argv) {
