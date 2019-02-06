@@ -70,6 +70,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxStateChange = function (newstate) {
         if (obj.State == newstate) return;
         obj.State = newstate;
+        obj.CanvasId.style.cursor = 'default';
         //console.log('xxStateChange', newstate);
         switch (newstate) {
             case 0: {

@@ -68,9 +68,9 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
             obj.canvas.fillRect(0, 0, obj.width, obj.height);
             obj.canvas.canvas.width = obj.rwidth = obj.width = 640;
             obj.canvas.canvas.height = obj.rheight = obj.height = 400;
-            QS(obj.canvasid).cursor = 'auto';
+            QS(obj.canvasid).cursor = 'default';
         } else {
-            if (!obj.showmouse) { QS(obj.canvasid).cursor = 'none'; }
+            QS(obj.canvasid).cursor = obj.showmouse ?'default':'none';
         }
     }
 
