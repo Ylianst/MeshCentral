@@ -1429,12 +1429,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Perform a sub-action
                     var actionTaken = false;
                     if (command.subaction == 1) { // Generate a new set of tokens
-                        var randomNumbers = [];
-                        for (var i = 0; i < 10; i++) {
-                            var v; // TODO: This random generation does not produce equal changes for all values. FIX IT!
-                            do { v = (obj.parent.crypto.randomBytes(4).readUInt32BE(0) % 100000000); } while (randomNumbers.indexOf(v) >= 0);
-                            randomNumbers.push(v);
-                        }
+                        var randomNumbers = [], v;
+                        for (var i = 0; i < 10; i++) { do { v = getRandomEightDigitInteger(); } while (randomNumbers.indexOf(v) >= 0); randomNumbers.push(v); }
                         user.otpkeys = { keys: [] };
                         for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
                         actionTaken = true;
@@ -1603,6 +1599,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (typeof obj != 'object') return obj;
         for (var i in obj) { if (i.startsWith('_')) { delete obj[i]; } else if (typeof obj[i] == 'object') { removeAllUnderScore(obj[i]); } }
         return obj;
+    }
+
+    // Generate a 8 digit integer with even random probability for each value.
+    function getRandomEightDigitInteger() {
+        var bigInt;
+        do { bigInt = obj.parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt > 4200000000);
+        return bigInt % 100000000;
     }
 
     // Parse arguments string array into an object
