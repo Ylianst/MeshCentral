@@ -1685,6 +1685,10 @@
                             addNotification(n);
                             break;
                         }
+                        case 'stopped': { // Server is stopping.
+                            // TODO: Disconnect
+                            break;
+                        }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
