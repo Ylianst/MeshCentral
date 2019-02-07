@@ -59,24 +59,33 @@ var CreateAmtRedirect = function (module, authCookie) {
         if (obj.protocol == 3) obj.xxSend(obj.RedirectStartIder);
     }
 
+    // Setup the file reader
+    var fileReader = new FileReader();
+    var fileReaderInuse = false, fileReaderAcc = [];
+    if (fileReader.readAsBinaryString) {
+        // Chrome & Firefox (Draft)
+        fileReader.onload = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
+    } else if (fileReader.readAsArrayBuffer) {
+        // Chrome & Firefox (Spec)
+        fileReader.onloadend = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
+    }
+
     obj.xxOnMessage = function (e) {
         //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         obj.inDataCount++;
         if (typeof e.data == 'object') {
-            var f = new FileReader();
-            if (f.readAsBinaryString) {
+            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
+            if (fileReader.readAsBinaryString) {
                 // Chrome & Firefox (Draft)
-                f.onload = function (e) { obj.xxOnSocketData(e.target.result); }
-                f.readAsBinaryString(new Blob([e.data]));
+                fileReaderInuse = true;
+                fileReader.readAsBinaryString(new Blob([e.data]));
             } else if (f.readAsArrayBuffer) {
                 // Chrome & Firefox (Spec)
-                f.onloadend = function (e) { obj.xxOnSocketData(e.target.result); }
-                f.readAsArrayBuffer(e.data);
+                fileReaderInuse = true;
+                fileReader.readAsArrayBuffer(e.data);
             } else {
                 // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = "";
-                var bytes = new Uint8Array(e.data);
-                var length = bytes.byteLength;
+                var binary = "", bytes = new Uint8Array(e.data), length = bytes.byteLength;
                 for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
                 obj.xxOnSocketData(binary);
             }
@@ -88,7 +97,6 @@ var CreateAmtRedirect = function (module, authCookie) {
     };
    
     obj.xxOnSocketData = function (data) {
-        //if (obj.debugmode == 1) { console.log('Recv', data.length, rstr2hex(data)); }
         if (!data || obj.connectstate == -1) return;
 
         if (typeof data === 'object') {
@@ -250,7 +258,7 @@ var CreateAmtRedirect = function (module, authCookie) {
     obj.xxSend = function (x) {
         //obj.Debug("Redir Send(" + x.length + "): " + rstr2hex(x));
         if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
-            //if (obj.debugmode == 1) { console.log('Send', x.length, rstr2hex(x)); }
+            if (obj.debugmode == 1) { console.log('Send', x); }
             var b = new Uint8Array(x.length);
             for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
             obj.socket.send(b.buffer);
