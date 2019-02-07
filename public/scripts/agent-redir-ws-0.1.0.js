@@ -38,6 +38,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.socket = new WebSocket(url);
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
+        //obj.socket.onmessage = function (e) { console.log('Websocket data', e.data); obj.xxOnMessage(e); }
         obj.socket.onerror = function (e) { console.error(e); }
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
@@ -84,7 +85,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     }
 
     obj.xxOnMessage = function (e) {
-        //console.log('Recv', e.data, obj.State);
+        //console.log('Recv', e.data, e.data.byteLength, obj.State);
         if (obj.State < 3) {
             if (e.data == 'c') {
                 try { obj.socket.send(obj.protocol); } catch (ex) { }
@@ -97,7 +98,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                     else if (typeof webkitRTCPeerConnection !== 'undefined') { obj.webrtc = new webkitRTCPeerConnection(configuration); }
                     if (obj.webrtc != null) {
                         obj.webchannel = obj.webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
-                        obj.webchannel.onmessage = function (event) { obj.xxOnMessage({ data: event.data }); };
+                        obj.webchannel.onmessage = obj.xxOnMessage;
+                        //obj.webchannel.onmessage = function (e) { console.log('WebRTC data', e.data); obj.xxOnMessage(e); }
                         obj.webchannel.onopen = function () { obj.webRtcActive = true; performWebRtcSwitch(); };
                         obj.webchannel.onclose = function (event) { if (obj.webRtcActive) { obj.Stop(); } }
                         obj.webrtc.onicecandidate = function (e) {
@@ -130,6 +132,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             return;
         }
 
+        /*
         if (typeof e.data == 'object') {
             var f = new FileReader();
             if (f.readAsBinaryString) {
@@ -152,8 +155,41 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             // If we get a string object, it maybe the WebRTC confirm. Ignore it.
             obj.xxOnSocketData(e.data);
         }
+        */
+
+        if (typeof e.data == 'object') {
+            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
+            if (fileReader.readAsBinaryString) {
+                // Chrome & Firefox (Draft)
+                fileReaderInuse = true;
+                fileReader.readAsBinaryString(new Blob([e.data]));
+            } else if (fileReader.readAsArrayBuffer) {
+                // Chrome & Firefox (Spec)
+                fileReaderInuse = true;
+                fileReader.readAsArrayBuffer(e.data);
+            } else {
+                // IE10, readAsBinaryString does not exist, use an alternative.
+                var binary = "", bytes = new Uint8Array(e.data), length = bytes.byteLength;
+                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
+                obj.xxOnSocketData(binary);
+            }
+        } else {
+            // If we get a string object, it maybe the WebRTC confirm. Ignore it.
+            obj.xxOnSocketData(e.data);
+        }
     };
-   
+
+    // Setup the file reader
+    var fileReader = new FileReader();
+    var fileReaderInuse = false, fileReaderAcc = [];
+    if (fileReader.readAsBinaryString) {
+        // Chrome & Firefox (Draft)
+        fileReader.onload = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
+    } else if (fileReader.readAsArrayBuffer) {
+        // Chrome & Firefox (Spec)
+        fileReader.onloadend = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
+    }
+
     obj.xxOnSocketData = function (data) {
         if (!data || obj.connectstate == -1) return;
         if (typeof data === 'object') {

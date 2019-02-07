@@ -95,6 +95,7 @@ function createMeshCore(agent) {
     var nextTunnelIndex = 1;
     var oswsstack = null;
     var osamtstack = null;
+    var amtPolicy = null;
 
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -174,7 +175,10 @@ function createMeshCore(agent) {
         wifiScanner.on('accessPoint', function (data) { sendConsoleText(data); });
     } catch (ex) { wifiScannerLib = null; wifiScanner = null; }
 
-        // Try to load up the MEI module
+    // Try to load Intel AMT policy
+    try { amtPolicy = JSON.parse(db.Get('amtPolicy')); } catch (ex) { amtPolicy = null; }
+
+    // Try to load up the MEI module
     function resetMei() {
         try {
             var amtMeiLib = require('amt-mei');
@@ -500,6 +504,12 @@ function createMeshCore(agent) {
                     // Open a local web browser and return success/fail
                     sendConsoleText('OpenURL: ' + data.url);
                     if (data.url) { mesh.SendCommand({ "action": "openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
+                    break;
+                }
+                case 'amtPolicy': {
+                    // Store the latest Intel AMT policy
+                    amtPolicy = data.amtPolicy;
+                    if (data.amtPolicy != null) { db.Put('amtPolicy', JSON.stringify(data.amtPolicy)); } else { db.Put('amtPolicy', null); }
                     break;
                 }
                 default:
@@ -1093,7 +1103,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate, amtpolicy.';
                     break;
                 }
                     /*
@@ -1130,6 +1140,14 @@ function createMeshCore(agent) {
                 }
                 case 'amtdeactivate': {
                     if (amtMei == null) { response = 'Intel AMT not supported.'; } else { deactivateCCM(); }
+                    break;
+                }
+                case 'amtpolicy': {
+                    if (amtPolicy == null) {
+                        response = 'No Intel(R) AMT policy.';
+                    } else {
+                        response = JSON.stringify(amtPolicy);
+                    }
                     break;
                 }
                 case 'openurl': {
@@ -2004,13 +2022,16 @@ function createMeshCore(agent) {
     //
 
     function activeToCCM(adminpass) {
+        sendConsoleText('Trying to get local account info...');
         amtMei.getLocalSystemAccount(function (x) {
             if (x.user && x.pass) {
+                sendConsoleText('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
                 var transport = require('amt-wsman-duk');
                 var wsman = require('amt-wsman');
                 var amt = require('amt');
                 oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
                 osamtstack = new amt(oswsstack);
+                sendConsoleText('Trying to get Intel AMT activation information...');
                 osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
             } else {
                 sendConsoleText('Unable to get $$OsAdmin password.');
@@ -2019,7 +2040,7 @@ function createMeshCore(agent) {
     }
 
     function activeToCCMEx2(stack, name, responses, status, adminpass) {
-        if (status != 200) { sendConsoleText('Failed to fetch activation status, status ' + status); }
+        if (status != 200) { sendConsoleText('Failed to fetch activation information, status ' + status); }
         else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { sendConsoleText('Client control mode activation not allowed'); }
         else { stack.IPS_HostBasedSetupService_Setup(2, md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + adminpass).substring(0, 32), null, null, null, null, activeToCCMEx3); }
     }

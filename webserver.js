@@ -140,7 +140,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Main lists
-    obj.wsagents = {};
+    obj.wsagents = {};              // NodeId --> Agent
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
     obj.wssessions = {};            // UserId --> Array Of Sessions
@@ -933,14 +933,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
-        if (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false) { return; } // Check server-wide IP filter only.
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
-        if (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false) { return; } // Check server-wide IP filter only.
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
             var filename = 'cira_setup.mescript';
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });

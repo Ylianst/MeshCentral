@@ -146,9 +146,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
             if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
             if (fileReader.readAsBinaryString) {
                 // Chrome & Firefox (Draft)
+                fileReaderInuse = true;
                 fileReader.readAsBinaryString(new Blob([e.data]));
             } else if (fileReader.readAsArrayBuffer) {
                 // Chrome & Firefox (Spec)
+                fileReaderInuse = true;
                 fileReader.readAsArrayBuffer(e.data);
             } else {
                 // IE10, readAsBinaryString does not exist, use an alternative.
