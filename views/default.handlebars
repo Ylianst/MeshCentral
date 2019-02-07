@@ -1486,10 +1486,11 @@
                                 meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                             } else {
                                 // This is an existing mesh
-                                meshes[message.event.meshid].name = message.event.name;
-                                meshes[message.event.meshid].desc = message.event.desc;
-                                meshes[message.event.meshid].flags = message.event.flags;
-                                meshes[message.event.meshid].links = message.event.links;
+                                if (message.event.name) { meshes[message.event.meshid].name = message.event.name; }
+                                if (message.event.desc) { meshes[message.event.meshid].desc = message.event.desc; }
+                                if (message.event.flags) { meshes[message.event.meshid].flags = message.event.flags; }
+                                if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
+                                if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (meshes[message.event.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()] == null) {
@@ -1506,7 +1507,7 @@
                                 }
                             }
                             masterUpdate(4 + 128);
-                            meshserver.send({ action: 'files' });
+                            //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView == 20 && currentMesh._id == message.event.meshid) { p20updateMesh(); }
@@ -5473,6 +5474,19 @@
             x += addHtmlValue('Type', meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
+            // Intel AMT setup
+            if (currentMesh.mtype == 2) {
+                var intelAmtPolicy = 'No Policy';
+                if (currentMesh.amt) {
+                    if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
+                    else if (currentMesh.amt.type == 2) {
+                        intelAmtPolicy = 'Simple Client Control Mode (CCM)';
+                        if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += ' + CIRA'; }
+                    }
+                }
+                x += addHtmlValue('Intel&reg; AMT', addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', (meshrights & 0xFFFFFFFF) != 0));
+            }
+
             // Display group note support
             if (meshrights & 1) { x += '<br><input type=button value=Notes title="View notes about this device group" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
 
@@ -5530,6 +5544,50 @@
             if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
 
             QH('p20info', x);
+        }
+
+        function p20editMeshAmt() {
+            if (xxdialogMode) return;
+            var x = '';
+            x += addHtmlValue('Type', '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>No Policy</option><option value=1>Deactivate Client Control Mode (CCM)</option><option value=2>Simple Client Control Mode (CCM)</option></select>');
+            x += '<div id=dp20amtpolicydiv></div>';
+            setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
+            if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
+            p20editMeshAmtChange();
+
+            // Set the current Intel AMT policy
+            if (currentMesh.amt && currentMesh.amt.type == 2) {
+                Q('dp20amtpolicypass').value = currentMesh.amt.password;
+                Q('dp20amtbadpass').value = currentMesh.amt.badpass;
+                Q('dp20amtcira').value = currentMesh.amt.cirasetup;
+            }
+
+            dp20amtValidatePolicy();
+        }
+
+        function p20editMeshAmtChange() {
+            var ptype = Q('dp20amtpolicy').value, x = '';
+            if (ptype == 2) {
+                x = addHtmlValue('Password*', '<input id=dp20amtpolicypass style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() />')
+                x += addHtmlValue('Password mismatch', "<select id=dp20amtbadpass style=width:230px><option value=0>Do nothing</option><option value=1>Reactivate Intel&reg; AMT</option></select>");
+                x += addHtmlValue('<span title="Client Initiated Remote Access">CIRA</span>', "<select id=dp20amtcira style=width:230px><option value=0>Don't configure</option><option value=1>Don't connect to server</option><option value=2>Connect to server</option></select>");
+                x += '<br/><span style="font-size:10px">* Recommanded, leave blank to assign a random password to each device.</span><br/>';
+                x += '<span style="font-size:10px">This policy will not impact devices with Intel&reg; AMT in ACM mode.</span><br/>';
+                x += '<span style="font-size:10px">This is not a secure policy as agents will be performing activation.</span>';
+            }
+            QH('dp20amtpolicydiv', x);
+        }
+
+        function dp20amtValidatePolicy() {
+            var ok = true, ptype = Q('dp20amtpolicy').value;
+            if (ptype == 2) { var pass = Q('dp20amtpolicypass').value; ok = (pass == '') ? true : passwordcheck(pass); }
+            QE('idx_dlgOkButton', ok);
+        }
+
+        function p20editMeshAmtEx() {
+            var ptype = parseInt(Q('dp20amtpolicy').value), amtpolicy = { type: ptype };
+            if (ptype == 2) { amtpolicy = { type: ptype, password: Q('dp20amtpolicypass').value, badpass: parseInt(Q('dp20amtbadpass').value), cirasetup: parseInt(Q('dp20amtcira').value) }; }
+            meshserver.send({ action: 'meshamtpolicy', meshid: currentMesh._id, amtpolicy: amtpolicy });
         }
 
         function p20showDeleteMeshDialog() {

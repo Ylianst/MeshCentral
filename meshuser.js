@@ -110,6 +110,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         return true;
     }
 
+    // Route a command to all targets in a mesh
+    function routeCommandToMesh(meshid, command) {
+        // Send the request to all peer servers
+        // TODO !!!!
+
+        // See if the node is connected
+        for (var nodeid in obj.parent.wsagents) {
+            var agent = obj.parent.wsagents[nodeid];
+            if (agent.dbMeshKey == meshid) { try { agent.send(JSON.stringify(command)); } catch (ex) { } }
+        }
+        return true;
+    }
+
     try {
         // Check if the user is logged in
         if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
@@ -914,6 +927,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id });
                             }
                         }
+                    }
+                    break;
+                }
+            case 'meshamtpolicy':
+                {
+                    // Change a mesh Intel AMT policy
+                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    if (obj.common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
+                    if (obj.common.validateInt(command.amtpolicy.type, 0, 2) == false) break; // Check the amtpolicy.type
+                    if (command.amtpolicy.type === 2) {
+                        if (obj.common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
+                        if (obj.common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
+                        if (obj.common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
+                    }
+                    mesh = obj.parent.meshes[command.meshid];
+                    change = '';
+                    if (mesh) {
+                        // Check if this user has rights to do this
+                        if ((mesh.links[user._id] == null) || (mesh.links[user._id].rights != 0xFFFFFFFF)) return;
+                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
+                        // TODO: Check if this is a change from the existing policy
+
+                        // Perform the Intel AMT policy change
+                        change = 'Intel AMT policy change';
+                        var amtpolicy = { type: command.amtpolicy.type };
+                        if (command.amtpolicy.type === 2) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
+                        mesh.amt = amtpolicy;
+                        obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+                        obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+
+                        // Send new policy to all computers on this mesh
+                        routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
                     }
                     break;
                 }

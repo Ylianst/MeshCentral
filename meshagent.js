@@ -129,6 +129,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                                     obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                     obj.parent.parent.debug(1, 'Updating code ' + argument.name);
+                                    agentCoreIsStable();
                                 }, { hash: meshcorehash, core: obj.parent.parent.defaultMeshCores[corename], name: corename });
                             }
                             obj.agentCoreCheck++;
@@ -136,6 +137,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     } else {
                         obj.agentCoreCheck = 0;
                         obj.send(obj.common.ShortToStr(16) + obj.common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                        agentCoreIsStable(); // No updates needed, agent is ready to go.
                     }
                 }
 
@@ -463,52 +465,69 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0));
             } else {
                 // Check the mesh core, if the agent is capable of running one
-                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) { obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); } // Command 11, ask for mesh core hash.
+                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
+                    obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                } else {
+                    agentCoreIsStable(); // No updates needed, agent is ready to go.
+                }
             }
+        });
+    }
 
-            // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
-            if (domain.iplocation == true) {
-                // Check if we already have IP location information for this node
-                obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
-                    if (iplocs.length == 1) {
-                        // We have a location in the database for this remote IP
-                        var iploc = nodes[0], x = {};
-                        if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
-                            x.publicip = iploc.ip;
-                            x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
-                            ChangeAgentLocationInfo(x);
-                        }
+    function agentCoreIsStable() {
+        // Check that the mesh exists
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if (mesh == null) {
+            // TODO: Mark this agent as part of a mesh that does not exists.
+            return; // Probably not worth doing anything else. Hold this agent.
+        }
+
+        // Send Intel AMT policy
+        var amtPolicy = null;
+        if (mesh.amt != null) { amtPolicy = mesh.amt; }
+        obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: amtPolicy }));
+
+        // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
+        if (domain.iplocation == true) {
+            // Check if we already have IP location information for this node
+            obj.db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
+                if (iplocs.length == 1) {
+                    // We have a location in the database for this remote IP
+                    var iploc = nodes[0], x = {};
+                    if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
+                        x.publicip = iploc.ip;
+                        x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
+                        ChangeAgentLocationInfo(x);
+                    }
+                } else {
+                    // Check if we need to ask for the IP location
+                    var doIpLocation = 0;
+                    if (device.iploc == null) {
+                        doIpLocation = 1;
                     } else {
-                        // Check if we need to ask for the IP location
-                        var doIpLocation = 0;
-                        if (device.iploc == null) {
-                            doIpLocation = 1;
+                        var loc = device.iploc.split(',');
+                        if (loc.length < 3) {
+                            doIpLocation = 2;
                         } else {
-                            var loc = device.iploc.split(',');
-                            if (loc.length < 3) {
-                                doIpLocation = 2;
-                            } else {
-                                var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
-                                t.setDate(t.getDate() + 20);
-                                if (t < now) { doIpLocation = 3; }
-                            }
-                        }
-
-                        // If we need to ask for IP location, see if we have the quota to do it.
-                        if (doIpLocation > 0) {
-                            obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
-                                if (ipLocationLimitor.value > 0) {
-                                    ipLocationLimitor.value--;
-                                    obj.db.Set(ipLocationLimitor);
-                                    obj.send(JSON.stringify({ action: 'iplocation' }));
-                                }
-                            });
+                            var t = new Date((parseFloat(loc[2]) * 1000)), now = Date.now();
+                            t.setDate(t.getDate() + 20);
+                            if (t < now) { doIpLocation = 3; }
                         }
                     }
-                });
-            }
-            
-        });
+
+                    // If we need to ask for IP location, see if we have the quota to do it.
+                    if (doIpLocation > 0) {
+                        obj.db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                            if (ipLocationLimitor.value > 0) {
+                                ipLocationLimitor.value--;
+                                obj.db.Set(ipLocationLimitor);
+                                obj.send(JSON.stringify({ action: 'iplocation' }));
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     // Get the web certificate private key hash for the specified domain

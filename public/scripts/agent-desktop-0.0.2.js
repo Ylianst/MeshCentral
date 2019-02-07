@@ -177,7 +177,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ProcessData = function (str) {
         var ptr = 0;
-        while (ptr < str.length) { ptr += obj.ProcessDataEx(str.substring(ptr)); }
+        //console.log('x0', str.length);
+        while (ptr < str.length) {
+            //console.log('x1', ptr, str.length);
+            ptr += obj.ProcessDataEx(str.substring(ptr));
+            //console.log('x2', ptr, str.length);
+        }
     }
 
     obj.ProcessDataEx = function (str) {
@@ -194,7 +199,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (str.length < 12) return;
             command = ReadShort(str, 8)
             cmdsize = ReadInt(str, 4);
-            console.log('JUMBO cmd=' + command + ', cmdsize=' + cmdsize + ', data received=' + str.length);
+            //console.log('JUMBO cmd=' + command + ', cmdsize=' + cmdsize + ', data received=' + str.length);
             if ((cmdsize + 8) > str.length) {
                 console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
                 obj.accumulator = str;
@@ -204,7 +209,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             jumboAdd = 8;
         }
         if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
-        if ((command >= 18) && (command != 65)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, str, rstr2hex(str)); return; }
+        if ((command >= 18) && (command != 65)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...'); return; }
         if (cmdsize > str.length) {
             console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
             obj.accumulator = str;
