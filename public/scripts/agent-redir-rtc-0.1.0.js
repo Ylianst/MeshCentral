@@ -28,6 +28,45 @@ var CreateKvmDataChannel = function (webchannel, module, keepalive) {
         obj.rtcKeepAlive = setInterval(obj.xxSendRtcKeepAlive, 30000);
     }
 
+    // Setup the file reader
+    var fileReader = new FileReader();
+    var fileReaderInuse = false, fileReaderAcc = [];
+    if (fileReader.readAsBinaryString) {
+        // Chrome & Firefox (Draft)
+        fileReader.onload = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
+    } else if (fileReader.readAsArrayBuffer) {
+        // Chrome & Firefox (Spec)
+        fileReader.onloadend = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
+    }
+
+    obj.xxOnMessage = function (e) {
+        //if (obj.debugmode == 1) { console.log('Recv', e.data); }
+        //if (urlvars && urlvars['webrtctrace']) { console.log('WebRTC-Recv(' + obj.State + '): ', typeof e.data, e.data); }
+        if (typeof e.data == 'string') { if (obj.onControlMsg != null) { obj.onControlMsg(e.data); } return; } // If this is a control message, handle it here.
+        if (typeof e.data == 'object') {
+            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
+            if (fileReader.readAsBinaryString) {
+                // Chrome & Firefox (Draft)
+                fileReaderInuse = true;
+                fileReader.readAsBinaryString(new Blob([e.data]));
+            } else if (f.readAsArrayBuffer) {
+                // Chrome & Firefox (Spec)
+                fileReaderInuse = true;
+                fileReader.readAsArrayBuffer(e.data);
+            } else {
+                // IE10, readAsBinaryString does not exist, use an alternative.
+                var binary = "", bytes = new Uint8Array(e.data), length = bytes.byteLength;
+                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
+                obj.xxOnSocketData(binary);
+            }
+        } else {
+            // If we get a string object, it maybe the WebRTC confirm. Ignore it.
+            //obj.debug("Agent Redir Relay - OnData - " + typeof e.data + " - " + e.data.length);
+            obj.xxOnSocketData(e.data);
+        }
+    };
+
+    /*
     obj.xxOnMessage = function (e) {
         //if (obj.debugmode == 1) { console.log('Recv', e.data); }
         //if (urlvars && urlvars['webrtctrace']) { console.log('WebRTC-Recv(' + obj.State + '): ', typeof e.data, e.data); }
@@ -54,7 +93,8 @@ var CreateKvmDataChannel = function (webchannel, module, keepalive) {
             obj.xxOnSocketData(e.data);
         }
     };
-   
+    */
+
     obj.xxOnSocketData = function (data) {
         if (!data) return;
         if (typeof data === 'object') {

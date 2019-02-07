@@ -58,22 +58,29 @@ var CreateAmtRemoteIder = function (serverurl) {
         _Send('C');
     }
 
+    // Setup the file reader
+    var fileReader = new FileReader();
+    var fileReaderInuse = false, fileReaderAcc = [];
+    if (fileReader.readAsBinaryString) {
+        // Chrome & Firefox (Draft)
+        fileReader.onload = function (e) { _OnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
+    } else if (fileReader.readAsArrayBuffer) {
+        // Chrome & Firefox (Spec)
+        fileReader.onloadend = function (e) { _OnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
+    }
+
     function _OnMessage(e) {
         if (typeof e.data == 'object') {
-            var f = new FileReader();
-            if (f.readAsBinaryString) {
+            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
+            if (fileReader.readAsBinaryString) {
                 // Chrome & Firefox (Draft)
-                f.onload = function (e) { _OnSocketData(e.target.result); }
-                f.readAsBinaryString(new Blob([e.data]));
-            } else if (f.readAsArrayBuffer) {
+                fileReader.readAsBinaryString(new Blob([e.data]));
+            } else if (fileReader.readAsArrayBuffer) {
                 // Chrome & Firefox (Spec)
-                f.onloadend = function (e) { _OnSocketData(e.target.result); }
-                f.readAsArrayBuffer(e.data);
+                fileReader.readAsArrayBuffer(e.data);
             } else {
                 // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = "";
-                var bytes = new Uint8Array(e.data);
-                var length = bytes.byteLength;
+                var binary = "", bytes = new Uint8Array(e.data), length = bytes.byteLength;
                 for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
                 _OnSocketData(binary);
             }
