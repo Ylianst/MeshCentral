@@ -377,7 +377,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Check OTP hardware key
-        if (domain.yubikey.id && domain.yubikey.secret && user.otphkeys && (user.otphkeys.length > 0) && (typeof (token) == 'string') && (token.length == 44)) {
+        if ((domain.yubikey != null) && (domain.yubikey.id != null) && (domain.yubikey.secret != null) && (user.otphkeys != null) && (user.otphkeys.length > 0) && (typeof (token) == 'string') && (token.length == 44)) {
             var keyId = token.substring(0, 12);
 
             // Find a matching OPT key
