@@ -179,17 +179,19 @@ module.exports.checkPasswordRequirements = function(password, requirements) {
 // This is useful to limit the number of agents upgrading at the same time, to not swamp 
 // the network with traffic.
 
-// taskLimiterQueue.launch(somethingToDo, argument);
+// taskLimiterQueue.launch(somethingToDo, argument, priority);
 //
 // function somethingToDo(argument, taskid, taskLimiterQueue) {
 //     setTimeout(function () { taskLimiterQueue.completed(taskid); }, Math.random() * 2000);
 // }
 
-module.exports.createTaskLimiterQueue = function(maxTasks, maxTaskTime, cleaningInterval) {
-    var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [], timer: null };
+module.exports.createTaskLimiterQueue = function (maxTasks, maxTaskTime, cleaningInterval) {
+    var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
 
     // Add a task to the super queue
-    obj.launch = function (func, arg) {
+    // Priority: 0 = High, 1 = Medium, 2 = Low
+    obj.launch = function (func, arg, pri) {
+        if (typeof pri != 'number') { pri = 2; }
         if (obj.currentCount < obj.maxTasks) {
             // Run this task now
             const id = obj.nextTaskId++;
@@ -201,7 +203,7 @@ module.exports.createTaskLimiterQueue = function(maxTasks, maxTaskTime, cleaning
         } else {
             // Hold this task
             //console.log('Holding');
-            obj.pending.push({ func: func, arg: arg });
+            obj.pending[pri].push({ func: func, arg: arg });
         }
     }
 
@@ -209,15 +211,22 @@ module.exports.createTaskLimiterQueue = function(maxTasks, maxTaskTime, cleaning
     obj.completed = function (taskid) {
         //console.log('Completed ' + taskid);
         if (obj.current[taskid]) { delete obj.current[taskid]; obj.currentCount--; } else { return; }
-        while ((obj.pending.length > 0) && (obj.currentCount < obj.maxTasks)) {
+        while ((obj.currentCount < obj.maxTasks) && ((obj.pending[0].length > 0) || (obj.pending[1].length > 0) || (obj.pending[2].length > 0))) {
             // Run this task now
-            const t = obj.pending.shift(), id = obj.nextTaskId++;
+            var t = null;
+            if (obj.pending[0].length > 0) { t = obj.pending[0].shift(); }
+            else if (obj.pending[1].length > 0) { t = obj.pending[1].shift(); }
+            else if (obj.pending[2].length > 0) { t = obj.pending[2].shift(); }
+            const id = obj.nextTaskId++;
             obj.current[id] = Date.now() + obj.maxTaskTime;
             obj.currentCount++;
             //console.log('PendingLaunch ' + id);
             t.func(t.arg, id, obj); // Start the task
         }
-        if ((obj.pending.length == 0) && (obj.timer != null)) { clearInterval(obj.timer); obj.timer = null; } // All done, clear the timer
+        if ((obj.pending[0].length == 0) && (obj.pending[1].length == 0) && (obj.pending[2].length == 0) && (obj.timer != null)) {
+            // All done, clear the timer
+            clearInterval(obj.timer); obj.timer = null;
+        }
     }
 
     // Look for long standing tasks and clean them up

@@ -3312,7 +3312,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>None</i>'; }
-                if ((meshrights & 4) != 0) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+                if ((meshrights & 4) != 0) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
@@ -3346,7 +3346,7 @@
                 // Attribute: Description
                 var description = node.desc?EscapeHtml(node.desc):"<i>None</i>";
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton src="images/link5.png" /></span>');
+                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>');
                 } else {
                     x += addDeviceAttribute('Description', description);
                 }
@@ -3421,7 +3421,7 @@
                 // Node grouping tags
                 var groupingTags = '<i>None</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
-                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" /></span>');
+                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>');
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
@@ -6360,7 +6360,7 @@
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
-            x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img src="images/link1.png" /></a>');
+            x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton width=10 height=10 src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
@@ -6919,7 +6919,7 @@
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
-        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton src=images/link5.png></span>"; }
+        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton width=10 height=10 src=images/link5.png></span>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }

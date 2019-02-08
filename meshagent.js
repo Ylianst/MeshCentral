@@ -125,12 +125,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 //obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + meshcorehash + obj.parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
                                 //obj.parent.parent.debug(1, 'Updating code ' + corename);
 
-                                // Update new core with task limiting so not to flood the server.
+                                // Update new core with task limiting so not to flood the server. This is a high priority task.
                                 obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                                     obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                     obj.parent.parent.debug(1, 'Updating code ' + argument.name);
                                     agentCoreIsStable();
-                                }, { hash: meshcorehash, core: obj.parent.parent.defaultMeshCores[corename], name: corename });
+                                }, { hash: meshcorehash, core: obj.parent.parent.defaultMeshCores[corename], name: corename }, 0);
                             }
                             obj.agentCoreCheck++;
                         }
@@ -169,7 +169,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     var agenthash = obj.common.rstr2hex(msg.substring(4)).toLowerCase();
                     if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')) {
-                        // Mesh agent update required, do it using task limiter so not to flood the network.
+                        // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
@@ -203,7 +203,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                                 }
                             });
-                        }, null);
+                        }, null, 1);
 
                     } else {
                         // Check the mesh core, if the agent is capable of running one
