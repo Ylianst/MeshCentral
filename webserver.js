@@ -342,43 +342,76 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check the 2-step auth token
-    function checkUserOneTimePassword(domain, user, token, hwtoken1, hwtoken2) {
+    function checkUserOneTimePassword(domain, user, token, hwtoken1, hwtoken2, func) {
         const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
-        if (twoStepLoginSupported == false) return true;
+        if (twoStepLoginSupported == false) { func(true); return; };
 
-        // Check hardware key
+        // Check U2F hardware key
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken1) == 'string') && (typeof (hwtoken2) == 'string')) {
-            // Check hardware token
-            var authRequest = null, authResponse = null;
-            try { authRequest = JSON.parse(hwtoken1); } catch (ex) { }
-            try { authResponse = JSON.parse(hwtoken2); } catch (ex) { }
-            if ((authRequest != null) && (authResponse != null)) {
-                const u2f = require('u2f');
-                const result = u2f.checkSignature(authRequest[0], authResponse, user.otphkeys[0].publicKey);
-                if (result.successful === true) return true;
+            var u2fpublicKey = null;
+
+            // Find a U2F key
+            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fpublicKey = user.otphkeys[i].publicKey; } }
+
+            if (u2fpublicKey != null) {
+                // Check hardware token
+                var authRequest = null, authResponse = null;
+                try { authRequest = JSON.parse(hwtoken1); } catch (ex) { }
+                try { authResponse = JSON.parse(hwtoken2); } catch (ex) { }
+                if ((authRequest != null) && (authResponse != null)) {
+                    const u2f = require('u2f');
+                    const result = u2f.checkSignature(authRequest[0], authResponse, u2fpublicKey);
+                    if (result.successful === true) { func(true); return; };
+                }
             }
         }
 
         // Check Google Authenticator
         const otplib = require('otplib')
-        if (user.otpsecret && (typeof (token) == 'string') && (otplib.authenticator.check(token, user.otpsecret) == true)) return true;
+        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) { func(true); return; };
 
         // Check written down keys
-        if ((user.otpkeys != null) && (user.otpkeys.keys != null)) {
+        if ((user.otpkeys != null) && (user.otpkeys.keys != null) && (typeof (token) == 'string') && (token.length == 8)) {
             var tokenNumber = parseInt(token);
-            for (var i = 0; i < user.otpkeys.keys.length; i++) { if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) { user.otpkeys.keys[i].u = false; return true; } }
+            for (var i = 0; i < user.otpkeys.keys.length; i++) { if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) { user.otpkeys.keys[i].u = false; func(true); return; } }
         }
 
-        return false;
+        // Check OTP hardware key
+        if (domain.yubikey.id && domain.yubikey.secret && user.otphkeys && (user.otphkeys.length > 0) && (typeof (token) == 'string') && (token.length == 44)) {
+            var keyId = token.substring(0, 12);
+
+            // Find a matching OPT key
+            var match = false;
+            for (var i = 0; i < user.otphkeys.length; i++) { if ((user.otphkeys[i].type === 2) && (user.otphkeys[i].keyid === keyId)) { match = true; } }
+
+            // If we have a match, check the OTP
+            if (match === true) {
+                var yubikeyotp = require('yubikeyotp');
+                var request = { otp: token, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
+                if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
+                yubikeyotp.verifyOTP(request, function (err, results) { func(results.status == 'OK'); });
+                return;
+            }
+        }
+
+        func(false);
     }
 
-    // Return a hardware key challenge
+    // Return a U2F hardware key challenge
+    // TODO: Figure out how to support many U2F keys at the same time.
     function getHardwareKeyChallenge(domain, user) {
         if (user.otphkeys && (user.otphkeys.length > 0)) {
-            var requests = [];
-            const u2f = require('u2f');
-            for (var i in user.otphkeys) { requests.push(u2f.request('https://' + obj.parent.certificates.CommonName, user.otphkeys[i].keyHandle)); }
-            return JSON.stringify(requests);
+            // Find a U2F key
+            var u2fKeyHandle = null;
+            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeyHandle = user.otphkeys[i].keyHandle; } }
+
+            // Generate a U2F challenge
+            if (u2fKeyHandle != null) {
+                var requests = [];
+                const u2f = require('u2f');
+                for (var i in user.otphkeys) { requests.push(u2f.request('https://' + obj.parent.certificates.CommonName, u2fKeyHandle)); }
+                return JSON.stringify(requests);
+            }
         }
         return '';
     }
@@ -398,89 +431,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Check if this user has 2-step login active
                 if (checkUserOneTimePasswordRequired(domain, user)) {
-                    if (checkUserOneTimePassword(domain, user, req.body.token, req.body.hwtoken1, req.body.hwtoken2) == false) {
-                        // 2-step auth is required, but the token is not present or not valid.
-                        if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
-                        req.session.loginmode = '4';
-                        req.session.tokenusername = xusername;
-                        req.session.tokenpassword = xpassword;
-                        res.redirect(domain.url);
-                        return;
-                    }
-                }
-
-                /*
-                // Check if this user has 2-step login active
-                var tokenValid = 0;
-                const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
-                const otplib = require('otplib')
-                otplib.authenticator.options = { window: 6 }; // Set +/- 3 minute window
-                if (twoStepLoginSupported && user.otpsecret && ((typeof (req.body.token) != 'string') || ((tokenValid = otplib.authenticator.check(req.body.token, user.otpsecret)) !== true))) {
-                    // Failed OTP, check user's one time passwords
-                    console.log(user);
-                    if ((req.body.token != null) && ((user.otpkeys != null) && (user.otpkeys.keys != null)) || (user.otphkeys && user.otphkeys.length > 0)) {
-                        var found = null;
-                        var tokenNumber = parseInt(req.body.token);
-                        for (var i = 0; i < user.otpkeys.keys.length; i++) { if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) { user.otpkeys.keys[i].u = false; found = i; } }
-                        if (found == null) {
+                    checkUserOneTimePassword(domain, user, req.body.token, req.body.hwtoken1, req.body.hwtoken2, function (result) {
+                        if (result == false) {
                             // 2-step auth is required, but the token is not present or not valid.
                             if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
                             req.session.loginmode = '4';
                             req.session.tokenusername = xusername;
                             req.session.tokenpassword = xpassword;
                             res.redirect(domain.url);
-                            return;
+                        } else {
+                            // Login succesful
+                            completeLoginRequest(req, res, domain, user, userid);
                         }
-                    } else {
-                        // 2-step auth is required, but the token is not present or not valid.
-                        if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
-                        req.session.loginmode = '4';
-                        req.session.tokenusername = xusername;
-                        req.session.tokenpassword = xpassword;
-                        res.redirect(domain.url);
-                        return;
-                    }
-                }
-                */
-
-                // Save login time
-                user.login = Math.floor(Date.now() / 1000);
-                obj.db.SetUser(user);
-
-                // Regenerate session when signing in to prevent fixation
-                //req.session.regenerate(function () {
-                // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
-                // req.session.success = 'Authenticated as ' + user.name + 'click to <a href="/logout">logout</a>. You may now access <a href="/restricted">/restricted</a>.';
-                delete req.session.loginmode;
-                delete req.session.tokenusername;
-                delete req.session.tokenpassword;
-                req.session.userid = userid;
-                req.session.domainid = domain.id;
-                req.session.currentNode = '';
-                if (req.session.passhint) { delete req.session.passhint; }
-                if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
-                if (req.body.host) {
-                    // TODO: This is a terrible search!!! FIX THIS.
-                    /*
-                    obj.db.GetAllType('node', function (err, docs) {
-                        for (var i = 0; i < docs.length; i++) {
-                            if (docs[i].name == req.body.host) {
-                                req.session.currentNode = docs[i]._id;
-                                break;
-                            }
-                        }
-                        console.log("CurrentNode: " + req.session.currentNode);
-                        // This redirect happens after finding node is completed
-                        res.redirect(domain.url);
                     });
-                    */
-                    res.redirect(domain.url); // Temporary
-                } else {
-                    res.redirect(domain.url);
+                    return;
                 }
-                //});
 
-                obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id });
+                // Login succesful
+                completeLoginRequest(req, res, domain, user, userid);
             } else {
                 delete req.session.loginmode;
                 if (err == 'locked') { req.session.error = '<b style=color:#8C001A>Account locked.</b>'; } else { req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>'; }
@@ -492,6 +460,47 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.redirect(domain.url);
             }
         });
+    }
+
+    function completeLoginRequest(req, res, domain, user, userid) {
+        // Save login time
+        user.login = Math.floor(Date.now() / 1000);
+        obj.db.SetUser(user);
+
+        // Regenerate session when signing in to prevent fixation
+        //req.session.regenerate(function () {
+        // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
+        // req.session.success = 'Authenticated as ' + user.name + 'click to <a href="/logout">logout</a>. You may now access <a href="/restricted">/restricted</a>.';
+        delete req.session.loginmode;
+        delete req.session.tokenusername;
+        delete req.session.tokenpassword;
+        req.session.userid = userid;
+        req.session.domainid = domain.id;
+        req.session.currentNode = '';
+        if (req.session.passhint) { delete req.session.passhint; }
+        if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
+        if (req.body.host) {
+            // TODO: This is a terrible search!!! FIX THIS.
+            /*
+            obj.db.GetAllType('node', function (err, docs) {
+                for (var i = 0; i < docs.length; i++) {
+                    if (docs[i].name == req.body.host) {
+                        req.session.currentNode = docs[i]._id;
+                        break;
+                    }
+                }
+                console.log("CurrentNode: " + req.session.currentNode);
+                // This redirect happens after finding node is completed
+                res.redirect(domain.url);
+            });
+            */
+            res.redirect(domain.url); // Temporary
+        } else {
+            res.redirect(domain.url);
+        }
+        //});
+
+        obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id });
     }
 
     function handleCreateAccountRequest(req, res) {

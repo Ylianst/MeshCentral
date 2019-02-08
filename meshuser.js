@@ -1503,9 +1503,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Send back the list of keys we have, just send the list of names and index
                     var hkeys = [];
-                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { hkeys.push({ i: user.otphkeys[i].keyIndex, name: user.otphkeys[i].name }); } }
-
-                    //hkeys = [{ i: 1234, name: 'My Normal Key' }, { i: 5678, name: 'Backup Key' }, { i: 90122, name: 'Blue Extra Key' }];
+                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { hkeys.push({ i: user.otphkeys[i].keyIndex, name: user.otphkeys[i].name, type: user.otphkeys[i].type }); } }
 
                     ws.send(JSON.stringify({ action: 'otp-hkey-get', keys: hkeys }));
                     break;
@@ -1539,22 +1537,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check if Yubikey support is present
                     if ((typeof domain.yubikey != 'object') || (typeof domain.yubikey.id != 'string') || (typeof domain.yubikey.secret != 'string')) break;
 
-                    /*
-                    var yub = require('yubikey-client');
-                    yub.init(domain.yubikey.id, domain.yubikey.secret);
-                    yub.verify(command.otp, function (err, data) {
-                        console.log(err, data);
-                    });
-                    */
-
+                    // Query the YubiKey server to validate the OTP
                     var yubikeyotp = require('yubikeyotp');
-                    //var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, sl: '100', timestamp: true }
                     var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
                     if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-
-                    console.log('YubiKey Request: ' + JSON.stringify(request));
                     yubikeyotp.verifyOTP(request, function (err, results) {
-                        console.log(err, results);
+                        if (results.status == 'OK') {
+                            var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
+                            var keyId = command.otp.substring(0, 12);
+                            if (user.otphkeys == null) { user.otphkeys = []; }
+
+                            // Check if this key was already registered, if so, remove it.
+                            var foundAtIndex = -1;
+                            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].keyid == keyId) { foundAtIndex = i; } }
+                            if (foundAtIndex != -1) { user.otphkeys.splice(foundAtIndex, 1); }
+
+                            // Add the new key and notify
+                            user.otphkeys.push({ name: command.name, type: 2, keyid: keyId, keyIndex: keyIndex });
+                            obj.parent.db.SetUser(user);
+                            ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: true, name: command.name, index: keyIndex }));
+
+                            // Notify change TODO: Should be done on all sessions/servers for this user.
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                        } else {
+                            ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
+                        }
                     });
 
                     break;
@@ -1587,7 +1594,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: result.successful, name: command.name, index: keyIndex }));
                         if (result.successful) {
                             if (user.otphkeys == null) { user.otphkeys = []; }
-                            user.otphkeys.push({ name: command.name, publicKey: result.publicKey, keyHandle: result.keyHandle, keyIndex: keyIndex });
+                            user.otphkeys.push({ name: command.name, type: 1, publicKey: result.publicKey, keyHandle: result.keyHandle, keyIndex: keyIndex });
                             obj.parent.db.SetUser(user);
                             //console.log('KEYS', JSON.stringify(user.otphkeys));
 
