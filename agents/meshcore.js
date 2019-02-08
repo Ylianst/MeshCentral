@@ -512,6 +512,11 @@ function createMeshCore(agent) {
                     if (data.amtPolicy != null) { db.Put('amtPolicy', JSON.stringify(data.amtPolicy)); } else { db.Put('amtPolicy', null); }
                     break;
                 }
+                case 'getScript': {
+                    // Received a configuration script from the server
+                    sendConsoleText('getScript: ' + JSON.stringify(data));
+                    break;
+                }
                 default:
                     // Unknown action, ignore it.
                     break;
@@ -1103,7 +1108,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate, amtpolicy.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate,\r\namtpolicy, getscript.';
                     break;
                 }
                     /*
@@ -1541,6 +1546,14 @@ function createMeshCore(agent) {
                 }
                 case 'modules': {
                     response = JSON.stringify(addedModules);
+                    break;
+                }
+                case 'getscript': {
+                    if (args['_'].length != 1) {
+                        response = 'Proper usage: getscript [scriptNumber].';
+                    } else {
+                        mesh.SendCommand({ "action": "getScript", "type": args['_'][0] });
+                    }
                     break;
                 }
                 default: { // This is an unknown command, return an error message
