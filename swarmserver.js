@@ -215,11 +215,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                                 socket.tag.updatePtr = 0;
                                 //console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
 
-                                // Start the agent download using the task limiter so not to flood the server.
+                                // Start the agent download using the task limiter so not to flood the server. Low priority task
                                 obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
                                     socket.tag.taskid = taskid;
                                     obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
-                                }, socket);
+                                }, socket, 2);
                             } else {
                                 //console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
                             }
