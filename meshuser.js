@@ -1471,6 +1471,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported == false) break;
 
                     // Perform a sub-action
                     var actionTaken = false;
@@ -1489,7 +1490,103 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (actionTaken) { obj.parent.db.SetUser(user); }
 
                     // Return one time passwords for this user
-                    if (twoStepLoginSupported && user.otpsecret) { ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys?user.otpkeys.keys:null })); }
+                    if (user.otpsecret) { ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys?user.otpkeys.keys:null })); }
+                    break;
+                }
+            case 'otp-hkey-get':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported == false) break;
+
+                    // Send back the list of keys we have, just send the list of names and index
+                    var hkeys = [];
+                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { hkeys.push({ i: user.otphkeys[i].keyIndex, name: user.otphkeys[i].name }); } }
+
+                    //hkeys = [{ i: 1234, name: 'My Normal Key' }, { i: 5678, name: 'Backup Key' }, { i: 90122, name: 'Blue Extra Key' }];
+
+                    ws.send(JSON.stringify({ action: 'otp-hkey-get', keys: hkeys }));
+                    break;
+                }
+            case 'otp-hkey-remove':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported == false || command.index == null) break;
+
+                    // Remove a key
+                    var foundAtIndex = -1;
+                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].keyIndex == command.index) { foundAtIndex = i; } } }
+                    if (foundAtIndex != -1) {
+                        user.otphkeys.splice(foundAtIndex, 1);
+                        obj.parent.db.SetUser(user);
+                    }
+                    break;
+                }
+            case 'otp-hkey-yubikey-add':
+                {
+                    // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
+
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) break;
+
+                    // Check if Yubikey support is present
+                    if ((typeof domain.yubikey != 'object') || (typeof domain.yubikey.id != 'string') || (typeof domain.yubikey.secret != 'string')) break;
+
+                    /*
+                    var yub = require('yubikey-client');
+                    yub.init(domain.yubikey.id, domain.yubikey.secret);
+                    yub.verify(command.otp, function (err, data) {
+                        console.log(err, data);
+                    });
+                    */
+
+                    var yubikeyotp = require('yubikeyotp');
+                    //var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, sl: '100', timestamp: true }
+                    var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
+                    if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
+
+                    console.log('YubiKey Request: ' + JSON.stringify(request));
+                    yubikeyotp.verifyOTP(request, function (err, results) {
+                        console.log(err, results);
+                    });
+
+                    break;
+                }
+            case 'otp-hkey-setup-request':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if (twoStepLoginSupported == false) break;
+
+                    // Build list of known keys
+                    //var knownKeys = [];
+                    //if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { knownKeys.push(user.otphkeys[i].keyHandle); } }
+
+                    // Build a key registration request and send it over
+                    const registrationRequest = require('u2f').request('https://' + obj.parent.parent.certificates.CommonName);
+                    if (registrationRequest) { ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: registrationRequest, name: command.name })); }
+                    break;
+                }
+            case 'otp-hkey-setup-response':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    if ((twoStepLoginSupported == false) || (command.request == null) || (command.response == null) || (command.name == null)) break;
+
+                    // Check the key registration request
+                    const result = require('u2f').checkRegistration(command.request, command.response);
+                    if (result) {
+                        var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: result.successful, name: command.name, index: keyIndex }));
+                        if (result.successful) {
+                            if (user.otphkeys == null) { user.otphkeys = []; }
+                            user.otphkeys.push({ name: command.name, publicKey: result.publicKey, keyHandle: result.keyHandle, keyIndex: keyIndex });
+                            obj.parent.db.SetUser(user);
+                            //console.log('KEYS', JSON.stringify(user.otphkeys));
+                        }
+                    }
                     break;
                 }
             case 'getNotes':

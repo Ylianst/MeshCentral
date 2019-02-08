@@ -807,6 +807,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x0800; } // Server can self-write (Allows self-update)
             if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
             if (domain.agentnoproxy === true) { features += 0x2000; } // Indicates that agents should be installed without using a HTTP proxy
+            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x4000; } // Indicates Yubikey support
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -938,76 +939,91 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
+    // Return the CIRA configuration script
+    obj.getCiraCleanupScript = function(func) {
+        obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
+            if (err != null) { func(null); return; }
+            func(Buffer.from(data));
+        });
+    }
+
+    // Return the CIRA configuration script
+    obj.getCiraConfigurationScript = function(meshid, func) {
+        var serverNameSplit = obj.certificates.AmtMpsName.split('.');
+
+        // Figure out the MPS port, use the alias if set
+        var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
+
+        if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
+            // Server name is an IPv4 address
+            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
+                if (err != null) { func(null); return; }
+                var scriptFile = JSON.parse(data);
+
+                // Change a few things in the script
+                scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
+                scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.AmtMpsName; // Set the server IPv4 address name
+                scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.AmtMpsName; // Set the server certificate name
+                scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
+                scriptFile.scriptBlocks[3].vars.username.value = meshid; // Set the username
+                scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
+                scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
+                //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
+                if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
+
+                // Compile the script
+                var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
+                var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
+                scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                scriptFile.scriptText = runscript;
+
+                // Send the script
+                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
+            });
+        } else {
+            // Server name is a hostname
+            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
+                if (err != null) { res.sendStatus(404); return; }
+                var scriptFile = JSON.parse(data);
+
+                // Change a few things in the script
+                scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
+                scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.AmtMpsName; // Set the server DNS name
+                scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
+                scriptFile.scriptBlocks[3].vars.username.value = meshid; // Set the username
+                scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
+                scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
+                //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
+                if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
+
+                // Compile the script
+                var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
+                var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
+                scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
+                scriptFile.scriptText = runscript;
+
+                // Send the script
+                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
+            });
+        }
+    }
+
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
-            var filename = 'cira_setup.mescript';
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            var serverNameSplit = obj.certificates.AmtMpsName.split('.');
-
-            // Figure out the MPS port, use the alias if set
-            var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
-
-            if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
-                // Server name is an IPv4 address
-                obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
-                    if (err != null) { res.sendStatus(404); return; }
-                    var scriptFile = JSON.parse(data);
-
-                    // Change a few things in the script
-                    scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                    scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.AmtMpsName; // Set the server IPv4 address name
-                    scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.AmtMpsName; // Set the server certificate name
-                    scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                    scriptFile.scriptBlocks[3].vars.username.value = req.query.meshid; // Set the username
-                    scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
-                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
-                    if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
-
-                    // Compile the script
-                    var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
-                    var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                    scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
-                    scriptFile.scriptText = runscript;
-
-                    // Send the script
-                    res.send(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
-                });
-            } else {
-                // Server name is a hostname
-                obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
-                    if (err != null) { res.sendStatus(404); return; }
-                    var scriptFile = JSON.parse(data);
-
-                    // Change a few things in the script
-                    scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                    scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.AmtMpsName; // Set the server DNS name
-                    scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                    scriptFile.scriptBlocks[3].vars.username.value = req.query.meshid; // Set the username
-                    scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                    scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
-                    //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
-                    if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
-
-                    // Compile the script
-                    var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
-                    var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                    scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
-                    scriptFile.scriptText = runscript;
-
-                    // Send the script
-                    res.send(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
-                });
-            }
-        }
-        else if (req.query.type == 2) {
-            var filename = 'cira_cleanup.mescript';
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + filename });
-            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
-                if (err != null) { res.sendStatus(404); return; }
-                res.send(Buffer.from(data));
+            getCiraConfigurationScript(req.query.meshid, function (script) {
+                if (script == null) { res.sendStatus(404); } else {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_setup.mescript' });
+                    res.send(script);
+                }
+            });
+        } else if (req.query.type == 2) {
+            getCiraCleanupScript(function (script) {
+                if (script == null) { res.sendStatus(404); } else {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_cleanup.mescript' });
+                    res.send(script);
+                }
             });
         }
     }
@@ -2300,6 +2316,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.passtype;
         if (user2.otpsecret) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if (user2.otpkeys) { user2.otpkeys = 1; } // Indicates a set of one time passwords are present.
+        if (user2.otphkeys) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
         return user2;
     }
 

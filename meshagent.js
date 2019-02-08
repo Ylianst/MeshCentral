@@ -757,6 +757,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Nothing is done right now.
                         break;
                     }
+                case 'getScript':
+                    {
+                        // Used by the agent to get configuration scripts.
+                        if (command.type == 1) {
+                            obj.parent.getCiraConfigurationScript(obj.dbMeshKey, function (script) {
+                                obj.send(JSON.stringify({ action: 'getScript', type: 1, script: script.toString() }));
+                            });
+                        } else if (command.type == 2) {
+                            obj.parent.getCiraCleanupScript(function (script) {
+                                obj.send(JSON.stringify({ action: 'getScript', type: 2, script: script.toString() }));
+                            });
+                        }
+                        break;
+                    }
                 default: {
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
                     break;
