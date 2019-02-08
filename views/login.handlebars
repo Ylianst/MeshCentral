@@ -87,6 +87,7 @@
         }
     </style>
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <script type="text/javascript" src="scripts/u2f-api.js"></script>
     <title>MeshCentral - Login</title>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();">
@@ -221,7 +222,11 @@
                                     <table>
                                         <tr>
                                             <td align=right width=100>Login token:</td>
-                                            <td><input id=tokenInput type=text name=token maxlength=12 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) /></td>
+                                            <td>
+                                                <input id=tokenInput type=text name=token maxlength=12 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=hwtokenInput1 type=text name=hwtoken1 style="display:none" />
+                                                <input id=hwtokenInput2 type=text name=hwtoken2 style="display:none" />
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
@@ -277,6 +282,7 @@
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var passRequirements = "{{{passRequirements}}}";
+        var hardwareKeyChallenge = '{{{hkey}}}';
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var features = parseInt('{{{features}}}');
         var webPageFullScreen = getstore('webPageFullScreen', true);
@@ -302,6 +308,21 @@
             QV("newAccountPass", (newAccountPass == 1));
             QV("resetAccountDiv", (emailCheck == true));
             QV("hrAccountDiv", (emailCheck == true) || (newAccountPass == 1));
+
+            if ('{{loginmode}}' == '4') {
+                try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
+                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    var c = hardwareKeyChallenge[0];
+                    window.u2f.sign(c.appId, c.challenge, hardwareKeyChallenge, function (authResponse) {
+                        if (authResponse.signatureData) {
+                            Q('hwtokenInput1').value = JSON.stringify(hardwareKeyChallenge);
+                            Q('hwtokenInput2').value = JSON.stringify(authResponse);
+                            QE('tokenOkButton', true);
+                            Q('tokenOkButton').click();
+                        }
+                    });
+                }
+            }
         }
 
         function showPassHint() {
@@ -522,6 +543,7 @@
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
+        function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
 
     </script>
 </body>

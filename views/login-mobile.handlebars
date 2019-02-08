@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <script type="text/javascript" src="scripts/u2f-api.js"></script>
     <title>MeshCentral - Login</title>
     <style>
         a {
@@ -148,7 +149,11 @@
                                     <table>
                                         <tr>
                                             <td align=right width=100>Login token:</td>
-                                            <td><input id=tokenInput type=text name=token maxlength=12 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) /></td>
+                                            <td>
+                                                <input id=tokenInput type=text name=token maxlength=12 onkeypress="return (event.keyCode == 8) || (event.keyCode == 13) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=hwtokenInput1 type=text name=hwtoken1 style="display:none" />
+                                                <input id=hwtokenInput2 type=text name=hwtoken2 style="display:none" />
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
@@ -200,6 +205,7 @@
         var features = parseInt('{{{features}}}');
         var passRequirements = "{{{passRequirements}}}";
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        var hardwareKeyChallenge = '{{{hkey}}}';
 
         function startup() {
             if ((features & 32) == 0) {
@@ -219,6 +225,21 @@
             QV("newAccountPass", (newAccountPass == 1));
             QV("resetAccountDiv", (emailCheck == true));
             QV("hrAccountDiv", (emailCheck == true) || (newAccountPass == 1));
+
+            if ('{{loginmode}}' == '4') {
+                try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
+                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    var c = hardwareKeyChallenge[0];
+                    window.u2f.sign(c.appId, c.challenge, hardwareKeyChallenge, function (authResponse) {
+                        if (authResponse.signatureData) {
+                            Q('hwtokenInput1').value = JSON.stringify(hardwareKeyChallenge);
+                            Q('hwtokenInput2').value = JSON.stringify(authResponse);
+                            QE('tokenOkButton', true);
+                            Q('tokenOkButton').click();
+                        }
+                    });
+                }
+            }
         }
 
         function showPassHint() {
@@ -379,6 +400,7 @@
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
+        function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
 
     </script>
 </body>
