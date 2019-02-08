@@ -1440,7 +1440,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             obj.parent.db.SetUser(user);
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
-                            // Notify change
+                            // Notify change TODO: Should be done on all sessions/servers for this user.
                             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
@@ -1490,7 +1490,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (actionTaken) { obj.parent.db.SetUser(user); }
 
                     // Return one time passwords for this user
-                    if (user.otpsecret) { ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys?user.otpkeys.keys:null })); }
+                    if (user.otpsecret || ((user.otphkeys != null) && (user.otphkeys.length > 0))) {
+                        ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys ? user.otpkeys.keys : null }));
+                    }
                     break;
                 }
             case 'otp-hkey-get':
@@ -1521,6 +1523,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         user.otphkeys.splice(foundAtIndex, 1);
                         obj.parent.db.SetUser(user);
                     }
+
+                    // Notify change TODO: Should be done on all sessions/servers for this user.
+                    try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                     break;
                 }
             case 'otp-hkey-yubikey-add':
@@ -1585,6 +1590,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             user.otphkeys.push({ name: command.name, publicKey: result.publicKey, keyHandle: result.keyHandle, keyIndex: keyIndex });
                             obj.parent.db.SetUser(user);
                             //console.log('KEYS', JSON.stringify(user.otphkeys));
+
+                            // Notify change TODO: Should be done on all sessions/servers for this user.
+                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                         }
                     }
                     break;
