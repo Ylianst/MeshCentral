@@ -445,12 +445,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'showconfig': {
+                            // Make a copy of the configuration and hide any secrets
                             var config = obj.common.Clone(obj.parent.parent.config);
                             if (config.settings) {
                                 if (config.settings.configkey) { config.settings.configkey = '(present)'; }
                                 if (config.settings.sessionkey) { config.settings.sessionkey = '(present)'; }
                                 if (config.settings.dbencryptkey) { config.settings.dbencryptkey = '(present)'; }
                             }
+                            if (config.domains) {
+                                for (var i in config.domains) {
+                                    if (config.domains[i].yubikey && config.domains[i].yubikey.secret) { config.domains[i].yubikey.secret = '(present)'; }
+                                }
+                            }
+                            
                             r = JSON.stringify(removeAllUnderScore(config), null, 4);
                             break;
                         }
@@ -1433,7 +1440,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
                         const otplib = require('otplib');
-                        otplib.authenticator.options = { window: 6 }; // Set +/- 3 minute window
+                        otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
                         if (otplib.authenticator.check(command.token, command.secret) === true) {
                             // Token is valid, activate 2-step login on this account.
                             user.otpsecret = command.secret;
@@ -1493,6 +1500,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.otpsecret || ((user.otphkeys != null) && (user.otphkeys.length > 0))) {
                         ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys ? user.otpkeys.keys : null }));
                     }
+
+                    // Notify change TODO: Should be done on all sessions/servers for this user.
+                    try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                     break;
                 }
             case 'otp-hkey-get':
@@ -1573,35 +1583,43 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (twoStepLoginSupported == false) break;
 
                     // Build list of known keys
-                    //var knownKeys = [];
-                    //if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { knownKeys.push(user.otphkeys[i].keyHandle); } }
+                    var knownKeys = [];
+                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { knownKeys.push(user.otphkeys[i]); } } }
 
                     // Build a key registration request and send it over
-                    const registrationRequest = require('u2f').request('https://' + obj.parent.parent.certificates.CommonName);
-                    if (registrationRequest) { ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: registrationRequest, name: command.name })); }
+                    require('authdog').startRegistration('https://' + obj.parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
+                        // Save registration request to session for later use
+                        obj.hardwareKeyRegistrationRequest = registrationRequest;
+
+                        // Send registration request to client
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: registrationRequest, name: command.name }));
+                    }, function (error) {
+                        // Handle registration request error
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: null, error: error, name: command.name }));
+                    });
                     break;
                 }
             case 'otp-hkey-setup-response':
                 {
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
-                    if ((twoStepLoginSupported == false) || (command.request == null) || (command.response == null) || (command.name == null)) break;
+                    if ((twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
 
                     // Check the key registration request
-                    const result = require('u2f').checkRegistration(command.request, command.response);
-                    if (result) {
+                    require('authdog').finishRegistration(obj.hardwareKeyRegistrationRequest, command.response).then(function (registrationStatus) {
                         var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: result.successful, name: command.name, index: keyIndex }));
-                        if (result.successful) {
-                            if (user.otphkeys == null) { user.otphkeys = []; }
-                            user.otphkeys.push({ name: command.name, type: 1, publicKey: result.publicKey, keyHandle: result.keyHandle, keyIndex: keyIndex });
-                            obj.parent.db.SetUser(user);
-                            //console.log('KEYS', JSON.stringify(user.otphkeys));
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
+                        if (user.otphkeys == null) { user.otphkeys = []; }
+                        user.otphkeys.push({ name: command.name, type: 1, publicKey: registrationStatus.publicKey, keyHandle: registrationStatus.keyHandle, certificate: registrationStatus.certificate, keyIndex: keyIndex });
+                        obj.parent.db.SetUser(user);
 
-                            // Notify change TODO: Should be done on all sessions/servers for this user.
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
-                        }
-                    }
+                        // Notify change TODO: Should be done on all sessions/servers for this user.
+                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                        delete obj.hardwareKeyRegistrationRequest;
+                    }, function (error) {
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
+                        delete obj.hardwareKeyRegistrationRequest;
+                    });
                     break;
                 }
             case 'getNotes':

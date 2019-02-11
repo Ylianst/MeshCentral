@@ -234,14 +234,14 @@
                     <div id=p3info style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
-                                <p><strong>Account actions</strong></p>
+                                <p><strong>Account Security</strong></p>
+                                <div style="margin-left:9px;margin-bottom:8px">
+                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a></div>
+                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a></div>
+                                </div>
+                                <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
                                     <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
-                                    <div style="margin-top:5px">
-                                        <span id="otpAuth" style="display:none"><a onclick="account_addOtp()" style="cursor:pointer">Add 2-step login</a><br /></span>
-                                        <span id="otpAuthRemove" style="display:none"><a onclick="account_removeOtp()" style="cursor:pointer">Remove 2-step login</a><br /></span>
-                                    </div>
-                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">One-time passwords</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
@@ -652,9 +652,8 @@
 
         function updateSelf() {
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-            QV('otpAuth', ((features & 4096) != 0) && (userinfo.otpsecret != 1));
-            QV('otpAuthRemove', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
-            QV('manageOtp', ((features & 4096) != 0) && (userinfo.otpsecret == 1));
+            QV('manageAuthApp', features & 4096);
+            QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
         }
 
         function onMessage(server, message) {
@@ -742,12 +741,12 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Add 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Remove 2-Step Login", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -770,7 +769,7 @@
                     x += "<input type=button value='New Tokens' onclick='account_manageOtp(1);'></input>";
                     if (message.passwords != null) { x += "<input type=button value='Clear' onclick='account_manageOtp(2);'></input>"; }
                     x += "</div><br />";
-                    setDialogMode(2, "One-Time Passwords", 8, null, x, 'otpauth-manage');
+                    setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
                     break;
                 }
                 case 'event': {
@@ -976,13 +975,13 @@
                             break;
                         }
                         default:
-                            console.log('Unknown message.event.action', message.event.action);
+                            //console.log('Unknown message.event.action', message.event.action);
                             break;
                     }
                     break;
                 }
                 default:
-                    console.log('Unknown message.action', message.action);
+                    //console.log('Unknown message.action', message.action);
                     break;
             }
         }
@@ -1028,9 +1027,14 @@
         // MY ACCOUNT
         //
 
+        function account_manageAuthApp() {
+            if (xxdialogMode || ((features & 4096) == 0)) return;
+            if (userinfo.otpsecret == 1) { account_removeOtp(); } else { account_addOtp(); }
+        }
+
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Add 2-Step Login", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
+            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -1042,7 +1046,7 @@
 
         function account_removeOtp() {
             if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Remove 2-Step Login", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of 2-step login?");
+            setDialogMode(2, "Authenticator App", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of authenticator application 2-step login?");
         }
 
         function account_manageOtp(action) {

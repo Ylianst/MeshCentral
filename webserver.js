@@ -342,32 +342,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check the 2-step auth token
-    function checkUserOneTimePassword(domain, user, token, hwtoken1, hwtoken2, func) {
-        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+    function checkUserOneTimePassword(req, domain, user, token, hwtoken, func) {
+        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true));
         if (twoStepLoginSupported == false) { func(true); return; };
 
         // Check U2F hardware key
-        if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken1) == 'string') && (typeof (hwtoken2) == 'string')) {
-            var u2fpublicKey = null;
-
-            // Find a U2F key
-            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fpublicKey = user.otphkeys[i].publicKey; } }
-
-            if (u2fpublicKey != null) {
-                // Check hardware token
-                var authRequest = null, authResponse = null;
-                try { authRequest = JSON.parse(hwtoken1); } catch (ex) { }
-                try { authResponse = JSON.parse(hwtoken2); } catch (ex) { }
-                if ((authRequest != null) && (authResponse != null)) {
-                    const u2f = require('u2f');
-                    const result = u2f.checkSignature(authRequest[0], authResponse, u2fpublicKey);
-                    if (result.successful === true) { func(true); return; };
+        if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
+            // Get all U2F keys
+            var u2fKeys = [];
+            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
+            if (u2fKeys.length > 0) {
+                var authResponse = null;
+                try { authResponse = JSON.parse(hwtoken); } catch (ex) { }
+                if (authResponse != null) {
+                    // Check authentication response
+                    require('authdog').finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { func(false); });
+                    return;
                 }
             }
         }
 
         // Check Google Authenticator
         const otplib = require('otplib')
+        otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
         if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) { func(true); return; };
 
         // Check written down keys
@@ -399,21 +396,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return a U2F hardware key challenge
     // TODO: Figure out how to support many U2F keys at the same time.
-    function getHardwareKeyChallenge(domain, user) {
+    function getHardwareKeyChallenge(req, domain, user, func) {
+        if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
         if (user.otphkeys && (user.otphkeys.length > 0)) {
-            // Find a U2F key
-            var u2fKeyHandle = null;
-            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeyHandle = user.otphkeys[i].keyHandle; } }
+            // Get all U2F keys
+            var u2fKeys = [];
+            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
 
             // Generate a U2F challenge
-            if (u2fKeyHandle != null) {
-                var requests = [];
-                const u2f = require('u2f');
-                for (var i in user.otphkeys) { requests.push(u2f.request('https://' + obj.parent.certificates.CommonName, u2fKeyHandle)); }
-                return JSON.stringify(requests);
+            if (u2fKeys.length > 0) {
+                require('authdog').startAuthentication('https://' + obj.parent.certificates.CommonName, u2fKeys, { requestId: 0, timeoutSeconds: 60 }).then(function (registrationRequest) {
+                    // Save authentication request to session for later use
+                    req.session.u2fchallenge = registrationRequest;
+
+                    // Send authentication request to client
+                    func(JSON.stringify(registrationRequest));
+                }, function (error) {
+                    // Handle authentication request error
+                    func('');
+                });
+            } else {
+                func('');
             }
+        } else {
+            func('');
         }
-        return '';
     }
 
     function handleLoginRequest(req, res) {
@@ -430,8 +437,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var user = obj.users[userid];
 
                 // Check if this user has 2-step login active
-                if (checkUserOneTimePasswordRequired(domain, user)) {
-                    checkUserOneTimePassword(domain, user, req.body.token, req.body.hwtoken1, req.body.hwtoken2, function (result) {
+                if (checkUserOneTimePasswordRequired(req.domain, user)) {
+                    checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             // 2-step auth is required, but the token is not present or not valid.
                             if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
@@ -877,9 +884,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.allowhighqualitydesktop == true) { features += 0x0200; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x0400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x0800; } // Server can self-write (Allows self-update)
-            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
+            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
             if (domain.agentnoproxy === true) { features += 0x2000; } // Indicates that agents should be installed without using a HTTP proxy
-            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x4000; } // Indicates Yubikey support (???)
+            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x4000; } // Indicates Yubikey support
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -902,43 +909,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         } else {
             // Send back the login application
-            var loginmode = req.session.loginmode;
-            features = 0;
-            delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
-            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
-            var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-
             // If this is a 2 factor auth request, look for a hardware key challenge.
-            var hardwareKeyChallenge = '';
-            if ((loginmode == '4') && (req.session.tokenusername)) {
+            if ((req.session.loginmode == '4') && (req.session.tokenusername)) {
                 var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername];
                 if (user != null) {
-                    hardwareKeyChallenge = getHardwareKeyChallenge(domain, user);
+                    getHardwareKeyChallenge(req, domain, user, function (u2fChallenge) { handleRootRequestLogin(req, res, domain, u2fChallenge, passRequirements); });
+                    return;
                 }
             }
+            handleRootRequestLogin(req, res, domain, '', passRequirements);
+        }
+    }
 
-            if (obj.args.minify && !req.query.nominify) {
-                // Try to server the minified version if we can.
-                try {
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
-                } catch (ex) {
-                    // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
-                }
-            } else {
-                // Serve non-minified version of web pages.
+    function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
+        var features = 0;
+        if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        var loginmode = req.session.loginmode;
+        delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
+
+        if (obj.args.minify && !req.query.nominify) {
+            // Try to server the minified version if we can.
+            try {
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
+            } catch (ex) {
+                // In case of an exception, serve the non-minified version.
                 res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
             }
-
-            /*
-            var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
-            var xpath = obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login');
-            console.log('Render...');
-            res.render(xpath, xoptions, function (err, html) {
-                console.log(err, html);
-            });
-            */
+        } else {
+            // Serve non-minified version of web pages.
+            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
         }
+
+        /*
+        var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
+        var xpath = obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login');
+        console.log('Render...');
+        res.render(xpath, xoptions, function (err, html) {
+            console.log(err, html);
+        });
+        */
     }
 
     // Get the link to the root certificate if needed
@@ -1093,14 +1103,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleMeScriptRequest(req, res) {
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
-            getCiraConfigurationScript(req.query.meshid, function (script) {
+            obj.getCiraConfigurationScript(req.query.meshid, function (script) {
                 if (script == null) { res.sendStatus(404); } else {
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_setup.mescript' });
                     res.send(script);
                 }
             });
         } else if (req.query.type == 2) {
-            getCiraCleanupScript(function (script) {
+            obj.getCiraCleanupScript(function (script) {
                 if (script == null) { res.sendStatus(404); } else {
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_cleanup.mescript' });
                     res.send(script);
@@ -2395,9 +2405,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.domain;
         delete user2.subscriptions;
         delete user2.passtype;
-        if (user2.otpsecret) { user2.otpsecret = 1; } // Indicates a time secret is present.
-        if (user2.otpkeys) { user2.otpkeys = 1; } // Indicates a set of one time passwords are present.
-        if (user2.otphkeys) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
+        if (typeof user2.otpsecret == 'string') { user2.otpsecret = 1; } // Indicates a time secret is present.
+        if (typeof user2.otpkeys == 'object') { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
+        if (typeof user2.otphkeys == 'object') { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
         return user2;
     }
 

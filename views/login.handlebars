@@ -224,8 +224,7 @@
                                             <td align=right width=100>Login token:</td>
                                             <td>
                                                 <input id=tokenInput type=text name=token maxlength=50 onkeyup=checkToken(event) onkeydown=checkToken(event) />
-                                                <input id=hwtokenInput1 type=text name=hwtoken1 style="display:none" />
-                                                <input id=hwtokenInput2 type=text name=hwtoken2 style="display:none" />
+                                                <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -312,15 +311,13 @@
             if ('{{loginmode}}' == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && u2fSupported()) {
-                    var c = hardwareKeyChallenge[0];
-                    window.u2f.sign(c.appId, c.challenge, hardwareKeyChallenge, function (authResponse) {
+                    window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
                         if (authResponse.signatureData) {
-                            Q('hwtokenInput1').value = JSON.stringify(hardwareKeyChallenge);
-                            Q('hwtokenInput2').value = JSON.stringify(authResponse);
+                            Q('hwtokenInput').value = JSON.stringify(authResponse);
                             QE('tokenOkButton', true);
                             Q('tokenOkButton').click();
                         }
-                    });
+                    }, hardwareKeyChallenge.timeoutSeconds);
                 }
             }
         }
