@@ -6213,8 +6213,12 @@
             if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
             if (self) { msg += "</a>"; }
             var username = EscapeHtml(user.name), emailVerified = '';
-            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true)?' <b style=color:red title="Email is not verified">&#x1F5F4</b>':' <b style=color:green title="Email is verified">&#x1F5F8</b>'); }
+            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="Email is not verified">&#x1F5F4</b>' : ' <b style=color:green title="Email is verified">&#x1F5F8</b>'); }
             if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + emailVerified; }
+
+            if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="2nd factor authentication enabled" style="margin-top:2px" />'; }
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" />'; }
+
             x += '<tr onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0)><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
             x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
             x += '<div style=float:left;height:24px;width:24px;background-color:white><div class="' + icon + gray + '" style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
@@ -6270,8 +6274,8 @@
             Q('p4name').focus();
         }
 
-        function showCreateNewAccountDialogValidate() {
-            if ((Q('p4email').value.length > 0) && (validateEmail(Q('p4email').value)) == false) { QE('idx_dlgOkButton', false); return; }
+        function showCreateNewAccountDialogValidate(x) {
+            if ((x == null) && (Q('p4email').value.length > 0) && (validateEmail(Q('p4email').value)) == false) { QE('idx_dlgOkButton', false); return; }
             QE('idx_dlgOkButton', (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
         }
 
@@ -6374,6 +6378,15 @@
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
+            var multiFactor = 0;
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || (user.otpkeys > 0)) {
+                multiFactor = 1;
+                var factors = [];
+                if (user.otpsecret > 0) { factors.push('Authentication App'); }
+                if (user.otphkeys > 0) { factors.push('Security Key'); }
+                if (user.otpkeys > 0) { factors.push('Backup Codes'); }
+                x += addDeviceAttribute('Security', factors.join(', '));
+            }
 
             x += '</table></div><br />';
 
@@ -6396,7 +6409,7 @@
             x = '<div style=float:right;font-size:x-small>';
             if (deletePossible) x += '<a style=cursor:pointer onclick=p30showDeleteUserDialog() title="Remove this user">Delete User</a>';
             x += '</div><div style=font-size:x-small>';
-            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a style=cursor:pointer onclick=p30showUserChangePassDialog() title="Change the password for this user">Change Password</a>';
+            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a style=cursor:pointer onclick=p30showUserChangePassDialog(' + multiFactor + ') title="Change the password for this user">Change Password</a>';
             x += '</div><br>'
             QH('p30html3', x);
 
@@ -6440,18 +6453,23 @@
         }
 
         // Display the user's password change dialog box
-        function p30showUserChangePassDialog() {
+        function p30showUserChangePassDialog(multiFactor) {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x);
-            showCreateNewAccountDialogValidate();
+            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
+            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
+            x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>');
+            if (multiFactor == 1) { x += '<input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.'; }
+            setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
+            showCreateNewAccountDialogValidate(1);
             Q('p4pass1').focus();
         }
 
-        function p30showUserChangePassDialogEx() {
-            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value }); } }
+        function p30showUserChangePassDialogEx(b, tag) {
+            var removeMultiFactor = false;
+            if ((tag == 1) && (Q('p4twoFactorRemove').checked == true)) { removeMultiFactor = true; }
+            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, hint: Q('p4hint').value, removeMultiFactor: removeMultiFactor }); }
+        }
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;

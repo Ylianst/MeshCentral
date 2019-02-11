@@ -178,24 +178,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
-    // Session-persisted message middleware
-    obj.app.use(function (req, res, next) {
-        var err = null, msg = null, passhint = null;
-        if (req.session != null) {
-            err = req.session.error;
-            msg = req.session.success;
-            passhint = req.session.passhint;
-            delete req.session.error;
-            delete req.session.success;
-            delete req.session.passhint;
-        }
-        res.locals.message = '';
-        if (err != null) res.locals.message = '<p class="msg error">' + err + '</p>';
-        if (msg != null) res.locals.message = '<p class="msg success">' + msg + '</p>';
-        if (passhint != null) res.locals.passhint = EscapeHtml(passhint);
-        next();
-    });
-
     // Fetch all users from the database, keep this in memory
     obj.db.GetAllType('user', function (err, docs) {
         var domainUserCount = {}, i = 0;
@@ -377,7 +359,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.yubikey != null) && (domain.yubikey.id != null) && (domain.yubikey.secret != null) && (user.otphkeys != null) && (user.otphkeys.length > 0) && (typeof (token) == 'string') && (token.length == 44)) {
             var keyId = token.substring(0, 12);
 
-            // Find a matching OPT key
+            // Find a matching OTP key
             var match = false;
             for (var i = 0; i < user.otphkeys.length; i++) { if ((user.otphkeys[i].type === 2) && (user.otphkeys[i].keyid === keyId)) { match = true; } }
 
@@ -441,10 +423,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             // 2-step auth is required, but the token is not present or not valid.
-                            if (user.otpsecret != null) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                            if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
                             req.session.loginmode = '4';
                             req.session.tokenusername = xusername;
                             req.session.tokenpassword = xpassword;
+                            req.session.tokenRetry = true;
                             res.redirect(domain.url);
                         } else {
                             // Login succesful
@@ -457,12 +440,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Login succesful
                 completeLoginRequest(req, res, domain, user, userid);
             } else {
+                //console.log('passhint', passhint);
                 delete req.session.loginmode;
                 if (err == 'locked') { req.session.error = '<b style=color:#8C001A>Account locked.</b>'; } else { req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>'; }
                 if ((passhint != null) && (passhint.length > 0)) {
                     req.session.passhint = passhint;
                 } else {
-                    if (req.session.passhint) { delete req.session.passhint; }
+                    delete req.session.passhint;
                 }
                 res.redirect(domain.url);
             }
@@ -481,10 +465,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.loginmode;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
+        delete req.session.success;
+        delete req.session.error;
+        delete req.session.passhint;
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
-        if (req.session.passhint) { delete req.session.passhint; }
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -515,56 +501,67 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain == null) || (domain.auth == 'sspi')) return;
 
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
-        if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
-            req.session.loginmode = 2;
-            req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
-            res.redirect(domain.url);
-        } else {
-            // Check if this email was already verified
-            obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
-                if (docs.length > 0) {
+
+        // Check if we exceed the maximum number of user accounts
+        obj.db.isMaxType(domain.maxaccounts, 'user', function (maxExceed) {
+            if (maxExceed) {
+                req.session.loginmode = 2;
+                req.session.error = '<b style=color:#8C001A>Account limit reached.</b>';
+                console.log('max', req.session);
+                res.redirect(domain.url);
+            } else {
+                if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
                     req.session.loginmode = 2;
-                    req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';
+                    req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
                     res.redirect(domain.url);
                 } else {
-                    // Check if there is domain.newAccountToken, check if supplied token is valid
-                    if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
-                        req.session.loginmode = 2;
-                        req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
-                        res.redirect(domain.url);
-                        return;
-                    }
-                    // Check if user exists
-                    if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
-                        req.session.loginmode = 2;
-                        req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
-                    } else {
-                        var hint = req.body.apasswordhint;
-                        if (hint.length > 250) hint = hint.substring(0, 250);
-                        var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id, passhint: hint };
-                        var usercount = 0;
-                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
-                        obj.users[user._id] = user;
-                        req.session.userid = user._id;
-                        req.session.domainid = domain.id;
-                        // Create a user, generate a salt and hash the password
-                        require('./pass').hash(req.body.password1, function (err, salt, hash) {
-                            if (err) throw err;
-                            user.salt = salt;
-                            user.hash = hash;
-                            obj.db.SetUser(user);
+                    // Check if this email was already verified
+                    obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
+                        if (docs.length > 0) {
+                            req.session.loginmode = 2;
+                            req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';
+                            res.redirect(domain.url);
+                        } else {
+                            // Check if there is domain.newAccountToken, check if supplied token is valid
+                            if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+                                req.session.loginmode = 2;
+                                req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
+                                res.redirect(domain.url);
+                                return;
+                            }
+                            // Check if user exists
+                            if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
+                                req.session.loginmode = 2;
+                                req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
+                            } else {
+                                var hint = req.body.apasswordhint;
+                                if (hint.length > 250) hint = hint.substring(0, 250);
+                                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id, passhint: hint };
+                                var usercount = 0;
+                                for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                                if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                                obj.users[user._id] = user;
+                                req.session.userid = user._id;
+                                req.session.domainid = domain.id;
+                                // Create a user, generate a salt and hash the password
+                                require('./pass').hash(req.body.password1, function (err, salt, hash) {
+                                    if (err) throw err;
+                                    user.salt = salt;
+                                    user.hash = hash;
+                                    obj.db.SetUser(user);
 
-                            // Send the verification email
-                            if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                                    // Send the verification email
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
 
-                        });
-                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
-                    }
-                    res.redirect(domain.url);
+                                });
+                                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
+                            }
+                            res.redirect(domain.url);
+                        }
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 
     // Called to process an account reset request
@@ -853,6 +850,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
             var user = obj.users[req.session.userid];
             if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
+
+            // Check if this is a locked account
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) {
+                // Locked account
+                delete req.session.userid;
+                delete req.session.domainid;
+                delete req.session.currentNode;
+                delete req.session.passhint;
+                req.session.error = '<b style=color:#8C001A>Account locked.</b>';
+                res.redirect(domain.url);
+                return;
+            }
+
             var viewmode = 1;
             if (req.session.viewmode) {
                 viewmode = req.session.viewmode;
@@ -928,17 +938,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var loginmode = req.session.loginmode;
         delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
 
+        // Format an error message if needed
+        var err = null, msg = null, passhint = null;
+        if (req.session != null) {
+            err = req.session.error;
+            msg = req.session.success;
+            passhint = req.session.passhint;
+            delete req.session.error;
+            delete req.session.success;
+            delete req.session.passhint;
+        }
+        var message = '';
+        if (err != null) message = '<p class="msg error">' + err + '</p>';
+        if (msg != null) message = '<p class="msg success">' + msg + '</p>';
+        if (passhint != null) passhint = EscapeHtml(passhint);
+
         if (obj.args.minify && !req.query.nominify) {
             // Try to server the minified version if we can.
             try {
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint });
             } catch (ex) {
                 // In case of an exception, serve the non-minified version.
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint });
             }
         } else {
             // Serve non-minified version of web pages.
-            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge });
+            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint });
         }
 
         /*
