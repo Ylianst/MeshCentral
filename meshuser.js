@@ -640,19 +640,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.email != null) && (obj.common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                     var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                     if (newusername == '~') break; // This is a reserved user name
-                    if (!obj.parent.users[newuserid]) {
-                        var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
-                        if (command.email != null) { newuser.email = command.email; } // Email
-                        obj.parent.users[newuserid] = newuser;
-                        // Create a user, generate a salt and hash the password
-                        require('./pass').hash(command.pass, function (err, salt, hash) {
-                            if (err) throw err;
-                            newuser.salt = salt;
-                            newuser.hash = hash;
-                            obj.db.SetUser(newuser);
-                            obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: obj.parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
-                        });
-                    }
+                    if (obj.parent.users[newuserid]) break; // Account already exists
+
+                    // Check if we exceed the maximum number of user accounts
+                    obj.db.isMaxType(domain.maxaccounts, 'user', function (maxExceed) {
+                        if (maxExceed) {
+                            // Account count exceed, do notification
+
+                            // Create the notification message
+                            var notification = { "action": "msg", "type": "notify", "value": "Account limit reached.", "userid": user._id, "username": user.name };
+
+                            // Get the list of sessions for this user
+                            var sessions = obj.parent.wssessions[user._id];
+                            if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
+                            // TODO: Notify all sessions on other peers.
+                        } else {
+                            // Check if this is an existing user
+                            var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                            if (command.email != null) { newuser.email = command.email; } // Email
+                            obj.parent.users[newuserid] = newuser;
+                            // Create a user, generate a salt and hash the password
+                            require('./pass').hash(command.pass, function (err, salt, hash) {
+                                if (err) throw err;
+                                newuser.salt = salt;
+                                newuser.hash = hash;
+                                obj.db.SetUser(newuser);
+                                obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: obj.parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
+                            });
+                        }
+                    });
                     break;
                 }
             case 'edituser':
@@ -684,11 +700,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.siteadmin != 0xFFFFFFFF) break;
                     if (obj.common.validateString(command.user, 1, 256) == false) break;
                     if (obj.common.validateString(command.pass, 1, 256) == false) break;
+                    if (obj.common.validateString(command.hint, 0, 256) == false) break;
+                    if (typeof command.removeMultiFactor != 'boolean') break;
                     if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+
                     var chguserid = 'user/' + domain.id + '/' + command.user.toLowerCase(), chguser = obj.parent.users[chguserid];
                     if (chguser && chguser.salt) {
                         // Compute the password hash & save it
-                        require('./pass').hash(command.pass, chguser.salt, function (err, hash) { if (!err) { chguser.hash = hash; obj.db.SetUser(chguser); } });
+                        require('./pass').hash(command.pass, chguser.salt, function (err, hash) {
+                            if (!err) {
+                                var annonceChange = false;
+                                chguser.hash = hash;
+                                chguser.passhint = command.hint;
+                                if (command.removeMultiFactor == true) {
+                                    if (chguser.otpsecret) { delete chguser.otpsecret; annonceChange = true; }
+                                    if (chguser.otphkeys) { delete chguser.otphkeys; annonceChange = true; }
+                                    if (chguser.otpkeys) { delete chguser.otpkeys; annonceChange = true; }
+                                }
+                                obj.db.SetUser(chguser);
+
+                                if (annonceChange == true) { obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Removed 2nd factor auth.', domain: domain.id }); }
+                            }
+                        });
                     }
                     break;
                 }
@@ -1447,8 +1480,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             obj.parent.db.SetUser(user);
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
-                            // Notify change TODO: Should be done on all sessions/servers for this user.
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                            // Notify change
+                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
                         }
@@ -1464,10 +1497,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (user.otpsecret) {
                             delete user.otpsecret;
                             obj.parent.db.SetUser(user);
+                            ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
 
                             // Notify change
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
-                            ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
+                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
                         }
@@ -1501,8 +1534,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys ? user.otpkeys.keys : null }));
                     }
 
-                    // Notify change TODO: Should be done on all sessions/servers for this user.
-                    try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                    // Notify change
+                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-get':
@@ -1532,8 +1565,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         obj.parent.db.SetUser(user);
                     }
 
-                    // Notify change TODO: Should be done on all sessions/servers for this user.
-                    try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                    // Notify change
+                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-yubikey-add':
@@ -1568,7 +1601,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: true, name: command.name, index: keyIndex }));
 
                             // Notify change TODO: Should be done on all sessions/servers for this user.
-                            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
+                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         }
@@ -1612,10 +1645,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (user.otphkeys == null) { user.otphkeys = []; }
                         user.otphkeys.push({ name: command.name, type: 1, publicKey: registrationStatus.publicKey, keyHandle: registrationStatus.keyHandle, certificate: registrationStatus.certificate, keyIndex: keyIndex });
                         obj.parent.db.SetUser(user);
-
-                        // Notify change TODO: Should be done on all sessions/servers for this user.
-                        try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(user) })); } catch (ex) { }
                         delete obj.hardwareKeyRegistrationRequest;
+
+                        // Notify change
+                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     }, function (error) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
                         delete obj.hardwareKeyRegistrationRequest;
