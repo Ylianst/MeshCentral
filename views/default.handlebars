@@ -855,6 +855,7 @@
     <script type="text/javascript">
         'use strict';
         var args;
+        var autoReconnect = true;
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
         var sort = 0;
@@ -1076,7 +1077,7 @@
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
                 if (errorCode == 'noauth') { QH('p0span', 'Unable to perform authentication'); return; }
-                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
+                if (prevState == 2) { if (autoReconnect) { setTimeout(serverPoll, 5000); } } else { QH('p0span', 'Unable to connect web socket'); }
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
@@ -1751,13 +1752,20 @@
                             break;
                         }
                         case 'stopped': { // Server is stopping.
-                            // TODO: Disconnect
+                            // Disconnect
+                            console.log(message.msg);
                             break;
                         }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
                     }
+                    break;
+                }
+                case 'stopped': { // Server is stopping.
+                    // Disconnect
+                    autoReconnect = false;
+                    QH('p0span', message.msg);
                     break;
                 }
                 default:
@@ -6379,7 +6387,7 @@
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
             var multiFactor = 0;
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || (user.otpkeys > 0)) {
+            if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
                 multiFactor = 1;
                 var factors = [];
                 if (user.otpsecret > 0) { factors.push('Authentication App'); }

@@ -368,6 +368,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection) return;
         obj.pendingCompleteAgentConnection = true;
 
+        // Check if we have too many agent sessions
+        if (typeof domain.limits.maxagentsessions == 'number') {
+            // Count the number of agent sessions for this domain
+            var domainAgentSessionCount = 0;
+            for (var i in obj.parent.wsagents) { if (obj.parent.wsagents[i].domain.id == domain.id) { domainAgentSessionCount++; } }
+
+            // Check if we have too many user sessions
+            if (domainAgentSessionCount >= domain.limits.maxagentsessions) { return; } // Too many, hold the connection.
+        }
+
         // Check that the mesh exists
         var mesh = obj.parent.meshes[obj.dbMeshKey];
         if (mesh == null) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.

@@ -112,7 +112,9 @@ module.exports.CertificateOperations = function (parent) {
 
     // Create a self-signed certificate
     obj.GenerateRootCertificate = function (addThumbPrintToName, commonName, country, organization, strong) {
-        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
+        // TODO: Use Async key generation to use web workers and go a lot faster.
+        // rsa.generateKeyPair({ bits: 3072, e: 0x10001, workers: -1 }, function (err, keypair) { /*keypair.privateKey, keypair.publicKey*/ });
+        var keys = obj.pki.rsa.generateKeyPair({ bits: (strong == true) ? 3072 : 2048, e: 0x10001 });
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
@@ -136,7 +138,7 @@ module.exports.CertificateOperations = function (parent) {
 
     // Issue a certificate from a root
     obj.IssueWebServerCertificate = function (rootcert, addThumbPrintToName, commonName, country, organization, extKeyUsage, strong) {
-        var keys = obj.pki.rsa.generateKeyPair((strong == true) ? 3072 : 2048);
+        var keys = obj.pki.rsa.generateKeyPair({ bits: (strong == true) ? 3072 : 2048, e: 0x10001 });
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
