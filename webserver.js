@@ -568,10 +568,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi')) return;
 
+        // Get the email from the body or session.
         var email = req.body.email;
         if ((email == null) || (email == '')) { email = req.session.tokenemail; }
 
-        if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
+        // Check the email stirng format
         if (!email || checkEmail(email) == false) {
             req.session.loginmode = 3;
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
