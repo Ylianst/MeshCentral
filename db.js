@@ -175,7 +175,7 @@ module.exports.CreateDB = function (parent) {
     obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }).exec(func); } else { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }, func); } };
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
-    obj.isMaxType = function (max, type, func) { if (max == null) { func(false); } else { obj.file.count({ type: type }, function (err, count) { func((err != null) || (count > max)); }); } }
+    obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { obj.file.count({ type: type, domain: domainid }, function (err, count) { func((err != null) || (count > max)); }); } }
 
     // Read a configuration file from the database
     obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }

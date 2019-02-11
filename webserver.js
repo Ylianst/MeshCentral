@@ -320,7 +320,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return true if this user has 2-step auth active
     function checkUserOneTimePasswordRequired(domain, user) {
-        return (user.otpsecret) || (user.otphkeys && (user.otphkeys.length > 0));
+        return ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0)));
     }
 
     // Check the 2-step auth token
@@ -377,7 +377,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return a U2F hardware key challenge
-    // TODO: Figure out how to support many U2F keys at the same time.
     function getHardwareKeyChallenge(req, domain, user, func) {
         if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
         if (user.otphkeys && (user.otphkeys.length > 0)) {
@@ -419,7 +418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var user = obj.users[userid];
 
                 // Check if this user has 2-step login active
-                if (checkUserOneTimePasswordRequired(req.domain, user)) {
+                if (checkUserOneTimePasswordRequired(domain, user)) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             // 2-step auth is required, but the token is not present or not valid.
@@ -427,7 +426,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             req.session.loginmode = '4';
                             req.session.tokenusername = xusername;
                             req.session.tokenpassword = xpassword;
-                            req.session.tokenRetry = true;
                             res.redirect(domain.url);
                         } else {
                             // Login succesful
@@ -465,6 +463,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.loginmode;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
+        delete req.session.tokenemail;
         delete req.session.success;
         delete req.session.error;
         delete req.session.passhint;
@@ -503,7 +502,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
 
         // Check if we exceed the maximum number of user accounts
-        obj.db.isMaxType(domain.maxaccounts, 'user', function (maxExceed) {
+        obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
             if (maxExceed) {
                 req.session.loginmode = 2;
                 req.session.error = '<b style=color:#8C001A>Account limit reached.</b>';
@@ -569,28 +568,58 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi')) return;
 
+        var email = req.body.email;
+        if ((email == null) || (email == '')) { email = req.session.tokenemail; }
+
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
-        if (!req.body.email || checkEmail(req.body.email) == false) {
+        if (!email || checkEmail(email) == false) {
             req.session.loginmode = 3;
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
             res.redirect(domain.url);
         } else {
-            obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
-                if (docs.length == 0) {
+            obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
+                if ((err != null) || (docs.length == 0)) {
                     req.session.loginmode = 3;
                     req.session.error = '<b style=color:#8C001A>Account not found.</b>';
                     res.redirect(domain.url);
                 } else {
-                    var userFound = docs[0];
-                    if (obj.parent.mailserver != null) {
-                        obj.parent.mailserver.sendAccountResetMail(domain, userFound.name, userFound.email);
-                        req.session.loginmode = 1;
-                        req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
-                        res.redirect(domain.url);
+                    var user = docs[0];
+                    if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                        // Second factor setup, request it now.
+                        checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
+                            if (result == false) {
+                                // 2-step auth is required, but the token is not present or not valid.
+                                if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                                req.session.loginmode = '5';
+                                req.session.tokenemail = email;
+                                res.redirect(domain.url);
+                            } else {
+                                // Send email to perform recovery.
+                                delete req.session.tokenemail;
+                                if (obj.parent.mailserver != null) {
+                                    obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                                    req.session.loginmode = 1;
+                                    req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                                    res.redirect(domain.url);
+                                } else {
+                                    req.session.loginmode = 3;
+                                    req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                                    res.redirect(domain.url);
+                                }
+                            }
+                        });
                     } else {
-                        req.session.loginmode = 3;
-                        req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
-                        res.redirect(domain.url);
+                        // No second factor, send email to perform recovery.
+                        if (obj.parent.mailserver != null) {
+                            obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                            req.session.loginmode = 1;
+                            req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                            res.redirect(domain.url);
+                        } else {
+                            req.session.loginmode = 3;
+                            req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                            res.redirect(domain.url);
+                        }
                     }
                 }
             });
@@ -632,7 +661,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(user);
 
                                                 // Event the change
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(userinfo.email) + ')', domain: domain.id });
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id });
 
                                                 // Send the confirmation page
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
@@ -660,7 +689,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 userinfo.hash = hash;
                                                 userinfo.passchange = Math.floor(Date.now() / 1000);
                                                 userinfo.passhint = null;
-                                                delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
+                                                //delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
                                                 obj.db.SetUser(userinfo);
 
                                                 // Event the change
@@ -920,12 +949,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else {
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
+            // Normal login 2 factor request
             if ((req.session.loginmode == '4') && (req.session.tokenusername)) {
                 var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername];
                 if (user != null) {
                     getHardwareKeyChallenge(req, domain, user, function (u2fChallenge) { handleRootRequestLogin(req, res, domain, u2fChallenge, passRequirements); });
                     return;
                 }
+            }
+            // Password recovery 2 factor request
+            if ((req.session.loginmode == '5') && (req.session.tokenemail)) {
+                obj.db.GetUserWithVerifiedEmail(domain.id, req.session.tokenemail, function (err, docs) {
+                    if ((err != null) || (docs.length == 0)) {
+                        req.session = null;
+                        res.redirect(domain.url);
+                    } else {
+                        var user = obj.users[docs[0]._id];
+                        if (user != null) {
+                            getHardwareKeyChallenge(req, domain, user, function (u2fChallenge) { handleRootRequestLogin(req, res, domain, u2fChallenge, passRequirements); });
+                        } else {
+                            req.session = null;
+                            res.redirect(domain.url);
+                        }
+                    }
+                });
+                return;
             }
             handleRootRequestLogin(req, res, domain, '', passRequirements);
         }

@@ -437,6 +437,7 @@ function CreateMeshCentralServer(config, args) {
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
         for (i in obj.config.domains) {
+            if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
             if (typeof obj.config.domains[i].userallowedip == 'string') { if (obj.config.domains[i].userallowedip == '') { obj.config.domains[i].userallowedip = null; } else { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(','); } }

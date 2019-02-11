@@ -150,7 +150,7 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>
@@ -163,6 +163,31 @@
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                 </form>
                             </div>
+
+                            <div id=resettokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
+                                <form action=resetaccount method=post autocomplete=off>
+                                    <div id=message5>
+                                        {{{message}}}
+                                    </div>
+                                    <table>
+                                        <tr>
+                                            <td align=right width=100>Login token:</td>
+                                            <td>
+                                                <input id=resetTokenInput type=text name=token maxlength=50 onchange=resetCheckToken(event) onkeyup=resetCheckToken(event) onkeydown=resetCheckToken(event) />
+                                                <input id=resetHwtokenInput type=text name=hwtoken style="display:none" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan=2>
+                                                <div style=float:right><input id=resetTokenOkButton type=submit value="Login" disabled="disabled" /></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                </form>
+                            </div>
+
+
                         </td>
                     </tr>
                 </table>
@@ -237,6 +262,19 @@
                     }, hardwareKeyChallenge.timeoutSeconds);
                 }
             }
+
+            if ('{{loginmode}}' == '5') {
+                try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
+                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
+                        if (authResponse.signatureData) {
+                            Q('resetHwtokenInput').value = JSON.stringify(authResponse);
+                            QE('resetTokenOkButton', true);
+                            Q('resetTokenOkButton').click();
+                        }
+                    }, hardwareKeyChallenge.timeoutSeconds);
+                }
+            }
         }
 
         function showPassHint() {
@@ -246,6 +284,9 @@
         function xgo(x) {
             QV('message1', false);
             QV('message2', false);
+            QV('message3', false);
+            QV('message4', false);
+            QV('message5', false);
             go(x);
         }
 
@@ -256,6 +297,7 @@
             QV('createpanel', x == 2);
             QV('resetpanel', x == 3);
             QV('tokenpanel', x == 4);
+            QV('resettokenpanel', x == 5);
             if (x == 1) { Q('username').focus(); }
             if (x == 2) { Q('ausername').focus(); }
             if (x == 3) { Q('remail').focus(); }
@@ -351,6 +393,13 @@
             var t2 = t1.split(' ').join('');
             if (t1 != t2) { Q('tokenInput').value = t2; }
             QE('tokenOkButton', (Q('tokenInput').value.length == 6) || (Q('tokenInput').value.length == 8) || (Q('tokenInput').value.length == 44));
+        }
+
+        function resetCheckToken() {
+            var t1 = Q('resetTokenInput').value;
+            var t2 = t1.split(' ').join('');
+            if (t1 != t2) { Q('resetTokenInput').value = t2; }
+            QE('resetTokenOkButton', (Q('resetTokenInput').value.length == 6) || (Q('resetTokenInput').value.length == 8) || (Q('resetTokenInput').value.length == 44));
         }
 
         //

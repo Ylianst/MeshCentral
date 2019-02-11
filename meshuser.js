@@ -127,6 +127,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Check if the user is logged in
         if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
 
+        // Check if we have exceeded the user session limit
+        if (typeof domain.limits.maxusersessions == 'number') {
+            // Count the number of user sessions for this domain
+            var domainUserSessionCount = 0;
+            for (var i in obj.parent.wssessions2) { if (obj.parent.wssessions2[i].domainid == domain.id) { domainUserSessionCount++; } }
+
+            // Check if we have too many user sessions
+            if (domainUserSessionCount >= domain.limits.maxusersessions) {
+                ws.send(JSON.stringify({ action: 'stopped', msg: 'Session count exceed' }));
+                try { obj.ws.close(); } catch (e) { }
+                return;
+            }
+        }
+
         // Associate this websocket session with the web session
         obj.ws.userid = req.session.userid;
         obj.ws.domainid = domain.id;
@@ -643,7 +657,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (obj.parent.users[newuserid]) break; // Account already exists
 
                     // Check if we exceed the maximum number of user accounts
-                    obj.db.isMaxType(domain.maxaccounts, 'user', function (maxExceed) {
+                    obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
                         if (maxExceed) {
                             // Account count exceed, do notification
 
