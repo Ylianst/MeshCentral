@@ -413,7 +413,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
                 if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
                 if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                if (device.meshid != obj.dbMeshKey) { device.meshid = obj.dbMeshKey; change = 1; log = 1; changes.push('agent meshid'); } // TODO: If the meshid changes, we need to event a device add/remove on both meshes
+                if (device.meshid != obj.dbMeshKey) { obj.dbMeshKey = device.meshid; obj.meshid = device.meshid.split('/')[2]; }  // If the mesh does not match, the server mesh is the correct one. This is because we allow the server to change the mesh of a device server-side.
                 if (change == 1) {
                     obj.db.Set(device);
 

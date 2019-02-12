@@ -1068,6 +1068,47 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'changeDeviceMesh':
+                {
+                    if (obj.common.validateString(command.nodeid, 1, 256) == false) break; // Check nodeid string
+                    if (obj.common.validateString(command.meshid, 1, 256) == false) break; // Check meshid string
+
+                    obj.db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes.length != 1) return;
+                        var node = nodes[0];
+
+                        // Check if already in the right mesh
+                        if (node.meshid == command.meshid) return;
+
+                        // Make sure that we have rights on both source and destination mesh
+                        var sourceMeshRights = user.links[node.meshid].rights;
+                        var targetMeshRights = user.links[command.meshid].rights;
+                        if (((sourceMeshRights & 4) == 0) || ((targetMeshRights & 4) == 0)) return;
+
+                        // Perform the switch, start by saving the node with the new meshid.
+                        var oldMeshId = node.meshid;
+                        node.meshid = command.meshid;
+                        obj.db.Set(node);
+
+                        // If the device is connected on this server, switch it now.
+                        var agentSession = obj.parent.wsagents[command.nodeid];
+                        if (agentSession != null) { agentSession.dbMeshKey = command.meshid; agentSession.meshid = command.meshid.split('/')[2]; }
+
+                        // Add the connection state
+                        var state = obj.parent.parent.GetConnectivityState(node._id);
+                        if (state) {
+                            node.conn = state.connectivity;
+                            node.pwr = state.powerState;
+                            if ((state.connectivity & 1) != 0) { var agent = obj.parent.wsagents[node._id]; if (agent != null) { node.agct = agent.connectTime; } }
+                            if ((state.connectivity & 2) != 0) { var cira = obj.parent.parent.mpsserver.ciraConnections[node._id]; if (cira != null) { node.cict = cira.tag.connectTime; } }
+                        }
+
+                        // Event the node change
+                        var newMesh = obj.parent.meshes[command.meshid];
+                        obj.parent.parent.DispatchEvent(['*', oldMeshId, command.meshid], obj, { etype: 'node', username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id });
+                    });
+                    break;
+                }
             case 'removedevices':
                 {
                     if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's

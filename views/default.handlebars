@@ -1680,6 +1680,43 @@
                             }
                             break;
                         }
+                        case 'nodemeshchange': {
+                            var index = -1;
+                            for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
+                            if (index != -1) {
+                                var node = nodes[index];
+                                if (meshes[message.event.newMeshId] == null) {
+                                    // We don't see the new mesh, remove this device
+
+                                    // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
+                                    if (currentNode == node) { if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); } currentNode = null; }
+                                    nodes.splice(index, 1);
+                                    masterUpdate(4 | 16);
+                                } else {
+                                    // We see the new mesh, move this device
+                                    node.meshid = message.event.newMeshId;
+                                    node.meshnamel = meshes[message.event.newMeshId].name.toLowerCase();
+                                    masterUpdate(1 | 2 | 4);
+                                }
+                                refreshDevice(message.event.nodeid);
+                            } else {
+                                // This is a new device, add it.
+                                var node = message.event.node;
+                                if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
+                                node.namel = node.name.toLowerCase();
+                                if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                                node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                                node.state = 0;
+                                if (!node.icon) node.icon = 1;
+                                node.ident = ++nodeShortIdent;
+                                if (nodes == null) { }
+                                nodes.push(node);
+
+                                // Web page update
+                                masterUpdate(1 | 2 | 4 | 16);
+                            }
+                            break;
+                        }
                         case 'nodeconnect': {
                             // Indicated a node has changed connectivity state
                             var index = -1;
@@ -3447,7 +3484,11 @@
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                if ((meshrights & 4) != 0) {
+                    // TODO: Show change group only if there is another mesh of the same type.
+                    x += '&nbsp;<a style=cursor:pointer onclick=p10showChangeGroupDialog("' + node._id + '") title="Move this device to a different device group">Change Group</a>';
+                    x += '&nbsp;<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                }
                 x += '</div><div style=font-size:x-small>';
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
@@ -3709,6 +3750,32 @@
                 tag.node.intelamt.tls = Q('dp10tls').value;
                 if (tag.func) { setTimeout(tag.func, 300); }
             }
+        }
+
+        function p10showChangeGroupDialog(nodeid) {
+            var node = getNodeFromId(nodeid);
+            if (xxdialogMode || (node == null)) return;
+            var mesh1 = meshes[node.meshid];
+
+            // List all available alternative groups
+            var y = "<select id=p10newGroup style=width:236px>", count = 0;
+            for (var i in meshes) {
+                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                if ((meshes[i]._id != mesh1._id) && (meshes[i].mtype == mesh1.mtype) && (meshrights & 4)) { count++; y += "<option value='" + meshes[i]._id + "'>" + meshes[i].name + "</option>"; }
+            }
+            y += "</select>";
+
+            if (count > 0) {
+                var x = "Select a new group for this device<br /><br />";
+                x += addHtmlValue('New Device Group', y);
+                setDialogMode(2, "Change Group", 3, p10showChangeGroupDialogEx, x, nodeid);
+            } else {
+                setDialogMode(2, "Change Group", 1, null, "No other device group of same type exists.");
+            }
+        }
+
+        function p10showChangeGroupDialogEx(b, nodeid) {
+            meshserver.send({ action: 'changeDeviceMesh', nodeid: nodeid, meshid: Q('p10newGroup').value });
         }
 
         function p10showDeleteNodeDialog(nodeid) {
@@ -5657,7 +5724,7 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Group</a></span></div>'; }
 
             QH('p20info', x);
         }
@@ -5708,9 +5775,9 @@
 
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return;
-            var x = "Are you sure you want to delete mesh \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the mesh will also delete all information about computers within this mesh.<br /><br />";
+            var x = "Are you sure you want to delete group \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the device group will also delete all information about devices within this group.<br /><br />";
             x += "<input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />Confirm";
-            setDialogMode(2, "Delete Mesh", 3, p20showDeleteMeshDialogEx, x);
+            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
         }
 
