@@ -62,6 +62,7 @@
     }
   },
   "_letsencrypt": {
+    "__comment__": "If your are having problems with Let's Encrypt, use https://letsdebug.net/ first to debug it.",
     "email": "myemail@myserver.com ",
     "names": "myserver.com,customer1.myserver.com",
     "rsaKeySize": 3072,
