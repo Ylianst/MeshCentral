@@ -1597,8 +1597,8 @@
                             r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                             //r += getMeshActions(mesh, meshrights);
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
-                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>No Intel&reg; AMT devices in this mesh'; }
-                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>No devices in this mesh'; }
+                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>No Intel&reg; AMT devices in this group'; }
+                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>No devices in this group'; }
                             r += '.</i></div></div>';
                             current = mesh._id;
                             count++;
