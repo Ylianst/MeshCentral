@@ -342,8 +342,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) {
         if (obj.nodeid != null) {
-            //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
-            obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + obj.agentInfo.agentId);
+            var agentId = 'Unknown';
+            if (obj.agentInfo && obj.agentInfo.agentId) { agentId = obj.agentInfo.agentId; }
+            //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
+            obj.parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
 
             // Log the agent disconnection
             if (obj.parent.wsagentsDisconnections[obj.nodeid] == null) {
