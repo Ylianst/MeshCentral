@@ -715,7 +715,7 @@
                     //onSearchInputChanged();
                     updateDevices();
                     //refreshMap(false, true);
-                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
+                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(2); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}', parseInt('{{viewmode}}')); }
                     break;
                 }
@@ -827,7 +827,7 @@
                                     nodes = newnodes;
 
                                     // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(2); }
                                 }
                             }
                             updateMeshes();
@@ -855,7 +855,7 @@
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(2); }
 
                             break;
                         }
@@ -881,7 +881,7 @@
                             if (index != -1) {
                                 var node = nodes[index];
                                 if (currentNode == node) {
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); }
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(2); }
                                     currentNode = null;
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
@@ -935,6 +935,43 @@
                                 updateDevices();
 
                                 //if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
+                            }
+                            break;
+                        }
+                        case 'nodemeshchange': {
+                            var index = -1;
+                            for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
+                            if (index != -1) {
+                                var node = nodes[index];
+                                if (meshes[message.event.newMeshId] == null) {
+                                    // We don't see the new mesh, remove this device
+
+                                    // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
+                                    if (currentNode == node) { if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(2); } currentNode = null; }
+                                    nodes.splice(index, 1);
+                                } else {
+                                    // We see the new mesh, move this device
+                                    node.meshid = message.event.newMeshId;
+                                    node.meshnamel = meshes[message.event.newMeshId].name.toLowerCase();
+                                }
+                                updateDevices();
+                                refreshDevice(message.event.nodeid);
+                            } else {
+                                // This is a new device, add it.
+                                var node = message.event.node;
+                                if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
+                                node.namel = node.name.toLowerCase();
+                                if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
+                                node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                                node.state = 0;
+                                if (!node.icon) node.icon = 1;
+                                node.ident = ++nodeShortIdent;
+                                if (nodes == null) { }
+                                nodes.push(node);
+
+                                // Web page update
+                                //masterUpdate(1 | 2 | 4 | 16);
+                                updateDevices();
                             }
                             break;
                         }
@@ -1652,9 +1689,9 @@
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
             var node = getNodeFromId(nodeid);
-            if (node == null) { goBack(); }
+            if (node == null) { goBack(); return; }
             var mesh = meshes[node.meshid];
-            if (mesh == null) { goBack(); }
+            if (mesh == null) { goBack(); return; }
             var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
