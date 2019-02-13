@@ -107,13 +107,12 @@
             </div>
             <div id=column_l>
                 <h1>Welcome</h1>
-                <p>Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</p>
+                <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
                 <table id="centralTable" style=width:100%>
                     <tr>
                         <td id="welcomeimage" align="right">
                             <picture>
-                                <source type="image/webp" width=359 height=310 srcset="images/webp/mainwelcome.webp">
-                                <img alt="" width=359 height=310 src=images/mainwelcome.jpg />
+                                <img alt="" width=359 height=310 src=welcome.jpg />
                             </picture>
                         </td>
                         <td id="logincell" align="left">
@@ -309,6 +308,7 @@
         var webPageFullScreen = getstore('webPageFullScreen', true);
         if (webPageFullScreen == 'false') { webPageFullScreen = false; }
         if (webPageFullScreen == 'true') { webPageFullScreen = true; }
+        var welcomeText = decodeURIComponent("{{{welcometext}}}");
         toggleFullScreen();
 
         function startup() {
@@ -319,8 +319,13 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
+            // Display the welcome text
+            if (welcomeText) { QH('welcomeText', welcomeText); }
+            QV('welcomeText', true);
+
             window.onresize = center;
             center();
+
             validateLogin();
             validateCreate();
             if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
