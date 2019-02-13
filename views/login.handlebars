@@ -424,7 +424,7 @@
                         ok = false;
                         QS('nuPass1').color = '#7b241c';
                         QS('nuPass2').color = '#7b241c';
-                        QH('passWarning', '<span style=color:red><b>Password Policy</b><span>'); // TODO: Display problem hint
+                        QH('passWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>Password Policy</b><div>'); // This is also a link to the password policy
                     } else {
                         QH('passWarning', '');
                     }
@@ -440,6 +440,18 @@
             }
             if (e != null) { haltEvent(e); }
             QE('createButton', ok);
+        }
+
+        function showPasswordPolicy() {
+            var policy = '<div style=text-align:left>';
+            if (passRequirements.min) { policy += 'Minimum length: ' + passRequirements.min + '<br />'; }
+            if (passRequirements.max) { policy += 'Maximum length: ' + passRequirements.max + '<br />'; }
+            if (passRequirements.upper) { policy += 'Upper case: ' + passRequirements.upper + '<br />'; }
+            if (passRequirements.lower) { policy += 'Lower case: ' + passRequirements.lower + '<br />'; }
+            if (passRequirements.numeric) { policy += 'Numeric: ' + passRequirements.numeric + '<br />'; }
+            if (passRequirements.nonalpha) { policy += 'Non-alphanumeric: ' + passRequirements.nonalpha + '<br />'; }
+            policy += '</div>';
+            messagebox("Password Policy", policy);
         }
 
         function validateReset(e) {
