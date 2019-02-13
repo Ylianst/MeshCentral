@@ -128,13 +128,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
 
         // Check if we have exceeded the user session limit
-        if (typeof domain.limits.maxusersessions == 'number') {
+        if ((typeof domain.limits.maxusersessions == 'number') || (typeof domain.limits.maxsingleusersessions == 'number')) {
             // Count the number of user sessions for this domain
-            var domainUserSessionCount = 0;
-            for (var i in obj.parent.wssessions2) { if (obj.parent.wssessions2[i].domainid == domain.id) { domainUserSessionCount++; } }
+            var domainUserSessionCount = 0, selfUserSessionCount = 0;
+            for (var i in obj.parent.wssessions2) { if (obj.parent.wssessions2[i].domainid == domain.id) { domainUserSessionCount++; if (obj.parent.wssessions2[i].userid == user._id) { selfUserSessionCount++; } } }
 
             // Check if we have too many user sessions
-            if (domainUserSessionCount >= domain.limits.maxusersessions) {
+            if (((typeof domain.limits.maxusersessions == 'number') && (domainUserSessionCount >= domain.limits.maxusersessions)) || ((typeof domain.limits.maxsingleusersessions == 'number') && (selfUserSessionCount >= domain.limits.maxsingleusersessions))) {
                 ws.send(JSON.stringify({ action: 'stopped', msg: 'Session count exceed' }));
                 try { obj.ws.close(); } catch (e) { }
                 return;
@@ -708,6 +708,45 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'changepassword':
+                {
+                    // Change our own password
+                    if (obj.common.validateString(command.oldpass, 1, 256) == false) break;
+                    if (obj.common.validateString(command.newpass, 1, 256) == false) break;
+                    if (obj.common.validateString(command.hint, 0, 256) == false) break;
+                    if (obj.common.checkPasswordRequirements(command.newpass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+
+                    // Start by checking the old password
+                    obj.parent.checkUserPassword(domain, user, command.oldpass, function (result) {
+                        if (result == true) {
+                            // Update the password
+                            require('./pass').hash(command.newpass, function (err, salt, hash) {
+                                if (err) {
+                                    // Send user notification of error
+                                    displayNotificationMessage('Error, password not changed.');
+                                } else {
+                                    // Change the password
+                                    var hint = command.hint;
+                                    if (hint.length > 250) hint = hint.substring(0, 250);
+                                    user.salt = salt;
+                                    user.hash = hash;
+                                    user.passhint = req.body.apasswordhint;
+                                    user.passchange = Math.floor(Date.now() / 1000);
+                                    delete user.passtype;
+                                    obj.db.SetUser(user);
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+
+                                    // Send user notification of password change
+                                    displayNotificationMessage('Password changed.');
+                                }
+                            });
+                        } else {
+                            // Send user notification of error
+                            displayNotificationMessage('Current password not correct.');
+                        }
+                    });
+                    break;
+                }
             case 'changeuserpass':
                 {
                     // Change a user's password
@@ -718,22 +757,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (typeof command.removeMultiFactor != 'boolean') break;
                     if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
-                    var chguserid = 'user/' + domain.id + '/' + command.user.toLowerCase(), chguser = obj.parent.users[chguserid];
-                    if (chguser && chguser.salt) {
+                    var chguser = obj.parent.users['user/' + domain.id + '/' + command.user.toLowerCase()];
+                    if (chguser) {
                         // Compute the password hash & save it
-                        require('./pass').hash(command.pass, chguser.salt, function (err, hash) {
+                        require('./pass').hash(command.pass, function (err, salt, hash) {
                             if (!err) {
                                 var annonceChange = false;
+                                chguser.salt = salt;
                                 chguser.hash = hash;
                                 chguser.passhint = command.hint;
+                                chguser.passchange = Math.floor(Date.now() / 1000);
+                                delete chguser.passtype; // Remove the password type if one was present.
                                 if (command.removeMultiFactor == true) {
                                     if (chguser.otpsecret) { delete chguser.otpsecret; annonceChange = true; }
                                     if (chguser.otphkeys) { delete chguser.otphkeys; annonceChange = true; }
                                     if (chguser.otpkeys) { delete chguser.otpkeys; annonceChange = true; }
                                 }
                                 obj.db.SetUser(chguser);
-
                                 if (annonceChange == true) { obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Removed 2nd factor auth.', domain: domain.id }); }
+                            } else {
+                                // Report that the password change failed
+                                // TODO
                             }
                         });
                     }
@@ -1774,6 +1818,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
         }
     }
+
+    // Display a notification message for this session only.
+    function displayNotificationMessage(msg, tag) { ws.send(JSON.stringify({ "action": "msg", "type": "notify", "value": msg, "userid": user._id, "username": user.name, "tag": tag })); }
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {

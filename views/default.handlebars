@@ -5479,18 +5479,29 @@
 
         function account_showChangePassword() {
             if (xxdialogMode) return;
-            var x = "Change your account password by entering the new password twice in the boxes below.<br /><br />";
-            x += "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:60px><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
-            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td>";
-            x += "</tr><tr><td align=right>Password Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>";
-            x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
-            x += '</div><br /></form>';
-            setDialogMode(2, "Change Password", 0, null, x);
-            Q('apassword1').focus();
+            var x = "Change your account password by entering the old password and new password twice in the boxes below. Password hint can be used but is not recommanded.<br /><br />";
+            //x += "<form action='" + domainUrl + "changepassword' method=post>";
+            x += "<table style=margin-left:60px>";
+            x += "<tr><td align=right>Old password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>";
+            x += "<tr><td align=right>New password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
+            x += "<tr><td align=right>New password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
+            x += "<tr><td align=right>Password hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
+            x += '</table>'
+            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+            x += '<br />';
+            //x += '<br /><div style=padding:10px;margin-bottom:4px>';
+            //x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            //x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
+            //x += '</div><br /></form>';
+            setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
+            Q('apassword0').focus();
             account_validateNewPassword();
+        }
+
+        function account_showChangePasswordEx() {
+            if (Q('apassword1').value == Q('apassword2').value) {
+                meshserver.send({ action: 'changepassword', oldpass: Q('apassword0').value, newpass: Q('apassword1').value, hint: Q('apasswordhint').value });
+            }
         }
 
         function account_createMesh() {
@@ -5522,7 +5533,7 @@
         }
 
         function account_validateNewPassword() {
-            var r = '', ok = (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value);
+            var r = '', ok = (Q('apassword0').value.length > 0) && (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value) && (Q('apassword0').value != Q('apassword1').value) && (Q('apasswordhint').value != Q('apassword1').value);
             if (Q('apassword1').value != '') {
                 if (passRequirements == null || passRequirements == '') {
                     // No password requirements, display password strength
@@ -5535,7 +5546,8 @@
                 }
             }
             QH('dxPassWarn', r);
-            QE('account_dlgOkButton', ok);
+            //QE('account_dlgOkButton', ok);
+            QE('idx_dlgOkButton', ok);
         }
 
         // Return a password strength score
@@ -6344,6 +6356,7 @@
             x += addHtmlValue('Email', '<input id=p4email style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
             setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
             showCreateNewAccountDialogValidate();
             Q('p4name').focus();
@@ -6351,7 +6364,9 @@
 
         function showCreateNewAccountDialogValidate(x) {
             if ((x == null) && (Q('p4email').value.length > 0) && (validateEmail(Q('p4email').value)) == false) { QE('idx_dlgOkButton', false); return; }
-            QE('idx_dlgOkButton', (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
+            var ok = (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))) && Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements);
+            if (ok && passRequirements) { if (checkPasswordRequirements(Q('p4pass1').value, passRequirements) == false) { ok = false; } }
+            QE('idx_dlgOkButton', ok);
         }
 
         function showCreateNewAccountDialogEx() {
@@ -6440,8 +6455,8 @@
             if (activeSessions == 0) { Q('MainUserImage').classList.add('gray'); }
 
             // Server permissions
-            var msg = '';
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0)  && (user.siteadmin != 0xFFFFFFFF)) { msg += "Locked account, "; }
+            var msg = '', premsg = '';
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg += 'Locked account, '; }
             if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) { msg += "No server rights"; } else if (user.siteadmin == 8) { msg += "Access to server files"; } else if (user.siteadmin == 0xFFFFFFFF) { msg += "Full administrator"; } else { msg += "Partial rights"; }
 
             // Show user attributes
@@ -6449,7 +6464,7 @@
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
             x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton width=10 height=10 src="images/link1.png" /></a>');
-            x += addDeviceAttribute('Server Rights', "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
+            x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
@@ -6460,7 +6475,7 @@
                 if (user.otpsecret > 0) { factors.push('Authentication App'); }
                 if (user.otphkeys > 0) { factors.push('Security Key'); }
                 if (user.otpkeys > 0) { factors.push('Backup Codes'); }
-                x += addDeviceAttribute('Security', factors.join(', '));
+                x += addDeviceAttribute('Security', '<img src="images/key12.png" height=12 width=11 title="2nd factor authentication enabled" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
             x += '</table></div><br />';
@@ -6534,7 +6549,8 @@
             x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
             x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>');
-            if (multiFactor == 1) { x += '<input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.'; }
+            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            if (multiFactor == 1) { x += '<div><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</div>'; }
             setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
             showCreateNewAccountDialogValidate(1);
             Q('p4pass1').focus();

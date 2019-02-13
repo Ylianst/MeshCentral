@@ -421,12 +421,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (checkUserOneTimePasswordRequired(domain, user)) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
+                            var randomWaitTime = 0;
+                            
                             // 2-step auth is required, but the token is not present or not valid.
-                            if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
-                            req.session.loginmode = '4';
-                            req.session.tokenusername = xusername;
-                            req.session.tokenpassword = xpassword;
-                            res.redirect(domain.url);
+                            if ((req.body.token != null) || (req.body.hwtoken != null)) {
+                                randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
+                                req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>';
+                            }
+
+                            // Wait and redirect the user
+                            setTimeout(function () {
+                                req.session.loginmode = '4';
+                                req.session.tokenusername = xusername;
+                                req.session.tokenpassword = xpassword;
+                                res.redirect(domain.url);
+                            }, randomWaitTime);
                         } else {
                             // Login succesful
                             completeLoginRequest(req, res, domain, user, userid);
@@ -438,15 +447,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Login succesful
                 completeLoginRequest(req, res, domain, user, userid);
             } else {
-                //console.log('passhint', passhint);
-                delete req.session.loginmode;
-                if (err == 'locked') { req.session.error = '<b style=color:#8C001A>Account locked.</b>'; } else { req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>'; }
-                if ((passhint != null) && (passhint.length > 0)) {
-                    req.session.passhint = passhint;
-                } else {
-                    delete req.session.passhint;
-                }
-                res.redirect(domain.url);
+                // Login failed, wait a random delay
+                setTimeout(function () {
+                    // If the account is locked, display that.
+                    if (err == 'locked') { req.session.error = '<b style=color:#8C001A>Account locked.</b>'; } else { req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>'; }
+
+                    // Clean up login mode and display password hint if present.
+                    delete req.session.loginmode;
+                    if ((passhint != null) && (passhint.length > 0)) {
+                        req.session.passhint = passhint;
+                    } else {
+                        delete req.session.passhint;
+                    }
+                    res.redirect(domain.url);
+                }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095)); // Wait for 2 to ~6 seconds.
             }
         });
     }
@@ -547,6 +561,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     if (err) throw err;
                                     user.salt = salt;
                                     user.hash = hash;
+                                    delete user.passtype;
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
@@ -688,6 +703,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 userinfo = obj.users[user._id];
                                                 userinfo.salt = salt;
                                                 userinfo.hash = hash;
+                                                delete userinfo.passtype;
                                                 userinfo.passchange = Math.floor(Date.now() / 1000);
                                                 userinfo.passhint = null;
                                                 //delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
@@ -758,28 +774,63 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Check a user's password
+    obj.checkUserPassword = function(domain, user, password, func) {
+        // Check the old password
+        if (user.passtype != null) {
+            // IIS default clear or weak password hashing (SHA-1)
+            require('./pass').iishash(user.passtype, password, user.salt, function (err, hash) {
+                if (err) return func(false);
+                if (hash == user.hash) {
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { return func(false); } // Account is locked
+                    return func(true); // Allow password change
+                }
+                func(false);
+            });
+        } else {
+            // Default strong password hashing (pbkdf2 SHA384)
+            require('./pass').hash(password, user.salt, function (err, hash) {
+                if (err) return func(false);
+                if (hash == user.hash) {
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { return func(false); } // Account is locked
+                    return func(true); // Allow password change
+                }
+                func(false);
+            });
+        }
+    }
+
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi')) return;
 
         // Check if the user is logged and we have all required parameters
-        if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
+        if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
 
-        // Update the password
-        require('./pass').hash(req.body.apassword1, function (err, salt, hash) {
-            if (err) throw err;
-            var hint = req.body.apasswordhint;
-            if (hint.length > 250) hint = hint.substring(0, 250);
-            var user = obj.users[req.session.userid];
-            user.salt = salt;
-            user.hash = hash;
-            user.passchange = Math.floor(Date.now() / 1000);
-            user.passhint = req.body.apasswordhint;
-            obj.db.SetUser(user);
-            req.session.viewmode = 2;
-            res.redirect(domain.url);
-            obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+        // Get the current user
+        var user = obj.users[req.session.userid];
+        if (!user) { res.redirect(domain.url); return; }
+
+        // Check old password
+        obj.checkUserPassword(domain, user, req.body.apassword0, function (result) {
+            if (result == true) {
+                // Update the password
+                require('./pass').hash(req.body.apassword1, function (err, salt, hash) {
+                    if (err) throw err;
+                    var hint = req.body.apasswordhint;
+                    if (hint.length > 250) hint = hint.substring(0, 250);
+                    user.salt = salt;
+                    user.hash = hash;
+                    user.passhint = req.body.apasswordhint;
+                    user.passchange = Math.floor(Date.now() / 1000);
+                    delete user.passtype;
+                    obj.db.SetUser(user);
+                    req.session.viewmode = 2;
+                    res.redirect(domain.url);
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+                });
+            }
         });
     }
 
