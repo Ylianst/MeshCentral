@@ -385,7 +385,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.db.Set(obj.common.escapeLinksFieldName(mesh));
                 obj.parent.meshes[obj.dbMeshKey] = mesh;
 
-                if (adminUser.links == null) user.links = {};
+                if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 obj.db.SetUser(adminUser);
                 obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
