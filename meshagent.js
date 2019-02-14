@@ -258,7 +258,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.send(obj.common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
-                    if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) { console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').'); return; }
+                    if ((getWebCertHash(obj.domain) != msg.substring(2, 50)) && (getWebCertFullHash(obj.domain) != msg.substring(2, 50))) {
+                        console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(obj.domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
+                        console.log('Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');
+                        return;
+                    }
                 }
 
                 // Use our server private key to sign the ServerHash + AgentNonce + ServerNonce
@@ -365,6 +369,31 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         obj.send(obj.common.ShortToStr(1) + getWebCertHash(obj.domain) + obj.nonce); // Command 1, hash + nonce
     }
 
+    // Return the mesh for this device, in some cases, we may auto-create the mesh.
+    function getMeshAutoCreate() {
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if ((mesh == null) && (typeof obj.domain.orphanagentuser == 'string')) {
+            var adminUser = obj.parent.users['user/' + domain.id + '/' + obj.domain.orphanagentuser.toLowerCase()];
+            if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
+                // Mesh name is hex instead of base64
+                var meshname = Buffer.from(obj.meshid, 'base64').toString('hex').substring(0, 18);
+
+                // Create a new mesh for this device
+                var links = {};
+                links[adminUser._id] = { name: adminUser.name, rights: 0xFFFFFFFF };
+                mesh = { type: 'mesh', _id: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', domain: domain.id, links: links };
+                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+                obj.parent.meshes[obj.dbMeshKey] = mesh;
+
+                if (adminUser.links == null) user.links = {};
+                adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
+                obj.db.SetUser(adminUser);
+                obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+            }
+        }
+        return mesh;
+    }
+
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection) return;
@@ -380,21 +409,69 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (domainAgentSessionCount >= domain.limits.maxagentsessions) { return; } // Too many, hold the connection.
         }
 
+        /*
         // Check that the mesh exists
         var mesh = obj.parent.meshes[obj.dbMeshKey];
-        if (mesh == null) { console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        if (mesh == null) {
+            var holdConnection = true;
+            if (typeof obj.domain.orphanagentuser == 'string') {
+                var adminUser = obj.parent.users['user/' + domain.id + '/' + obj.args.orphanagentuser];
+                if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
+                    // Create a new mesh for this device
+                    holdConnection = false;
+                    var links = {};
+                    links[user._id] = { name: adminUser.name, rights: 0xFFFFFFFF };
+                    mesh = { type: 'mesh', _id: obj.dbMeshKey, name: obj.meshid, mtype: 2, desc: '', domain: domain.id, links: links };
+                    obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+                    obj.parent.meshes[obj.meshid] = mesh;
+                    obj.parent.parent.AddEventDispatch([obj.meshid], ws);
+
+                    if (adminUser.links == null) user.links = {};
+                    adminUser.links[obj.meshid] = { rights: 0xFFFFFFFF };
+                    //adminUser.subscriptions = obj.parent.subscribe(adminUser._id, ws);
+                    obj.db.SetUser(user);
+                    obj.parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                }
+            }
+
+            if (holdConnection == true) {
+                // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+                return;
+            }
+        } 
         if (mesh.mtype != 2) { console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').'); return; } // If we disconnect, the agnet will just reconnect. We need to log this or tell agent to connect in a few hours.
+        */
 
         // Check that the node exists
         obj.db.Get(obj.dbNodeKey, function (err, nodes) {
             var device;
 
-            // Mark when we connected to this agent
-            obj.connectTime = Date.now();
-            obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
-
             // See if this node exists in the database
             if (nodes.length == 0) {
+                // This device does not exist, use the meshid given by the device
+
+                // See if this mesh exists, if it does not we may want to create it.
+                var mesh = getMeshAutoCreate();
+
+                // Check if the mesh exists
+                if (mesh == null) {
+                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+                    return;
+                }
+
+                // Check if the mesh is the right type
+                if (mesh.mtype != 2) {
+                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
+                    return;
+                } 
+
+                // Mark when this device connected
+                obj.connectTime = Date.now();
+                obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
+
                 // This node does not exist, create it.
                 device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
                 obj.db.Set(device);
@@ -407,15 +484,42 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
                 }
             } else {
-                // Device already exists, look if changes has occured
                 device = nodes[0];
+
+                // This device exists, meshid given by the device must be ignored, use the server side one.
+                if (device.meshid != obj.dbMeshKey) {
+                    obj.dbMeshKey = device.meshid;
+                    obj.meshid = device.meshid.split('/')[2];
+                }
+
+                // See if this mesh exists, if it does not we may want to create it.
+                var mesh = getMeshAutoCreate();
+
+                // Check if the mesh exists
+                if (mesh == null) {
+                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+                    return;
+                }
+
+                // Check if the mesh is the right type
+                if (mesh.mtype != 2) {
+                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
+                    return;
+                } 
+
+                // Mark when this device connected
+                obj.connectTime = Date.now();
+                obj.db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
+
+                // Device already exists, look if changes has occured
                 var changes = [], change = 0, log = 0;
                 if (device.agent == null) { device.agent = { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }; change = 1; }
                 if (device.rname != obj.agentInfo.computerName) { device.rname = obj.agentInfo.computerName; change = 1; changes.push('computer name'); }
                 if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
                 if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
                 if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                if (device.meshid != obj.dbMeshKey) { obj.dbMeshKey = device.meshid; obj.meshid = device.meshid.split('/')[2]; }  // If the mesh does not match, the server mesh is the correct one. This is because we allow the server to change the mesh of a device server-side.
                 if (change == 1) {
                     obj.db.Set(device);
 
