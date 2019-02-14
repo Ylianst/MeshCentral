@@ -299,9 +299,14 @@
                         <tr>
                             <td class=h1></td>
                             <td class=style14>
-                                &nbsp;
-                                <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
-                                <input id=UserSearchInput type=text style=width:120px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
+                                <div style="float:right">
+                                    <input type=button onclick=showUserBroadcastDialog() value="Broadcast" />&nbsp;
+                                </div>
+                                <div>
+                                    &nbsp;
+                                    <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
+                                    <input id=UserSearchInput type=text style=width:120px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
+                                </div>
                             </td>
                             <td class=h2></td>
                         </tr>
@@ -6347,6 +6352,17 @@
             haltEvent(e);
             window.open("mailto:" + addr);
             return false;
+        }
+
+        function showUserBroadcastDialog() {
+            if (xxdialogMode) return;
+            var x = 'Broadcast a message to all connected users.<textarea id=broadcastMessage value="" style=width:370px;height:100px;resize:none maxlength=256 /></textarea>';
+            setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x);
+            Q('broadcastMessage').focus();
+        }
+
+        function showUserBroadcastDialogEx() {
+            meshserver.send({ action: 'userbroadcast', msg: Q('broadcastMessage').value });
         }
 
         function showCreateNewAccountDialog() {

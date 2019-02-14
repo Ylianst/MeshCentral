@@ -1076,10 +1076,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         */
     }
 
+    // Return true if it looks like we are using a real TLS certificate.
+    function isTrustedCert() {
+        if (obj.args.notls == true) return false; // We are not using TLS, so not trusted cert.
+        if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
+        if (obj.parent.config.letsencrypt != null) return true; // We are using Let's Encrypt, real cert in use.
+        if (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) return false; // Our cert is issued by self-signed cert.
+        if (obj.certificates.CommonName == 'un-configured') return false; // Out cert is named with a fake name
+        return true; // This is a guess
+    }
+
     // Get the link to the root certificate if needed
     function getRootCertLink() {
         // Check if the HTTPS certificate is issued from MeshCentralRoot, if so, add download link to root certificate.
-        if ((obj.args.notls == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName != 'un-configured')) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
+        if ((obj.args.notls == null) && (obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName != 'un-configured')) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
         return '';
     }
 
@@ -2193,18 +2203,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Two more headers to take a look at:
                 //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
                 //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
-                /*
                 var headers = null;
-                if (obj.args.notls) {
+                if (isTrustedCert() == false) {
                     // Default headers if no TLS is used
-                    headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
+                    //headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
                 } else {
                     // Default headers if TLS is used
-                    headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" };
+                    //headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" };
+
+                    // Set Strict-Transport-Security if we are using a trusted certificate or TLS offload.
+                    headers = { 'Strict-Transport-Security': 'max-age=31536000;includeSubDomains' };
                 }
                 if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
                 res.set(headers);
-                */
                 return next();
             }
         });

@@ -644,6 +644,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'userbroadcast':
+                {
+                    // Broadcast a message to all currently connected users.
+                    if ((user.siteadmin & 2) == 0) break;
+                    if (obj.common.validateUsername(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
+
+                    // Create the notification message
+                    var notification = { "action": "msg", "type": "notify", "value": command.msg };
+
+                    // Send the notification on all user sessions for this server
+                    for (var i in obj.parent.wssessions2) { try { obj.parent.wssessions2[i].send(JSON.stringify(notification)); } catch (ex) { } }
+
+                    // TODO: Notify all sessions on other peers.
+
+                    break;
+                }
             case 'adduser':
                 {
                     // Add a new user account
@@ -879,7 +895,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
                     if ((command.meshtype == 1) || (command.meshtype == 2)) {
-                        // Create a type 1 agent-less Intel AMT mesh.
                         obj.parent.crypto.randomBytes(48, function (err, buf) {
                             meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             var links = {};
@@ -1674,17 +1689,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
-                    if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) break;
+                    if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
+                        ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
+                        break;
+                    }
 
-                    // Check if Yubikey support is present
-                    if ((typeof domain.yubikey != 'object') || (typeof domain.yubikey.id != 'string') || (typeof domain.yubikey.secret != 'string')) break;
+                    // Check if Yubikey support is present or OTP no exactly 44 in length
+                    if ((typeof domain.yubikey != 'object') || (typeof domain.yubikey.id != 'string') || (typeof domain.yubikey.secret != 'string') || (command.otp.length != 44)) {
+                        ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
+                        break;
+                    }
+
+                    // TODO: Check if command.otp is modhex encoded, reject if not.
 
                     // Query the YubiKey server to validate the OTP
                     var yubikeyotp = require('yubikeyotp');
                     var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
                     if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
                     yubikeyotp.verifyOTP(request, function (err, results) {
-                        if (results.status == 'OK') {
+                        if ((results != null) && (results.status == 'OK')) {
                             var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
                             var keyId = command.otp.substring(0, 12);
                             if (user.otphkeys == null) { user.otphkeys = []; }
