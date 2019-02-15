@@ -177,7 +177,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
-
     // Fetch all users from the database, keep this in memory
     obj.db.GetAllType('user', function (err, docs) {
         var domainUserCount = {}, i = 0;
@@ -2188,6 +2187,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             res.removeHeader("X-Powered-By");
             var domain = req.xdomain = getDomain(req);
 
+            // If this domain has configured headers, use them.
+            // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
+            //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
+            if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == object)) { res.set(domain.httpheaders); }
+
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
                 var rpath;
@@ -2200,24 +2204,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.fs.exists(obj.path.join(domain.share, rpath), function (exists) { if (exists == true) { res.sendfile(rpath, { root: domain.share }); } else { res.sendStatus(404); } });
                 }
             } else {
-                // Two more headers to take a look at:
-                //   'Public-Key-Pins': 'pin-sha256="X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="; max-age=10'
-                //   'strict-transport-security': 'max-age=31536000; includeSubDomains'
-                var headers = null;
-                if (isTrustedCert() == false) {
-                    // Default headers if no TLS is used
-                    //headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
-                } else {
-                    // Default headers if TLS is used
-                    //headers = { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src https: wss: data: 'self';script-src https: 'unsafe-inline';style-src https: 'unsafe-inline'" };
-
-                    if (typeof obj.args.httpsstrict == 'number') {
-                        // Set Strict-Transport-Security if we are using a trusted certificate or TLS offload.
-                        headers = { 'Strict-Transport-Security': 'max-age=' + obj.args.httpsstrict + ';includeSubDomains' };
-                    }
-                }
-                if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
-                res.set(headers);
+                //if (parent.config.settings.accesscontrolalloworigin != null) { headers['Access-Control-Allow-Origin'] = parent.config.settings.accesscontrolalloworigin; }
                 return next();
             }
         });

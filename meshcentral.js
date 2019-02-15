@@ -96,7 +96,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'configkey', 'loadconfigfromdb'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'configkey', 'loadconfigfromdb'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -353,7 +353,7 @@ function CreateMeshCentralServer(config, args) {
                 // Import the entire database from a JSON file
                 if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
                 var json = null, json2 = "", badCharCount = 0;
-                try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + '.'); process.exit(); }
+                try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + ': ' + e); process.exit(); }
                 for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
                 if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
                 try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
@@ -361,6 +361,63 @@ function CreateMeshCentralServer(config, args) {
                 for (i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
                 //for (i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
                 obj.db.RemoveAll(function () { obj.db.InsertMany(json, function (err) { if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit(); }); });
+                return;
+            }
+            if (obj.args.dbmerge) {
+                // Import the entire database from a JSON file
+                if (obj.args.dbmerge == true) { obj.args.dbmerge = obj.getConfigFilePath('meshcentral.db.json'); }
+                var json = null, json2 = "", badCharCount = 0;
+                try { json = obj.fs.readFileSync(obj.args.dbmerge, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
+                if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
+                try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
+
+                // Get all users from current database
+                obj.db.GetAllType('user', function (err, docs) {
+                    var users = {}, usersCount = 0;
+                    for (var i in docs) { users[docs[i]._id] = docs[i]; usersCount++; }
+
+                    // Fetch all meshes from the database
+                    obj.db.GetAllType('mesh', function (err, docs) {
+                        obj.common.unEscapeAllLinksFieldName(docs);
+                        var meshes = {}, meshesCount = 0;
+                        for (var i in docs) { meshes[docs[i]._id] = docs[i]; meshesCount++; }
+                        console.log('Loaded ' + usersCount + ' users and ' + meshesCount + ' meshes.');
+                        // Look at each object in the import file
+                        var objectToAdd = [];
+                        for (var i in json) {
+                            var newobj = json[i];
+                            if (newobj.type == 'user') {
+                                // Check if the user already exists
+                                var existingUser = users[newobj._id];
+                                if (existingUser) {
+                                    // Merge the links
+                                    for (var j in newobj.links) {
+                                        if ((existingUser.links == null) || (existingUser.links[j] == null)) {
+                                            if (existingUser.links == null) { existingUser.links = {}; }
+                                            existingUser.links[j] = newobj.links[j];
+                                        }
+                                    }
+                                    if (existingUser.name == 'admin') { existingUser.links = {}; }
+                                    objectToAdd.push(existingUser); // Add this user
+                                } else {
+                                    objectToAdd.push(newobj); // Add this user
+                                }
+                            } else if (newobj.type == 'mesh') {
+                                // Add this object after escaping
+                                objectToAdd.push(obj.common.escapeLinksFieldName(newobj));
+                            } // Don't add nodes.
+                        }
+                        console.log('Importing ' + objectToAdd.length + ' object(s)...');
+                        var pendingCalls = 1;
+                        for (var i in objectToAdd) {
+                            pendingCalls++;
+                            obj.db.Set(objectToAdd[i], function (err) { if (err != null) { console.log(err); } else { if (--pendingCalls == 0) { process.exit(); } } });
+                        }
+                        if (--pendingCalls == 0) { process.exit(); }
+                    });
+                });
                 return;
             }
 
