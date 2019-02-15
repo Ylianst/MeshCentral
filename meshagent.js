@@ -63,7 +63,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Other clean up may be needed here
         if (obj.unauth) { delete obj.unauth; }
         if (obj.agentUpdate != null) {
-            obj.fs.close(obj.agentUpdate.fd);
+            if (obj.fs) { try { obj.fs.close(obj.agentUpdate.fd); } catch (ex) { } obj.fs = null; }
             obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
             obj.agentUpdate = null;
         }
@@ -172,16 +172,48 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
-                            obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
-                                if (err) { return console.error(err); }
-                                obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), fd: fd, taskid: taskid };
+                            if (obj.agentExeInfo.data == null) {
+                                // Read the agent from disk
+                                obj.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
+                                    if (err) { return console.error(err); }
+                                    obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), fd: fd, taskid: taskid };
+
+                                    // MeshCommand_CoreModule, ask mesh agent to clear the core.
+                                    // The new core will only be sent after the agent updates.
+                                    obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
+
+                                    // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
+                                    //console.log("Agent update file open.");
+                                    obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0)); // Command 13, start mesh agent download
+
+                                    // Send the first mesh agent update data block
+                                    obj.agentUpdate.buf[0] = 0;
+                                    obj.agentUpdate.buf[1] = 14;
+                                    obj.agentUpdate.buf[2] = 0;
+                                    obj.agentUpdate.buf[3] = 1;
+                                    var len = -1;
+                                    try { len = obj.fs.readSync(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, agentUpdateBlockSize, obj.agentUpdate.ptr); } catch (e) { }
+                                    if (len == -1) {
+                                        // Error reading the agent file, stop here.
+                                        obj.fs.close(obj.agentUpdate.fd);
+                                        obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                        obj.agentUpdate = null;
+                                    } else {
+                                        // Send the first block to the agent
+                                        obj.agentUpdate.ptr += len;
+                                        //console.log("Agent update send first block: " + len);
+                                        obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
+                                    }
+                                });
+                            } else {
+                                // Send the agent from RAM
+                                obj.agentUpdate = { oldHash: agenthash, ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), taskid: taskid };
 
                                 // MeshCommand_CoreModule, ask mesh agent to clear the core.
                                 // The new core will only be sent after the agent updates.
                                 obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
 
                                 // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
-                                //console.log("Agent update file open.");
                                 obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0)); // Command 13, start mesh agent download
 
                                 // Send the first mesh agent update data block
@@ -189,20 +221,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentUpdate.buf[1] = 14;
                                 obj.agentUpdate.buf[2] = 0;
                                 obj.agentUpdate.buf[3] = 1;
-                                var len = -1;
-                                try { len = obj.fs.readSync(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, agentUpdateBlockSize, obj.agentUpdate.ptr); } catch (e) { }
-                                if (len == -1) {
-                                    // Error reading the agent file, stop here.
-                                    obj.fs.close(obj.agentUpdate.fd);
+
+                                var len = Math.min(agentUpdateBlockSize, obj.agentExeInfo.data.length - obj.agentUpdate.ptr);
+                                if (len > 0) {
+                                    // Send the first block
+                                    obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
+                                    obj.agentUpdate.ptr += len;
+                                    obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
+                                } else {
+                                    // Error
                                     obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
                                     obj.agentUpdate = null;
-                                } else {
-                                    // Send the first block to the agent
-                                    obj.agentUpdate.ptr += len;
-                                    //console.log("Agent update send first block: " + len);
-                                    obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                                 }
-                            });
+                            }
                         }, null, 1);
 
                     } else {
@@ -217,23 +248,41 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length == 4) && (obj.agentUpdate != null)) {
                     var status = obj.common.ReadShort(msg, 2);
                     if (status == 1) {
-                        var len = -1;
-                        try { len = obj.fs.readSync(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, agentUpdateBlockSize, obj.agentUpdate.ptr); } catch (e) { }
-                        if (len == -1) {
-                            // Error reading the agent file, stop here.
-                            obj.fs.close(obj.agentUpdate.fd);
-                            obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
-                            obj.agentUpdate = null;
-                        } else {
-                            // Send the next block to the agent
-                            obj.agentUpdate.ptr += len;
-                            //console.log("Agent update send next block", obj.agentUpdate.ptr, len);
-                            if (len == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
-
-                            if (len < agentUpdateBlockSize) {
-                                //console.log("Agent update sent");
-                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentExeInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
+                        if (obj.agentExeInfo.data == null) {
+                            // Read the agent from disk
+                            var len = -1;
+                            try { len = obj.fs.readSync(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, agentUpdateBlockSize, obj.agentUpdate.ptr); } catch (e) { }
+                            if (len == -1) {
+                                // Error reading the agent file, stop here.
                                 obj.fs.close(obj.agentUpdate.fd);
+                                obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                obj.agentUpdate = null;
+                            } else {
+                                // Send the next block to the agent
+                                obj.agentUpdate.ptr += len;
+                                //console.log("Agent update send next block", obj.agentUpdate.ptr, len);
+                                if (len == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
+
+                                if (len < agentUpdateBlockSize) {
+                                    //console.log("Agent update sent from disk.");
+                                    obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentExeInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
+                                    obj.fs.close(obj.agentUpdate.fd);
+                                    obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                    obj.agentUpdate = null;
+                                }
+                            }
+                        } else {
+                            // Send the agent from RAM
+                            var len = Math.min(agentUpdateBlockSize, obj.agentExeInfo.data.length - obj.agentUpdate.ptr);
+                            if (len > 0) {
+                                obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
+                                if (len == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
+                                obj.agentUpdate.ptr += len;
+                            }
+
+                            if (obj.agentUpdate.ptr == obj.agentExeInfo.data.length) {
+                                //console.log("Agent update sent from RAM.");
+                                obj.send(obj.common.ShortToStr(13) + obj.common.ShortToStr(0) + obj.common.hex2rstr(obj.agentExeInfo.hash)); // Command 13, end mesh agent download, send agent SHA384 hash
                                 obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
                                 obj.agentUpdate = null;
                             }
