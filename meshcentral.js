@@ -393,10 +393,12 @@ function CreateMeshCentralServer(config, args) {
                                 var existingUser = users[newobj._id];
                                 if (existingUser) {
                                     // Merge the links
-                                    for (var j in newobj.links) {
-                                        if ((existingUser.links == null) || (existingUser.links[j] == null)) {
-                                            if (existingUser.links == null) { existingUser.links = {}; }
-                                            existingUser.links[j] = newobj.links[j];
+                                    if (typeof newobj.links == 'object') {
+                                        for (var j in newobj.links) {
+                                            if ((existingUser.links == null) || (existingUser.links[j] == null)) {
+                                                if (existingUser.links == null) { existingUser.links = {}; }
+                                                existingUser.links[j] = newobj.links[j];
+                                            }
                                         }
                                     }
                                     if (existingUser.name == 'admin') { existingUser.links = {}; }
