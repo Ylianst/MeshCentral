@@ -1265,10 +1265,12 @@ function CreateMeshCentralServer(config, args) {
                 obj.meshAgentBinaries[archid].path = agentpath;
                 obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
+                if (!obj.args.agentsondisk) { obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath); }
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
                     try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (e) { }
                 }
+
                 // Hash the binary
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.archid = archid;
