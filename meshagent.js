@@ -425,7 +425,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             var adminUser = obj.parent.users['user/' + domain.id + '/' + obj.domain.orphanagentuser.toLowerCase()];
             if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
                 // Mesh name is hex instead of base64
-                var meshname = Buffer.from(obj.meshid, 'base64').toString('hex').substring(0, 18);
+                var meshname = obj.meshid.substring(0, 18);
 
                 // Create a new mesh for this device
                 var links = {};
