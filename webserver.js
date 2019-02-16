@@ -2411,7 +2411,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) && (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
+        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
     };
 
     // Send the core module to the mesh agent
@@ -2426,7 +2426,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check we have agent rights
         var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) && (user.siteadmin == 0xFFFFFFFF)) {
+        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) {
             if (coretype == 'clear') {
                 // Clear the mesh agent core
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.

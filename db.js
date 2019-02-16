@@ -41,6 +41,13 @@ module.exports.CreateDB = function (parent) {
         var dbcollection = 'meshcentral';
         if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
         obj.file = db.collection(dbcollection);
+
+        // Setup MongoDB indexes
+        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1 });         // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+        obj.file.createIndex({ email: 1 }, { sparse: 1 });                              // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+        obj.file.createIndex({ ids: 1, time: -1 }, { sparse: 1 });                      // Speeds up GetEvents() and GetEventsWithLimit()
+        obj.file.createIndex({ type: 1, node: 1, time: -1 }, { sparse: 1 });            // Speeds up getPowerTimeline()
+        obj.file.createIndex({ mesh: 1 }, { sparse: 1 });                               // Speeds up RemoveMesh()
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
@@ -72,6 +79,13 @@ module.exports.CreateDB = function (parent) {
         // Start NeDB
         obj.file = new Datastore(datastoreOptions);
         obj.file.persistence.setAutocompactionInterval(3600);
+
+        // Setup NeDB indexes
+        obj.file.ensureIndex({ fieldName: 'type' });
+        obj.file.ensureIndex({ fieldName: 'domain' });
+        obj.file.ensureIndex({ fieldName: 'meshid' });
+        obj.file.ensureIndex({ fieldName: 'node' });
+        obj.file.ensureIndex({ fieldName: 'email' });
     }
 
     obj.SetupDatabase = function (func) {
@@ -232,27 +246,30 @@ module.exports.CreateDB = function (parent) {
         } catch (ex) { return null; }
     }
 
-    // Get the number of records in the database for various types, this is the slow NeDB way. TODO: MongoDB can use group() to do this faster.
+    // Get the number of records in the database for various types, this is the slow NeDB way.
+    // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
-        obj.file.count({ type: 'node' }, function (err, nodeCount) {
-            obj.file.count({ type: 'mesh' }, function (err, meshCount) {
-                obj.file.count({ type: 'power' }, function (err, powerCount) {
-                    obj.file.count({ type: 'user' }, function (err, userCount) {
-                        obj.file.count({ type: 'ifinfo' }, function (err, nodeInterfaceCount) {
-                            obj.file.count({ type: 'note' }, function (err, noteCount) {
-                                obj.file.count({ type: 'smbios' }, function (err, nodeSmbiosCount) {
-                                    obj.file.count({ type: 'lastconnect' }, function (err, nodeLastConnectCount) {
-                                        obj.file.count({ }, function (err, totalCount) {
-                                            func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
-                                        });
-                                    });
-                                });
+        if (obj.databaseType == 2) {
+            // MongoDB version
+            obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }], function (err, docs) {
+                var counters = {}, totalCount = 0;
+                for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
+                func({ nodes: counters['node'], meshes: counters['mesh'], powerEvents: counters['power'], users: counters['user'], total: totalCount });
+            })
+        } else {
+            // NeDB version
+            obj.file.count({ type: 'node' }, function (err, nodeCount) {
+                obj.file.count({ type: 'mesh' }, function (err, meshCount) {
+                    obj.file.count({ type: 'power' }, function (err, powerCount) {
+                        obj.file.count({ type: 'user' }, function (err, userCount) {
+                            obj.file.count({}, function (err, totalCount) {
+                                func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
                             });
                         });
                     });
                 });
             });
-        });
+        }
     }
 
     // This is used to rate limit a number of operation per day. Returns a startValue each new days, but you can substract it and save the value in the db.
