@@ -178,15 +178,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Send current server statistics
             obj.SendServerStats = function () {
-                obj.db.getStats(function (data) {
-                    var os = require('os');
-                    var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
-                    if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
-                    var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Connected Agents": Object.keys(obj.parent.wsagents).length, "Connected Users": Object.keys(obj.parent.wssessions2).length };
-                    if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
-                    stats.values = { "Server State": serverStats, "Database": { "Records": data.total, "Users": data.users, "Device Groups": data.meshes, "Devices": data.nodes, "Device NetInfo": data.nodeInterfaces, "Device Power Event": data.powerEvents, "Notes": data.notes, "Connection Records": data.connectEvents, "SMBios": data.smbios } }
-                    try { ws.send(JSON.stringify(stats)); } catch (ex) { }
-                });
+                var os = require('os');
+                var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
+                if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
+                var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Connected Agents": Object.keys(obj.parent.wsagents).length, "Connected Users": Object.keys(obj.parent.wssessions2).length };
+                if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
+                stats.values = { "Server State": serverStats }
+                try { ws.send(JSON.stringify(stats)); } catch (ex) { }
             }
 
             // When data is received from the web socket
@@ -256,7 +254,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'serverstats':
                 {
-                    if ((user.siteadmin) != 0) {
+                    if ((user.siteadmin & 21) != 0) { // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
                         if (obj.common.validateInt(command.interval, 1000, 1000000) == false) {
                             // Clear the timer
                             if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); obj.serverStatsTimer = null; }
@@ -1438,38 +1436,65 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'uploadagentcore':
                 {
-                    if (user.siteadmin != 0xFFFFFFFF) break;
                     if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if (obj.common.validateString(command.type, 1, 40) == false) break; // Check path
-                    if (command.type == 'default') {
-                        // Send the default core to the agent
-                        obj.parent.parent.updateMeshCore(function () { obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
-                    } else if (command.type == 'clear') {
-                        // Clear the mesh agent core on the mesh agent
-                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
-                    } else if (command.type == 'recovery') {
-                        // Send the recovery core to the agent
-                        obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
-                    } else if ((command.type == 'custom') && (obj.common.validateString(command.path, 1, 2048) == true)) {
-                        // Send a mesh agent core to the mesh agent
-                        var file = obj.parent.getServerFilePath(user, domain, command.path);
-                        if (file != null) {
-                            obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
-                                if (err != null) {
-                                    data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                    obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
+
+                    // Change the device
+                    obj.db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes.length != 1) return;
+                        var node = nodes[0];
+
+                        // Get the mesh for this device
+                        mesh = obj.parent.meshes[node.meshid];
+                        if (mesh) {
+                            // Check if this user has rights to do this
+                            if (mesh.links[user._id] == null || (((mesh.links[user._id].rights & 16) == 0) && (user.siteadmin != 0xFFFFFFFF))) { return; }
+
+                            if (command.type == 'default') {
+                                // Send the default core to the agent
+                                obj.parent.parent.updateMeshCore(function () { obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
+                            } else if (command.type == 'clear') {
+                                // Clear the mesh agent core on the mesh agent
+                                obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
+                            } else if (command.type == 'recovery') {
+                                // Send the recovery core to the agent
+                                obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
+                            } else if ((command.type == 'custom') && (obj.common.validateString(command.path, 1, 2048) == true)) {
+                                // Send a mesh agent core to the mesh agent
+                                var file = obj.parent.getServerFilePath(user, domain, command.path);
+                                if (file != null) {
+                                    obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                        if (err != null) {
+                                            data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                                            obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
+                                        }
+                                    });
                                 }
-                            });
+                            }
                         }
-                    }
+                    });
                     break;
                 }
             case 'agentdisconnect':
                 {
-                    // Force mesh agent disconnection
                     if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if (obj.common.validateInt(command.disconnectMode) == false) break; // Check disconnect mode
-                    obj.parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
+                    if (obj.common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
+
+                    // Change the device
+                    obj.db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes.length != 1) return;
+                        var node = nodes[0];
+
+                        // Get the mesh for this device
+                        mesh = obj.parent.meshes[node.meshid];
+                        if (mesh) {
+                            // Check if this user has rights to do this
+                            if (mesh.links[user._id] == null || (((mesh.links[user._id].rights & 16) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
+
+                            // Force mesh agent disconnection
+                            obj.parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
+                        }
+                    });
                     break;
                 }
             case 'close':
