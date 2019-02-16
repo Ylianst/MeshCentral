@@ -646,7 +646,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Broadcast a message to all currently connected users.
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.common.validateUsername(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
+                    if (obj.common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
 
                     // Create the notification message
                     var notification = { "action": "msg", "type": "notify", "value": command.msg };
