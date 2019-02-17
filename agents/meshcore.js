@@ -466,6 +466,21 @@ function createMeshCore(agent) {
                             if (data.url) { mesh.SendCommand({ "action": "msg", "type":"openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                             break;
                         }
+                        case 'getclip': {
+                            // Send the load clipboard back to the user
+                            sendConsoleText('getClip: ' + JSON.stringify(data));
+                            require("clipboard").read().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
+                            break;
+                        }
+                        case 'setclip': {
+                            // Set the load clipboard to a user value
+                            sendConsoleText('setClip: ' + JSON.stringify(data));
+                            if (typeof data.data == 'string') {
+                                require("clipboard")(data.data); // Set the clipboard
+                                mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
+                            } 
+                            break;
+                        }
                         default:
                             // Unknown action, ignore it.
                             break;
@@ -1108,7 +1123,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate,\r\namtpolicy, getscript.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate,\r\namtpolicy, getscript, getclip, setclip.';
                     break;
                 }
                     /*
@@ -1130,6 +1145,14 @@ function createMeshCore(agent) {
                     }
                     break;
                     */
+                case 'getclip': {
+                    require("clipboard").read().then(function (str) { sendConsoleText(str, sessionid); });
+                    break;
+                }
+                case 'setclip': {
+                    if (args['_'].length != 1) { response = 'Proper usage: setclip (text)'; } else { require("clipboard")(args['_'][0]); response = 'Setting clipboard to: ' + args['_'][0]; }
+                    break;
+                }
                 case 'amtreset': {
                     resetMei();
                     resetMicroLms();

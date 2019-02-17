@@ -46,7 +46,7 @@ module.exports.CreateDB = function (parent) {
         obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1 });         // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
         obj.file.createIndex({ email: 1 }, { sparse: 1 });                              // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
         obj.file.createIndex({ ids: 1, time: -1 }, { sparse: 1 });                      // Speeds up GetEvents() and GetEventsWithLimit()
-        obj.file.createIndex({ type: 1, node: 1, time: -1 }, { sparse: 1 });            // Speeds up getPowerTimeline()
+        obj.file.createIndex({ type: 1, nodeid: 1, time: 1 }, { sparse: 1 });           // Speeds up getPowerTimeline()
         obj.file.createIndex({ mesh: 1 }, { sparse: 1 });                               // Speeds up RemoveMesh()
     } else {
         // Use NeDB (The default)
@@ -186,7 +186,7 @@ module.exports.CreateDB = function (parent) {
     obj.SetUser = function (user) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); };
     obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
     obj.clearOldEntries = function (type, days, domain) { var cutoff = Date.now() - (1000 * 60 * 60 * 24 * days); obj.file.remove({ type: type, time: { $lt: cutoff } }, { multi: true }); };
-    obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }).exec(func); } else { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }, func); } };
+    obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'power', nodeid: { $in: ['*', nodeid] } }).sort({ time: 1 }).exec(func); } else { obj.file.find({ type: 'power', node: { $in: ['*', nodeid] } }).sort({ time: 1 }, func); } };
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
     obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { obj.file.count({ type: type, domain: domainid }, function (err, count) { func((err != null) || (count > max)); }); } }

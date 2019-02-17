@@ -181,7 +181,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
                 if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
-                var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Connected Agents": Object.keys(obj.parent.wsagents).length, "Connected Users": Object.keys(obj.parent.wssessions2).length };
+                var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Agent Sessions": Object.keys(obj.parent.wsagents).length, "Users Sessions": Object.keys(obj.parent.wssessions2).length };
                 if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
                 stats.values = { "Server State": serverStats }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
@@ -1802,6 +1802,49 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
+            case 'getClip': {
+                if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+
+                // Get the device
+                obj.db.Get(command.nodeid, function (err, nodes) {
+                    if (nodes.length != 1) return;
+                    var node = nodes[0];
+
+                    // Get the mesh for this device
+                    mesh = obj.parent.meshes[node.meshid];
+                    if (mesh) {
+                        // Check if this user has "remote" rights to do this
+                        if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 16) == 0)) return;
+
+                        // Ask for clipboard data from agent
+                        var agent = obj.parent.wsagents[node._id];
+                        if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
+                    }
+                });
+                break;
+            }
+            case 'setClip': {
+                if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (obj.common.validateString(command.data, 1, 65535) == false) break; // Check 
+
+                // Get the device
+                obj.db.Get(command.nodeid, function (err, nodes) {
+                    if (nodes.length != 1) return;
+                    var node = nodes[0];
+
+                    // Get the mesh for this device
+                    mesh = obj.parent.meshes[node.meshid];
+                    if (mesh) {
+                        // Check if this user has "remote" rights to do this
+                        if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 16) == 0)) return;
+
+                        // Send clipboard data to the agent
+                        var agent = obj.parent.wsagents[node._id];
+                        if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
+                    }
+                });
+                break;
+            }
             case 'getNotes':
                 {
                     // Argument validation
