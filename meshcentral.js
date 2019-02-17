@@ -363,6 +363,21 @@ function CreateMeshCentralServer(config, args) {
                 obj.db.RemoveAll(function () { obj.db.InsertMany(json, function (err) { if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit(); }); });
                 return;
             }
+            /*
+            if (obj.args.dbimport) {
+                // Import the entire database from a very large JSON file
+                obj.db.RemoveAll(function () {
+                    if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
+                    var json = null, json2 = "", badCharCount = 0;
+                    const StreamArray = require('stream-json/streamers/StreamArray');
+                    const jsonStream = StreamArray.withParser();
+                    jsonStream.on('data', function (data) { obj.db.Set(data.value); });
+                    jsonStream.on('end', () => { console.log('Done.'); process.exit(); });
+                    obj.fs.createReadStream(obj.args.dbimport).pipe(jsonStream.input);
+                });
+                return;
+            }
+            */
             if (obj.args.dbmerge) {
                 // Import the entire database from a JSON file
                 if (obj.args.dbmerge == true) { obj.args.dbmerge = obj.getConfigFilePath('meshcentral.db.json'); }
@@ -521,6 +536,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.minifycore === 0) obj.args.minifycore = false;
 
         // Clear old event entries and power entires
+        // TODO: Replace this is delete indexes on NeDB and MongoDB.
         obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.
         obj.db.clearOldEntries('power', 10); // Clear all event entires that are older than 10 days. If a node is connected longer than 10 days, current power state will be used for everything.
 
@@ -565,9 +581,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Set all nodes to power state of unknown (0)
         if (obj.multiServer == null) {
-            obj.db.file.insert({ type: 'power', time: Date.now(), node: '*', power: 0, s: 1 });
+            obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 1 });
         } else {
-            obj.db.file.insert({ type: 'power', time: Date.now(), node: '*', power: 0, s: 1, server: obj.multiServer.serverid });
+            obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 1, server: obj.multiServer.serverid });
         }
 
         // Read or setup database configuration values
@@ -802,7 +818,7 @@ function CreateMeshCentralServer(config, args) {
         obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'stopped', msg: 'Server stopped' });
 
         // Set all nodes to power state of unknown (0)
-        var record = { type: 'power', time: Date.now(), node: '*', power: 0, s: 2 };
+        var record = { type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 2 };
         if (obj.multiServer != null) { record.server = obj.multiServer.serverid; }
         obj.db.file.insert(record, function () {
             if (restoreFile) {
@@ -977,7 +993,7 @@ function CreateMeshCentralServer(config, args) {
                 eventConnectChange = 1;
 
                 // Set new power state in database
-                var record = { type: 'power', time: connectTime, node: nodeid, power: powerState };
+                var record = { type: 'power', time: connectTime, nodeid: nodeid, power: powerState };
                 if (oldPowerState != null) record.oldPower = oldPowerState;
                 obj.db.file.insert(record);
             }
@@ -1008,7 +1024,7 @@ function CreateMeshCentralServer(config, args) {
                 state.powerState = powerState;
 
                 // Set new power state in database
-                var record = { type: 'power', time: connectTime, node: nodeid, power: powerState, server: obj.multiServer.serverid };
+                var record = { type: 'power', time: connectTime, nodeid: nodeid, power: powerState, server: obj.multiServer.serverid };
                 if (oldPowerState != null) record.oldPower = oldPowerState;
                 obj.db.file.insert(record);
             }
@@ -1052,7 +1068,7 @@ function CreateMeshCentralServer(config, args) {
                 eventConnectChange = 1;
 
                 // Set new power state in database
-                obj.db.file.insert({ type: 'power', time: Date.now(), node: nodeid, power: powerState, oldPower: oldPowerState });
+                obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: nodeid, power: powerState, oldPower: oldPowerState });
             }
 
             // Event the node connection change

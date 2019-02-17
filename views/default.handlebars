@@ -488,7 +488,8 @@
                                         <option value=6>Win+R</option>
                                     </select>
                                     <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
-                                    <input id="DeskCAD" style="margin-left:6px" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
+                                    <input id="DeskClip" style="margin-left:6px;display:none" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
+                                    <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
                                     <span id="DeskControlSpan" style="margin-left:6px" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span>&nbsp;
                                 </div>
                             </td>
@@ -920,6 +921,7 @@
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
+            QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
             toggleFullScreen();
 
@@ -1291,6 +1293,12 @@
                                 addNotification(n);
                             } else if (message.type == 'ps') {
                                 showDeskToolsProcesses(message);
+                            } else if ((message.type == 'getclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                Q('d2clipText').value = message.data;
+                            } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                // Display success/fail on the clipboard dialog box.
+                                QH('dlgClipStatus', message.success ? '<span style=color:green>Success</span>' : '<span style=color:red>Failed</span>')
+                                setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, 2000);
                             }
                         }
                     } else {
@@ -4012,6 +4020,7 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QV('DeskCAD', meshrights & 8);
             QE('DeskCAD', deskState == 3);
+            QE('DeskClip', deskState == 3);
             QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
             QE('DeskWD', deskState == 3);
             QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
@@ -4408,6 +4417,29 @@
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 82], [desktop.m.KeyAction.UP, 82], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'R' press, 'R' release, L-Winkey release
                 }
             }
+        }
+
+        // Show clipboard dialog
+        function showDeskClip() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            Q('DeskClip').blur();
+            var x = '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
+            x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
+            x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
+            x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
+            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px>&nbsp;</div>';
+            setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
+            Q('d2clipText').focus();
+        }
+
+        function showDeskClipGet() {
+            if (desktop == null || desktop.State != 3) return;
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id });
+        }
+
+        function showDeskClipSet() {
+            if (desktop == null || desktop.State != 3) return;
+            meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
         }
 
         // Send CTRL-ALT-DEL
