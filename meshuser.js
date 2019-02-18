@@ -270,7 +270,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Request a list of all meshes this user as rights to
                     var docs = [];
-                    for (i in user.links) { if (obj.parent.meshes[i]) { docs.push(obj.parent.meshes[i]); } }
+                    for (i in user.links) { if ((obj.parent.meshes[i]) && (obj.parent.meshes[i].deleted == null)) { docs.push(obj.parent.meshes[i]); } }
                     try { ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag })); } catch (ex) { }
                     break;
                 }
@@ -325,6 +325,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var timeline = [], time = null, previousPower;
                             for (i in docs) {
                                 var doc = docs[i];
+                                doc.time = Date.parse(doc.time);
                                 if (time == null) {
                                     // First element
                                     time = doc.time;
@@ -496,10 +497,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
+                                if (err != null) return;
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                            });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetUserEventsWithLimit(filter, domain.id, command.user, command.limit, function (err, docs) {
+                                if (err != null) return;
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                            });
                         }
                     } else if (obj.common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
                         // TODO: Check that the user has access to this nodeid
@@ -507,16 +514,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (obj.common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
 
                         // Send the list of most recent events for this session, up to 'limit' count
-                        obj.db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { } });
+                        obj.db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
+                            if (err != null) return;
+                            try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
+                        });
                     } else {
                         // All events
                         var filter = user.subscriptions;
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetEvents(filter, domain.id, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetEvents(filter, domain.id, function (err, docs) {
+                                if (err != null) return;
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                            });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) { if (err != null) return; try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { } });
+                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) {
+                                if (err != null) return;
+                                try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
+                            });
                         }
                     }
                     break;
@@ -916,7 +932,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                     obj.db.Get(command.meshid, function (err, meshes) {
                         if (meshes.length != 1) return;
-                        mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
+                        var mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
 
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
@@ -930,9 +946,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var links = meshes[i].links;
                             for (var j in links) {
                                 var xuser = obj.parent.users[j];
-                                delete xuser.links[meshes[i]._id];
-                                obj.db.SetUser(xuser);
-                                obj.parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+                                if (xuser && xuser.links) {
+                                    delete xuser.links[meshes[i]._id];
+                                    obj.db.SetUser(xuser);
+                                    obj.parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+                                }
                             }
                         }
 
@@ -943,8 +961,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } catch (e) { }
 
                         obj.parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
-                        obj.db.RemoveMesh(command.meshid); // Remove mesh from database
-                        delete obj.parent.meshes[command.meshid]; // Remove mesh from memory
+
+                        // Mark the mesh as deleted
+                        var dbmesh = meshes[0];
+                        dbmesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
+                        obj.db.Set(obj.common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will up-delete it.
+                        obj.parent.meshes[command.meshid] = mesh; // Update the mesh in memory;
+
+                        // Delete all devices attached to this mesh in the database
+                        obj.db.RemoveMeshDocuments(command.meshid);
                     });
                     break;
                 }
