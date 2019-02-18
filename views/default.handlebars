@@ -2461,8 +2461,10 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            //x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            //x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2478,8 +2480,10 @@
 
             // Windows agent uninstall
             x += "<div id=agins_windows_un style=display:none>To remove a mesh agent, download the file below, run it and click \"uninstall\".<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=3","MeshAgent.exe") title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=4","MeshAgent.exe")  title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             x += "</div>";
 
             // Linux agent uninstall
@@ -2487,7 +2491,7 @@
             x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += "</div>";
 
-            setDialogMode(2, "Add Mesh Agent", 9, null, x);
+            setDialogMode(2, "Add Mesh Agent", 2, null, x, 'agentDownload');
             var servername = serverinfo.name;
             if ((servername == 'un-configured') || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
 
@@ -2505,6 +2509,21 @@
             addAgentToMeshClick();
         }
 
+        function fileDownload(path, name, appendFlag) {
+            var xdr = null, flag = '';
+            if (appendFlag == 1) { flag = Q('aginsType').value; }
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open("GET", window.location.href + path + flag);
+            xdr.timeout = 15000;
+            xdr.responseType = "blob";
+            xdr.onprogress = function (x) { console.log(x); };
+            xdr.onload = function (e) { saveAs(new Blob([e.target.response], { type: "application/octet-stream" }), name); if (xxdialogTag == 'agentDownload') { setDialogMode(0); } };
+            xdr.onerror = function () { if (xxdialogTag == 'agentDownload') { setDialogMode(0); } alert('Agent downloads timeout.'); };
+            xdr.ontimeout = function () { if (xxdialogTag == 'agentDownload') { setDialogMode(0); } alert('Unable to download agent.'); };
+            xdr.send();
+        }
+
         function addAgentToMeshClick() {
             var v = Q('aginsSelect').value;
             QV('agins_windows', v == 0);
@@ -2515,8 +2534,8 @@
             QV('aginsTypeDiv', v == 0);
 
             // Fix the links if needed
-            Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
-            Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            //Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            //Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
             if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value; }
         }
 
