@@ -240,9 +240,9 @@ function CreateMeshCentralServer(config, args) {
             if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showevents) { obj.db.GetAllType('event', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showpower) { obj.db.GetAllType('power', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.clearpower) { obj.db.RemoveAllOfType('power', function () { process.exit(); }); return; }
+            if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { console.log(docs); process.exit(); }); return; }
+            if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { console.log(docs); process.exit(); }); return; }
+            if (obj.args.clearpower) { obj.db.removeAllPowerEvents(function () { process.exit(); }); return; }
             if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
             if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
             if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
@@ -535,11 +535,6 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (obj.args.minifycore === 0) obj.args.minifycore = false;
 
-        // Clear old event entries and power entires
-        // TODO: Replace this is delete indexes on NeDB and MongoDB.
-        obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.
-        obj.db.clearOldEntries('power', 10); // Clear all event entires that are older than 10 days. If a node is connected longer than 10 days, current power state will be used for everything.
-
         // Setup a site administrator
         if ((obj.args.admin) && (typeof obj.args.admin == 'string')) {
             var adminname = obj.args.admin.split('/');
@@ -580,11 +575,7 @@ function CreateMeshCentralServer(config, args) {
         obj.db.cleanup();
 
         // Set all nodes to power state of unknown (0)
-        if (obj.multiServer == null) {
-            obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 1 });
-        } else {
-            obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 1, server: obj.multiServer.serverid });
-        }
+        obj.db.storePowerEvent({ time: new Date(), nodeid: '*', power: 0, s: 1 }, obj.multiServer); // s:1 indicates that the server is starting up.
 
         // Read or setup database configuration values
         obj.db.Get('dbconfig', function (err, dbconfig) {
@@ -800,13 +791,6 @@ function CreateMeshCentralServer(config, args) {
                 }
             });
         }
-
-        // Clear old event entries and power entires
-        obj.db.clearOldEntries('event', 30); // Clear all event entires that are older than 30 days.
-        obj.db.clearOldEntries('power', 10); // Clear all event entires that are older than 10 days. If a node is connected longer than 10 days, current power state will be used for everything.
-
-        // Perform other database cleanup
-        obj.db.cleanup();
     };
 
     // Stop the Meshcentral server
@@ -818,9 +802,7 @@ function CreateMeshCentralServer(config, args) {
         obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'stopped', msg: 'Server stopped' });
 
         // Set all nodes to power state of unknown (0)
-        var record = { type: 'power', time: Date.now(), nodeid: '*', power: 0, s: 2 };
-        if (obj.multiServer != null) { record.server = obj.multiServer.serverid; }
-        obj.db.file.insert(record, function () {
+        obj.db.storePowerEvent({ time: new Date(), nodeid: '*', power: 0, s: 2 }, obj.multiServer, function () {  // s:2 indicates that the server is shutting down.
             if (restoreFile) {
                 obj.debug(1, 'Server stopped, updating settings: ' + restoreFile);
                 console.log('Updating settings folder...');
@@ -879,11 +861,13 @@ function CreateMeshCentralServer(config, args) {
         if (!obj.db) return;
 
         obj.debug(3, 'DispatchEvent', ids);
-        if (typeof event == 'object') {
-            event.type = 'event';
-            event.time = Date.now();
-            event.ids = ids;
-            if (!event.nolog) { obj.db.StoreEvent(ids, source, event); }
+        if ((typeof event == 'object') && (!event.nolog)) {
+            event.time = new Date();
+            // The event we store is going to skip some of the fields so we don't store too much stuff in the database.
+            var storeEvent = {};
+            for (var i in event) { if (i != 'node') { storeEvent[i] = event[i]; } } // Skip the "node" field. May skip more in the future.
+            storeEvent.ids = ids;
+            obj.db.StoreEvent(storeEvent);
         }
         var targets = []; // List of targets we dispatched the event to, we don't want to dispatch to the same target twice.
         for (var j in ids) {
@@ -993,9 +977,9 @@ function CreateMeshCentralServer(config, args) {
                 eventConnectChange = 1;
 
                 // Set new power state in database
-                var record = { type: 'power', time: connectTime, nodeid: nodeid, power: powerState };
-                if (oldPowerState != null) record.oldPower = oldPowerState;
-                obj.db.file.insert(record);
+                var record = { time: new Date(connectTime), nodeid: nodeid, power: powerState };
+                if (oldPowerState != null) { record.oldPower = oldPowerState; }
+                obj.db.storePowerEvent(record, obj.multiServer);
             }
 
             // Event the node connection change
@@ -1024,9 +1008,9 @@ function CreateMeshCentralServer(config, args) {
                 state.powerState = powerState;
 
                 // Set new power state in database
-                var record = { type: 'power', time: connectTime, nodeid: nodeid, power: powerState, server: obj.multiServer.serverid };
-                if (oldPowerState != null) record.oldPower = oldPowerState;
-                obj.db.file.insert(record);
+                var record = { time: new Date(connectTime), nodeid: nodeid, power: powerState, server: obj.multiServer.serverid };
+                if (oldPowerState != null) { record.oldPower = oldPowerState; }
+                obj.db.storePowerEvent(record, obj.multiServer);
             }
 
             // Update the combined node state
@@ -1068,7 +1052,7 @@ function CreateMeshCentralServer(config, args) {
                 eventConnectChange = 1;
 
                 // Set new power state in database
-                obj.db.file.insert({ type: 'power', time: Date.now(), nodeid: nodeid, power: powerState, oldPower: oldPowerState });
+                obj.db.storePowerEvent({ time: new Date(), nodeid: nodeid, power: powerState, oldPower: oldPowerState }, obj.multiServer);
             }
 
             // Event the node connection change

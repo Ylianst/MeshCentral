@@ -28,6 +28,8 @@
 module.exports.CreateDB = function (parent) {
     var obj = {};
     var Datastore = null;
+    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days. (Seconds * Minutes * Hours * Days)
+    var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days. (Seconds * Minutes * Hours * Days)
     obj.path = require('path');
     obj.parent = parent;
     obj.identifier = null;
@@ -40,14 +42,69 @@ module.exports.CreateDB = function (parent) {
         var db = Datastore(obj.parent.args.mongodb);
         var dbcollection = 'meshcentral';
         if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
-        obj.file = db.collection(dbcollection);
 
-        // Setup MongoDB indexes
-        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1 });         // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-        obj.file.createIndex({ email: 1 }, { sparse: 1 });                              // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-        obj.file.createIndex({ ids: 1, time: -1 }, { sparse: 1 });                      // Speeds up GetEvents() and GetEventsWithLimit()
-        obj.file.createIndex({ type: 1, nodeid: 1, time: 1 }, { sparse: 1 });           // Speeds up getPowerTimeline()
-        obj.file.createIndex({ mesh: 1 }, { sparse: 1 });                               // Speeds up RemoveMesh()
+        // Setup MongoDB main collection and indexes
+        obj.file = db.collection(dbcollection);
+        obj.file.getIndexes(function (err, indexes) {
+            // Check if we need to reset indexes
+            var indexesByName = {}, indexCount = 0;
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
+            if ((indexCount != 4) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null)) {
+                console.log('Resetting main indexes...');
+                obj.file.dropIndexes(function (err) {
+                    obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                    obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                    obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
+                });
+            }
+        });
+
+        // Setup MongoDB events collection and indexes
+        obj.eventsfile = db.collection(dbcollection + '-events');                               // Collection containing all events
+        obj.eventsfile.getIndexes(function (err, indexes) {
+            // Check if we need to reset indexes
+            var indexesByName = {}, indexCount = 0;
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
+            if ((indexCount != 3) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
+                // Reset all indexes
+                console.log('Resetting events indexes...');
+                obj.eventsfile.dropIndexes(function (err) {
+                    obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
+                    obj.eventsfile.createIndex({ "time": 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                });
+            } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
+                // Reset the timeout index
+                console.log('Resetting events expire index...');
+                obj.eventsfile.dropIndex("ExpireTime1", function (err) {
+                    obj.eventsfile.createIndex({ "time": 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                });
+            }
+        });
+
+        // Setup MongoDB power events collection and indexes
+        obj.powerfile = db.collection(dbcollection + '-power');                                 // Collection containing all power events
+        obj.powerfile.getIndexes(function (err, indexes) {
+            // Check if we need to reset indexes
+            var indexesByName = {}, indexCount = 0;
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
+            if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
+                // Reset all indexes
+                console.log('Resetting power events indexes...');
+                obj.powerfile.dropIndexes(function (err) {
+                    // Create all indexes
+                    obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
+                    obj.powerfile.createIndex({ "time": 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                });
+            } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
+                // Reset the timeout index
+                console.log('Resetting power events expire index...');
+                obj.powerfile.dropIndex("ExpireTime1", function (err) {
+                    // Reset the expire power events index
+                    obj.powerfile.createIndex({ "time": 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                });
+            }
+        });
+
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
@@ -76,16 +133,27 @@ module.exports.CreateDB = function (parent) {
             }
         }
 
-        // Start NeDB
+        // Start NeDB main collection and setup indexes
         obj.file = new Datastore(datastoreOptions);
-        obj.file.persistence.setAutocompactionInterval(3600);
-
-        // Setup NeDB indexes
+        obj.file.persistence.setAutocompactionInterval(36000);
         obj.file.ensureIndex({ fieldName: 'type' });
         obj.file.ensureIndex({ fieldName: 'domain' });
-        obj.file.ensureIndex({ fieldName: 'meshid' });
-        obj.file.ensureIndex({ fieldName: 'node' });
-        obj.file.ensureIndex({ fieldName: 'email' });
+        obj.file.ensureIndex({ fieldName: 'meshid', sparse: true });
+        obj.file.ensureIndex({ fieldName: 'nodeid', sparse: true });
+        obj.file.ensureIndex({ fieldName: 'email', sparse: true });
+
+        // Setup the events collection and setup indexes
+        obj.eventsfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-events.db'), autoload: true });
+        obj.eventsfile.persistence.setAutocompactionInterval(36000);
+        obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
+        obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
+        obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 20 }); // Limit the power event log to 20 days (Seconds * Minutes * Hours * Days)
+
+        // Setup the power collection and setup indexes
+        obj.powerfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-power.db'), autoload: true });
+        obj.powerfile.persistence.setAutocompactionInterval(36000);
+        obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
+        obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 10 }); // Limit the power event log to 10 days (Seconds * Minutes * Hours * Days)
     }
 
     obj.SetupDatabase = function (func) {
@@ -117,10 +185,15 @@ module.exports.CreateDB = function (parent) {
         // TODO: Remove all mesh links to invalid users
         // TODO: Remove all meshes that dont have any links
 
+        // Remote all the events and power events from the main collection.
+        // They are all in two seperate collections now.
+        obj.file.remove({ type: 'event' }, { multi: true });
+        obj.file.remove({ type: 'power' }, { multi: true });
+
         // Remove all objects that have a "meshid" that no longer points to a valid mesh.
         obj.GetAllType('mesh', function (err, docs) {
             var meshlist = [];
-            if (err == null && docs.length > 0) { for (var i in docs) { meshlist.push(docs[i]._id); } }
+            if ((err == null) && (docs.length > 0)) { for (var i in docs) { meshlist.push(docs[i]._id); } }
             obj.file.remove({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
 
             // Fix all of the creating & login to ticks by seconds, not milliseconds.
@@ -161,6 +234,7 @@ module.exports.CreateDB = function (parent) {
         });
     };
 
+    // Database actions on the main collection
     obj.Set = function (data, func) { obj.file.update({ _id: data._id }, data, { upsert: true }, func); };
     obj.Get = function (id, func) { obj.file.find({ _id: id }, func); };
     obj.GetAll = function (func) { obj.file.find({}, func); };
@@ -175,21 +249,42 @@ module.exports.CreateDB = function (parent) {
     obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); };
     obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };
     obj.InsertMany = function (data, func) { obj.file.insert(data, func); };
-    obj.StoreEvent = function (ids, source, event) { obj.file.insert(event); };
-    obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func); } };
-    obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.file.find({ type: 'event', domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
-    obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'event', domain: domain, nodeid: nodeid }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.file.find({ type: 'event', domain: domain, nodeid: nodeid }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
-    obj.RemoveMesh = function (id) { obj.file.remove({ mesh: id }, { multi: true }); obj.file.remove({ _id: id }); obj.file.remove({ _id: 'nt' + id }); };
-    obj.RemoveAllEvents = function (domain) { obj.file.remove({ type: 'event', domain: domain }, { multi: true }); };
+    obj.RemoveMeshDocuments = function (id) { obj.file.remove({ meshid: id }, { multi: true }); obj.file.remove({ _id: 'nt' + id }); };
     obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
     obj.DeleteDomain = function (domain, func) { obj.file.remove({ domain: domain }, { multi: true }, func); };
     obj.SetUser = function (user) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); };
     obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
-    obj.clearOldEntries = function (type, days, domain) { var cutoff = Date.now() - (1000 * 60 * 60 * 24 * days); obj.file.remove({ type: type, time: { $lt: cutoff } }, { multi: true }); };
-    obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.file.find({ type: 'power', nodeid: { $in: ['*', nodeid] } }).sort({ time: 1 }).exec(func); } else { obj.file.find({ type: 'power', nodeid: { $in: ['*', nodeid] } }).sort({ time: 1 }, func); } };
     obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
     obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
     obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { obj.file.count({ type: type, domain: domainid }, function (err, count) { func((err != null) || (count > max)); }); } }
+
+    // Database actions on the events collection
+    obj.GetAllEvents = function (func) { obj.eventsfile.find({}, func); };
+    obj.StoreEvent = function (event) { obj.eventsfile.insert(event); };
+    obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func); } };
+    obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
+    obj.GetUserEvents = function (ids, domain, username, func) {
+        if (obj.databaseType == 1) {
+            obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
+        } else {
+            obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
+        }
+    };
+    obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) {
+        if (obj.databaseType == 1) {
+            obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
+        } else {
+            obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { username: username }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
+        }
+    };
+    obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func); } };
+    obj.RemoveAllEvents = function (domain) { obj.eventsfile.remove({ domain: domain }, { multi: true }); };
+
+    // Database actions on the power collection
+    obj.getAllPower = function (func) { obj.powerfile.find({}, func); };
+    obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
+    obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
+    obj.removeAllPowerEvents = function (domain) { obj.powerfile.remove({ }, { multi: true }); };
 
     // Read a configuration file from the database
     obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
@@ -254,17 +349,15 @@ module.exports.CreateDB = function (parent) {
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }], function (err, docs) {
                 var counters = {}, totalCount = 0;
                 for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
-                func({ nodes: counters['node'], meshes: counters['mesh'], powerEvents: counters['power'], users: counters['user'], total: totalCount });
+                func({ nodes: counters['node'], meshes: counters['mesh'], users: counters['user'], total: totalCount });
             })
         } else {
             // NeDB version
             obj.file.count({ type: 'node' }, function (err, nodeCount) {
                 obj.file.count({ type: 'mesh' }, function (err, meshCount) {
-                    obj.file.count({ type: 'power' }, function (err, powerCount) {
-                        obj.file.count({ type: 'user' }, function (err, userCount) {
-                            obj.file.count({}, function (err, totalCount) {
-                                func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
-                            });
+                    obj.file.count({ type: 'user' }, function (err, userCount) {
+                        obj.file.count({}, function (err, totalCount) {
+                            func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
                         });
                     });
                 });

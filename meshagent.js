@@ -439,6 +439,31 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.db.SetUser(adminUser);
                 obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
             }
+        } else {
+            if ((mesh.deleted != null) && (mesh.links)) {
+                // Must un-delete this mesh
+                var ids = ['*', mesh._id];
+
+                // See if users still exists, if so, add links to the mesh
+                for (var userid in mesh.links) {
+                    var user = obj.parent.users[userid];
+                    if (user) {
+                        if (user.links == null) { user.links = {}; }
+                        if (user.links[mesh._id] == null) {
+                            user.links[mesh._id] = { rights: mesh.links[userid].rights };
+                            ids.push(user._id);
+                            obj.db.SetUser(user);
+                        }
+                    }
+                }
+
+                // Send out an event indicating this mesh was "created"
+                obj.parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', links: mesh.links, msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
+
+                // Mark the mesh as active
+                delete mesh.deleted;
+                obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+            }
         }
         return mesh;
     }
@@ -515,7 +540,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
                     console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
                     return;
-                } 
+                }
 
                 // Mark when this device connected
                 obj.connectTime = Date.now();

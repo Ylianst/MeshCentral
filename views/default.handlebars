@@ -6210,8 +6210,7 @@
         function eventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in events) {
-                var event = events[i];
-                var time = new Date(event.time);
+                var event = events[i], time = new Date(event.time);
                 if (time.toLocaleDateString() != dateHeader) {
                     if (dateHeader != null) x += '</table>';
                     x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
