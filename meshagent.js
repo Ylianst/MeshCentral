@@ -104,10 +104,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (cmdid == 11) { // MeshCommand_CoreModuleHash
                 if (msg.length == 4) { ChangeAgentCoreInfo({ "caps": 0 }); } // If the agent indicated that no core is running, clear the core information string.
                 // Mesh core hash, sent by agent with the hash of the current mesh core.
-                if (obj.agentCoreCheck == 1000) return; // If we are using a custom core, don't try to update it.
+
+                // If we are using a custom core, don't try to update it.
+                if (obj.agentCoreCheck == 1000) {
+                    obj.send(obj.common.ShortToStr(16) + obj.common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                    agentCoreIsStable();
+                    return;
+                }
 
                 // Get the current meshcore hash
                 const agentMeshCoreHash = (msg.length == 52) ? msg.substring(4, 52) : null;
+
+                // If the agent indicates this is a custom core, we are done. TODO: Speed up this compare.
+                if (Buffer.from(agentMeshCoreHash, 'binary').toString('hex') == '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000') {
+                    obj.agentCoreCheck = 0;
+                    obj.send(obj.common.ShortToStr(16) + obj.common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                    agentCoreIsStable();
+                    return;
+                }
 
                 // We need to check if the core is current. First, figure out what core we need.
                 var corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
