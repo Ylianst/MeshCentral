@@ -181,7 +181,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
                 if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
-                var serverStats = { "User Accounts": Object.keys(obj.parent.users).length, "Device Groups": Object.keys(obj.parent.meshes).length, "Agent Sessions": Object.keys(obj.parent.wsagents).length, "Connected Users": Object.keys(obj.parent.wssessions).length, "Users Sessions": Object.keys(obj.parent.wssessions2).length };
+                var serverStats = {
+                    "User Accounts": Object.keys(obj.parent.users).length,
+                    "Device Groups": Object.keys(obj.parent.meshes).length,
+                    "Agent Sessions": Object.keys(obj.parent.wsagents).length,
+                    "Connected Users": Object.keys(obj.parent.wssessions).length,
+                    "Users Sessions": Object.keys(obj.parent.wssessions2).length,
+                    "Relay Sessions": obj.parent.relaySessionCount,
+                    "Relay Errors": obj.parent.relaySessionErrorCount
+                };
                 if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
                 stats.values = { "Server State": serverStats }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }

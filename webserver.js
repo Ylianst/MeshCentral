@@ -78,6 +78,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.agentBlockedIp = args.agentblockedip;  // List of blocked IP addresses for agents
     obj.tlsSniCredentials = null;
     obj.dnsDomains = {};
+    obj.relaySessionCount = 0;
+    obj.relaySessionErrorCount = 0;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;

@@ -25,6 +25,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.remoteaddr = obj.ws._socket.remoteAddress;
     obj.domain = domain;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
+    obj.parent.relaySessionCount++;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -193,12 +194,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
     // If error, close both sides of the relay.
     ws.on('error', function (err) {
+        obj.parent.relaySessionErrorCount++;
         console.log('Relay error from ' + obj.remoteaddr + ', ' + err.toString().split('\r')[0] + '.');
         closeBothSides();
     });
 
     // If the relay web socket is closed, close both sides.
     ws.on('close', function (req) {
+        obj.parent.relaySessionCount--;
         closeBothSides();
     });
 
