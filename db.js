@@ -60,7 +60,7 @@ module.exports.CreateDB = function (parent) {
         });
 
         // Setup MongoDB events collection and indexes
-        obj.eventsfile = db.collection(dbcollection + '-events');                               // Collection containing all events
+        obj.eventsfile = db.collection('events');                               // Collection containing all events
         obj.eventsfile.getIndexes(function (err, indexes) {
             // Check if we need to reset indexes
             var indexesByName = {}, indexCount = 0;
@@ -82,7 +82,7 @@ module.exports.CreateDB = function (parent) {
         });
 
         // Setup MongoDB power events collection and indexes
-        obj.powerfile = db.collection(dbcollection + '-power');                                 // Collection containing all power events
+        obj.powerfile = db.collection('power');                                 // Collection containing all power events
         obj.powerfile.getIndexes(function (err, indexes) {
             // Check if we need to reset indexes
             var indexesByName = {}, indexCount = 0;
