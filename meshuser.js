@@ -386,7 +386,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'files':
                 {
                     // Send the full list of server files to the browser app
-                    if ((user != null) && (user.siteadmin != null) && (user.siteadmin & 8) != 0) { updateUserFiles(user, ws, domain); }
+                    updateUserFiles(user, ws, domain);
                     break;
                 }
             case 'fileoperation':
@@ -411,6 +411,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                 }
                             }
+
+                            // If the entire mesh folder is empty, remove it.
+                            // TODO: Should only check this when we deleted something in the mesh root folder.
+                            try {
+                                if (command.path[0].startsWith('mesh//')) {
+                                    path = meshPathToRealPath([command.path[0]], user);
+                                    obj.fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { obj.fs.rmdir(path, function (err) { }); } });
+                                }
+                            } catch (ex) { }
                         }
                         else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
@@ -1981,6 +1990,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     };
 
     function updateUserFiles(user, ws, domain) {
+        if ((user == null) || (user.siteadmin == null) || ((user.siteadmin & 8) == 0)) return;
+
         // Request the list of server files
         var files = { action: 'files', filetree: { n: 'Root', f: {} } };
 
@@ -1994,6 +2005,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try {
             files.filetree.f[user._id].f = readFilesRec(obj.path.join(obj.parent.filespath, domainx + "/user-" + usersplit[2]));
         } catch (e) {
+            // TODO: We may want to fake this file structure until it's needed.
             // Got an error, try to create all the folders and try again...
             try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
             try { obj.fs.mkdirSync(obj.path.join(obj.parent.filespath, domainx)); } catch (e) { }
@@ -2013,13 +2025,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Read all files recursively
                     try {
-                        files.filetree.f[mesh._id].f = readFilesRec(obj.parent.path.join(__dirname, "files/" + domainx + "/mesh-" + meshsplit[2]));
+                        files.filetree.f[mesh._id].f = readFilesRec(obj.parent.path.join(obj.parent.filespath, domainx + "/mesh-" + meshsplit[2]));
                     } catch (e) {
-                        // Got an error, try to create all the folders and try again...
-                        try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
-                        try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
-                        try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx + "/mesh-" + meshsplit[2])); } catch (e) { }
-                        try { files.filetree.f[mesh._id].f = readFilesRec(obj.parent.path.join(obj.parent.filespath, domainx + "/mesh-" + meshsplit[2])); } catch (e) { }
+                        files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
                     }
                 }
             }

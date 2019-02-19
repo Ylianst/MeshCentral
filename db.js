@@ -35,6 +35,12 @@ module.exports.CreateDB = function (parent) {
     obj.identifier = null;
     obj.dbKey = null;
 
+    // Read expiration time from configuration file
+    if (typeof obj.parent.args.dbexpire == 'object') {
+        if (typeof obj.parent.args.dbexpire.events == 'number') { expireEventsSeconds = obj.parent.args.dbexpire.events; }
+        if (typeof obj.parent.args.dbexpire.powerevents == 'number') { expirePowerEventsSeconds = obj.parent.args.dbexpire.powerevents; }
+    }
+
     if (obj.parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 2;
