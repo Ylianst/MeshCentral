@@ -2624,7 +2624,7 @@
 
         function groupActionFunction() {
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=101>Delete devices</option></select>');
+            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move group</option><option value=101>Delete devices</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -2646,6 +2646,9 @@
                 x += "<input id=d2check type=checkbox onchange=d2groupActionFunctionDelEx() />Confirm";
                 setDialogMode(2, "Delete Nodes", 3, groupActionFunctionDelEx, x);
                 QE('idx_dlgOkButton', false);
+            } else if (op == 102) {
+                // Move computers to a different group
+                p10showChangeGroupDialog(getCheckedDevices());
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: op });
@@ -3529,7 +3532,7 @@
                 x = '<div style=float:right;font-size:x-small>';
                 if ((meshrights & 4) != 0) {
                     // TODO: Show change group only if there is another mesh of the same type.
-                    x += '&nbsp;<a style=cursor:pointer onclick=p10showChangeGroupDialog("' + node._id + '") title="Move this device to a different device group">Change Group</a>';
+                    x += '&nbsp;<a style=cursor:pointer onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="Move this device to a different device group">Change Group</a>';
                     x += '&nbsp;<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
                 }
                 x += '</div><div style=font-size:x-small>';
@@ -3795,30 +3798,30 @@
             }
         }
 
-        function p10showChangeGroupDialog(nodeid) {
-            var node = getNodeFromId(nodeid);
-            if (xxdialogMode || (node == null)) return;
-            var mesh1 = meshes[node.meshid];
+        function p10showChangeGroupDialog(nodeids) {
+            if (xxdialogMode) return;
+            var targetMeshId = null;
+            if (nodeids.length == 1) { try { targetMeshId = meshes[getNodeFromId(nodeids[0])]._id; } catch (ex) { } }
 
             // List all available alternative groups
             var y = "<select id=p10newGroup style=width:236px>", count = 0;
             for (var i in meshes) {
                 var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
-                if ((meshes[i]._id != mesh1._id) && (meshes[i].mtype == mesh1.mtype) && (meshrights & 4)) { count++; y += "<option value='" + meshes[i]._id + "'>" + meshes[i].name + "</option>"; }
+                if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { count++; y += "<option value='" + meshes[i]._id + "'>" + meshes[i].name + "</option>"; }
             }
             y += "</select>";
 
             if (count > 0) {
-                var x = "Select a new group for this device<br /><br />";
+                var x = (nodeids.length == 1) ? "Select a new group for this device<br /><br />" : "Select a new group for selected devices<br /><br />";
                 x += addHtmlValue('New Device Group', y);
-                setDialogMode(2, "Change Group", 3, p10showChangeGroupDialogEx, x, nodeid);
+                setDialogMode(2, "Change Group", 3, p10showChangeGroupDialogEx, x, nodeids);
             } else {
                 setDialogMode(2, "Change Group", 1, null, "No other device group of same type exists.");
             }
         }
 
-        function p10showChangeGroupDialogEx(b, nodeid) {
-            meshserver.send({ action: 'changeDeviceMesh', nodeid: nodeid, meshid: Q('p10newGroup').value });
+        function p10showChangeGroupDialogEx(b, nodeids) {
+            meshserver.send({ action: 'changeDeviceMesh', nodeids: nodeids, meshid: Q('p10newGroup').value });
         }
 
         function p10showDeleteNodeDialog(nodeid) {
