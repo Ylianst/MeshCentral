@@ -397,7 +397,7 @@
                                     <input type="button" value="Settings..." style="margin-left:3px" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none;margin-left:3px">
                                     <!--<input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">-->
-                                    <span id="DeskControlSpan" style="margin-left:3px;display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span>
+                                    <label><span id="DeskControlSpan" style="margin-left:3px;display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
                         </div>
@@ -549,8 +549,8 @@
                     </div>
                     <div style="height:60px">
                         <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
-                            <input type="checkbox" id='d7showfocus'>Show Focus Tool<br>
-                            <input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br>
+                            <label><input type="checkbox" id='d7showfocus'>Show Focus Tool<br></label>
+                            <label><input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br</label>>
                         </div>
                         <div>Other</div>
                     </div>
