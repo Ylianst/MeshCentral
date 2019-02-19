@@ -2624,7 +2624,7 @@
 
         function groupActionFunction() {
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move group</option><option value=101>Delete devices</option></select>');
+            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move to device group</option><option value=101>Delete devices</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 

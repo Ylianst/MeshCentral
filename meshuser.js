@@ -398,8 +398,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var sendUpdate = true, path = meshPathToRealPath(command.path, user); // This will also check access rights
                         if (path == null) break;
 
-                        if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) { try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { } } // Create a new folder
-                        else if (command.fileop == 'delete') { // Delete
+                        if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) {
+                            // Create a new folder
+                            try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) {
+                                try { obj.fs.mkdirSync(path); } catch (e) { }
+                                try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { }
+                            }
+                        } 
+                        else if (command.fileop == 'delete') {
+                            // Delete a file
                             if (obj.common.validateArray(command.delfiles, 1) == false) return;
                             for (i in command.delfiles) {
                                 if (obj.common.IsFilenameValid(command.delfiles[i]) == true) {
@@ -412,16 +419,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                             }
 
-                            // If the entire mesh folder is empty, remove it.
-                            // TODO: Should only check this when we deleted something in the mesh root folder.
-                            try {
-                                if (command.path[0].startsWith('mesh//')) {
-                                    path = meshPathToRealPath([command.path[0]], user);
-                                    obj.fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { obj.fs.rmdir(path, function (err) { }); } });
-                                }
-                            } catch (ex) { }
+                            // If we deleted something in the mesh root folder and the entire mesh folder is empty, remove it.
+                            if (command.path.length == 1) {
+                                try {
+                                    if (command.path[0].startsWith('mesh//')) {
+                                        path = meshPathToRealPath([command.path[0]], user);
+                                        obj.fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { obj.fs.rmdir(path, function (err) { }); } });
+                                    }
+                                } catch (ex) { }
+                            }
                         }
-                        else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) { try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { } } // Rename
+                        else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) {
+                            // Rename
+                            try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { }
+                        }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             if (obj.common.validateArray(command.names, 1) == false) return;
                             var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
