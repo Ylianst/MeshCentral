@@ -147,7 +147,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div id=createpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=createpanel style="position:relative;background-color:#979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
                                 <form action=createaccount method=post>
                                     <div id=message2>
                                         {{{message}}}
@@ -155,6 +155,7 @@
                                     <div>
                                         <b>Account Creation</b>
                                     </div>
+                                    <div id="passwordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
                                     <table>
                                         <tr>
                                             <td id="nuUser" align=right width=100>Username:</td>
@@ -222,7 +223,7 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>
@@ -415,6 +416,7 @@
 
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');
+                QV('passwordPolicyCallout', false);
             } else {
                 if (passRequirements == null || passRequirements == '') {
                     // No password requirements, display password strength
@@ -430,8 +432,11 @@
                         QS('nuPass1').color = '#7b241c';
                         QS('nuPass2').color = '#7b241c';
                         QH('passWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>Password Policy</b><div>'); // This is also a link to the password policy
+                        QV('passwordPolicyCallout', true);
+                        QH('passwordPolicyCallout', passwordPolicyText(Q('apassword1').value));
                     } else {
                         QH('passWarning', '');
+                        QV('passwordPolicyCallout', false);
                     }
                 }
             }
@@ -447,16 +452,21 @@
             QE('createButton', ok);
         }
 
-        function showPasswordPolicy() {
+        function passwordPolicyText(pass) {
             var policy = '<div style=text-align:left>';
-            if (passRequirements.min) { policy += 'Minimum length: ' + passRequirements.min + '<br />'; }
-            if (passRequirements.max) { policy += 'Maximum length: ' + passRequirements.max + '<br />'; }
-            if (passRequirements.upper) { policy += 'Upper case: ' + passRequirements.upper + '<br />'; }
-            if (passRequirements.lower) { policy += 'Lower case: ' + passRequirements.lower + '<br />'; }
-            if (passRequirements.numeric) { policy += 'Numeric: ' + passRequirements.numeric + '<br />'; }
-            if (passRequirements.nonalpha) { policy += 'Non-alphanumeric: ' + passRequirements.nonalpha + '<br />'; }
+            var counts = strCount(pass);
+            if (passRequirements.min && ((pass == null) || (pass.length < passRequirements.min))) { policy += 'Minimum length of ' + passRequirements.min + '<br />'; }
+            if (passRequirements.max && ((pass == null) || (pass.length > passRequirements.max))) { policy += 'Maximum length of ' + passRequirements.max + '<br />'; }
+            if (passRequirements.upper && ((pass == null) || (counts.upper < passRequirements.upper))) { policy += '' + passRequirements.upper + ' upper case<br />'; }
+            if (passRequirements.lower && ((pass == null) || (counts.lower < passRequirements.lower))) { policy += '' + passRequirements.lower + ' lower case<br />'; }
+            if (passRequirements.numeric && ((pass == null) || (counts.numeric < passRequirements.numeric))) { policy += '' + passRequirements.numeric + ' numeric<br />'; }
+            if (passRequirements.nonalpha && ((pass == null) || (counts.nonalpha < passRequirements.nonalpha))) { policy += passRequirements.nonalpha + ' non-alphanumeric<br />'; }
             policy += '</div>';
-            messagebox("Password Policy", policy);
+            return policy;
+        }
+
+        function showPasswordPolicy() {
+            messagebox("Password Policy", passwordPolicyText());
         }
 
         function validateReset(e) {
@@ -483,18 +493,24 @@
             if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
             if (requirements.min) { if (password.length < requirements.min) return false; }
             if (requirements.max) { if (password.length > requirements.max) return false; }
-            var num = 0, lower = 0, upper = 0, nonalpha = 0;
-            for (var i = 0; i < password.length; i++) {
-                if (/\d/.test(password[i])) { num++; }
-                if (/[a-z]/.test(password[i])) { lower++; }
-                if (/[A-Z]/.test(password[i])) { upper++; }
-                if (/\W/.test(password[i])) { nonalpha++; }
-            }
-            if (requirements.num && (num < requirements.num)) return false;
-            if (requirements.lower && (lower < requirements.lower)) return false;
-            if (requirements.upper && (upper < requirements.upper)) return false;
-            if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
+            var counts = strCount(password);
+            if (requirements.numeric && (counts.numeric < requirements.numeric)) return false;
+            if (requirements.lower && (counts.lower < requirements.lower)) return false;
+            if (requirements.upper && (counts.upper < requirements.upper)) return false;
+            if (requirements.nonalpha && (counts.nonalpha < requirements.nonalpha)) return false;
             return true;
+        }
+
+        function strCount(password) {
+            var counts = { numeric: 0, lower: 0, upper: 0, nonalpha: 0 };
+            if (typeof password != 'string') return counts;
+            for (var i = 0; i < password.length; i++) {
+                if (/\d/.test(password[i])) { counts.numeric++; }
+                if (/[a-z]/.test(password[i])) { counts.lower++; }
+                if (/[A-Z]/.test(password[i])) { counts.upper++; }
+                if (/\W/.test(password[i])) { counts.nonalpha++; }
+            }
+            return counts;
         }
         
         function checkToken() {

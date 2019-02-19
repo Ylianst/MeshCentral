@@ -1410,15 +1410,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
             if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
-
-                // See if we need to create the folder
-                var domainx = 'domain';
-                if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
-                try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
-                try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
-                try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
-
                 if (fields.name != null) {
+
+                    // See if we need to create the folder
+                    var domainx = 'domain';
+                    if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
+                    try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
+                    try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
+                    try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
+
                     // Upload method where all the file data is within the fields.
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
                     if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
@@ -1443,6 +1443,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i in files.files) {
                         var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
                         if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+
+                            // See if we need to create the folder
+                            var domainx = 'domain';
+                            if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
+                            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
+                            try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
+                            try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
+
                             obj.fs.rename(file.path, fpath, function () {
                                 obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                             });
