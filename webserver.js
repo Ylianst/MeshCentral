@@ -1927,6 +1927,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
                 if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
+                if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
+                if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
@@ -2147,6 +2149,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
         if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
+        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
+        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
         res.send(meshsettings);

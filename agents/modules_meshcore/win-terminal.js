@@ -132,7 +132,9 @@ function windows_terminal() {
         this._kernel32.SetConsoleWindowInfo(this._stdoutput, 1, rect);
     }
     
-    this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT) {
+    this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
+    {
+        this.stopping = null;
         if (this._kernel32.GetConsoleWindow().Val == 0) {
             if (this._kernel32.AllocConsole().Val == 0) {
                 throw ('AllocConsole failed with: ' + this._kernel32.GetLastError().Val);
@@ -209,10 +211,12 @@ function windows_terminal() {
     this._stop = function () {
         if (this.stopping) { return (this.stopping); }
         //console.log('Stopping Terminal...');
+        this._ConsoleWinEventProc.removeAllListeners('GlobalCallback');
         this.stopping = new promise(function (res, rej) { this._res = res; this._rej = rej; });
         
         var threadID = this._kernel32.GetThreadId(this._user32.SetWinEventHook.async.thread()).Val;
         this._user32.PostThreadMessageA(threadID, WM_QUIT, 0, 0);
+        this._stream.emit('end');
         return (this.stopping);
     }
     
@@ -272,8 +276,10 @@ function windows_terminal() {
                     //SendConsoleEvent(dwEvent, idObject, idChild);
                     break;
                 case EVENT_CONSOLE_END_APPLICATION:
-                    if (idObject.Val == this.terminal._hProcessID) {
+                    if (idObject.Val == this.terminal._hProcessID)
+                    {
                         //console.log('END APPLICATION: [PID: ' + idObject.Val + ' CID: ' + idChild.Val + ']');
+                        this.terminal._hProcess = null;
                         this.terminal._stop().then(function () { console.log('STOPPED'); });
                     }
                     break;
@@ -306,18 +312,23 @@ function windows_terminal() {
                         }, console.log);
                     }, console.log);
                 }
-            } else {
+            } else
+            {
                 this.nativeProxy.UnhookWinEvent.async(this.nativeProxy.terminal._user32.SetWinEventHook.async, this.nativeProxy.terminal.hwinEventHook)
-                    .then(function () {
-                    this.nativeProxy.terminal.stopping._res();
-                    if (this.nativeProxy.terminal._kernel32.TerminateProcess(this.nativeProxy.terminal._hProcess, 1067).Val == 0) {
-                        var e = this.nativeProxy.terminal._kernel32.GetLastError().Val;
-                        console.log('Unable to kill Terminal Process, error: ' + e);
-                    }
-                    this.nativeProxy.terminal.stopping = null;
-                }, function (err) {
-                    console.log('REJECTED_UnhookWinEvent: ' + err);
-                });
+                    .then(function ()
+                    {
+                        if (this.nativeProxy.terminal._hProcess == null) { return; }
+
+                        this.nativeProxy.terminal.stopping._res();
+                        if (this.nativeProxy.terminal._kernel32.TerminateProcess(this.nativeProxy.terminal._hProcess, 1067).Val == 0) {
+                            var e = this.nativeProxy.terminal._kernel32.GetLastError().Val;
+                            console.log('Unable to kill Terminal Process, error: ' + e);
+                        }
+                        this.nativeProxy.terminal.stopping = null;
+                    }, function (err)
+                    {
+                        console.log('REJECTED_UnhookWinEvent: ' + err);
+                    });
             }
         }, function (err) {
             // Get Message Failed

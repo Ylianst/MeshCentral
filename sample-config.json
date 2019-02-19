@@ -42,11 +42,14 @@
       "_AgentAllowedIP": "192.168.0.100/24",
       "_AgentBlockedIP": "127.0.0.1,::1",
       "_Limits": {
-        "MaxUserAccounts": 100,
-        "MaxUserSessions": 100,
-        "MaxAgentSessions": 100
+        "_MaxUserAccounts": 100,
+        "_MaxUserSessions": 100,
+        "_MaxAgentSessions": 100,
+        "MaxSingleUserSessions": 10
       },
-      "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" }
+      "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
+      "_httpheaders": { "Strict-Transport-Security": "max-age=360000" },
+      "_agentConfig": [ "webSocketMaskOverride=1" ]
     },
     "customer1": {
       "DNS": "customer1.myserver.com",
@@ -62,7 +65,7 @@
     }
   },
   "_letsencrypt": {
-    "__comment__": "If your are having problems with Let's Encrypt, use https://letsdebug.net/ first to debug it.",
+    "__comment__": "Go to https://letsdebug.net/ first before trying Let's Encrypt.",
     "email": "myemail@myserver.com ",
     "names": "myserver.com,customer1.myserver.com",
     "rsaKeySize": 3072,
