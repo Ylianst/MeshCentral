@@ -1410,6 +1410,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
             if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
+
+                // See if we need to create the folder
+                var domainx = 'domain';
+                if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
+                try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
+                try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
+                try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
+
                 if (fields.name != null) {
                     // Upload method where all the file data is within the fields.
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
