@@ -2196,7 +2196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If this domain has configured headers, use them.
             // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
             //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
-            if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == object)) { res.set(domain.httpheaders); }
+            if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) { res.set(domain.httpheaders); }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {

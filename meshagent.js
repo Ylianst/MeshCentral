@@ -116,7 +116,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 const agentMeshCoreHash = (msg.length == 52) ? msg.substring(4, 52) : null;
 
                 // If the agent indicates this is a custom core, we are done. TODO: Speed up this compare.
-                if (Buffer.from(agentMeshCoreHash, 'binary').toString('hex') == '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000') {
+                if ((agentMeshCoreHash != null) && (Buffer.from(agentMeshCoreHash, 'binary').toString('hex') == '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')) {
                     obj.agentCoreCheck = 0;
                     obj.send(obj.common.ShortToStr(16) + obj.common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                     agentCoreIsStable();
