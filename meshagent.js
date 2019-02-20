@@ -454,7 +454,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
             }
         } else {
-            if ((mesh.deleted != null) && (mesh.links)) {
+            if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {
                 // Must un-delete this mesh
                 var ids = ['*', mesh._id];
 
