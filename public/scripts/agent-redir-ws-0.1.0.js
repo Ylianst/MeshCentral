@@ -39,7 +39,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
         //obj.socket.onmessage = function (e) { console.log('Websocket data', e.data); obj.xxOnMessage(e); }
-        obj.socket.onerror = function (e) { console.error(e); }
+        obj.socket.onerror = function (e) { /* console.error(e); */ }
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
         //obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: url2 });

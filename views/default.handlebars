@@ -1803,7 +1803,7 @@
                         }
                         case 'stopped': { // Server is stopping.
                             // Disconnect
-                            console.log(message.msg);
+                            //console.log(message.msg);
                             break;
                         }
                         default:
@@ -3391,6 +3391,10 @@
         var powerTimeline = null;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
+
+            // Check if we are allowed to create a new device group
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
                 window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16', 'meshcentral:' + nodeid);
@@ -4266,7 +4270,7 @@
         }
 
         function applyDesktopSettings() {
-            var r = '', ops = (features & 512)?[90,70,50,40,30,20,10,5,1]:[50,40,30,20,10,5,1];
+            var r = '', ops = (features & 512)?[90,80,70,60,50,40,30,20,10,5,1]:[60,50,40,30,20,10,5,1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
@@ -5580,7 +5584,7 @@
             if (xxdialogMode) return;
 
             // Check if we are allowed to create a new device group
-            if ((userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until the email address is verified. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below.<br /><br />";

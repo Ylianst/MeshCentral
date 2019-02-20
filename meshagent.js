@@ -1017,8 +1017,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.uuid; change = 1; log = 1; }
                 }
                 if ((command.users != null) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
-                if (mesh.mtype == 2) {
-                    if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; log = 1; changes.push('host'); }
+                if ((mesh.mtype == 2) && (!obj.args.wanonly)) {
+                    // In WAN mode, the hostname of a computer is not important. Don't log hostname changes.
+                    if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
                     // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                 }
 
