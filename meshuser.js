@@ -188,8 +188,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     "Connected Users": Object.keys(obj.parent.wssessions).length,
                     "Users Sessions": Object.keys(obj.parent.wssessions2).length,
                     "Relay Sessions": obj.parent.relaySessionCount,
-                    "Relay Errors": obj.parent.relaySessionErrorCount
                 };
+                if (obj.parent.relaySessionErrorCount != 0) { serverStats['Relay Errors'] = obj.parent.relaySessionErrorCount; }
                 if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
                 stats.values = { "Server State": serverStats }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
@@ -462,7 +462,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, args, resetserver, showconfig, usersessions.';
+                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, cores.';
                             break;
                         }
                         case 'args': {
@@ -483,6 +483,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'resetserver': {
                             console.log('Server restart...');
                             process.exit(0);
+                            break;
+                        }
+                        case 'tasklimiter': {
+                            if (obj.parent.parent.taskLimiter != null) {
+                                //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
+                                const tl = obj.parent.parent.taskLimiter;
+                                r += 'MaxTasks: ' + tl.maxTasks + '<br />';
+                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds<br />';
+                                r += 'NextTaskId: ' + tl.nextTaskId + '<br />';
+                                r += 'CurrentCount: ' + tl.currentCount + '<br />';
+                                var c = [];
+                                for (var i in tl.current) { c.push(i); }
+                                r += 'Current: [' + c.join(', ') + ']<br />';
+                                r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '<br />';
+                                r += 'Timer: ' + (tl.timer != null) + '<br />';
+                            }
+                            break;
+                        }
+                        case 'cores': {
+                            if (obj.parent.parent.defaultMeshCores != null) { for (var i in obj.parent.parent.defaultMeshCores) { r += i + ': ' + obj.parent.parent.defaultMeshCores[i].length + ' bytes<br />'; } }
                             break;
                         }
                         case 'showconfig': {

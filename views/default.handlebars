@@ -2463,13 +2463,17 @@
             x += addHtmlValue('Installation Type', '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>Background & interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
             x += '</div><hr>';
 
+            // \/:*?"<>|
+            var meshfilename = mesh.name
+            meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2529,7 +2533,7 @@
             xdr.open("GET", window.location.href + path + flag);
             xdr.timeout = 15000;
             xdr.responseType = "blob";
-            xdr.onprogress = function (x) { console.log(x); };
+            xdr.onprogress = function (x) { /*console.log(x);*/ };
             xdr.onload = function (e) { saveAs(new Blob([e.target.response], { type: "application/octet-stream" }), name); if (xxdialogTag == 'fileDownload') { setDialogMode(0); } };
             xdr.onerror = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Agent downloads timeout.'); };
             xdr.ontimeout = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Unable to download agent.'); };

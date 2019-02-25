@@ -223,7 +223,7 @@ module.exports.createTaskLimiterQueue = function (maxTasks, maxTaskTime, cleanin
             //console.log('PendingLaunch ' + id);
             t.func(t.arg, id, obj); // Start the task
         }
-        if ((obj.pending[0].length == 0) && (obj.pending[1].length == 0) && (obj.pending[2].length == 0) && (obj.timer != null)) {
+        if ((obj.currentCount == 0) && (obj.pending[0].length == 0) && (obj.pending[1].length == 0) && (obj.pending[2].length == 0) && (obj.timer != null)) {
             // All done, clear the timer
             clearInterval(obj.timer); obj.timer = null;
         }

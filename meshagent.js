@@ -67,7 +67,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             obj.parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
             obj.agentUpdate = null;
         }
-        if (((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) { // This is a temporary agent, remote it
+
+        // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
+        if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
             // Delete this node including network interface information and events
             obj.db.Remove(obj.dbNodeKey); // Remove node with that id
             obj.db.Remove('if' + obj.dbNodeKey); // Remove interface information
@@ -125,7 +127,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // We need to check if the core is current. First, figure out what core we need.
                 var corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
-                if (obj.agentCoreCheck == 1001) { corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore; } // Use the recovery core.
+
+                // If this is a recovery agent, use the agent recovery core
+                if (obj.agentInfo.capabilities & 0x40) { corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].arcore; }
+
+                // If the user asked, use the recovery core.
+                if (obj.agentCoreCheck == 1001) { corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore; }
+
+                // If we have a core, use it.
                 if (corename != null) {
                     const meshcorehash = obj.parent.parent.defaultMeshCoresHash[corename];
                     if (agentMeshCoreHash != meshcorehash) {
@@ -654,28 +663,43 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (disconnectCount > 4) {
                 // Too many disconnections, this agent has issues. Just clear the core.
                 obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
-                console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+                //console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
                 // TODO: Log or do something to recover?
                 return;
             }
 
-            // Check if we need to make an native update check
-            obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-            const corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
-            if (corename == null) { obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
-
-            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
-                // Ask the agent for it's executable binary hash
-                obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0));
+            if ((obj.agentInfo.capabilities & 64) != 0) {
+                // This is a recovery agent
+                obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else {
-                // Check the mesh core, if the agent is capable of running one
-                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
-                    obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                // Check if we need to make an native update check
+                obj.agentExeInfo = obj.parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+                const corename = obj.parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                if (corename == null) { obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
+
+                if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
+                    // Ask the agent for it's executable binary hash
+                    obj.send(obj.common.ShortToStr(12) + obj.common.ShortToStr(0));
                 } else {
-                    agentCoreIsStable(); // No updates needed, agent is ready to go.
+                    // Check the mesh core, if the agent is capable of running one
+                    if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
+                        obj.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                    } else {
+                        agentCoreIsStable(); // No updates needed, agent is ready to go.
+                    }
                 }
             }
         });
+    }
+
+    function recoveryAgentCoreIsStable() {
+        // Recovery agent is doing ok, lets perform main agent checking.
+
+        // TODO
+        console.log('recoveryAgentCoreIsStable()');
+
+        // Close the recovery agent connection when done.
+        obj.close(1);
     }
 
     function agentCoreIsStable() {
@@ -1009,7 +1033,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (command.name && (command.name != device.name)) { change = 1; log = 1; device.name = command.name; changes.push('name'); }
                 if ((command.caps != null) && (device.agent.core != command.value)) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; } // Don't save this as an event to the db.
                 if ((command.caps != null) && ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7))) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; } // Allow Javascript on the agent to change all capabilities except console and javascript support, Don't save this as an event to the db.
-                if ((command.osdesc != null) && (device.osdesc != command.osdesc)) { device.osdesc = command.osdesc; change = 1; log = 1; changes.push('os desc'); }
+                if ((command.osdesc != null) && (device.osdesc != command.osdesc)) { device.osdesc = command.osdesc; change = 1; changes.push('os desc'); } // Don't save this as an event to the db.
                 if (command.intelamt) {
                     if (!device.intelamt) { device.intelamt = {}; }
                     if ((command.intelamt.ver != null) && (device.intelamt.ver != command.intelamt.ver)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.ver; change = 1; log = 1; }
