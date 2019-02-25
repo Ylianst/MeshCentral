@@ -246,7 +246,7 @@
                 </div>
                 <div id=p2 style="display:none">
                     <h1>My Account</h1>
-                    <img alt="" width=150 height=103 src=images/mainaccount.jpg style=margin-bottom:10px;margin-right:20px;float:right />
+                    <img id="p2AccountImage" alt="" width=150 height=103 src=images/mainaccount.jpg style=margin-bottom:10px;margin-right:20px;float:right />
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
@@ -1121,8 +1121,9 @@
             if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
             // Update account actions
-            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
+            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
+            QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2ServerActions', siteRights & 21);
             QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);

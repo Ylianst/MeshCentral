@@ -60,7 +60,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
-    obj.taskLimiter = obj.common.createTaskLimiterQueue(30, 20, 60); // This is a task limiter queue to smooth out server work.
+    obj.taskLimiter = obj.common.createTaskLimiterQueue(8, 20, 60); // This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
