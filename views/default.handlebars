@@ -5726,7 +5726,8 @@
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
-            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = 0;
+            try { meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; } catch (ex) { }
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT only, no agent';
             if (currentMesh.mtype == 2) meshtype = 'Managed using a software agent';
 
