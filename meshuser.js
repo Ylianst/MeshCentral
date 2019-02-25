@@ -1250,7 +1250,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 obj.db.Remove('if' + node._id); // Remove interface information
                                 obj.db.Remove('nt' + node._id); // Remove notes
                                 obj.db.Remove('lc' + node._id); // Remove last connect time
-                                obj.db.Remove('sm' + node._id); // Remove SMBios data
+                                obj.db.RemoveSMBIOS(node._id); // Remove SMBios data
                                 obj.db.RemoveNode(node._id); // Remove all entries with node:id
 
                                 // Event node deletion

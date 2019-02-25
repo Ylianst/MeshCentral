@@ -113,6 +113,8 @@ module.exports.CreateDB = function (parent) {
             }
         });
 
+        // Setup MongoDB smbios collection, no indexes needed
+        obj.smbiosfile = db.collection('smbios');                               // Collection containing all smbios information
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
@@ -162,6 +164,9 @@ module.exports.CreateDB = function (parent) {
         obj.powerfile.persistence.setAutocompactionInterval(36000);
         obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 10 }); // Limit the power event log to 10 days (Seconds * Minutes * Hours * Days)
+
+        // Setup the SMBIOS collection
+        obj.smbiosfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true });
     }
 
     obj.SetupDatabase = function (func) {
@@ -193,10 +198,10 @@ module.exports.CreateDB = function (parent) {
         // TODO: Remove all mesh links to invalid users
         // TODO: Remove all meshes that dont have any links
 
-        // Remote all the events and power events from the main collection.
-        // They are all in two seperate collections now.
+        // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
         obj.file.remove({ type: 'event' }, { multi: true });
         obj.file.remove({ type: 'power' }, { multi: true });
+        obj.file.remove({ type: 'smbios' }, { multi: true });
 
         // Remove all objects that have a "meshid" that no longer points to a valid mesh.
         obj.GetAllType('mesh', function (err, docs) {
@@ -293,6 +298,11 @@ module.exports.CreateDB = function (parent) {
     obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
     obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
     obj.removeAllPowerEvents = function (domain) { obj.powerfile.remove({ }, { multi: true }); };
+
+    // Database actions on the SMBIOS collection
+    obj.SetSMBIOS = function (smbios, func) { obj.smbiosfile.update({ _id: smbios._id }, smbios, { upsert: true }, func); };
+    obj.RemoveSMBIOS = function (id) { obj.smbiosfile.remove({ _id: id }); };
+    obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
 
     // Read a configuration file from the database
     obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
