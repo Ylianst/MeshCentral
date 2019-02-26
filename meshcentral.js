@@ -60,7 +60,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
-    obj.taskLimiter = obj.common.createTaskLimiterQueue(8, 20, 60); // This is a task limiter queue to smooth out server work.
+    obj.taskLimiter = obj.common.createTaskLimiterQueue(20, 20, 60); // This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -281,20 +281,26 @@ function CreateMeshCentralServer(config, args) {
                     console.log('       --dbpulldatafiles *          This will import files from meshcentral-data into the db.');
                     process.exit();
                 } else {
-                    obj.db.RemoveAllOfType('cfile', function () {
-                        if (obj.args.dbpushconfigfiles == '*') { obj.args.dbpushconfigfiles = obj.datapath; }
-                        obj.fs.readdir(obj.datapath, (err, files) => {
-                            var lockCount = 1
-                            for (var i in files) {
-                                const file = files[i];
-                                if ((file == 'config.json') || file.endsWith('.key') || file.endsWith('.crt') || (file == 'terms.txt') || file.endsWith('.jpg') || file.endsWith('.png')) {
-                                    const path = obj.path.join(obj.args.dbpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
-                                    console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
-                                    lockCount++;
-                                    obj.db.setConfigFile(file, obj.db.encryptData(obj.args.configkey, binary), function () { if ((--lockCount) == 0) { console.log('Done.'); process.exit(); } });
+                    if (obj.args.dbpushconfigfiles == '*') { obj.args.dbpushconfigfiles = obj.datapath; }
+                    obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
+                        if (err != null) { console.log('Unable to read from folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                        var configFound = false;
+                        for (var i in files) { if (files[i] == 'config.json') { configFound = true; } }
+                        if (configFound == false) { console.log('No config.json in folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                        obj.db.RemoveAllOfType('cfile', function () {
+                            obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
+                                var lockCount = 1
+                                for (var i in files) {
+                                    const file = files[i];
+                                    if ((file == 'config.json') || file.endsWith('.key') || file.endsWith('.crt') || (file == 'terms.txt') || file.endsWith('.jpg') || file.endsWith('.png')) {
+                                        const path = obj.path.join(obj.args.dbpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
+                                        console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
+                                        lockCount++;
+                                        obj.db.setConfigFile(file, obj.db.encryptData(obj.args.configkey, binary), function () { if ((--lockCount) == 0) { console.log('Done.'); process.exit(); } });
+                                    }
                                 }
-                            }
-                            if (--lockCount == 0) { process.exit(); }
+                                if (--lockCount == 0) { process.exit(); }
+                            });
                         });
                     });
                 }
@@ -318,7 +324,8 @@ function CreateMeshCentralServer(config, args) {
                                     if (binary == null) {
                                         console.log('Invalid config key.');
                                     } else {
-                                        obj.fs.writeFileSync(obj.path.join(obj.args.dbpullconfigfiles, file), binary);
+                                        var fullFileName = obj.path.join(obj.args.dbpullconfigfiles, file);
+                                        try { obj.fs.writeFileSync(fullFileName, binary); } catch (ex) { console.log('Unable to write to ' + fullFileName); process.exit(); return; }
                                         console.log('Pulling ' + file + ', ' + binary.length + ' bytes.');
                                     }
                                 }
