@@ -59,7 +59,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.meshRelayHandler = require('./meshrelay.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
-    const constants = require('constants');
+    const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Variables
     obj.parent = parent;
