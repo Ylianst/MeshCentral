@@ -50,9 +50,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Disconnect this agent
     obj.close = function (arg) {
+        obj.authenticated = -1;
         if ((arg == 1) || (arg == null)) { try { obj.ws.close(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { obj.ws._socket._parent.end(); if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
-        if (arg == 3) { obj.authenticated = -1; } // Don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
+        // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
         if (obj.parent.wsagents[obj.dbNodeKey] == obj) {
             delete obj.parent.wsagents[obj.dbNodeKey];
             obj.parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
@@ -152,10 +153,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
                                 obj.agentCoreUpdatePending = true;
                                 obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
-                                    obj.agentCoreUpdatePending = false;
-                                    obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
-                                    obj.parent.parent.debug(1, 'Updating code ' + argument.name);
-                                    agentCoreIsStable();
+                                    if (obj.authenticated == 2) {
+                                        // Send the updated code.
+                                        obj.agentCoreUpdatePending = false;
+                                        obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
+                                        obj.parent.parent.debug(1, 'Updating code ' + argument.name);
+                                        agentCoreIsStable();
+                                    } else {
+                                        // This agent is probably disconnected, nothing to do.
+                                        obj.parent.parent.taskLimiter.completed(taskid);
+                                    }
                                 }, { hash: meshcorehash, core: obj.parent.parent.defaultMeshCores[corename], name: corename }, 0);
                             }
                             obj.agentCoreCheck++;
@@ -197,6 +204,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')) {
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
+                            if (obj.authenticated != 2) { obj.parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { obj.parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             if (obj.agentExeInfo.data == null) {
                                 // Read the agent from disk

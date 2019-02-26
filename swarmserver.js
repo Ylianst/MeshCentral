@@ -217,8 +217,14 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
                                 // Start the agent download using the task limiter so not to flood the server. Low priority task
                                 obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
-                                    socket.tag.taskid = taskid;
-                                    obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                                    if (socket.xclosed == 1) {
+                                        // Socket is closed, do nothing
+                                        obj.parent.taskLimiter.completed(taskid); // Indicate this task complete
+                                    } else {
+                                        // Start the agent update
+                                        socket.tag.taskid = taskid;
+                                        obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                                    }
                                 }, socket, 2);
                             } else {
                                 //console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
@@ -353,6 +359,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     // Disconnect legacy agent connection
     obj.close = function (socket) {
         try { socket.close(); } catch (e) { }
+        socket.xclosed = 1;
     };
 
     obj.SendCommand = function (socket, cmdid, data) {
