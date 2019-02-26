@@ -21,7 +21,6 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.net = require('net');
     obj.tls = require('tls');
     obj.dns = require('dns');
-    obj.constants = require('constants');
     obj.dgram = require('dgram');
     obj.common = require('./common.js');
     obj.servers = {};
@@ -36,6 +35,7 @@ module.exports.CreateAmtScanner = function (parent) {
     obj.nextTag = 0;
     const PeriodicScanTime = 30000; // Interval between scan sweeps
     const PeriodicScanTimeout = 65000; // After this time, timeout the device.
+    const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Build a RMCP packet with a given tag field
     obj.buildRmcpPing = function (tag) {
@@ -371,7 +371,7 @@ module.exports.CreateAmtScanner = function (parent) {
             } else {
                 // Connect using TLS, we will switch from default TLS to TLS1-only and back if we get a connection error to support older Intel AMT.
                 if (scaninfo.tlsoption == null) { scaninfo.tlsoption = 0; }
-                client = obj.tls.connect(port, host, scaninfo.tlsoption == 1 ? { secureProtocol: 'TLSv1_method', rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE } : { rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE }, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
+                client = obj.tls.connect(port, host, scaninfo.tlsoption == 1 ? { secureProtocol: 'TLSv1_method', rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE } : { rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE }, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
             }
             client.scaninfo = scaninfo;
             client.func = func;
