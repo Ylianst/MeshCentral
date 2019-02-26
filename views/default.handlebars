@@ -5256,6 +5256,7 @@
         //
 
         function agentConsoleHandleKeys(e) {
+            if ((e.ctrlKey) || (e.altKey)) { return true; }
             var processed = 0, box = Q('p15consoleText');
             if (e.key) {
                 if (e.keyCode == 13 && consoleFocus == 0) { p15consoleSend(e); processed = 1; }
@@ -5299,6 +5300,7 @@
                 consoleNode = 'server';
 
                 QH('p15deviceName', 'My Server Console');
+                QE('p15consoleText', true);
                 QH('p15statetext', '');
                 QH('p15coreName', '');
 
