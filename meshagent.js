@@ -37,6 +37,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentCoreCheck = 0;
     obj.agentInfo = null;
     obj.agentUpdate = null;
+    obj.agentCoreUpdatePending = false;
     const agentUpdateBlockSize = 65520;
     obj.remoteaddr = req.ip;
     if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
@@ -149,7 +150,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 //obj.parent.parent.debug(1, 'Updating code ' + corename);
 
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
+                                obj.agentCoreUpdatePending = true;
                                 obj.parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
+                                    obj.agentCoreUpdatePending = false;
                                     obj.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + argument.hash + argument.core, function () { obj.parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                     obj.parent.parent.debug(1, 'Updating code ' + argument.name);
                                     agentCoreIsStable();
