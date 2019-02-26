@@ -1272,12 +1272,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                                 // Delete this node including network interface information, events and timeline
-                                obj.db.Remove(node._id); // Remove node with that id
-                                obj.db.Remove('if' + node._id); // Remove interface information
-                                obj.db.Remove('nt' + node._id); // Remove notes
-                                obj.db.Remove('lc' + node._id); // Remove last connect time
-                                obj.db.RemoveSMBIOS(node._id); // Remove SMBios data
-                                obj.db.RemoveNode(node._id); // Remove all entries with node:id
+                                obj.db.Remove(node._id);                            // Remove node with that id
+                                obj.db.Remove('if' + node._id);                     // Remove interface information
+                                obj.db.Remove('nt' + node._id);                     // Remove notes
+                                obj.db.Remove('lc' + node._id);                     // Remove last connect time
+                                obj.db.RemoveSMBIOS(node._id);                      // Remove SMBios data
+                                obj.db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
+                                obj.db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
 
                                 // Event node deletion
                                 obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id });

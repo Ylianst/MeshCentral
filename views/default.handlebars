@@ -1567,7 +1567,7 @@
                                 // This is an existing mesh
                                 if (message.event.name) { meshes[message.event.meshid].name = message.event.name; }
                                 if (message.event.desc) { meshes[message.event.meshid].desc = message.event.desc; }
-                                if (message.event.flags) { meshes[message.event.meshid].flags = message.event.flags; }
+                                if (message.event.flags != null) { meshes[message.event.meshid].flags = message.event.flags; }
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
 
@@ -6562,6 +6562,14 @@
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
+
+            var linkCount = 0, linkCountStr = '<i>None<i>';
+            if (user.links) {
+                for (var i in user.links) { linkCount++; }
+                if (linkCount == 1) { linkCountStr = '1 group'; } else if (linkCount > 1) { linkCountStr = linkCount + ' groups'; }
+            }
+            x += addDeviceAttribute('Device Groups', linkCountStr);
+
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
                 multiFactor = 1;
