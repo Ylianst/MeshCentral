@@ -516,6 +516,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
 
+        // Check if this request is for an allows email domain
+        if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains)) {
+            var i = -1;
+            if (typeof req.body.email == 'string') { i = req.body.email.indexOf('@'); }
+            if (i == -1) {
+                req.session.loginmode = 2;
+                req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
+                res.redirect(domain.url);
+                return;
+            }
+            var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
+            for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
+            if (emailok == false) {
+                req.session.loginmode = 2;
+                req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
+                res.redirect(domain.url);
+                return;
+            }
+        }
+
         // Check if we exceed the maximum number of user accounts
         obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
             if (maxExceed) {

@@ -462,7 +462,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, cores.';
+                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores.';
                             break;
                         }
                         case 'args': {
@@ -489,15 +489,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (obj.parent.parent.taskLimiter != null) {
                                 //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
                                 const tl = obj.parent.parent.taskLimiter;
-                                r += 'MaxTasks: ' + tl.maxTasks + '<br />';
-                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds<br />';
-                                r += 'NextTaskId: ' + tl.nextTaskId + '<br />';
-                                r += 'CurrentCount: ' + tl.currentCount + '<br />';
+                                r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '<br />';
+                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '<br />';
                                 var c = [];
                                 for (var i in tl.current) { c.push(i); }
-                                r += 'Current: [' + c.join(', ') + ']<br />';
+                                r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']<br />';
                                 r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '<br />';
-                                r += 'Timer: ' + (tl.timer != null) + '<br />';
+                            }
+                            break;
+                        }
+                        case 'setmaxtasks': {
+                            if ((args["_"].length != 1) || (parseInt(args["_"][0]) < 1) || (parseInt(args["_"][0]) > 1000)) {
+                                r = 'Usage: setmaxtasks [1 to 1000]';
+                            } else {
+                                obj.parent.parent.taskLimiter.maxTasks = parseInt(args["_"][0]);
+                                r = 'MaxTasks set to ' + obj.parent.parent.taskLimiter.maxTasks + '.';
                             }
                             break;
                         }
