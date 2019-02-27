@@ -50,6 +50,7 @@
       "_CertUrl": "https://192.168.2.106:443/",
       "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1 },
       "_AgentNoProxy": true,
+      "_GeoLocation": true,
       "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
       "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
       "_AgentAllowedIP": "192.168.0.100/24",

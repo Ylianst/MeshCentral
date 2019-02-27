@@ -2866,6 +2866,7 @@
         // Load the entire map
         function loadmap() {
             if (xxmap == null) return;
+            if ((features & 0x8000) == 0) { QV('viewselectmapoption', false); QV('devViewButton4', false); xxmap = null; return; } // Geolocation not supported
             try {
                 // Initialize a Source Vector
                 xxmap.markersSource = new ol.source.Vector();
@@ -3547,7 +3548,6 @@
                 x += '</div><div style=font-size:x-small>';
                 if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
-
                 if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
