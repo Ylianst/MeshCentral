@@ -2885,7 +2885,7 @@
                 if (r == 0xFFFFFFFF) rights = 'Full&nbsp;Administrator'; else if (r == 0) rights = 'No&nbsp;Rights';
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
-                x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + sortedusers[i].name + '<div></div></div>';
+                x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
                 x += '</td></tr>';
                 ++count;
             }
@@ -2937,17 +2937,20 @@
         function p20showAddMeshUserDialog() {
             if (xxdialogMode) return;
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
-            x += '<div style="border:2px groove gray;background-color:white;max-height:80px;overflow-y:scroll">';
+            x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>Remote View Only<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>No Terminal Access<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>No File Access<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>No Intel&reg; AMT<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview>Remote View Only<br>';
             x += '</div>';
             setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -2966,7 +2969,10 @@
             QE('p20meshserverfiles', !Q('p20fulladmin').checked);
             QE('p20wakedevices', !Q('p20fulladmin').checked);
             QE('p20editnotes', !Q('p20fulladmin').checked);
-            QE('p20remoteview', !Q('p20fulladmin').checked);
+            QE('p20remoteview', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
+            QE('p20noterminal', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
+            QE('p20nofiles', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
+            QE('p20noamt', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
         }
 
         function p20showAddMeshUserDialogEx() {
@@ -2981,6 +2987,9 @@
                 if (Q('p20wakedevices').checked == true) meshadmin += 64;
                 if (Q('p20editnotes').checked == true) meshadmin += 128;
                 if (Q('p20remoteview').checked == true) meshadmin += 256;
+                if (Q('p20noterminal').checked == true) meshadmin += 512;
+                if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noamt').checked == true) meshadmin += 2048;
             }
             meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value, meshadmin: meshadmin });
         }
@@ -2999,10 +3008,13 @@
                 if ((meshrights & 64) != 0) r += ', Wake Devices';
                 if ((meshrights & 128) != 0) r += ', Edit Notes';
                 if ((meshrights & 256) != 0) r += ', Remote View Only';
+                if ((meshrights & 512) != 0) r += ', No Terminal';
+                if ((meshrights & 1024) != 0) r += ', No Files';
+                if ((meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
-            var buttons = 1, x = addHtmlValue('User', userid.split('/')[2]);
+            var buttons = 1, x = addHtmlValue('User', EscapeHtml(decodeURIComponent(userid.split('/')[2])));
             x += addHtmlValue('Permissions', r);
             if ((('user/' + domain + '/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
