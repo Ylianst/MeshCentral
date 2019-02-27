@@ -317,6 +317,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Remove Intel AMT credential if present
                             if (docs[i].intelamt != null && docs[i].intelamt.pass != null) { delete docs[i].intelamt.pass; }
 
+                            // If GeoLocation not enabled, remove any node location information
+                            if (domain.geolocation != true) {
+                                if (docs[i].iploc != null) { delete docs[i].iploc; }
+                                if (docs[i].wifiloc != null) { delete docs[i].wifiloc; }
+                                if (docs[i].gpsloc != null) { delete docs[i].gpsloc; }
+                                if (docs[i].userloc != null) { delete docs[i].userloc; }
+                            }
+
                             r[meshid].push(docs[i]);
                         }
                         try { ws.send(JSON.stringify({ action: 'nodes', nodes: r, tag: command.tag })); } catch (ex) { }
@@ -1482,7 +1490,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
                             if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
                             if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
-                            if (command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
+                            if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
                                 change = 1;
                                 if ((command.userloc.length == 0) && (node.userloc)) {
                                     delete node.userloc;

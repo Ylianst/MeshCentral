@@ -999,6 +999,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
             if (domain.agentnoproxy === true) { features += 0x2000; } // Indicates that agents should be installed without using a HTTP proxy
             if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x4000; } // Indicates Yubikey support
+            if (domain.geolocation == true) { features += 0x8000; } // Enable geo-location features
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
