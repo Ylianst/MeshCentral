@@ -23,10 +23,10 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     obj.legacyAgentConnections = {};
     obj.migrationAgents = {};
     obj.agentActionCount = {};
-    const common = require('./common.js');
-    //const net = require('net');
+    obj.stats = { blockedConnect: 0, connectCount: 0, clientCertConnectCount: 0, noCertConnectCount: 0, bytesIn: 0, bytesOut: 0, httpGetRequest: 0, pushedAgents: {}, close: 0, onclose: 0 }
     const tls = require('tls');
     const forge = require('node-forge');
+    const common = require('./common.js');
 
     const LegacyMeshProtocol = {
         NODEPUSH: 1,	           // Used to send a node block to another peer.
@@ -149,26 +149,41 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     // Called when a legacy agent connects to this server
     function onConnection(socket) {
         // Check for blocked IP address
-        if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { Debug(1, "SWARM:New blocked agent connection"); return; }
+        if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { obj.stats.blockedConnect++; Debug(1, "SWARM:New blocked agent connection"); return; }
+        obj.stats.connectCount++;
 
         socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", socket: socket };
         socket.setEncoding('binary');
         socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
         Debug(1, 'SWARM:New legacy agent connection');
 
+        if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) { obj.stats.noCertConnectCount++; } else { obj.stats.clientCertConnectCount++; }
+
         socket.addListener("data", function (data) {
             if (args.swarmdebug) { var buf = Buffer.from(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
+            obj.stats.bytesIn += data.length;
             socket.tag.accumulator += data;
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
-                if (socket.tag.accumulator.substring(0, 3) == 'GET') { /*console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress);*/ socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>'); socket.end(); return; }
+                if (socket.tag.accumulator.substring(0, 3) == 'GET') {
+                    obj.stats.httpGetRequest++;
+                    /*console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress);*/
+                    socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>');
+                    socket.end();
+                    return;
+                }
                 socket.tag.first = false;
             }
 
             // A client certificate is required
-            if (!socket.tag.clientCert.subject) { /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/ socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.'); socket.end(); return; }
+            if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) {
+                /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/
+                socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.');
+                socket.end();
+                return;
+            }
 
             try {
                 // Parse all of the agent binary command data we can
@@ -214,6 +229,10 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                                 socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
                                 socket.tag.updatePtr = 0;
                                 //console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
+
+                                // Update stats
+                                if (obj.stats.pushedAgents[nodeblock.agenttype] == null) { obj.stats.pushedAgents[nodeblock.agenttype] = {}; }
+                                if (obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] == null) { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] = 0; } else { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion]++; }
 
                                 // Start the agent download using the task limiter so not to flood the server. Low priority task
                                 obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
@@ -286,6 +305,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         }
 
         socket.addListener("close", function () {
+            obj.stats.onclose++;
             Debug(1, 'Swarm:Connection closed');
             if (socket.pingTimer != null) { clearInterval(socket.pingTimer); delete socket.pingTimer; }
             if (socket.tag && (typeof socket.tag.taskid == 'number')) {
@@ -358,6 +378,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
     // Disconnect legacy agent connection
     obj.close = function (socket) {
+        obj.stats.close++;
         try { socket.close(); } catch (e) { }
         socket.xclosed = 1;
     };
@@ -368,6 +389,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     };
 
     function Write(socket, data) {
+        obj.stats.bytesOut += data.length;
         if (args.swarmdebug) {
             // Print out sent bytes
             var buf = Buffer.from(data, "binary");

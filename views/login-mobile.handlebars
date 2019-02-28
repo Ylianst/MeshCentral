@@ -188,6 +188,35 @@
                                 </form>
                             </div>
 
+                            <div id=resetpasswordpanel style="position:relative;background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                                <form action=resetpassword method=post>
+                                    <div id=message6>
+                                        {{{message}}}
+                                    </div>
+                                    <div id="rpasswordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
+                                    <table>
+                                        <tr>
+                                            <td id="rnuPass1" width=100 align=right>Password:</td>
+                                            <td><input id=rapassword1 type=password name=rpassword1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(3,event) onkeyup=validatePassReset(3,event) /></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="rnuPass2" align=right>Password:</td>
+                                            <td><input id=rapassword2 type=password name=rpassword2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(4,event) onkeyup=validatePassReset(4,event) /></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="rnuHint" align=right>Password Hint:</td>
+                                            <td><input id=rapasswordhint type=text name=rpasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(5,event) onkeyup=validatePassReset(5,event) /></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan=2>
+                                                <div style=float:right><input id=resetPassButton type=submit value="Reset Password" disabled="disabled" /></div>
+                                                <div id=rpassWarning style="padding-top:6px"></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                </form>
+                            </div>
 
                         </td>
                     </tr>
@@ -288,6 +317,7 @@
             QV('message3', false);
             QV('message4', false);
             QV('message5', false);
+            QV('message6', false);
             go(x);
         }
 
@@ -299,10 +329,13 @@
             QV('resetpanel', x == 3);
             QV('tokenpanel', x == 4);
             QV('resettokenpanel', x == 5);
+            QV('resetpasswordpanel', x == 6);
             if (x == 1) { Q('username').focus(); }
             if (x == 2) { Q('ausername').focus(); }
             if (x == 3) { Q('remail').focus(); }
             if (x == 4) { Q('tokenInput').focus(); }
+            if (x == 5) { Q('resetTokenInput').focus(); }
+            if (x == 6) { Q('rapassword1').focus(); }
         }
 
         function validateLogin(box, e) {
@@ -353,6 +386,52 @@
                 if (box == 6) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
+        }
+
+        function validatePassReset(box, e) {
+            setDialogMode(0);
+            var pass1ok = (Q('rapassword1').value.length > 0);
+            var pass2ok = (Q('rapassword2').value.length > 0) && (Q('rapassword2').value == Q('rapassword1').value);
+            var ok = (pass1ok && pass2ok);
+
+            // Color the fields
+            QS('rnuPass1').color = pass1ok ? 'black' : '#7b241c';
+            QS('rnuPass2').color = pass2ok ? 'black' : '#7b241c';
+
+            if (Q('rapassword1').value == '') {
+                QH('rpassWarning', '');
+                QV('rpasswordPolicyCallout', false);
+            } else {
+                if (passRequirements == null || passRequirements == '') {
+                    // No password requirements, display password strength
+                    var passStrength = checkPasswordStrength(Q('rapassword1').value);
+                    if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>Strong Password</b><span>'); }
+                    else if (passStrength >= 60) { QH('rpassWarning', '<span style=color:blue><b>Good Password</b><span>'); }
+                    else { QH('rpassWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+                } else {
+                    // Password requirements provided, use that
+                    var passReq = checkPasswordRequirements(Q('rapassword1').value, passRequirements);
+                    if (passReq == false) {
+                        ok = false;
+                        QS('rnuPass1').color = '#7b241c';
+                        QS('rnuPass2').color = '#7b241c';
+                        QH('rpassWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>Password Policy</b><div>'); // This is also a link to the password policy
+                        QV('rpasswordPolicyCallout', true);
+                        QH('rpasswordPolicyCallout', passwordPolicyText(Q('rapassword1').value));
+                    } else {
+                        QH('rpassWarning', '');
+                        QV('rpasswordPolicyCallout', false);
+                    }
+                }
+            }
+            if ((e != null) && (e.keyCode == 13)) {
+                if (box == 2) { Q('rapassword1').focus(); }
+                if (box == 3) { Q('rapassword2').focus(); }
+                if (box == 4) { Q('rapasswordhint').focus(); }
+                if (box == 6) { Q('resetPassButton').click(); }
+            }
+            if (e != null) { haltEvent(e); }
+            QE('resetPassButton', ok);
         }
 
         function validateReset(e) {

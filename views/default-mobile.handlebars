@@ -243,7 +243,7 @@
                                 <div style="margin-left:9px;margin-bottom:8px">
                                     <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
-                                    <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a></div>
+                                    <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
                                 </div>
                                 <br style=clear:both />
@@ -654,7 +654,20 @@
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageAuthApp', features & 4096);
             QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
+
+            if (typeof userinfo.passchange == 'number') {
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
+                else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
+                    var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 60) + ' minute' + addLetterS(Math.floor(seconds / 60)) + '.'); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 3600) + ' hour' + addLetterS(Math.floor(seconds / 3600)) + '.'); }
+                    else { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 86400) + ' day' + addLetterS(Math.floor(seconds / 86400)) + '.'); }
+                }
+            }
         }
+
+        function addLetterS(x) { return (x > 1) ? 's' : ''; }
 
         function onMessage(server, message) {
             switch (message.action) {

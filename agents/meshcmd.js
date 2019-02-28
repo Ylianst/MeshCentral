@@ -316,6 +316,7 @@ function run(argv) {
         // Display Intel AMT versions
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getVersion(function (val) {
             console.log("MEI Version = " + val.BiosVersion.toString());
@@ -326,6 +327,7 @@ function run(argv) {
         // Display Intel AMT list of trusted hashes
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getHashHandles(function (handles) {
             exitOnCount = handles.length;
@@ -341,6 +343,7 @@ function run(argv) {
         mestate = {};
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getVersion(function (result) { if (result) { for (var version in result.Versions) { if (result.Versions[version].Description == 'AMT') { mestate.ver = result.Versions[version].Version; } } } });
         amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
@@ -381,6 +384,7 @@ function run(argv) {
         mestate = {};
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getVersion(function (result) { console.log('getVersion: ' + JSON.stringify(result)); });
         amtMei.getProvisioningState(function (result) { console.log('getProvisioningState: ' + JSON.stringify(result)); });
@@ -666,6 +670,7 @@ function startMeshCommander() {
 function deactivateCCM() {
     var amtMeiModule = require('amt-mei');
     var amtMei = new amtMeiModule();
+    if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
     amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
     amtMei.unprovision(1, function (status) { if (status == 0) { console.log('Success'); } else { console.log('Error ' + status); } exit(1); });
 }
@@ -708,6 +713,7 @@ function getAmtUuid() {
     if (settings.hostname == null) {
         var amtMeiModule = require('amt-mei');
         var amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getUuid(function (result) { if ((result == null) || (result.uuid == null)) { console.log('Failed.'); } else { console.log(result.uuid); } exit(1); });
     } else {
@@ -829,6 +835,7 @@ function getAmtInfo(func, tag) {
         getAmtInfoFetchingTimer = null;
         var amtMeiModule = require('amt-mei');
         amtMei = new amtMeiModule();
+        if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
     }, 3000);
     amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
@@ -890,6 +897,7 @@ function startLms(func) {
 
     var amtMeiModule = require('amt-mei');
     amtMei = new amtMeiModule();
+    if (amtMei == null) { console.log("Intel(R) AMT not supported or insufficient access rights."); exit(1); return; }
     amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
     //console.log("PTHI Connected.");
 

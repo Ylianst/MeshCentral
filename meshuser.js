@@ -470,7 +470,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores.';
+                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores, migrationagents, swarmstats.';
                             break;
                         }
                         case 'args': {
@@ -534,6 +534,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             
                             r = JSON.stringify(removeAllUnderScore(config), null, 4);
+                            break;
+                        }
+                        case 'migrationagents': {
+                            if (obj.parent.parent.swarmserver == null) {
+                                r = 'Swarm server not running.';
+                            } else {
+                                for (var i in obj.parent.parent.swarmserver.migrationAgents) {
+                                    var arch = obj.parent.parent.swarmserver.migrationAgents[i];
+                                    for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + agent.binary.length + '<br />'; }
+                                }
+                            }
+                            break;
+                        }
+                        case 'swarmstats': {
+                            if (obj.parent.parent.swarmserver == null) {
+                                r = 'Swarm server not running.';
+                            } else {
+                                for (var i in obj.parent.parent.swarmserver.stats) {
+                                    if (typeof obj.parent.parent.swarmserver.stats[i] == 'object') {
+                                        r += i + ' ' + JSON.stringify(obj.parent.parent.swarmserver.stats[i]) + '<br />';
+                                    } else {
+                                        r += i + ' ' + obj.parent.parent.swarmserver.stats[i] + '<br />';
+                                    }
+                                }
+                            }
                             break;
                         }
                         default: { // This is an unknown command, return an error message
@@ -822,11 +847,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (hint.length > 250) hint = hint.substring(0, 250);
                                     user.salt = salt;
                                     user.hash = hash;
-                                    user.passhint = req.body.apasswordhint;
+                                    user.passhint = hint;
                                     user.passchange = Math.floor(Date.now() / 1000);
                                     delete user.passtype;
                                     obj.db.SetUser(user);
-                                    obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+                                    obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
 
                                     // Send user notification of password change
                                     displayNotificationMessage('Password changed.');
@@ -854,19 +879,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Compute the password hash & save it
                         require('./pass').hash(command.pass, function (err, salt, hash) {
                             if (!err) {
-                                var annonceChange = false;
                                 chguser.salt = salt;
                                 chguser.hash = hash;
                                 chguser.passhint = command.hint;
-                                chguser.passchange = Math.floor(Date.now() / 1000);
+                                if (command.resetNextLogin == true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
                                 delete chguser.passtype; // Remove the password type if one was present.
                                 if (command.removeMultiFactor == true) {
-                                    if (chguser.otpsecret) { delete chguser.otpsecret; annonceChange = true; }
-                                    if (chguser.otphkeys) { delete chguser.otphkeys; annonceChange = true; }
-                                    if (chguser.otpkeys) { delete chguser.otpkeys; annonceChange = true; }
+                                    if (chguser.otpsecret) { delete chguser.otpsecret; }
+                                    if (chguser.otphkeys) { delete chguser.otphkeys; }
+                                    if (chguser.otpkeys) { delete chguser.otpkeys; }
                                 }
                                 obj.db.SetUser(chguser);
-                                if (annonceChange == true) { obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Removed 2nd factor auth.', domain: domain.id }); }
+                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id });
                             } else {
                                 // Report that the password change failed
                                 // TODO
