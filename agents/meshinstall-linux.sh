@@ -58,7 +58,7 @@ CheckInstallAgent() {
           # Linux x86, 64 bit
           machineid=6
         fi
-        if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ]
+        if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ] || [ $machinetype == 'i586' ]
         then
           # Linux x86, 32 bit
           machineid=5

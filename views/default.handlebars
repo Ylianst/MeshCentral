@@ -260,7 +260,7 @@
                         <p style="margin-left:40px">
                             <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
                             <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
-                            <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><br />
+                            <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
                             <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
                         </p>
                         <br style=clear:both />
@@ -1190,7 +1190,20 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
+
+            if (typeof userinfo.passchange == 'number') {
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
+                else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
+                    var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 60) + ' minute' + addLetterS(Math.floor(seconds / 60)) + '.'); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 3600) + ' hour' + addLetterS(Math.floor(seconds / 3600)) + '.'); }
+                    else { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 86400) + ' day' + addLetterS(Math.floor(seconds / 86400)) + '.'); }
+                }
+            }
         }
+
+        function addLetterS(x) { return (x > 1) ? 's' : ''; }
 
         function onMessage(server, message) {
             switch (message.action) {
@@ -1767,7 +1780,9 @@
                         }
                         case 'login': {
                             // Update the last login time
-                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) { users['user/' + domain + '/' + message.event.username.toLowerCase()].login = Math.floor(message.event.time / 1000); }
+                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) {
+                                users['user/' + domain + '/' + message.event.username.toLowerCase()].login = Math.floor(new Date(message.event.time).getTime() / 1000);
+                            }
                             break;
                         }
                         case 'scanamtdevice': {
@@ -6584,6 +6599,8 @@
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
+            if (user.passchange == -1) { x += addDeviceAttribute('Password', 'Will be changed on next login.'); }
+            else if (user.passchange) { x += addDeviceAttribute('Password', 'Last changed: ' + new Date(user.passchange * 1000).toLocaleString()); }
 
             var linkCount = 0, linkCountStr = '<i>None<i>';
             if (user.links) {
@@ -6674,6 +6691,7 @@
             x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
             x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>');
             if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
             if (multiFactor == 1) { x += '<div><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</div>'; }
             setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
             showCreateNewAccountDialogValidate(1);
@@ -6683,7 +6701,7 @@
         function p30showUserChangePassDialogEx(b, tag) {
             var removeMultiFactor = false;
             if ((tag == 1) && (Q('p4twoFactorRemove').checked == true)) { removeMultiFactor = true; }
-            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, hint: Q('p4hint').value, removeMultiFactor: removeMultiFactor }); }
+            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, hint: Q('p4hint').value, removeMultiFactor: removeMultiFactor, resetNextLogin: Q('p4resetNextLogin').checked }); }
         }
 
         function p30showDeleteUserDialog() {

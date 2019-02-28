@@ -419,7 +419,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var user = obj.users[userid];
 
                 // Check if this user has 2-step login active
-                if (checkUserOneTimePasswordRequired(domain, user)) {
+                if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user)) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             var randomWaitTime = 0;
@@ -439,14 +439,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }, randomWaitTime);
                         } else {
                             // Login succesful
-                            completeLoginRequest(req, res, domain, user, userid);
+                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword);
                         }
                     });
                     return;
                 }
 
                 // Login succesful
-                completeLoginRequest(req, res, domain, user, userid);
+                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword);
             } else {
                 // Login failed, wait a random delay
                 setTimeout(function () {
@@ -466,10 +466,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
-    function completeLoginRequest(req, res, domain, user, userid) {
+    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword) {
+        // Check if we need to change the password
+        if ((typeof user.passchange == 'number') && ((user.passchange == -1) || ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.reset == 'number') && (user.passchange + (domain.passwordrequirements.reset * 86400) < Math.floor(Date.now() / 1000))))) {
+            // Request a password change
+            req.session.loginmode = '6';
+            req.session.error = '<b style=color:#8C001A>Password change requested.</b>';
+            req.session.resettokenusername = xusername;
+            req.session.resettokenpassword = xpassword;
+            res.redirect(domain.url);
+            return;
+        }
+
         // Save login time
         user.login = Math.floor(Date.now() / 1000);
         obj.db.SetUser(user);
+        obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
 
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
@@ -506,8 +518,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             res.redirect(domain.url);
         }
         //});
-
-        obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'login', msg: 'Account login', domain: domain.id });
     }
 
     function handleCreateAccountRequest(req, res) {
@@ -521,7 +531,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var i = -1;
             if (typeof req.body.email == 'string') { i = req.body.email.indexOf('@'); }
             if (i == -1) {
-                req.session.loginmode = 2;
+                req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
                 res.redirect(domain.url);
                 return;
@@ -529,7 +539,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
             for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
             if (emailok == false) {
-                req.session.loginmode = 2;
+                req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
                 res.redirect(domain.url);
                 return;
@@ -539,33 +549,33 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if we exceed the maximum number of user accounts
         obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
             if (maxExceed) {
-                req.session.loginmode = 2;
+                req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Account limit reached.</b>';
                 console.log('max', req.session);
                 res.redirect(domain.url);
             } else {
                 if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
-                    req.session.loginmode = 2;
+                    req.session.loginmode = '2';
                     req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
                     res.redirect(domain.url);
                 } else {
                     // Check if this email was already verified
                     obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
                         if (docs.length > 0) {
-                            req.session.loginmode = 2;
+                            req.session.loginmode = '2';
                             req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';
                             res.redirect(domain.url);
                         } else {
                             // Check if there is domain.newAccountToken, check if supplied token is valid
                             if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
-                                req.session.loginmode = 2;
+                                req.session.loginmode = '2';
                                 req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
                                 res.redirect(domain.url);
                                 return;
                             }
                             // Check if user exists
                             if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
-                                req.session.loginmode = 2;
+                                req.session.loginmode = '2';
                                 req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
                             } else {
                                 var hint = req.body.apasswordhint;
@@ -599,6 +609,82 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Called to process an account password reset
+    function handleResetPasswordRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+
+        // Check everything is ok
+        if ((domain == null) || (domain.auth == 'sspi') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+            delete req.session.loginmode;
+            delete req.session.tokenusername;
+            delete req.session.tokenpassword;
+            delete req.session.resettokenusername;
+            delete req.session.resettokenpassword;
+            delete req.session.tokenemail;
+            delete req.session.success;
+            delete req.session.error;
+            delete req.session.passhint;
+            res.redirect(domain.url);
+            return;
+        }
+
+        // Authenticate the user
+        obj.authenticate(req.session.resettokenusername, req.session.resettokenpassword, domain, function (err, userid, passhint) {
+            if (userid) {
+                // Login
+                var user = obj.users[userid];
+
+                // If we have password requirements, check this here.
+                if (!obj.common.checkPasswordRequirements(req.body.rpassword1, domain.passwordrequirements)) {
+                    req.session.loginmode = '6';
+                    req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
+                    res.redirect(domain.url);
+                    return;
+                }
+
+                // Check if the password is the same as the previous one
+                require('./pass').hash(req.body.rpassword1, user.salt, function (err, hash) {
+                    if (user.hash == hash) {
+                        // This is the same password, request a password change again
+                        req.session.loginmode = '6';
+                        req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
+                        res.redirect(domain.url);
+                    } else {
+                        // Update the password, use a different salt.
+                        require('./pass').hash(req.body.rpassword1, function (err, salt, hash) {
+                            if (err) throw err;
+                            user.salt = salt;
+                            user.hash = hash;
+                            user.passhint = req.body.rpasswordhint;
+                            user.passchange = Math.floor(Date.now() / 1000);
+                            delete user.passtype;
+                            obj.db.SetUser(user);
+                            obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id });
+
+                            // Login succesful
+                            req.session.userid = userid;
+                            req.session.domainid = domain.id;
+                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword);
+                        });
+                    }
+                });
+            } else {
+                // Failed, error out.
+                delete req.session.loginmode;
+                delete req.session.tokenusername;
+                delete req.session.tokenpassword;
+                delete req.session.resettokenusername;
+                delete req.session.resettokenpassword;
+                delete req.session.tokenemail;
+                delete req.session.success;
+                delete req.session.error;
+                delete req.session.passhint;
+                res.redirect(domain.url);
+                return;
+            }
+        });
+    }
+
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -610,13 +696,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check the email stirng format
         if (!email || checkEmail(email) == false) {
-            req.session.loginmode = 3;
+            req.session.loginmode = '3';
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
             res.redirect(domain.url);
         } else {
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
                 if ((err != null) || (docs.length == 0)) {
-                    req.session.loginmode = 3;
+                    req.session.loginmode = '3';
                     req.session.error = '<b style=color:#8C001A>Account not found.</b>';
                     res.redirect(domain.url);
                 } else {
@@ -635,11 +721,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 delete req.session.tokenemail;
                                 if (obj.parent.mailserver != null) {
                                     obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
-                                    req.session.loginmode = 1;
+                                    req.session.loginmode = '1';
                                     req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
                                     res.redirect(domain.url);
                                 } else {
-                                    req.session.loginmode = 3;
+                                    req.session.loginmode = '3';
                                     req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
                                     res.redirect(domain.url);
                                 }
@@ -649,11 +735,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // No second factor, send email to perform recovery.
                         if (obj.parent.mailserver != null) {
                             obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
-                            req.session.loginmode = 1;
+                            req.session.loginmode = '1';
                             req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
                             res.redirect(domain.url);
                         } else {
-                            req.session.loginmode = 3;
+                            req.session.loginmode = '3';
                             req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
                             res.redirect(domain.url);
                         }
@@ -1074,7 +1160,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (err != null) message = '<p class="msg error">' + err + '</p>';
         if (msg != null) message = '<p class="msg success">' + msg + '</p>';
         if (passhint != null) passhint = EscapeHtml(passhint);
-
         var emailcheck = ((obj.parent.mailserver != null) && (domain.auth != 'sspi'));
 
         if (obj.args.minify && !req.query.nominify) {
@@ -2271,6 +2356,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
             obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
             obj.app.post(url + 'createaccount', handleCreateAccountRequest);
+            obj.app.post(url + 'resetpassword', handleResetPasswordRequest);
             obj.app.post(url + 'resetaccount', handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
