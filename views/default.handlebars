@@ -6358,13 +6358,16 @@
 
             // Display the users using the sorted list
             var x = '<table style=width:100% cellpadding=0 cellspacing=0>', addHeader = true;
+
+            x += '<th style=color:gray>Name<th style=color:gray>Groups<th style=color:gray>Last Access<th style=color:gray>Permissions';
+
             // Online users
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions != null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
                     if (maxUsers > 0) {
-                        if (addHeader) { x += '<tr><td class=userTableHeader>Online Users'; addHeader = false; }
+                        if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>Online Users'; addHeader = false; }
                         x += addUserHtml(user, sessions);
                         maxUsers--;
                     } else {
@@ -6379,7 +6382,7 @@
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions == null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
                     if (maxUsers > 0) {
-                        if (addHeader) { x += '<tr><td class=userTableHeader>Offline Users'; addHeader = false; }
+                        if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>Offline Users'; addHeader = false; }
                         x += addUserHtml(user, sessions);
                         maxUsers--;
                     } else {
@@ -6398,33 +6401,36 @@
         }
 
         function addUserHtml(user, sessions) {
-            var x = '', gray = ' gray', icon = 'm2', msg = '', msg2 = '', self = (user.name != userinfo.name);
+            var x = '', gray = ' gray', icon = 'm2', msg = '', self = (user.name != userinfo.name), lastAccess = '', permissions = '';
             if (sessions != null) {
                 gray = '';
                 if (self) {
-                    msg2 = "<span style=float:right;margin-top:1px;margin-right:4px title=Chat><a onclick=userChat(event,\"" + encodeURIComponent(user._id) + "\",\"" + encodeURIComponent(user.name) + "\")><img src='images/icon-chat.png' height=16 width=16 style=padding-top:2px /></a></span>";
-                    msg2 += "<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")><img src='images/icon-notify.png' height=16 width=16 style=padding-top:2px /></a></span>";
+                    msg = "<span style=float:right;margin-top:1px;margin-right:4px title=Chat><a onclick=userChat(event,\"" + encodeURIComponent(user._id) + "\",\"" + encodeURIComponent(user.name) + "\")><img src='images/icon-chat.png' height=16 width=16 style=padding-top:2px /></a></span>";
+                    msg += "<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")><img src='images/icon-notify.png' height=16 width=16 style=padding-top:2px /></a></span>";
                 }
-                if (sessions == 1) { msg += '1 active session'; } else { msg += sessions + ' active sessions'; }
+                if (sessions == 1) { lastAccess += '1 session'; } else { lastAccess += sessions + ' sessions'; }
             } else {
-                if (user.login) { msg += '<span title="Last login: ' + new Date(user.login * 1000).toLocaleString() + '">' + new Date(user.login * 1000).toLocaleDateString() + '</span>'; }
+                if (user.login) { lastAccess += '<span title="Last login: ' + new Date(user.login * 1000).toLocaleString() + '">' + new Date(user.login * 1000).toLocaleDateString() + '</span>'; }
             }
-            if (msg != '') msg += ', ';
-            if (self) { msg += "<a onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { msg += "Locked, "; }
-            msg += "<span title='Server Permissions'>";
+            if (self) { permissions += "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked, "; }
+            permissions += "<span title='Server Permissions'>";
             if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) {
-                msg += "User";
+                permissions += "User";
             } else if (user.siteadmin == 8) {
-                msg += "User with server files";
+                permissions += "User + Files";
             } else if (user.siteadmin == 0xFFFFFFFF) {
-                msg += "Administrator";
+                permissions += "Administrator";
             } else {
-                msg += "Partial";
+                permissions += "Partial";
             }
-            msg += "</span>";
-            if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
-            if (self) { msg += "</a>"; }
+            permissions += "</span>";
+            //if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
+            if (self) { permissions += "</a>"; }
+
+            var groups = 0
+            if (user.links) { for (var i in user.links) { groups++; } }
+
             var username = EscapeHtml(user.name), emailVerified = '';
             if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="Email is not verified">&#x1F5F4</b>' : ' <b style=color:green title="Email is verified">&#x1F5F8</b>'); }
             if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + emailVerified; }
@@ -6436,7 +6442,7 @@
             x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
             x += '<div style=float:left;height:24px;width:24px;background-color:white><div class="' + icon + gray + '" style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
             x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
-            x += '<div><span>' + username + '</span>' + msg2 + '<span style=float:right>' + msg + '</span></div></div>'; // </td></tr>
+            x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
         }
 
