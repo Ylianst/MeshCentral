@@ -1873,7 +1873,7 @@
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
             if ((currentDevicePanel != 1) && (currentNode != null) && ((meshrights & 8) || (meshrights & 256)) && ((currentNode.mtype == 1) || (currentNode.agent.caps & 1))) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
-            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
         }
 

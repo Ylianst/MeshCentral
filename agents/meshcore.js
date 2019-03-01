@@ -31,6 +31,9 @@ var MESHRIGHT_SERVERFILES = 32;
 var MESHRIGHT_WAKEDEVICE = 64;
 var MESHRIGHT_SETNOTES = 128;
 var MESHRIGHT_REMOTEVIEW = 256;
+var MESHRIGHT_NOTERMINAL = 512;
+var MESHRIGHT_NOFILES = 1024;
+var MESHRIGHT_NOAMT = 2048;
 
 function createMeshCore(agent) {
     var obj = {};
@@ -683,16 +686,17 @@ function createMeshCore(agent) {
             if (data == 'c') { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
         } else {
             // Handle tunnel data
-            if (this.httprequest.protocol == 0) { // 1 = SOL, 2 = KVM, 3 = IDER, 4 = Files, 5 = FileTransfer
+            if (this.httprequest.protocol == 0) { // 1 = Terminal, 2 = Desktop, 5 = Files
                 // Take a look at the protocol
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if (this.httprequest.protocol == 1) {
-                    // Check user access rights
-                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                    // Check user access rights for terminal
+                    if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
-                        sendConsoleText('Error: No Remote Control Rights.');
+                        this.httprequest.s.end();
+                        sendConsoleText('Error: No Terminal Control Rights.');
                         return;
                     }
 
@@ -740,11 +744,12 @@ function createMeshCore(agent) {
                     if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
                 } else if (this.httprequest.protocol == 2)
                 {
-                    // Check user access rights
+                    // Check user access rights for desktop
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
-                        sendConsoleText('Error: No Remote Control Rights.');
+                        this.httprequest.s.end();
+                        sendConsoleText('Error: No Desktop Control Rights.');
                         return;
                     }
 
@@ -791,11 +796,12 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
                 } else if (this.httprequest.protocol == 5) {
-                    // Check user access rights
-                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                    // Check user access rights for files
+                    if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
-                        sendConsoleText('Error: No Remote Control Rights.');
+                        this.httprequest.s.end();
+                        sendConsoleText('Error: No Files Control Rights.');
                         return;
                     }
 
