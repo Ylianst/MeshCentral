@@ -300,12 +300,11 @@
                             <td class=h1></td>
                             <td class=style14>
                                 <div style="float:right">
-                                    <input type=button onclick=showUserBroadcastDialog() value="Broadcast" />&nbsp;
+                                    <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 </div>
                                 <div>
-                                    &nbsp;
-                                    <input type=button onclick=showCreateNewAccountDialog() value="New Account..." />&nbsp;
-                                    <input id=UserSearchInput type=text style=width:120px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />&nbsp;
+                                    <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
+                                    <input id=UserSearchInput type=text style=width:120px;margin-left:6px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
                             </td>
                             <td class=h2></td>
@@ -6346,6 +6345,7 @@
         function updateUsers() {
             QV('MainMenuMyUsers', (users != null) && ((features & 4) == 0));
             QV('LeftMenuMyUsers', (users != null) && ((features & 4) == 0));
+            QV('UserNewAccountButton', ((features & 4) == 0) && (serverinfo.domainauth == false));
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
             // Sort the list of user id's
