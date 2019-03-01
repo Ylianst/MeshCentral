@@ -578,9 +578,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.loginmode = '2';
                                 req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
                             } else {
-                                var hint = req.body.apasswordhint;
-                                if (hint.length > 250) hint = hint.substring(0, 250);
-                                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id, passhint: hint };
+                                var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                                if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
                                 var usercount = 0;
                                 for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                                 if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
@@ -655,7 +654,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (err) throw err;
                             user.salt = salt;
                             user.hash = hash;
-                            user.passhint = req.body.rpasswordhint;
+                            if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { var hint = req.body.rpasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; } else { delete user.passhint; }
                             user.passchange = Math.floor(Date.now() / 1000);
                             delete user.passtype;
                             obj.db.SetUser(user);
@@ -812,7 +811,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 userinfo.hash = hash;
                                                 delete userinfo.passtype;
                                                 userinfo.passchange = Math.floor(Date.now() / 1000);
-                                                userinfo.passhint = null;
+                                                delete userinfo.passhint;
                                                 //delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
                                                 obj.db.SetUser(userinfo);
 
@@ -925,11 +924,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Update the password
                 require('./pass').hash(req.body.apassword1, function (err, salt, hash) {
                     if (err) throw err;
-                    var hint = req.body.apasswordhint;
-                    if (hint.length > 250) hint = hint.substring(0, 250);
                     user.salt = salt;
                     user.hash = hash;
-                    user.passhint = req.body.apasswordhint;
+                    if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) hint = hint.substring(0, 250); user.passhint = hint; } else { delete user.passhint; }
                     user.passchange = Math.floor(Date.now() / 1000);
                     delete user.passtype;
                     obj.db.SetUser(user);
@@ -1070,22 +1067,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Give the web page a list of supported server features
             features = 0;
-            if (obj.args.wanonly == true) { features += 0x0001; } // WAN-only mode
-            if (obj.args.lanonly == true) { features += 0x0002; } // LAN-only mode
-            if (obj.args.nousers == true) { features += 0x0004; } // Single user mode
-            if (domain.userQuota == -1) { features += 0x0008; } // No server files mode
-            if (obj.args.mpstlsoffload) { features += 0x0010; } // No mutual-auth CIRA
-            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 0x0020; } // Allow site within iframe
-            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 0x0040; } // Email invites
-            if (obj.args.webrtc == true) { features += 0x0080; } // Enable WebRTC (Default false for now)
-            if (obj.args.clickonce !== false) { features += 0x0100; } // Enable ClickOnce (Default true)
-            if (obj.args.allowhighqualitydesktop == true) { features += 0x0200; } // Enable AllowHighQualityDesktop (Default false)
-            if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x0400; } // No CIRA
-            if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x0800; } // Server can self-write (Allows self-update)
-            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true)) { features += 0x1000; } // 2-step login supported
-            if (domain.agentnoproxy === true) { features += 0x2000; } // Indicates that agents should be installed without using a HTTP proxy
-            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x4000; } // Indicates Yubikey support
-            if (domain.geolocation == true) { features += 0x8000; } // Enable geo-location features
+            if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
+            if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
+            if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
+            if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
+            if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
+            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 0x00000020; } // Allow site within iframe
+            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
+            if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
+            if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
+            if (obj.args.allowhighqualitydesktop == true) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default false)
+            if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
+            if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
+            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
+            if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
+            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
+            if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
+            if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -1151,7 +1149,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.session != null) {
             err = req.session.error;
             msg = req.session.success;
-            passhint = req.session.passhint;
+            if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { passhint = EscapeHtml(req.session.passhint); }
             delete req.session.error;
             delete req.session.success;
             delete req.session.passhint;
@@ -1159,7 +1157,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var message = '';
         if (err != null) message = '<p class="msg error">' + err + '</p>';
         if (msg != null) message = '<p class="msg success">' + msg + '</p>';
-        if (passhint != null) passhint = EscapeHtml(passhint);
         var emailcheck = ((obj.parent.mailserver != null) && (domain.auth != 'sspi'));
 
         if (obj.args.minify && !req.query.nominify) {

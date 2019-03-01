@@ -173,7 +173,7 @@
                                             <td id="nuPass2" align=right>Password:</td>
                                             <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4,event) onkeyup=validateCreate(4,event) /></td>
                                         </tr>
-                                        <tr>
+                                        <tr id="createPanelHint" style="display:none">
                                             <td id="nuHint" align=right>Password Hint:</td>
                                             <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5,event) onkeyup=validateCreate(5,event) /></td>
                                         </tr>
@@ -273,7 +273,7 @@
                                             <td id="rnuPass2" align=right>Password:</td>
                                             <td><input id=rapassword2 type=password name=rpassword2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(4,event) onkeyup=validatePassReset(4,event) /></td>
                                         </tr>
-                                        <tr>
+                                        <tr id="resetpasswordpanelHint" style="display:none">
                                             <td id="rnuHint" align=right>Password Hint:</td>
                                             <td><input id=rapasswordhint type=text name=rpasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(5,event) onkeyup=validatePassReset(5,event) /></td>
                                         </tr>
@@ -333,12 +333,14 @@
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var passRequirements = "{{{passRequirements}}}";
         var hardwareKeyChallenge = '{{{hkey}}}';
-        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
+        var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var features = parseInt('{{{features}}}');
         var webPageFullScreen = getstore('webPageFullScreen', true);
         if (webPageFullScreen == 'false') { webPageFullScreen = false; }
         if (webPageFullScreen == 'true') { webPageFullScreen = true; }
         var welcomeText = decodeURIComponent("{{{welcometext}}}");
+        var currentpanel = 0;
         toggleFullScreen();
 
         function startup() {
@@ -348,6 +350,9 @@
                 try { loc = top.location.toString().toLowerCase(); } catch (e) { }
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
+
+            QV('createPanelHint', passRequirements.hint === true);
+            QV('resetpasswordpanelHint', passRequirements.hint === true);
 
             // Display the welcome text
             if (welcomeText) { QH('welcomeText', welcomeText); }
@@ -369,7 +374,7 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && u2fSupported()) {
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if (authResponse.signatureData) {
+                        if ((currentpanel == 4) && authResponse.signatureData) {
                             Q('hwtokenInput').value = JSON.stringify(authResponse);
                             QE('tokenOkButton', true);
                             Q('tokenOkButton').click();
@@ -382,7 +387,7 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && u2fSupported()) {
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if (authResponse.signatureData) {
+                        if ((currentpanel == 5) && authResponse.signatureData) {
                             Q('resetHwtokenInput').value = JSON.stringify(authResponse);
                             QE('resetTokenOkButton', true);
                             Q('resetTokenOkButton').click();
@@ -407,6 +412,7 @@
         }
 
         function go(x) {
+            currentpanel = x;
             setDialogMode(0);
             QV("showPassHintLink", false);
             QV('loginpanel', x == 1);
@@ -451,7 +457,7 @@
                 QH('passWarning', '');
                 QV('passwordPolicyCallout', false);
             } else {
-                if (passRequirements == null || passRequirements == '') {
+                if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('apassword1').value);
                     if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
@@ -499,7 +505,7 @@
                 QH('rpassWarning', '');
                 QV('rpasswordPolicyCallout', false);
             } else {
-                if (passRequirements == null || passRequirements == '') {
+                if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('rapassword1').value);
                     if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>Strong Password</b><span>'); }
