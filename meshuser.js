@@ -789,7 +789,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Check if this is an existing user
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.email != null) { newuser.email = command.email; } // Email
+                            if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             obj.parent.users[newuserid] = newuser;
+
                             // Create a user, generate a salt and hash the password
                             require('./pass').hash(command.pass, function (err, salt, hash) {
                                 if (err) throw err;
@@ -830,7 +832,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Change our own password
                     if (obj.common.validateString(command.oldpass, 1, 256) == false) break;
                     if (obj.common.validateString(command.newpass, 1, 256) == false) break;
-                    if (obj.common.validateString(command.hint, 0, 256) == false) break;
+                    if ((command.hint != null) && (obj.common.validateString(command.hint, 0, 256) == false)) break;
                     if (obj.common.checkPasswordRequirements(command.newpass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
                     // Start by checking the old password
@@ -843,11 +845,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     displayNotificationMessage('Error, password not changed.');
                                 } else {
                                     // Change the password
-                                    var hint = command.hint;
-                                    if (hint.length > 250) hint = hint.substring(0, 250);
+                                    if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (command.hint != null)) {
+                                        var hint = command.hint;
+                                        if (hint.length > 250) { hint = hint.substring(0, 250); }
+                                        user.passhint = hint;
+                                    }
                                     user.salt = salt;
                                     user.hash = hash;
-                                    user.passhint = hint;
                                     user.passchange = Math.floor(Date.now() / 1000);
                                     delete user.passtype;
                                     obj.db.SetUser(user);
@@ -870,7 +874,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.siteadmin != 0xFFFFFFFF) break;
                     if (obj.common.validateString(command.user, 1, 256) == false) break;
                     if (obj.common.validateString(command.pass, 1, 256) == false) break;
-                    if (obj.common.validateString(command.hint, 0, 256) == false) break;
+                    if ((command.hint != null) && (obj.common.validateString(command.hint, 0, 256) == false)) break;
                     if (typeof command.removeMultiFactor != 'boolean') break;
                     if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
@@ -881,8 +885,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (!err) {
                                 chguser.salt = salt;
                                 chguser.hash = hash;
-                                chguser.passhint = command.hint;
-                                if (command.resetNextLogin == true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
+                                if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (command.hint != null)) {
+                                    var hint = command.hint;
+                                    if (hint.length > 250) { hint = hint.substring(0, 250); }
+                                    chguser.passhint = hint;
+                                }
+                                if (command.resetNextLogin === true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
                                 delete chguser.passtype; // Remove the password type if one was present.
                                 if (command.removeMultiFactor == true) {
                                     if (chguser.otpsecret) { delete chguser.otpsecret; }

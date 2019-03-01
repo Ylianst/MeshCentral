@@ -5593,9 +5593,13 @@
             x += "<tr><td align=right>Old password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>";
             x += "<tr><td align=right>New password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
             x += "<tr><td align=right>New password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
-            x += "<tr><td align=right>Password hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
+            if (features & 0x00010000) { x += "<tr><td align=right>Password hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>"; }
             x += '</table>'
-            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+            if (passRequirements) {
+                var r = [], rc = 0;
+                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
+                if (rc > 0) { x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+            }
             x += '<br />';
             //x += '<br /><div style=padding:10px;margin-bottom:4px>';
             //x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
@@ -5608,7 +5612,9 @@
 
         function account_showChangePasswordEx() {
             if (Q('apassword1').value == Q('apassword2').value) {
-                meshserver.send({ action: 'changepassword', oldpass: Q('apassword0').value, newpass: Q('apassword1').value, hint: Q('apasswordhint').value });
+                var r = { action: 'changepassword', oldpass: Q('apassword0').value, newpass: Q('apassword1').value };
+                if (features & 0x00010000) { r.hint = Q('apasswordhint').value; }
+                meshserver.send(r);
             }
         }
 
@@ -6487,7 +6493,14 @@
             x += addHtmlValue('Email', '<input id=p4email style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
+
+            if (passRequirements) {
+                var r = [], rc = 0;
+                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
+                if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            }
+
             setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
             showCreateNewAccountDialogValidate();
             Q('p4name').focus();
@@ -6501,7 +6514,7 @@
         }
 
         function showCreateNewAccountDialogEx() {
-            meshserver.send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value });
+            meshserver.send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked });
         }
 
         function showUserAdminDialog(e, userid) {
@@ -6689,8 +6702,14 @@
             var x = '';
             x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
-            x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>');
-            if (passRequirements) { var r = []; for (var i in passRequirements) { r.push(i + ':' + passRequirements[i]); } x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            if (features & 0x00010000) { x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>'); }
+
+            if (passRequirements) {
+                var r = [], rc = 0;
+                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
+                if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
+            }
+
             x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
             if (multiFactor == 1) { x += '<div><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</div>'; }
             setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
@@ -6701,7 +6720,11 @@
         function p30showUserChangePassDialogEx(b, tag) {
             var removeMultiFactor = false;
             if ((tag == 1) && (Q('p4twoFactorRemove').checked == true)) { removeMultiFactor = true; }
-            if (Q('p4pass1').value == Q('p4pass2').value) { meshserver.send({ action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, hint: Q('p4hint').value, removeMultiFactor: removeMultiFactor, resetNextLogin: Q('p4resetNextLogin').checked }); }
+            if (Q('p4pass1').value == Q('p4pass2').value) {
+                var r = { action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, removeMultiFactor: removeMultiFactor, resetNextLogin: Q('p4resetNextLogin').checked };
+                if (features & 0x00010000) { r.hint = Q('p4hint').value; }
+                meshserver.send(r);
+            }
         }
 
         function p30showDeleteUserDialog() {

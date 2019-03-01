@@ -100,7 +100,7 @@
                                                 <td align=right>Password:</td>
                                                 <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
                                             </tr>
-                                            <tr>
+                                            <tr id="createPanelHint" style="display:none">
                                                 <td align=right>Pass Hint:</td>
                                                 <td><input id=apasswordhint type=text name=apasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(5) onkeyup=validateCreate(5,event) /></td>
                                             </tr>
@@ -151,7 +151,7 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) onfocus=checkTokenTimer(1) onblur=checkTokenTimer(0) />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>
@@ -203,7 +203,7 @@
                                             <td id="rnuPass2" align=right>Password:</td>
                                             <td><input id=rapassword2 type=password name=rpassword2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(4,event) onkeyup=validatePassReset(4,event) /></td>
                                         </tr>
-                                        <tr>
+                                        <tr id="resetpasswordpanelHint" style="display:none">
                                             <td id="rnuHint" align=right>Password Hint:</td>
                                             <td><input id=rapasswordhint type=text name=rpasswordhint autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validatePassReset(5,event) onkeyup=validatePassReset(5,event) /></td>
                                         </tr>
@@ -258,8 +258,10 @@
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var features = parseInt('{{{features}}}');
         var passRequirements = "{{{passRequirements}}}";
-        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
+        var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var hardwareKeyChallenge = '{{{hkey}}}';
+        var currentpanel = 0;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -269,13 +271,16 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
+            QV('createPanelHint', passRequirements.hint === true);
+            QV('resetpasswordpanelHint', passRequirements.hint === true);
+
             window.onresize = center;
             center();
             validateLogin();
             validateCreate();
             if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
             QV('newAccountDiv', ('{{{newAccount}}}' != '0') && ('{{{newAccount}}}' != 'false')); // If new accounts are not allowed, don't display the new account link.
-            if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
+            if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));
             QV("resetAccountDiv", (emailCheck == true));
             QV("hrAccountDiv", (emailCheck == true) || (newAccountPass == 1));
@@ -284,7 +289,7 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && u2fSupported()) {
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if (authResponse.signatureData) {
+                        if ((currentpanel == 4) && authResponse.signatureData) {
                             Q('hwtokenInput').value = JSON.stringify(authResponse);
                             QE('tokenOkButton', true);
                             Q('tokenOkButton').click();
@@ -297,7 +302,7 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && u2fSupported()) {
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if (authResponse.signatureData) {
+                        if ((currentpanel == 5) && authResponse.signatureData) {
                             Q('resetHwtokenInput').value = JSON.stringify(authResponse);
                             QE('resetTokenOkButton', true);
                             Q('resetTokenOkButton').click();
@@ -308,7 +313,7 @@
         }
 
         function showPassHint() {
-            messagebox("Password Hint", passhint);
+            if (passRequirements.hint === true) { messagebox("Password Hint", passhint); }
         }
 
         function xgo(x) {
@@ -322,6 +327,7 @@
         }
 
         function go(x) {
+            currentpanel = x;
             setDialogMode(0);
             QV("showPassHintLink", false);
             QV('loginpanel', x == 1);
@@ -354,7 +360,7 @@
                 QH('passWarning', '');
                 QV('passwordPolicyCallout', false);
             } else {
-                if (passRequirements == null || passRequirements == '') {
+                if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('apassword1').value);
                     if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
@@ -402,7 +408,7 @@
                 QH('rpassWarning', '');
                 QV('rpasswordPolicyCallout', false);
             } else {
-                if (passRequirements == null || passRequirements == '') {
+                if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('rapassword1').value);
                     if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>Strong Password</b><span>'); }
@@ -491,16 +497,20 @@
             return counts;
         }
 
+        var xcheckTokenTimer = null;
+        function checkTokenTimer(enter) {
+            if ((enter == 0) && (xcheckTokenTimer != null)) { clearInterval(xcheckTokenTimer); xcheckTokenTimer = null; }
+            if ((enter == 1) && (xcheckTokenTimer == null)) { xcheckTokenTimer = setInterval(checkToken, 200); }
+        }
+
         function checkToken() {
-            var t1 = Q('tokenInput').value;
-            var t2 = t1.split(' ').join('');
+            var t1 = Q('tokenInput').value, t2 = t1.split(' ').join('');
             if (t1 != t2) { Q('tokenInput').value = t2; }
             QE('tokenOkButton', (Q('tokenInput').value.length == 6) || (Q('tokenInput').value.length == 8) || (Q('tokenInput').value.length == 44));
         }
 
         function resetCheckToken() {
-            var t1 = Q('resetTokenInput').value;
-            var t2 = t1.split(' ').join('');
+            var t1 = Q('resetTokenInput').value, t2 = t1.split(' ').join('');
             if (t1 != t2) { Q('resetTokenInput').value = t2; }
             QE('resetTokenOkButton', (Q('resetTokenInput').value.length == 6) || (Q('resetTokenInput').value.length == 8) || (Q('resetTokenInput').value.length == 44));
         }
