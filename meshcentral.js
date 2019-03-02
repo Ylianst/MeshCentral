@@ -1275,8 +1275,8 @@ function CreateMeshCentralServer(config, args) {
 
     // List of possible mesh agent install scripts
     var meshAgentsInstallScriptList = {
-        1: { id: 1, localname: 'meshinstall-linux.sh', rname: 'meshinstall.sh' },
-        2: { id: 2, localname: 'meshinstall-initd.sh', rname: 'meshagent' }
+        1: { id: 1, localname: 'meshinstall-linux.sh', rname: 'meshinstall.sh', linux: true },
+        2: { id: 2, localname: 'meshinstall-initd.sh', rname: 'meshagent', linux: true }
     };
 
     // Update the list of available mesh agents
@@ -1302,6 +1302,9 @@ function CreateMeshCentralServer(config, args) {
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
                     if (stats != null) { obj.meshAgentInstallScripts[this.info.id].size = stats.size; }
+
+                    // Place Unit line breaks on Linux scripts if not already present.
+                    if (obj.meshAgentInstallScripts[this.info.id].linux === true) { obj.meshAgentInstallScripts[this.info.id].data = obj.meshAgentInstallScripts[this.info.id].data.split('\r\n').join('\n') }
                 });
                 stream.info = meshAgentsInstallScriptList[scriptid];
                 stream.agentpath = scriptpath;

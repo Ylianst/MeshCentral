@@ -30,58 +30,53 @@ stop() {
     echo 'Service not running' >&2
     return 1
   else
-	pid=$( cat "$PIDFILE" )
-	if kill -0 $pid 2>/dev/null; then
+    pid=$( cat "$PIDFILE" )
+    if kill -0 $pid 2>/dev/null; then
           echo 'Stopping service…' >&2
           kill -16 $pid
           echo 'Service stopped' >&2
-	else
-	  echo 'Service not running'
-	fi
-	rm -f $"PIDFILE"
+    else
+      echo 'Service not running'
+    fi
+    rm -f $"PIDFILE"
   fi
 }
 restart(){
-	stop
-	start
+    stop
+    start
 }
 status(){
-	if [ -f "$PIDFILE" ]
-	then
-		pid=$( cat "$PIDFILE" )
-		if kill -0 $pid 2>/dev/null; then
-			echo "meshagent start/running, process $pid"
-		else
-			echo 'meshagent stop/waiting'
-		fi
-	else
-		echo 'meshagent stop/waiting'
-	fi
+    if [ -f "$PIDFILE" ]
+    then
+        pid=$( cat "$PIDFILE" )
+        if kill -0 $pid 2>/dev/null; then
+            echo "meshagent start/running, process $pid"
+        else
+            echo 'meshagent stop/waiting'
+        fi
+    else
+        echo 'meshagent stop/waiting'
+    fi
 
 }
 
 
 case "$1" in
-	start)
-		start
-		;;
-	stop)
-		stop
-		;;
-	restart)
-		stop
-		start
-		;;
-	status)
-		status
-		;;
-	*)
-		echo "Usage: service meshagent {start|stop|restart|status}"
-		;;
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: service meshagent {start|stop|restart|status}"
+        ;;
 esac
 exit 0
-
-
-
-
-
