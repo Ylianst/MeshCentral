@@ -2047,7 +2047,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
                 if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
-                if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
+                if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
@@ -2179,15 +2179,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
         var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
         if (xdomain != '') xdomain += "/";
         var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
+        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
+        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
+        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
@@ -2269,7 +2272,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
-        if (domain.agentnoproxy === true) { meshsettings += "ignoreProxyFile=1\r\n"; }
+        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
         if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 

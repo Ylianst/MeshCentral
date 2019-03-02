@@ -430,7 +430,7 @@ function createMeshCore(agent) {
                                     //sendConsoleText(JSON.stringify(woptions));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
-                                    tunnel.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
+                                    tunnel.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
                                     tunnel.sessionid = data.sessionid;
                                     tunnel.rights = data.rights;
                                     tunnel.state = 0;
@@ -1407,7 +1407,7 @@ function createMeshCore(agent) {
                         } catch (e) { response = 'Invalid HTTP websocket request'; }
                         if (httprequest != null) {
                             httprequest.upgrade = onWebSocketUpgrade;
-                            httprequest.onerror = function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); }
+                            httprequest.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
                             
                             var index = 1;
                             while (consoleWebSockets[index]) { index++; }
