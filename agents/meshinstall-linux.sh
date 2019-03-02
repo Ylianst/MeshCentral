@@ -3,11 +3,14 @@
 CheckStartupType() {
   # echo "Checking process autostart system..."
   starttype=`ps -p 1 | awk '/1/ {print $4}'`
-  if [[ $starttype == 'systemd' ]]; then return 1; 					# systemd;
+  # 1 is Systemd;
+  if [[ $starttype == 'systemd' ]]; then return 1;
   elif [[ $starttype == 'init' ]];
       then
-         if [[ `/sbin/init --version` =~ upstart ]]; then return 2; # upstart
-         return 3; 						 							# sysv-init
+         # 2 is Upstart
+         if [[ `/sbin/init --version` =~ upstart ]]; then return 2;
+		 # 3 is Sysv-init
+         return 3;
       fi
   fi
   return 0;
