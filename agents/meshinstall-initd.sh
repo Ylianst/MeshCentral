@@ -8,14 +8,14 @@
 # Description:       <DESCRIPTION>
 ### END INIT INFO
 
-SCRIPT=/usr/local/mesh/meshagent
+SCRIPT=/usr/local/mesh_services/meshagent/meshagent
 RUNAS=root
 
 PIDFILE=/var/run/meshagent.pid
 LOGFILE=/var/log/meshagent.log
 
 start() {
-  if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE"); then
+  if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
     echo 'Service already running' >&2
     return 1
   fi
@@ -26,53 +26,62 @@ start() {
 }
 
 stop() {
-  if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+  if [ ! -f "$PIDFILE" ]; then
     echo 'Service not running' >&2
     return 1
-  fi
-  echo 'Stopping service…' >&2
-  kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
-  echo 'Service stopped' >&2
-}
-
-uninstall() {
-  echo -n "Are you really sure you want to uninstall this service? That cannot be undone. [yes|No] "
-  local SURE
-  read SURE
-  if [ "$SURE" = "yes" ]; then
-    stop
-    rm -f "$PIDFILE"
-    echo "Notice: log file will not be removed: '$LOGFILE'" >&2
-    update-rc.d -f <NAME> remove
-    rm -fv "$0"
+  else
+	pid=$( cat "$PIDFILE" )
+	if kill -0 $pid 2>/dev/null; then
+          echo 'Stopping service…' >&2
+          kill -16 $pid
+          echo 'Service stopped' >&2
+	else
+	  echo 'Service not running'
+	fi
+	rm -f $"PIDFILE"
   fi
 }
-
-forceuninstall() {
-  stop
-  rm -f "$PIDFILE"
-  rm -f "$LOGFILE"
-  update-rc.d -f <NAME> remove
-  rm -fv "$0"
+restart(){
+	stop
+	start
 }
+status(){
+	if [ -f "$PIDFILE" ]
+	then
+		pid=$( cat "$PIDFILE" )
+		if kill -0 $pid 2>/dev/null; then
+			echo "meshagent start/running, process $pid"
+		else
+			echo 'meshagent stop/waiting'
+		fi
+	else
+		echo 'meshagent stop/waiting'
+	fi
+
+}
+
 
 case "$1" in
-  start)
-    start
-    ;;
-  stop)
-    stop
-    ;;
-  uninstall)
-    uninstall
-    ;;
-  forceuninstall)
-    uninstall
-    ;;
-  restart)
-    stop
-    start
-    ;;
-  *)
-    echo "Usage: $0 {start|stop|restart|uninstall}"
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: service meshagent {start|stop|restart|status}"
+		;;
 esac
+exit 0
+
+
+
+
+
