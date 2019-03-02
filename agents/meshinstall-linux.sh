@@ -142,7 +142,8 @@ DownloadAgent() {
 		  # initd
 	      wget $url/meshagents?script=2 --no-check-certificate -O /etc/init.d/meshagent
 		  chmod +x /etc/init.d/meshagent
-		  update-rc.d meshagent defaults # creates symlinks for rc.d
+		  # creates symlinks for rc.d
+		  update-rc.d meshagent defaults
 		  service meshagent start
 		  echo 'meshagent installed as init.d service.'
 		  echo 'To start service: sudo  service meshagent start'
@@ -157,8 +158,8 @@ DownloadAgent() {
 		  echo 'To stop service: sudo service meshagent stop'
 	  else
 	      # unknown
-			echo "Unknown Service Platform Type. (ie: init, systemd, etc)"
-			echo "Unable to install meshagent as service."
+          echo "Unknown Service Platform Type. (ie: init, systemd, etc)"
+          echo "Unable to install meshagent as service."
       fi
 	  echo "Mesh agent started."
     else
