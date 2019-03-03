@@ -2044,7 +2044,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += "/";
                 var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-                if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+                if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
                 if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
                 if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
@@ -2185,7 +2185,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += "/";
         var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
@@ -2269,7 +2269,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += "/";
         var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local"; }
+        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
         if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
