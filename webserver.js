@@ -326,7 +326,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Check the 2-step auth token
     function checkUserOneTimePassword(req, domain, user, token, hwtoken, func) {
-        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true));
+        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true));
         if (twoStepLoginSupported == false) { func(true); return; };
 
         // Check U2F hardware key
@@ -1073,13 +1073,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
             if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
             if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 0x00000020; } // Allow site within iframe
-            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
+            if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
             if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
             if (obj.args.allowhighqualitydesktop == true) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
-            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName != 'un-configured') && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
+            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
             if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
             if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
@@ -1188,14 +1188,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
         if (obj.parent.config.letsencrypt != null) return true; // We are using Let's Encrypt, real cert in use.
         if (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) return false; // Our cert is issued by self-signed cert.
-        if (obj.certificates.CommonName == 'un-configured') return false; // Out cert is named with a fake name
+        if (obj.certificates.CommonName.indexOf('.') == -1) return false; // Our cert is named with a fake name
         return true; // This is a guess
     }
 
     // Get the link to the root certificate if needed
     function getRootCertLink() {
         // Check if the HTTPS certificate is issued from MeshCentralRoot, if so, add download link to root certificate.
-        if ((obj.args.notls == null) && (obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName != 'un-configured')) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
+        if ((obj.args.notls == null) && (obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName.indexOf('.') != -1)) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
         return '';
     }
 

@@ -2516,7 +2516,7 @@
 
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
             var servername = serverinfo.name;
-            if ((servername == 'un-configured') || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
 
             var noProxy = ((features & 0x2000) != 0)?'--no-proxy ':''; // Server asked that agent be installed to preferably not use a HTTP proxy.
             if (serverinfo.https == true) {

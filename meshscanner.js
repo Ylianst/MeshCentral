@@ -70,7 +70,7 @@ module.exports.CreateMeshScanner = function (parent) {
                     server4.bind(bindOptions, function () {
                         try {
                             var doscan = true;
-                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv4); } catch (e) { doscan = false; }
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv4, this.xxlocal); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
                             if (doscan == true) { obj.performScan(this); obj.performScan(this); }
@@ -101,7 +101,7 @@ module.exports.CreateMeshScanner = function (parent) {
                     server6.bind(bindOptions, function () {
                         try {
                             var doscan = true;
-                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv6); } catch (e) { doscan = false; }
+                            try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv6, this.xxlocal); } catch (e) { doscan = false; }
                             this.on('error', function (error) { console.log('Error: ' + error); });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
                             if (doscan == true) { obj.performScan(this); obj.performScan(this); }
@@ -140,13 +140,13 @@ module.exports.CreateMeshScanner = function (parent) {
         // Build the IPv4 response
         var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName != "un-configured") { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
         obj.multicastPacket4x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         // Build the IPv6 response
         url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName != "un-configured") { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
         obj.multicastPacket6x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         setupServers();
