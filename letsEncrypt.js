@@ -64,7 +64,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
         if (obj.parent.redirserver.port == 80) { obj.parent.redirserver.app.use('/', obj.le.middleware()); obj.redirWebServerHooked = true; }
 
         obj.getCertificate = function (certs, func) {
-            if (certs.CommonName == 'un-configured') { console.log("ERROR: Use --cert to setup the default server name before using Let's Encrypt."); func(certs); return; }
+            if (certs.CommonName.indexOf('.') == -1) { console.log("ERROR: Use --cert to setup the default server name before using Let's Encrypt."); func(certs); return; }
             if (obj.parent.config.letsencrypt == null) { func(certs); return; }
             if (obj.parent.config.letsencrypt.email == null) { console.log("ERROR: Let's Encrypt email address not specified."); func(certs); return; }
             if ((obj.parent.redirserver == null) || (obj.parent.redirserver.port !== 80)) { console.log("ERROR: Redirection web server must be active on port 80 for Let's Encrypt to work."); func(certs); return; }

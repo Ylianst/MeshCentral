@@ -1653,7 +1653,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'inviteAgent':
                 {
                     if ((obj.parent.parent.mailserver == null) || (obj.args.lanonly == true)) return; // This operation requires the email server
-                    if ((obj.parent.parent.certificates.CommonName == null) || (obj.parent.parent.certificates.CommonName == 'un-configured')) return; // Server name must be configured
+                    if ((obj.parent.parent.certificates.CommonName == null) || (obj.parent.parent.certificates.CommonName.indexOf('.') == -1)) return; // Server name must be configured
                     if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
@@ -1722,7 +1722,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-request':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
                         const otplib = require('otplib');
@@ -1734,7 +1734,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-setup':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
                         const otplib = require('otplib');
@@ -1756,7 +1756,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-clear':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Clear the one time password secret
                         if (user.otpsecret) {
@@ -1775,7 +1775,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-getpasswords':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Perform a sub-action
@@ -1806,7 +1806,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-get':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Send back the list of keys we have, just send the list of names and index
@@ -1819,7 +1819,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-remove':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported == false || command.index == null) break;
 
                     // Remove a key
@@ -1839,7 +1839,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
 
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
@@ -1885,7 +1885,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-setup-request':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Build list of known keys
@@ -1908,7 +1908,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-setup-response':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName != 'un-configured') && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
 
                     // Check the key registration request

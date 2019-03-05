@@ -34,7 +34,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         var host = req.headers.host;
         if (obj.certificates != null) {
             host = obj.certificates.CommonName;
-            if ((obj.certificates.CommonName == "sample.org") || (obj.certificates.CommonName == "un-configured")) { host = req.headers.host; }
+            if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; }
         }
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (req.headers && req.headers.host && (req.headers.host.split(":")[0].toLowerCase() == "localhost")) {

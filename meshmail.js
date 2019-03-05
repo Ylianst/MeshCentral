@@ -126,7 +126,7 @@ module.exports.CreateMeshMail = function (parent) {
     // Send account check mail
     obj.sendAccountCheckMail = function (domain, username, email) {
         var template = getTemplateEx('account-check', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName == 'un-configured')) return; // If the server name is not set, no reset possible.
+        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, no reset possible.
 
         // Set all the options.
         var options = { username: username, email: email, servername: domain.title };
@@ -140,7 +140,7 @@ module.exports.CreateMeshMail = function (parent) {
     // Send account reset mail
     obj.sendAccountResetMail = function (domain, username, email) {
         var template = getTemplateEx('account-reset', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName == 'un-configured')) return; // If the server name is not set, don't validate the email address.
+        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
         // Set all the options.
         var options = { username: username, email: email, servername: domain.title };
@@ -154,7 +154,7 @@ module.exports.CreateMeshMail = function (parent) {
     // Send agent invite mail
     obj.sendAgentInviteMail = function (domain, username, email, meshid, name, os, msg, flags) {
         var template = getTemplateEx('mesh-invite', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName == 'un-configured')) return; // If the server name is not set, don't validate the email address.
+        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
         // Set all the template replacement options and generate the final email text (both in txt and html formats).
         var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title };

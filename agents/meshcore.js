@@ -88,16 +88,13 @@ function createMeshCore(agent) {
     var net = require('net');
     var fs = require('fs');
     var rtc = require('ILibWebRTC');
+    var amt = null;
     var processManager = require('process-manager');
-    var amtMei = null, amtLms = null, amtLmsState = 0;
-    var amtMeiConnected = 0, amtMeiTmpState = null;
     var wifiScannerLib = null;
     var wifiScanner = null;
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
-    var oswsstack = null;
-    var osamtstack = null;
     var amtPolicy = null;
 
     // If we are running in Duktape, agent will be null
@@ -165,32 +162,24 @@ function createMeshCore(agent) {
                     if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
 
                     // If SMBios tables say that AMT is present, try to connect MEI
-                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) { resetMei(); }
+                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
+                        var amtmodule = require('amt-manage');
+                        amt = new amtmodule(mesh, db, true);
+                        amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
+                        if (amtPolicy != null) { amt.setPolicy(amtPolicy); }
+                        amt.start();
+                    }
                 }
             });
         }
-    } catch (ex) { sendConsoleText(ex); }
+    } catch (ex) { sendConsoleText("ex1: " + ex); }
     
     // Try to load up the WIFI scanner
     try {
         var wifiScannerLib = require('wifi-scanner');
         wifiScanner = new wifiScannerLib();
-        wifiScanner.on('accessPoint', function (data) { sendConsoleText(data); });
+        wifiScanner.on('accessPoint', function (data) { sendConsoleText("wifiScanner: " + data); });
     } catch (ex) { wifiScannerLib = null; wifiScanner = null; }
-
-    // Try to load Intel AMT policy
-    try { amtPolicy = JSON.parse(db.Get('amtPolicy')); } catch (ex) { amtPolicy = null; }
-
-    // Try to load up the MEI module
-    function resetMei() {
-        try {
-            var amtMeiLib = require('amt-mei');
-            amtMei = new amtMeiLib();
-            amtMei.on('error', function (e) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; sendConsoleText('MEI Error.'); });
-            amtMeiConnected = 2;
-            sendPeriodicServerUpdate(1);
-        } catch (ex) { amtMeiLib = null; amtMei = null; amtMeiConnected = -1; }
-    }
 
     // Get our location (lat/long) using our public IP address
     var getIpLocationDataExInProgress = false;
@@ -459,7 +448,7 @@ function createMeshCore(agent) {
                         case 'pskill': {
                             // Kill a process
                             if (data.value) {
-                                try { process.kill(data.value); } catch (e) { sendConsoleText(JSON.stringify(e)); }
+                                try { process.kill(data.value); } catch (e) { sendConsoleText("pskill: " + JSON.stringify(e)); }
                             }
                             break;
                         }
@@ -528,6 +517,7 @@ function createMeshCore(agent) {
                     // Store the latest Intel AMT policy
                     amtPolicy = data.amtPolicy;
                     if (data.amtPolicy != null) { db.Put('amtPolicy', JSON.stringify(data.amtPolicy)); } else { db.Put('amtPolicy', null); }
+                    if (amt != null) { amt.setPolicy(amtPolicy); }
                     break;
                 }
                 case 'getScript': {
@@ -1160,20 +1150,22 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'amtreset': {
-                    resetMei();
-                    resetMicroLms();
-                    response = 'Done.';
+                    if (amt != null) { amt.reset(); response = 'Done.'; }
+                    break;
+                }
+                case 'amtlmsreset': {
+                    if (amt != null) { amt.lmsreset(); response = 'Done.'; }
                     break;
                 }
                 case 'amtccm': {
-                    if (amtMei == null) { response = 'Intel AMT not supported.'; } else {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
                         if (args['_'].length != 1) { response = 'Proper usage: amtccm (adminPassword)'; } // Display usage
-                        else { activeToCCM(args['_'][0]); }
+                        else { amt.setPolicy({ type: 0 }); amt.activeToCCM(args['_'][0]); }
                     }
                     break;
                 }
                 case 'amtdeactivate': {
-                    if (amtMei == null) { response = 'Intel AMT not supported.'; } else { deactivateCCM(); }
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else { amt.setPolicy({ type: 0 }); amt.deactivateCCM(); }
                     break;
                 }
                 case 'amtpolicy': {
@@ -1267,7 +1259,7 @@ function createMeshCore(agent) {
                 }
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + meshCoreObj.value + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
-                    if (amtLmsState >= 0) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amtLmsState] + '.'; }
+                    if (amt != null) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amt.lmsstate] + '.'; }
                     if (meshCoreObj.osdesc) { response += '\r\nOS: ' + meshCoreObj.osdesc + '.'; }
                     response += '\r\nModules: ' + addedModules.join(', ') + '.';
                     response += '\r\nServer Connection: ' + mesh.isControlChannelConnected + ', State: ' + meshServerConnectionState + '.';
@@ -1487,11 +1479,13 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'amt': { // Show Intel AMT status
-                    getAmtInfo(function (state) {
-                        var resp = 'Intel AMT not detected.';
-                        if (state != null) { resp = objToString(state, 0, ' ', true); }
-                        sendConsoleText(resp, sessionid);
-                    });
+                    if (amt != null) {
+                        amt.getAmtInfo(function (state) {
+                            var resp = 'Intel AMT not detected.';
+                            if (state != null) { resp = objToString(state, 0, ' ', true); }
+                            sendConsoleText(resp, sessionid);
+                        });
+                    }
                     break;
                 }
                 case 'netinfo': { // Show network interface information
@@ -1646,9 +1640,9 @@ function createMeshCore(agent) {
         if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
         if (!flags) { flags = 0xFFFFFFFF; }
 
-        if (flags & 1) {
+        if ((flags & 1) && (amt != null)) {
             // If we have a connected MEI, get Intel ME information
-            getAmtInfo(function (meinfo) {
+            amt.getAmtInfo(function (meinfo) {
                 try {
                     if (meinfo == null) return;
                     var intelamt = {}, p = false;
@@ -1675,59 +1669,6 @@ function createMeshCore(agent) {
         }
     }
     
-    // Get Intel AMT information using MEI
-    function getAmtInfo(func) {
-        if (amtMei == null || amtMeiConnected != 2) { if (func != null) { func(null); } return; }
-        try {
-            amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
-            amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
-            amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } });
-            amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
-            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } });
-            amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
-            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
-            //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
-            amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } });
-            amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
-            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
-            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
-        } catch (e) { if (func != null) { func(null); } return; }
-    }
-
-    // Called on MicroLMS Intel AMT user notification
-    function handleAmtNotification(notifyMsg) {
-        if ((notifyMsg == null) || (notifyMsg.Body == null) || (notifyMsg.Body.MessageID == null) || (notifyMsg.Body.MessageArguments == null)) return null;
-        var amtMessage = notifyMsg.Body.MessageID, amtMessageArg = notifyMsg.Body.MessageArguments[0], notify = null;
-
-        switch (amtMessage) {
-            case 'iAMT0050': { if (amtMessageArg == '48') { notify = 'Intel&reg; AMT Serial-over-LAN connected'; } else if (amtMessageArg == '49') { notify = 'Intel&reg; AMT Serial-over-LAN disconnected'; } break; } // SOL
-            case 'iAMT0052': { if (amtMessageArg == '1') { notify = 'Intel&reg; AMT KVM connected'; } else if (amtMessageArg == '2') { notify = 'Intel&reg; AMT KVM disconnected'; } break; } // KVM
-            default: { break; }
-        }
-
-        // Send to the entire mesh, no sessionid or userid specified.
-        if (notify != null) { mesh.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general" });  }
-    }
-
-    function resetMicroLms() {
-        // Launch LMS
-        try {
-            var lme_heci = require('amt-lme');
-            amtLmsState = 1;
-            amtLms = new lme_heci();
-            amtLms.on('error', function (e) { amtLmsState = 0; amtLms = null; sendConsoleText('LMS Error.'); obj.setupMeiOsAdmin(null, 1); });
-            amtLms.on('connect', function () { amtLmsState = 2; obj.setupMeiOsAdmin(null, 2); });
-            //amtLms.on('bind', function (map) { });
-            amtLms.on('notify', function (data, options, str, code) {
-                if (code == 'iAMT0052-3') {
-                    obj.kvmGetData();
-                } else {
-                    //if (str != null) { sendConsoleText('Intel AMT LMS: ' + str); }
-                    handleAmtNotification(data);
-                }
-            });
-        } catch (e) { amtLmsState = -1; amtLms = null; }
-    }
 
     // Starting function
     obj.start = function () {
@@ -1739,7 +1680,7 @@ function createMeshCore(agent) {
         //var args = parseArgs(process.argv);
         //console.log(args);
 
-        resetMicroLms();
+        //resetMicroLms();
 
         // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
         try {
@@ -1777,323 +1718,6 @@ function createMeshCore(agent) {
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
     }
-
-
-    //
-    // KVM Data Channel
-    //
-
-    obj.setupMeiOsAdmin = function (func, state) {
-        if ((amtMei == null) || (amtMeiConnected != 2)) { return; } // If there is no MEI, don't bother with this.
-        amtMei.getLocalSystemAccount(function (x) {
-            if (x == null) return;
-            var transport = require('amt-wsman-duk');
-            var wsman = require('amt-wsman');
-            var amt = require('amt');
-            oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
-            obj.osamtstack = new amt(oswsstack);
-            if (func) { func(state); }
-            //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
-            //obj.osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
-            //*************************************
-            // Setup KVM data channel if this is Intel AMT 12 or above
-            amtMei.getVersion(function (x) {
-                if (x == null) return;
-                var amtver = null;
-                try { for (var i in x.Versions) { if (x.Versions[i].Description == 'AMT') amtver = parseInt(x.Versions[i].Version.split('.')[0]); } } catch (e) { }
-                if ((amtver != null) && (amtver >= 12)) {
-                    obj.kvmGetData('skip'); // Clear any previous data, this is a dummy read to about handling old data.
-                    obj.kvmTempTimer = setInterval(function () { obj.kvmGetData(); }, 2000); // Start polling for KVM data.
-                    obj.kvmSetData(JSON.stringify({ action: 'restart', ver: 1 })); // Send a restart command to advise the console if present that MicroLMS just started.
-                }
-            });
-        });
-    }
-
-    obj.kvmGetData = function (tag) {
-        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelRead(obj.kvmDataGetResponse, tag);
-    }
-
-    obj.kvmDataGetResponse = function (stack, name, response, status, tag) {
-        if ((tag != 'skip') && (status == 200) && (response.Body.ReturnValue == 0)) {
-            var val = null;
-            try { val = Buffer.from(response.Body.DataMessage, 'base64').toString(); } catch (e) { return }
-            if (val != null) { obj.kvmProcessData(response.Body.RealmsBitmap, response.Body.MessageId, val); }
-        }
-    }
-
-    var webRtcDesktop = null;
-    obj.kvmProcessData = function (realms, messageId, val) {
-        var data = null;
-        try { data = JSON.parse(val) } catch (e) { }
-        if ((data != null) && (data.action)) {
-            if (data.action == 'present') { obj.kvmSetData(JSON.stringify({ action: 'present', ver: 1, platform: process.platform })); }
-            if (data.action == 'offer') {
-                webRtcDesktop = {};
-                var rtc = require('ILibWebRTC');
-                webRtcDesktop.webrtc = rtc.createConnection();
-                webRtcDesktop.webrtc.on('connected', function () { });
-                webRtcDesktop.webrtc.on('disconnected', function () { obj.webRtcCleanUp(); });
-                webRtcDesktop.webrtc.on('dataChannel', function (rtcchannel) {
-                    webRtcDesktop.rtcchannel = rtcchannel;
-                    webRtcDesktop.kvm = mesh.getRemoteDesktopStream();
-                    webRtcDesktop.kvm.pipe(webRtcDesktop.rtcchannel, { dataTypeSkip: 1, end: false });
-                    webRtcDesktop.rtcchannel.on('end', function () { obj.webRtcCleanUp(); });
-                    webRtcDesktop.rtcchannel.on('data', function (x) { obj.kvmCtrlData(this, x); });
-                    webRtcDesktop.rtcchannel.pipe(webRtcDesktop.kvm, { dataTypeSkip: 1, end: false });
-                    //webRtcDesktop.kvm.on('end', function () { console.log('WebRTC DataChannel closed2'); obj.webRtcCleanUp(); });
-                    //webRtcDesktop.rtcchannel.on('data', function (data) { console.log('WebRTC data: ' + data); });
-                });
-                obj.kvmSetData(JSON.stringify({ action: 'answer', ver: 1, sdp: webRtcDesktop.webrtc.setOffer(data.sdp) }));
-            }
-        }
-    }
-
-    // Polyfill path.join
-    var path = {
-        join: function () {
-            var x = [];
-            for (var i in arguments) {
-                var w = arguments[i];
-                if (w != null) {
-                    while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); }
-                    if (i != 0) { while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } }
-                    x.push(w);
-                }
-            }
-            if (x.length == 0) return '/';
-            return x.join('/');
-        }
-    };
-
-    // Process KVM control channel data
-    obj.kvmCtrlData = function(channel, cmd) {
-        if (cmd.length > 0 && cmd.charCodeAt(0) != 123) {
-            // This is upload data
-            if (this.fileupload != null) {
-                cmd = Buffer.from(cmd, 'base64');
-                var header = cmd.readUInt32BE(0);
-                if ((header == 0x01000000) || (header == 0x01000001)) {
-                    fs.writeSync(this.fileupload.fp, cmd.slice(4));
-                    channel.write({ action: 'upload', sub: 'ack', reqid: this.fileupload.reqid });
-                    if (header == 0x01000001) { fs.closeSync(this.fileupload.fp); this.fileupload = null; } // Close the file
-                }
-            }
-            return;
-        }
-        //console.log('KVM Ctrl Data', cmd);
-        //sendConsoleText('KVM Ctrl Data: ' + cmd);
-
-        try { cmd = JSON.parse(cmd); } catch (ex) { console.error('Invalid JSON: ' + cmd); return; }
-        if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
-        switch (cmd.action) {
-            case 'ping': {
-                // This is a keep alive
-                channel.write({ action: 'pong' });
-                break;
-            }
-            case 'lock': {
-                // Lock the current user out of the desktop
-                if (process.platform == 'win32') { var child = require('child_process'); child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 }); }
-                break;
-            }
-            case 'ls': {
-                /*
-                // Close the watcher if required
-                var samepath = ((this.httprequest.watcher != undefined) && (cmd.path == this.httprequest.watcher.path));
-                if ((this.httprequest.watcher != undefined) && (samepath == false)) {
-                    //console.log('Closing watcher: ' + this.httprequest.watcher.path);
-                    //this.httprequest.watcher.close(); // TODO: This line causes the agent to crash!!!!
-                    delete this.httprequest.watcher;
-                }
-                */
-
-                // Send the folder content to the browser
-                var response = getDirectoryInfo(cmd.path);
-                if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
-                channel.write(response);
-
-                /*
-                // Start the directory watcher
-                if ((cmd.path != '') && (samepath == false)) {
-                    var watcher = fs.watch(cmd.path, onFileWatcher);
-                    watcher.tunnel = this.httprequest;
-                    watcher.path = cmd.path;
-                    this.httprequest.watcher = watcher;
-                    //console.log('Starting watcher: ' + this.httprequest.watcher.path);
-                }
-                */
-                break;
-            }
-            case 'mkdir': {
-                // Create a new empty folder
-                fs.mkdirSync(cmd.path);
-                break;
-            }
-            case 'rm': {
-                // Remove many files or folders
-                for (var i in cmd.delfiles) {
-                    var fullpath = path.join(cmd.path, cmd.delfiles[i]);
-                    try { fs.unlinkSync(fullpath); } catch (e) { console.log(e); }
-                }
-                break;
-            }
-            case 'rename': {
-                // Rename a file or folder
-                try { fs.renameSync(path.join(cmd.path, cmd.oldname), path.join(cmd.path, cmd.newname)); } catch (e) { console.log(e); }
-                break;
-            }
-            case 'download': {
-                // Download a file, to browser
-                var sendNextBlock = 0;
-                if (cmd.sub == 'start') { // Setup the download
-                    if (this.filedownload != null) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
-                    this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
-                    try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { channel.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
-                    if (this.filedownload) { channel.write({ action: 'download', sub: 'start', id: cmd.id }); }
-                } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
-                    if (cmd.sub == 'startack') { sendNextBlock = 8; } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
-                }
-                // Send the next download block(s)
-                while (sendNextBlock > 0) {
-                    sendNextBlock--;
-                    var buf = Buffer.alloc(4096);
-                    var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
-                    this.filedownload.ptr += len;
-                    if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
-                    channel.write(buf.slice(0, len + 4).toString('base64')); // Write as Base64
-                }
-                break;
-            }
-            case 'upload': {
-                // Upload a file, from browser
-                if (cmd.sub == 'start') { // Start the upload
-                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); }
-                    if (!cmd.path || !cmd.name) break;
-                    this.fileupload = { reqid: cmd.reqid };
-                    var filepath = path.join(cmd.path, cmd.name);
-                    try { this.fileupload.fp = fs.openSync(filepath, 'wbN'); } catch (e) { }
-                    if (this.fileupload.fp) { channel.write({ action: 'upload', sub: 'start', reqid: this.fileupload.reqid }); } else { this.fileupload = null; channel.write({ action: 'upload', sub: 'error', reqid: this.fileupload.reqid }); }
-                }
-                else if (cmd.sub == 'cancel') { // Stop the upload
-                    if (this.fileupload != null) { fs.closeSync(this.fileupload.fp); this.fileupload = null; }
-                }
-                break;
-            }
-            case 'copy': {
-                // Copy a bunch of files from scpath to dspath
-                for (var i in cmd.names) {
-                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
-                    if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
-                }
-                break;
-            }
-            case 'move': {
-                // Move a bunch of files from scpath to dspath
-                for (var i in cmd.names) {
-                    var sc = path.join(cmd.scpath, cmd.names[i]), ds = path.join(cmd.dspath, cmd.names[i]);
-                    if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
-                }
-                break;
-            }
-            default: {
-                console.log('Invalid KVM command', cmd);
-                sendConsoleText('Invalid KVM command: ' + cmd);
-                break;
-            }
-        }
-    }
-
-    obj.webRtcCleanUp = function () {
-        sendConsoleText('webRtcCleanUp');
-        if (webRtcDesktop == null) return;
-        if (webRtcDesktop.rtcchannel) {
-            try { webRtcDesktop.rtcchannel.close(); } catch (e) { }
-            try { webRtcDesktop.rtcchannel.removeAllListeners('data'); } catch (e) { }
-            try { webRtcDesktop.rtcchannel.removeAllListeners('end'); } catch (e) { }
-            delete webRtcDesktop.rtcchannel;
-        }
-        if (webRtcDesktop.webrtc) {
-            try { webRtcDesktop.webrtc.close(); } catch (e) { }
-            try { webRtcDesktop.webrtc.removeAllListeners('connected'); } catch (e) { }
-            try { webRtcDesktop.webrtc.removeAllListeners('disconnected'); } catch (e) { }
-            try { webRtcDesktop.webrtc.removeAllListeners('dataChannel'); } catch (e) { }
-            delete webRtcDesktop.webrtc;
-        }
-        if (webRtcDesktop.kvm) {
-            try { webRtcDesktop.kvm.end(); } catch (e) { }
-            delete webRtcDesktop.kvm;
-        }
-        webRtcDesktop = null;
-    }
-
-    obj.kvmSetData = function(x) {
-        obj.osamtstack.IPS_KVMRedirectionSettingData_DataChannelWrite(Buffer.from(x).toString('base64'), function () { });
-    }
-
-    // Delete a directory with a files and directories within it
-    function deleteFolderRecursive(path, rec) {
-        if (fs.existsSync(path)) {
-            if (rec == true) {
-                fs.readdirSync(obj.path.join(path, '*')).forEach(function (file, index) {
-                    var curPath = obj.path.join(path, file);
-                    if (fs.statSync(curPath).isDirectory()) { // recurse
-                        deleteFolderRecursive(curPath, true);
-                    } else { // delete file
-                        fs.unlinkSync(curPath);
-                    }
-                });
-            }
-            fs.unlinkSync(path);
-        }
-    };
-
-
-    //
-    // Deactivate Intel AMT CCM
-    //
-
-    // When called, this will use MEI to deactivate Intel AMT when it's in CCM mode. Simply calls "unprovision" on MEI and checks the return code.
-    function deactivateCCM() {
-        amtMei.unprovision(1, function (status) { if (status == 0) { sendConsoleText('Success deactivating Intel AMT CCM.'); } else { sendConsoleText('Intel AMT CCM deactivation error: ' + status); } });
-    }
-
-
-    //
-    // Activate Intel AMT to CCM
-    //
-
-    function activeToCCM(adminpass) {
-        sendConsoleText('Trying to get local account info...');
-        amtMei.getLocalSystemAccount(function (x) {
-            if (x.user && x.pass) {
-                sendConsoleText('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
-                var transport = require('amt-wsman-duk');
-                var wsman = require('amt-wsman');
-                var amt = require('amt');
-                oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
-                osamtstack = new amt(oswsstack);
-                sendConsoleText('Trying to get Intel AMT activation information...');
-                osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
-            } else {
-                sendConsoleText('Unable to get $$OsAdmin password.');
-            }
-        });
-    }
-
-    function activeToCCMEx2(stack, name, responses, status, adminpass) {
-        if (status != 200) { sendConsoleText('Failed to fetch activation information, status ' + status); }
-        else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { sendConsoleText('Client control mode activation not allowed'); }
-        else { stack.IPS_HostBasedSetupService_Setup(2, md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + adminpass).substring(0, 32), null, null, null, null, activeToCCMEx3); }
-    }
-
-    function activeToCCMEx3(stack, name, responses, status) {
-        if (status != 200) { sendConsoleText('Failed to activate, status ' + status); }
-        else if (responses.Body.ReturnValue != 0) { sendConsoleText('Client control mode activation failed: ' + responses.Body.ReturnValueStr); }
-        else { sendConsoleText('Intel AMT CCM activation success'); }
-    }
-
-    function md5hex(str) { return require('MD5Stream').create().syncHash(str).toString('hex'); }
 
     return obj;
 }

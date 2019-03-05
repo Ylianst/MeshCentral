@@ -702,7 +702,7 @@ function CreateMeshCentralServer(config, args) {
         var i;
 
         // If the certificate is un-configured, force LAN-only mode
-        if (obj.certificates.CommonName == 'un-configured') { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
+        if (obj.certificates.CommonName.indexOf('.') == -1) { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
 
         // Write server version and run mode
         var productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
