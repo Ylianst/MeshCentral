@@ -313,7 +313,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Destroy the user's session to log them out will be re-created next request
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
-            obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id });
+            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
         res.redirect(domain.url);

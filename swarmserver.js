@@ -146,6 +146,162 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         }
     }
 
+    function onData(data) {
+        if (this.relaySocket) { var ps = this; try { this.relaySocket.write(data, 'binary', function () { ps.resume(); }); } catch (ex) { } return; }
+        if (args.swarmdebug) { var buf = Buffer.from(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
+        obj.stats.bytesIn += data.length;
+        this.tag.accumulator += data;
+
+        // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
+        if (this.tag.first == true) {
+            if (this.tag.accumulator.length < 3) return;
+            if ((this.tag.accumulator.substring(0, 3) == 'GET') || (this.tag.accumulator.substring(0, 3) == 'POS')) {
+                obj.stats.httpGetRequest++;
+                /*console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress);*/
+                //socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>');
+                //socket.end();
+
+                // Relay this connection to the main TLS port
+                this.pause();
+                var relaySocket = tls.connect(obj.args.port, { rejectUnauthorized: false }, function () { this.write(this.parentSocket.tag.accumulator); this.parentSocket.resume(); });
+                relaySocket.on('data', function (data) { try { var rs = this; this.pause(); this.parentSocket.write(data, 'binary', function () { rs.resume(); }); } catch (ex) { } });
+                relaySocket.on('error', function (err) { try { this.parentSocket.end(); } catch (ex) { } });
+                relaySocket.on('end', function () { try { this.parentSocket.end(); } catch (ex) { } });
+                this.relaySocket = relaySocket;
+                relaySocket.parentSocket = this;
+                return;
+            }
+            this.tag.first = false;
+        }
+
+        // A client certificate is required
+        if ((this.tag.clientCert == null) || (this.tag.clientCert.subject == null)) {
+            /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/
+            this.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.');
+            this.end();
+            return;
+        }
+
+        try {
+            // Parse all of the agent binary command data we can
+            var l = 0;
+            do { l = ProcessCommand(this); if (l > 0) { this.tag.accumulator = this.tag.accumulator.substring(l); } } while (l > 0);
+            if (l < 0) { this.end(); }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    // Process one AFP command
+    function ProcessCommand(socket) {
+        if (socket.tag.accumulator.length < 4) return 0;
+        var cmd = common.ReadShort(socket.tag.accumulator, 0);
+        var len = common.ReadShort(socket.tag.accumulator, 2);
+        if (len > socket.tag.accumulator.length) return 0;
+        var data = socket.tag.accumulator.substring(4, len);
+        //console.log('Swarm: Cmd=' + cmd + ', Len=' + len + '.');
+
+        switch (cmd) {
+            case LegacyMeshProtocol.NODEPUSH: {
+                Debug(3, 'Swarm:NODEPUSH');
+                var nodeblock = obj.decodeNodeBlock(data);
+                if ((nodeblock != null) && (nodeblock.agenttype != null) && (nodeblock.agentversion != null)) {
+                    if (socket.pingTimer == null) { socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000); }
+                    Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
+
+                    // Check if this agent is asking of updates over and over again.
+                    var actionCount = obj.agentActionCount[nodeblock.nodeidhex];
+                    if (actionCount == null) { actionCount = 0; }
+                    if (actionCount > 2) {
+                        // Already tried to update this agent two times, something is not right.
+                        //console.log('SWARM: ' + actionCount + ' update actions on ' + nodeblock.nodeidhex + ', holding.');
+                    } else {
+                        // Figure out what is the next agent version we need.
+                        var nextAgentVersion = 0;
+                        if (nodeblock.agentversion < 201) { nextAgentVersion = 201; } // If less then 201, move to transitional MC1 agent.
+                        if (nodeblock.agentversion == 201) { nextAgentVersion = 202; } // If at 201, move to first MC2 agent.
+
+                        // See if we need to start the agent update
+                        if ((nextAgentVersion > 0) && (obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
+                            // Start the update
+                            socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
+                            socket.tag.updatePtr = 0;
+                            //console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
+
+                            // Update stats
+                            if (obj.stats.pushedAgents[nodeblock.agenttype] == null) { obj.stats.pushedAgents[nodeblock.agenttype] = {}; }
+                            if (obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] == null) { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] = 0; } else { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion]++; }
+
+                            // Start the agent download using the task limiter so not to flood the server. Low priority task
+                            obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
+                                if (socket.xclosed == 1) {
+                                    // Socket is closed, do nothing
+                                    obj.parent.taskLimiter.completed(taskid); // Indicate this task complete
+                                } else {
+                                    // Start the agent update
+                                    socket.tag.taskid = taskid;
+                                    obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
+                                }
+                            }, socket, 2);
+                        } else {
+                            //console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
+                        }
+                    }
+
+                    // Mark this agent
+                    obj.agentActionCount[nodeblock.nodeidhex] = ++actionCount;
+                }
+                break;
+            }
+            case LegacyMeshProtocol.AMTPROVISIONING: {
+                Debug(3, 'Swarm:AMTPROVISIONING');
+                obj.SendCommand(socket, LegacyMeshProtocol.AMTPROVISIONING, common.ShortToStr(1));
+                break;
+            }
+            case LegacyMeshProtocol.GETSTATE: {
+                Debug(3, 'Swarm:GETSTATE');
+                if (len < 12) break;
+                var statecmd = common.ReadInt(data, 0);
+                //var statesync = common.ReadInt(data, 4);
+                switch (statecmd) {
+                    case 6: { // Ask for agent block
+                        if (socket.tag.update != null) {
+                            // Send an agent block
+                            var l = Math.min(socket.tag.update.binary.length - socket.tag.updatePtr, 16384);
+                            obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(6) + common.IntToStr(socket.tag.updatePtr) + socket.tag.update.binary.toString('binary', socket.tag.updatePtr, socket.tag.updatePtr + l)); // agent.SendQuery(6, AgentFileLen + AgentBlock);
+                            Debug(3, 'Swarm:Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
+
+                            socket.tag.updatePtr += l;
+                            if (socket.tag.updatePtr >= socket.tag.update.binary.length) {
+                                // Send end-of-transfer
+                                obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(7) + common.IntToStr(socket.tag.update.binary.length)); //agent.SendQuery(7, AgentFileLen);
+                                Debug(3, 'Swarm:Sending end of agent, ptr = ' + socket.tag.updatePtr);
+                                obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
+                                delete socket.tag.taskid;
+                                delete socket.tag.update;
+                                delete socket.tag.updatePtr;
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        // All other state commands from the legacy agent must be ignored.
+                        break;
+                    }
+                }
+                break;
+            }
+            case LegacyMeshProtocol.APPSUBSCRIBERS: {
+                Debug(3, 'Swarm:APPSUBSCRIBERS');
+                break;
+            }
+            default: {
+                Debug(1, 'Swarm:Unknown command: ' + cmd + ' of len ' + len + '.');
+            }
+        }
+        return len;
+    }
+
     // Called when a legacy agent connects to this server
     function onConnection(socket) {
         // Check for blocked IP address
@@ -153,164 +309,20 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         obj.stats.connectCount++;
 
         socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", socket: socket };
-        socket.setEncoding('binary');
-        socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
+        //socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
         Debug(1, 'SWARM:New legacy agent connection');
 
         if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) { obj.stats.noCertConnectCount++; } else { obj.stats.clientCertConnectCount++; }
 
-        socket.addListener("data", function (data) {
-            if (args.swarmdebug) { var buf = Buffer.from(data, "binary"); console.log('SWARM <-- (' + buf.length + '):' + buf.toString('hex')); } // Print out received bytes
-            obj.stats.bytesIn += data.length;
-            socket.tag.accumulator += data;
-
-            // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
-            if (socket.tag.first == true) {
-                if (socket.tag.accumulator.length < 3) return;
-                if (socket.tag.accumulator.substring(0, 3) == 'GET') {
-                    obj.stats.httpGetRequest++;
-                    /*console.log("Swarm Connection, HTTP GET detected: " + socket.remoteAddress);*/
-                    socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>MeshCentral2 legacy swarm server.<br />MeshCentral1 mesh agents should connect here for updates.</body></html>');
-                    socket.end();
-                    return;
-                }
-                socket.tag.first = false;
-            }
-
-            // A client certificate is required
-            if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) {
-                /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/
-                socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.');
-                socket.end();
-                return;
-            }
-
-            try {
-                // Parse all of the agent binary command data we can
-                var l = 0;
-                do { l = ProcessCommand(socket); if (l > 0) { socket.tag.accumulator = socket.tag.accumulator.substring(l); } } while (l > 0);
-                if (l < 0) { socket.end(); }
-            } catch (e) {
-                console.log(e);
-            }
-        });
-
-        // Process one AFP command
-        function ProcessCommand(socket) {
-            if (socket.tag.accumulator.length < 4) return 0;
-            var cmd = common.ReadShort(socket.tag.accumulator, 0);
-            var len = common.ReadShort(socket.tag.accumulator, 2);
-            if (len > socket.tag.accumulator.length) return 0;
-            var data = socket.tag.accumulator.substring(4, len);
-            //console.log('Swarm: Cmd=' + cmd + ', Len=' + len + '.');
-
-            switch (cmd) {
-                case LegacyMeshProtocol.NODEPUSH: {
-                    Debug(3, 'Swarm:NODEPUSH');
-                    var nodeblock = obj.decodeNodeBlock(data);
-                    if ((nodeblock != null) && (nodeblock.agenttype != null) && (nodeblock.agentversion != null)) {
-                        Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
-
-                        // Check if this agent is asking of updates over and over again.
-                        var actionCount = obj.agentActionCount[nodeblock.nodeidhex];
-                        if (actionCount == null) { actionCount = 0; }
-                        if (actionCount > 2) {
-                            // Already tried to update this agent two times, something is not right.
-                            //console.log('SWARM: ' + actionCount + ' update actions on ' + nodeblock.nodeidhex + ', holding.');
-                        } else {
-                            // Figure out what is the next agent version we need.
-                            var nextAgentVersion = 0;
-                            if (nodeblock.agentversion < 201) { nextAgentVersion = 201; } // If less then 201, move to transitional MC1 agent.
-                            if (nodeblock.agentversion == 201) { nextAgentVersion = 202; } // If at 201, move to first MC2 agent.
-
-                            // See if we need to start the agent update
-                            if ((nextAgentVersion > 0) && (obj.migrationAgents[nodeblock.agenttype] != null) && (obj.migrationAgents[nodeblock.agenttype][nextAgentVersion] != null)) {
-                                // Start the update
-                                socket.tag.update = obj.migrationAgents[nodeblock.agenttype][nextAgentVersion];
-                                socket.tag.updatePtr = 0;
-                                //console.log('Performing legacy agent update from ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' to ' + socket.tag.update.ver + '.' + socket.tag.update.arch + ' on ' + nodeblock.agentname + '.');
-
-                                // Update stats
-                                if (obj.stats.pushedAgents[nodeblock.agenttype] == null) { obj.stats.pushedAgents[nodeblock.agenttype] = {}; }
-                                if (obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] == null) { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] = 0; } else { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion]++; }
-
-                                // Start the agent download using the task limiter so not to flood the server. Low priority task
-                                obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
-                                    if (socket.xclosed == 1) {
-                                        // Socket is closed, do nothing
-                                        obj.parent.taskLimiter.completed(taskid); // Indicate this task complete
-                                    } else {
-                                        // Start the agent update
-                                        socket.tag.taskid = taskid;
-                                        obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(5) + common.IntToStr(0)); // agent.SendQuery(5, 0); // Start the agent download
-                                    }
-                                }, socket, 2);
-                            } else {
-                                //console.log('No legacy agent update for ' + nodeblock.agentversion + '.' + nodeblock.agenttype + ' on ' + nodeblock.agentname + '.');
-                            }
-                        }
-
-                        // Mark this agent
-                        obj.agentActionCount[nodeblock.nodeidhex] = ++actionCount;
-                    }
-                    break;
-                }
-                case LegacyMeshProtocol.AMTPROVISIONING: {
-                    Debug(3, 'Swarm:AMTPROVISIONING');
-                    obj.SendCommand(socket, LegacyMeshProtocol.AMTPROVISIONING, common.ShortToStr(1));
-                    break;
-                }
-                case LegacyMeshProtocol.GETSTATE: {
-                    Debug(3, 'Swarm:GETSTATE');
-                    if (len < 12) break;
-                    var statecmd = common.ReadInt(data, 0);
-                    //var statesync = common.ReadInt(data, 4);
-                    switch (statecmd) {
-                        case 6: { // Ask for agent block
-                            if (socket.tag.update != null) {
-                                // Send an agent block
-                                var l = Math.min(socket.tag.update.binary.length - socket.tag.updatePtr, 16384);
-                                obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(6) + common.IntToStr(socket.tag.updatePtr) + socket.tag.update.binary.toString('binary', socket.tag.updatePtr, socket.tag.updatePtr + l)); // agent.SendQuery(6, AgentFileLen + AgentBlock);
-                                Debug(3, 'Swarm:Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
-
-                                socket.tag.updatePtr += l;
-                                if (socket.tag.updatePtr >= socket.tag.update.binary.length) {
-                                    // Send end-of-transfer
-                                    obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(7) + common.IntToStr(socket.tag.update.binary.length)); //agent.SendQuery(7, AgentFileLen);
-                                    Debug(3, 'Swarm:Sending end of agent, ptr = ' + socket.tag.updatePtr);
-                                    obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
-                                    delete socket.tag.taskid;
-                                    delete socket.tag.update;
-                                    delete socket.tag.updatePtr;
-                                }
-                            }
-                            break;
-                        }
-                        default: {
-                            // All other state commands from the legacy agent must be ignored.
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case LegacyMeshProtocol.APPSUBSCRIBERS: {
-                    Debug(3, 'Swarm:APPSUBSCRIBERS');
-                    break;
-                }
-                default: {
-                    Debug(1, 'Swarm:Unknown command: ' + cmd + ' of len ' + len + '.');
-                }
-            }
-            return len;
-        }
-
+        socket.addListener("data", onData);
         socket.addListener("close", function () {
             obj.stats.onclose++;
             Debug(1, 'Swarm:Connection closed');
-            if (socket.pingTimer != null) { clearInterval(socket.pingTimer); delete socket.pingTimer; }
-            if (socket.tag && (typeof socket.tag.taskid == 'number')) {
-                obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
-                delete socket.tag.taskid;
+            if (this.relaySocket) { try { this.relaySocket.end(); delete this.relaySocket; } catch (ex) { } }
+            if (this.pingTimer != null) { clearInterval(this.pingTimer); delete this.pingTimer; }
+            if (this.tag && (typeof this.tag.taskid == 'number')) {
+                obj.parent.taskLimiter.completed(this.tag.taskid); // Indicate this task complete
+                delete this.tag.taskid;
             }
         });
 

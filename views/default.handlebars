@@ -3494,7 +3494,7 @@
                     else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>Unknown Version & State</i>'; }
                     else {
                         str += provisioningStates[node.intelamt.state];
-                        if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="Intel AMT is activated in Client Control Mode">CCM</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="Intel AMT is activated in Admin Control Mode">ACM</span>'; } }
+                        if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="Intel AMT is activated in Client Control Mode">CCM</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="Intel AMT is activated in Admin Control Mode">ACM</span>'; } }
                         str += (', v' + node.intelamt.ver);
                     }
 
