@@ -470,7 +470,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores, migrationagents, swarmstats.';
+                            r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores, migrationagents, swarmstats, nodeconfig.';
+                            break;
+                        }
+                        case 'info': {
+                            var info = process.memoryUsage();
+                            try { info.platform = process.platform; } catch (ex) { }
+                            try { info.arch = process.arch; } catch (ex) { }
+                            try { info.pid = process.pid; } catch (ex) { }
+                            try { info.uptime = process.uptime(); } catch (ex) { }
+                            try { info.version = process.version; } catch (ex) { }
+                            try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
+                            r = JSON.stringify(info, null, 4);
+                            break;
+                        }
+                        case 'nodeconfig': {
+                            r = JSON.stringify(process.config, null, 4);
+                            break;
+                        }
+                        case 'versions': {
+                            r = JSON.stringify(process.versions, null, 4);
                             break;
                         }
                         case 'args': {
