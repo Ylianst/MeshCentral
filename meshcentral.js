@@ -1377,7 +1377,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.meshAgentBinaries[archid].path = agentpath;
                 obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
-                if (!obj.args.agentsondisk) { obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath); }
+                if (obj.args.agentsinram) { obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath); }
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
                     try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (e) { }
@@ -1387,7 +1387,7 @@ function CreateMeshCentralServer(config, args) {
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.archid = archid;
                 hashStream.on('data', function (data) {
-                    obj.meshAgentBinaries[this.archid].hash = data.toString('hex');
+                    obj.meshAgentBinaries[this.archid].hash = data.toString('binary');
                     if ((--archcount == 0) && (func != null)) { func(); }
                 });
                 var options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };

@@ -471,7 +471,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     switch (cmd) {
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
-                            r += 'migrationagents, swarmstats, nodeconfig.';
+                            r += 'migrationagents, swarmstats, nodeconfig, heapdump.';
                             break;
                         }
                         case 'info': {
@@ -562,7 +562,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 for (var i in obj.parent.parent.swarmserver.migrationAgents) {
                                     var arch = obj.parent.parent.swarmserver.migrationAgents[i];
-                                    for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + agent.binary.length + '<br />'; }
+                                    for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
                                 }
                             }
                             break;
