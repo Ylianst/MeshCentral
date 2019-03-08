@@ -138,9 +138,8 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                     var agentInfo = migrationAgentsDir[i].substring(10).split('.');
                     var agentVersion = parseInt(agentInfo[0]);
                     var agentArch = parseInt(agentInfo[1]);
-                    var agentBinary = obj.parent.fs.readFileSync(migrationAgentName);
                     if (obj.migrationAgents[agentArch] == null) { obj.migrationAgents[agentArch] = {}; }
-                    if (obj.migrationAgents[agentArch][agentVersion] == null) { obj.migrationAgents[agentArch][agentVersion] = { arch: agentArch, ver: agentVersion, path: migrationAgentName, binary: agentBinary }; }
+                    if (obj.migrationAgents[agentArch][agentVersion] == null) { obj.migrationAgents[agentArch][agentVersion] = { arch: agentArch, ver: agentVersion, path: migrationAgentName }; }
                 }
             }
         }
@@ -270,6 +269,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                     case 6: { // Ask for agent block
                         if (socket.tag.update != null) {
                             // Send an agent block
+                            if (socket.tag.update.binary == null) { socket.tag.update.binary = obj.parent.fs.readFileSync(socket.tag.update.path); }
                             var l = Math.min(socket.tag.update.binary.length - socket.tag.updatePtr, 16384);
                             obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(6) + common.IntToStr(socket.tag.updatePtr) + socket.tag.update.binary.toString('binary', socket.tag.updatePtr, socket.tag.updatePtr + l)); // agent.SendQuery(6, AgentFileLen + AgentBlock);
                             Debug(3, 'Swarm:Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
