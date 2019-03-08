@@ -6359,7 +6359,7 @@
             // Display the users using the sorted list
             var x = '<table style=width:100% cellpadding=0 cellspacing=0>', addHeader = true;
 
-            x += '<th style=color:gray>Name<th style=color:gray>Groups<th style=color:gray>Last Access<th style=color:gray>Permissions';
+            x += '<th style=color:gray>Name<th style=color:gray;width:80px>Groups<th style=color:gray;width:120px>Last&nbsp;Access<th style=color:gray;width:120px>Permissions';
 
             // Online users
             for (var i in sortedUserIds) {
@@ -6408,12 +6408,12 @@
                     msg = "<span style=float:right;margin-top:1px;margin-right:4px title=Chat><a onclick=userChat(event,\"" + encodeURIComponent(user._id) + "\",\"" + encodeURIComponent(user.name) + "\")><img src='images/icon-chat.png' height=16 width=16 style=padding-top:2px /></a></span>";
                     msg += "<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a onclick=showUserAlertDialog(event,\"" + encodeURIComponent(user._id) + "\")><img src='images/icon-notify.png' height=16 width=16 style=padding-top:2px /></a></span>";
                 }
-                if (sessions == 1) { lastAccess += '1 session'; } else { lastAccess += sessions + ' sessions'; }
+                if (sessions == 1) { lastAccess += '1&nbsp;session'; } else { lastAccess += sessions + '&nbsp;sessions'; }
             } else {
                 if (user.login) { lastAccess += '<span title="Last login: ' + new Date(user.login * 1000).toLocaleString() + '">' + new Date(user.login * 1000).toLocaleDateString() + '</span>'; }
             }
             if (self) { permissions += "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked, "; }
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked,&nbsp;"; }
             permissions += "<span title='Server Permissions'>";
             if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) {
                 permissions += "User";

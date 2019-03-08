@@ -470,7 +470,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores, migrationagents, swarmstats, nodeconfig.';
+                            r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
+                            r += 'migrationagents, swarmstats, nodeconfig.';
                             break;
                         }
                         case 'info': {
@@ -577,6 +578,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         r += i + ' ' + obj.parent.parent.swarmserver.stats[i] + '<br />';
                                     }
                                 }
+                            }
+                            break;
+                        }
+                        case 'heapdump': {
+                            var heapdump = null;
+                            try { heapdump = require('heapdump'); } catch (ex) { }
+                            if (heapdump == null) {
+                                r = 'Heapdump module not installed, run "npm install heapdump".';
+                            } else {
+                                heapdump.writeSnapshot(function (err, filename) {
+                                    if (err != null) {
+                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Unable to write heapdump: ' + err })); } catch (ex) { }
+                                    } else {
+                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Wrote heapdump at ' + filename })); } catch (ex) { }
+                                    }
+                                });
                             }
                             break;
                         }
@@ -1272,7 +1289,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i = 0; i < command.nodeids.length; i++) {
                         obj.db.Get(command.nodeids[i], function (err, nodes) {
                             if (nodes.length != 1) return;
-                            var node = nodes[0];
+                            const node = nodes[0];
 
                             // Check if already in the right mesh
                             if (node.meshid == command.meshid) return;
@@ -1281,21 +1298,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             try { if (obj.parent.meshes[node.meshid].mtype != obj.parent.meshes[command.meshid].mtype) return; } catch (e) { return; };
 
                             // Make sure that we have rights on both source and destination mesh
-                            var sourceMeshRights = user.links[node.meshid].rights;
-                            var targetMeshRights = user.links[command.meshid].rights;
+                            const sourceMeshRights = user.links[node.meshid].rights;
+                            const targetMeshRights = user.links[command.meshid].rights;
                             if (((sourceMeshRights & 4) == 0) || ((targetMeshRights & 4) == 0)) return;
 
                             // Perform the switch, start by saving the node with the new meshid.
-                            var oldMeshId = node.meshid;
+                            const oldMeshId = node.meshid;
                             node.meshid = command.meshid;
                             obj.db.Set(node);
 
                             // If the device is connected on this server, switch it now.
                             var agentSession = obj.parent.wsagents[node._id];
-                            if (agentSession != null) { agentSession.dbMeshKey = command.meshid; agentSession.meshid = command.meshid.split('/')[2]; }
+                            if (agentSession != null) {
+                                agentSession.dbMeshKey = command.meshid; // Switch the agent mesh
+                                agentSession.meshid = command.meshid.split('/')[2]; // Switch the agent mesh
+                                agentSession.sendUpdatedIntelAmtPolicy(); // Send the new Intel AMT policy
+                            }
 
                             // Add the connection state
-                            var state = obj.parent.parent.GetConnectivityState(node._id);
+                            const state = obj.parent.parent.GetConnectivityState(node._id);
                             if (state) {
                                 node.conn = state.connectivity;
                                 node.pwr = state.powerState;

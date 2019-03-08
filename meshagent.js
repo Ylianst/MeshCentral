@@ -714,6 +714,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         obj.close(1);
     }
 
+    obj.sendUpdatedIntelAmtPolicy = function() {
+        var mesh = obj.parent.meshes[obj.dbMeshKey];
+        if (mesh != null) {
+            // Send Intel AMT policy
+            var amtPolicy = null;
+            if (mesh.amt != null) { amtPolicy = mesh.amt; }
+            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: amtPolicy }));
+        }
+    }
+
     function agentCoreIsStable() {
         // Check that the mesh exists
         var mesh = obj.parent.meshes[obj.dbMeshKey];

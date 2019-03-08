@@ -23,7 +23,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     obj.legacyAgentConnections = {};
     obj.migrationAgents = {};
     obj.agentActionCount = {};
-    obj.stats = { blockedConnect: 0, connectCount: 0, clientCertConnectCount: 0, noCertConnectCount: 0, bytesIn: 0, bytesOut: 0, httpGetRequest: 0, pushedAgents: {}, close: 0, onclose: 0 }
+    obj.stats = { blockedConnect: 0, connectCount: 0, clientCertConnectCount: 0, noCertConnectCount: 0, bytesIn: 0, bytesOut: 0, httpGetRequest: 0, pushedAgents: {}, close: 0, onclose: 0, agentType: {} }
     const tls = require('tls');
     const forge = require('node-forge');
     const common = require('./common.js');
@@ -178,7 +178,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         if ((this.tag.clientCert == null) || (this.tag.clientCert.subject == null)) {
             /*console.log("Swarm Connection, no client cert: " + socket.remoteAddress);*/
             this.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 legacy swarm server.\r\nNo client certificate given.');
-            this.end();
+            //this.end(); // If we don't close the connection, it may lead to less reconnection traffic.
             return;
         }
 
@@ -209,6 +209,9 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                     if (socket.pingTimer == null) { socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000); }
                     Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
 
+                    // Log the agent type
+                    if (obj.stats.agenttype[nodeblock.agenttype] == null) { obj.stats.agenttype[nodeblock.agenttype] = 1; } else { obj.stats.agenttype[nodeblock.agenttype]++; }
+
                     // Check if this agent is asking of updates over and over again.
                     var actionCount = obj.agentActionCount[nodeblock.nodeidhex];
                     if (actionCount == null) { actionCount = 0; }
@@ -230,7 +233,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
                             // Update stats
                             if (obj.stats.pushedAgents[nodeblock.agenttype] == null) { obj.stats.pushedAgents[nodeblock.agenttype] = {}; }
-                            if (obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] == null) { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] = 0; } else { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion]++; }
+                            if (obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] == null) { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion] = 1; } else { obj.stats.pushedAgents[nodeblock.agenttype][nextAgentVersion]++; }
 
                             // Start the agent download using the task limiter so not to flood the server. Low priority task
                             obj.parent.taskLimiter.launch(function (socket, taskid, taskLimiterQueue) {
