@@ -171,6 +171,20 @@ module.exports.CertificateOperations = function (parent) {
         return str.split('\r').join('\n'); // If there is no \n, replace all \r with \n.
     }
 
+    // Return true if the name is found in the certificates names, we support wildcard certificates
+    function compareCertificateNames(certNames, name) {
+        if (certNames == null) return false;
+        if (certNames.indexOf(name.toLowerCase()) >= 0) return true;
+        for (var i in certNames) {
+            if ((certNames[i].startsWith('*.') == true) && (name.endsWith(certNames[i].substring(1)) == true)) { return true; }
+            if (certNames[i].startsWith('http://*.') == true) {
+                if (name.endsWith(certNames[i].substring(8)) == true) { return true; }
+                if ((certNames[i].endsWith('/') == true) && (name.endsWith(certNames[i].substring(8, certNames[i].length - 1)) == true)) { return true; }
+            }
+        }
+        return false;
+    }
+
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (args, config, func) {
         var i = 0;
@@ -268,55 +282,66 @@ module.exports.CertificateOperations = function (parent) {
             if (xxargs.length > 2) { mpsOrganization = xxargs[2]; }
         }
 
+        if (rcount === rcountmax) {
+            // Fetch the certificates names for the main certificate
+            r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField("CN").value;
+            var webCertificate = obj.pki.certificateFromPem(r.web.cert);
+            r.WebIssuer = webCertificate.issuer.getField("CN").value;
+            r.CommonName = webCertificate.subject.getField("CN").value;
+            if (r.CommonName.startsWith('*.')) {
+                if (commonName.indexOf('.') == -1) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
+                if (commonName.startsWith('*.')) { console.log("ERROR: Server can't use a wildcard name: " + commonName); process.exit(0); return; }
+                r.CommonName = commonName;
+            }
+            r.CommonNames = [r.CommonName.toLowerCase()];
+            var altNames = webCertificate.getExtension("subjectAltName");
+            if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
+            var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
+            r.RootName = rootCertificate.subject.getField("CN").value;
+        }
+
         // Look for domains that have DNS names and load their certificates
         r.dns = {};
         for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
-                if (args.tlsoffload) {
-                    // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
-                    if (obj.fileExists("webserver-" + i + "-cert-public.crt")) {
-                        r.dns[i] = { cert: obj.fileLoad("webserver-" + i + "-cert-public.crt", "utf8") };
-                        config.domains[i].certs = r.dns[i];
-                    } else {
-                        console.log("WARNING: File \"webserver-" + i + "-cert-public.crt\" missing, domain \"" + i + "\" will not work correctly.");
-                    }
+                // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
+                if (compareCertificateNames(r.CommonNames, dnsname) == true) {
+                    r.dns[i] = { cert: obj.fileLoad("webserver-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-cert-private.key", "utf8") };
                 } else {
-                    // If the web certificate already exist, load it. Load both certificate and private key
-                    if (obj.fileExists("webserver-" + i + "-cert-public.crt") && obj.fileExists("webserver-" + i + "-cert-private.key")) {
-                        r.dns[i] = { cert: obj.fileLoad("webserver-" + i + "-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-" + i + "-cert-private.key", "utf8") };
-                        config.domains[i].certs = r.dns[i];
-                        // If CA certificates are present, load them
-                        caindex = 1;
-                        r.dns[i].ca = [];
-                        do {
-                            caok = false;
-                            if (obj.fileExists("webserver-" + i + "-cert-chain" + caindex + ".crt")) {
-                                r.dns[i].ca.push(obj.fileLoad("webserver-" + i + "-cert-chain" + caindex + ".crt", "utf8"));
-                                caok = true;
-                            }
-                            caindex++;
-                        } while (caok === true);
+                    if (args.tlsoffload) {
+                        // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
+                        if (obj.fileExists("webserver-" + i + "-cert-public.crt")) {
+                            r.dns[i] = { cert: obj.fileLoad("webserver-" + i + "-cert-public.crt", "utf8") };
+                            config.domains[i].certs = r.dns[i];
+                        } else {
+                            console.log("WARNING: File \"webserver-" + i + "-cert-public.crt\" missing, domain \"" + i + "\" will not work correctly.");
+                        }
                     } else {
-                        rcountmax++; // This certificate must be generated
+                        // If the web certificate already exist, load it. Load both certificate and private key
+                        if (obj.fileExists("webserver-" + i + "-cert-public.crt") && obj.fileExists("webserver-" + i + "-cert-private.key")) {
+                            r.dns[i] = { cert: obj.fileLoad("webserver-" + i + "-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-" + i + "-cert-private.key", "utf8") };
+                            config.domains[i].certs = r.dns[i];
+                            // If CA certificates are present, load them
+                            caindex = 1;
+                            r.dns[i].ca = [];
+                            do {
+                                caok = false;
+                                if (obj.fileExists("webserver-" + i + "-cert-chain" + caindex + ".crt")) {
+                                    r.dns[i].ca.push(obj.fileLoad("webserver-" + i + "-cert-chain" + caindex + ".crt", "utf8"));
+                                    caok = true;
+                                }
+                                caindex++;
+                            } while (caok === true);
+                        } else {
+                            rcountmax++; // This certificate must be generated
+                        }
                     }
                 }
             }
         }
 
         if (rcount === rcountmax) {
-            // Fetch the Intel AMT MPS common name
-            r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField("CN").value;
-            // Fetch the name of the server
-            var webCertificate = obj.pki.certificateFromPem(r.web.cert);
-            r.WebIssuer = webCertificate.issuer.getField("CN").value;
-            r.CommonName = webCertificate.subject.getField("CN").value;
-            r.CommonNames = [r.CommonName.toLowerCase()];
-            var altNames = webCertificate.getExtension("subjectAltName");
-            if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
-            var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
-            r.RootName = rootCertificate.subject.getField("CN").value;
-
             if ((certargs == null) && (mpscertargs == null)) { if (func != undefined) { func(r); } return r; } // If no certificate arguments are given, keep the certificate
             var xcountry, xcountryField = webCertificate.subject.getField("C");
             if (xcountryField != null) { xcountry = xcountryField.value; }
@@ -325,14 +350,13 @@ module.exports.CertificateOperations = function (parent) {
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates
-            if ((r.CommonNames.indexOf(commonName.toLowerCase()) >= 0) && (r.AmtMpsName == mpsCommonName)) {
-                // Certificate matches what we want, keep it.
+            if (compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; }
+            if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
+
+            // If the certificates matches what we want, use them.
+            if ((forceWebCertGen == 0) && (forceMpsCertGen == 0)) {
                 if (func !== undefined) { func(r); }
                 return r;
-            } else {
-                // Check what certificates we really need to re-generate.
-                if ((r.CommonNames.indexOf(commonName.toLowerCase()) < 0)) { forceWebCertGen = 1; }
-                if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
             }
         }
         if (parent.configurationFiles != null) { console.log("Error: Database missing some certificates."); process.exit(0); return null; }
@@ -418,33 +442,53 @@ module.exports.CertificateOperations = function (parent) {
 
         r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
 
+        // Fetch the certificates names for the main certificate
+        var webCertificate = obj.pki.certificateFromPem(r.web.cert);
+        r.WebIssuer = webCertificate.issuer.getField("CN").value;
+        r.CommonName = webCertificate.subject.getField("CN").value;
+        if (r.CommonName.startsWith('*.')) {
+            if (commonName.indexOf('.') == -1) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
+            if (commonName.startsWith('*.')) { console.log("ERROR: Server can't use a wildcard name: " + commonName); process.exit(0); return; }
+            r.CommonName = commonName;
+        }
+        r.CommonNames = [r.CommonName.toLowerCase()];
+        var altNames = webCertificate.getExtension("subjectAltName");
+        if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
+        var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
+        r.RootName = rootCertificate.subject.getField("CN").value;
+
         // Look for domains with DNS names that have no certificates and generated them.
         for (i in config.domains) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
-                if (!args.tlsoffload) {
-                    // If the web certificate does not exist, create it
-                    if ((obj.fileExists("webserver-" + i + "-cert-public.crt") === false) || (obj.fileExists("webserver-" + i + "-cert-private.key") === false)) {
-                        console.log("Generating HTTPS certificate for " + i + "...");
-                        var xwebCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, dnsname, country, organization, null, strongCertificate);
-                        var xwebCertificate = obj.pki.certificateToPem(xwebCertAndKey.cert);
-                        var xwebPrivateKey = obj.pki.privateKeyToPem(xwebCertAndKey.key);
-                        obj.fs.writeFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), xwebCertificate);
-                        obj.fs.writeFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-private.key"), xwebPrivateKey);
-                        r.dns[i] = { cert: xwebCertificate, key: xwebPrivateKey };
-                        config.domains[i].certs = r.dns[i];
+                // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
+                if (compareCertificateNames(r.CommonNames, dnsname) == true) {
+                    r.dns[i] = { cert: obj.fileLoad("webserver-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-cert-private.key", "utf8") };
+                } else {
+                    if (!args.tlsoffload) {
+                        // If the web certificate does not exist, create it
+                        if ((obj.fileExists("webserver-" + i + "-cert-public.crt") === false) || (obj.fileExists("webserver-" + i + "-cert-private.key") === false)) {
+                            console.log("Generating HTTPS certificate for " + i + "...");
+                            var xwebCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, dnsname, country, organization, null, strongCertificate);
+                            var xwebCertificate = obj.pki.certificateToPem(xwebCertAndKey.cert);
+                            var xwebPrivateKey = obj.pki.privateKeyToPem(xwebCertAndKey.key);
+                            obj.fs.writeFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-public.crt"), xwebCertificate);
+                            obj.fs.writeFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-private.key"), xwebPrivateKey);
+                            r.dns[i] = { cert: xwebCertificate, key: xwebPrivateKey };
+                            config.domains[i].certs = r.dns[i];
 
-                        // If CA certificates are present, load them
-                        caindex = 1;
-                        r.dns[i].ca = [];
-                        do {
-                            caok = false;
-                            if (obj.fileExists("webserver-" + i + "-cert-chain" + caindex + ".crt")) {
-                                r.dns[i].ca.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8")));
-                                caok = true;
-                            }
-                            caindex++;
-                        } while (caok === true);
+                            // If CA certificates are present, load them
+                            caindex = 1;
+                            r.dns[i].ca = [];
+                            do {
+                                caok = false;
+                                if (obj.fileExists("webserver-" + i + "-cert-chain" + caindex + ".crt")) {
+                                    r.dns[i].ca.push(fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath("webserver-" + i + "-cert-chain" + caindex + ".crt"), "utf8")));
+                                    caok = true;
+                                }
+                                caindex++;
+                            } while (caok === true);
+                        }
                     }
                 }
             }

@@ -18,7 +18,7 @@
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
-    const agentUpdateBlockSize = 65520;
+    const agentUpdateBlockSize = 65531;
 
     var obj = {};
     obj.domain = domain;
@@ -45,6 +45,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
+
+        // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
             delete parent.wsagents[obj.dbNodeKey];
             parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
@@ -52,14 +54,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Get the current mesh
         const mesh = parent.meshes[obj.dbMeshKey];
-
-        // Other clean up may be needed here
-        if (obj.unauth) { delete obj.unauth; }
-        if (obj.agentUpdate != null) {
-            if (obj.agentUpdate.fd) { try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { } }
-            parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
-            delete obj.agentUpdate;
-        }
 
         // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
         if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
@@ -85,7 +79,26 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Update the last connect time
             if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
         }
-        delete obj.nodeid;
+
+        // If we where updating the agent, clean that up.
+        if (obj.agentUpdate != null) {
+            if (obj.agentUpdate.fd) { try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { } }
+            parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+            delete obj.agentUpdate;
+        }
+
+        // Perform aggressive cleanup
+        if (obj.nonce) { delete obj.nonce; }
+        if (obj.nodeid) { delete obj.nodeid; }
+        if (obj.unauth) { delete obj.unauth; }
+        if (obj.remoteaddr) { delete obj.remoteaddr; }
+        if (obj.remoteaddrport) { delete obj.remoteaddrport; }
+        if (obj.meshid) { delete obj.meshid; }
+        if (obj.dbNodeKey) { delete obj.dbNodeKey; }
+        if (obj.dbMeshKey) { delete obj.dbMeshKey; }
+        if (obj.connectTime) { delete obj.connectTime; }
+        if (obj.agentInfo) { delete obj.agentInfo; }
+        ws.removeAllListeners(["message", "close", "error"]);
     };
 
     // When data is received from the mesh agent web socket
@@ -112,7 +125,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 const agentMeshCoreHash = (msg.length == 52) ? msg.substring(4, 52) : null;
 
                 // If the agent indicates this is a custom core, we are done.
-                if ((agentMeshCoreHash != null) && (agentMeshCoreHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
+                if ((agentMeshCoreHash != null) && (agentMeshCoreHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
                     obj.agentCoreCheck = 0;
                     obj.send(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                     agentCoreIsStable();
@@ -197,7 +210,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     const agenthash = msg.substring(4);
-                    if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
+                    if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
@@ -353,13 +366,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Perform the hash signature using older swarm server certificate
                         parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                             // Send back our certificate + signature
-                            obj2.send(common.ShortToStr(2) + common.ShortToStr(obj2.parent.swarmCertificateAsn1.length) + obj2.parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
+                            obj2.send(common.ShortToStr(2) + common.ShortToStr(parent.swarmCertificateAsn1.length) + parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
                         });
                     } else {
                         // Perform the hash signature using the server agent certificate
                         parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                             // Send back our certificate + signature
-                            obj2.send(common.ShortToStr(2) + common.ShortToStr(obj2.parent.agentCertificateAsn1.length) + obj2.parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                            obj2.send(common.ShortToStr(2) + common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                         });
                     }
                 }
@@ -419,7 +432,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     });
 
     // If error, do nothing
-    ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); });
+    ws.on('error', function (err) { console.log('AGENT WSERR: ' + err); obj.close(0); });
 
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) {
@@ -703,7 +716,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         console.log('recoveryAgentCoreIsStable()');
 
         // Close the recovery agent connection when done.
-        obj.close(1);
+        //obj.close(1);
     }
 
     obj.sendUpdatedIntelAmtPolicy = function() {

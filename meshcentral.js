@@ -60,7 +60,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
-    obj.taskLimiter = obj.common.createTaskLimiterQueue(20, 20, 60); // This is a task limiter queue to smooth out server work.
+    obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -877,7 +877,7 @@ function CreateMeshCentralServer(config, args) {
     };
     obj.RemoveEventDispatch = function (ids, target) {
         obj.debug(3, 'RemoveEventDispatch', id);
-        for (var i in ids) { var id = ids[i]; if (obj.eventsDispatch[id]) { var j = obj.eventsDispatch[id].indexOf(target); if (j >= 0) { obj.eventsDispatch[id].splice(j, 1); } } }
+        for (var i in ids) { var id = ids[i]; if (obj.eventsDispatch[id]) { var j = obj.eventsDispatch[id].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[id].length == 1) { delete obj.eventsDispatch[id]; } else { obj.eventsDispatch[id].splice(j, 1); } } } }
     };
     obj.RemoveEventDispatchId = function (id) {
         obj.debug(3, 'RemoveEventDispatchId', id);
@@ -885,7 +885,7 @@ function CreateMeshCentralServer(config, args) {
     };
     obj.RemoveAllEventDispatch = function (target) {
         obj.debug(3, 'RemoveAllEventDispatch');
-        for (var i in obj.eventsDispatch) { var j = obj.eventsDispatch[i].indexOf(target); if (j >= 0) { obj.eventsDispatch[i].splice(j, 1); } }
+        for (var i in obj.eventsDispatch) { var j = obj.eventsDispatch[i].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[i].length == 1) { delete obj.eventsDispatch[i]; } else { obj.eventsDispatch[i].splice(j, 1); } } }
     };
     obj.DispatchEvent = function (ids, source, event, fromPeerServer) {
         // If the database is not setup, exit now.
@@ -1148,9 +1148,9 @@ function CreateMeshCentralServer(config, args) {
         // Read meshcore.js and all .js files in the modules folder.
         var meshCore = null, modulesDir = null;
         const modulesAdd = {
-            'windows-amt': 'var addedModules = [];\r\n',
-            'linux-amt': 'var addedModules = [];\r\n',
-            'linux-noamt': 'var addedModules = [];\r\n'
+            'windows-amt': ['var addedModules = [];\r\n'],
+            'linux-amt': ['var addedModules = [];\r\n'],
+            'linux-noamt': ['var addedModules = [];\r\n']
         };
 
         // Read the recovery core if present
@@ -1158,8 +1158,8 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'recoverycore.js')) == true) {
             try { meshRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'recoverycore.js')).toString(); } catch (ex) { }
             if (meshRecoveryCore != null) {
-                modulesAdd['windows-recovery'] = 'var addedModules = [];\r\n';
-                modulesAdd['linux-recovery'] = 'var addedModules = [];\r\n';
+                modulesAdd['windows-recovery'] = ['var addedModules = [];\r\n'];
+                modulesAdd['linux-recovery'] = ['var addedModules = [];\r\n'];
             }
         }
 
@@ -1168,8 +1168,8 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')) == true) {
             try { meshAgentRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')).toString(); } catch (ex) { }
             if (meshAgentRecoveryCore != null) {
-                modulesAdd['windows-agentrecovery'] = 'var addedModules = [];\r\n';
-                modulesAdd['linux-agentrecovery'] = 'var addedModules = [];\r\n';
+                modulesAdd['windows-agentrecovery'] = ['var addedModules = [];\r\n'];
+                modulesAdd['linux-agentrecovery'] = ['var addedModules = [];\r\n'];
             }
         }
 
@@ -1184,39 +1184,39 @@ function CreateMeshCentralServer(config, args) {
                     if (modulesDir[i].toLowerCase().endsWith('.js')) {
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                        var moduleData = 'try { addModule("' + moduleName + '", "' + obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')) + '"); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                        var moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n' ];
 
                         // Merge this module
                         // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
                         if (moduleName.startsWith('amt-') || (moduleName == 'smbios')) {
                             // Add to IA / Intel AMT cores only
-                            modulesAdd['windows-amt'] += moduleData;
-                            modulesAdd['linux-amt'] += moduleData;
+                            modulesAdd['windows-amt'].push(...moduleData);
+                            modulesAdd['linux-amt'].push(...moduleData);
                         } else if (moduleName.startsWith('win-')) {
                             // Add to Windows cores only
-                            modulesAdd['windows-amt'] += moduleData;
+                            modulesAdd['windows-amt'].push(...moduleData);
                         } else if (moduleName.startsWith('linux-')) {
                             // Add to Linux cores only
-                            modulesAdd['linux-amt'] += moduleData;
-                            modulesAdd['linux-noamt'] += moduleData;
+                            modulesAdd['linux-amt'].push(...moduleData);
+                            modulesAdd['linux-noamt'].push(...moduleData);
                         } else {
                             // Add to all cores
-                            modulesAdd['windows-amt'] += moduleData;
-                            modulesAdd['linux-amt'] += moduleData;
-                            modulesAdd['linux-noamt'] += moduleData;
+                            modulesAdd['windows-amt'].push(...moduleData);
+                            modulesAdd['linux-amt'].push(...moduleData);
+                            modulesAdd['linux-noamt'].push(...moduleData);
                         }
 
                         // Merge this module to recovery modules if needed
                         if (modulesAdd['windows-recovery'] != null) {
                             if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal')) {
-                                modulesAdd['windows-recovery'] += moduleData;
+                                modulesAdd['windows-recovery'].push(...moduleData);
                             }
                         }
 
                         // Merge this module to agent recovery modules if needed
                         if (modulesAdd['windows-agentrecovery'] != null) {
                             if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal')) {
-                                modulesAdd['windows-agentrecovery'] += moduleData;
+                                modulesAdd['windows-agentrecovery'].push(...moduleData);
                             }
                         }
                     }
@@ -1226,11 +1226,11 @@ function CreateMeshCentralServer(config, args) {
             // Merge the cores and compute the hashes
             for (var i in modulesAdd) {
                 if ((i == 'windows-recovery') || (i == 'linux-recovery')) {
-                    obj.defaultMeshCores[i] = obj.common.IntToStr(0) + modulesAdd[i] + meshRecoveryCore;
+                    obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshRecoveryCore].join('');
                 } else if ((i == 'windows-agentrecovery') || (i == 'linux-agentrecovery')) {
-                    obj.defaultMeshCores[i] = obj.common.IntToStr(0) + modulesAdd[i] + meshAgentRecoveryCore;
+                    obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshAgentRecoveryCore].join('');
                 } else {
-                    obj.defaultMeshCores[i] = obj.common.IntToStr(0) + modulesAdd[i] + meshCore;
+                    obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshCore].join('');
                 }
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest("binary");
                 obj.debug(1, 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
@@ -1247,7 +1247,7 @@ function CreateMeshCentralServer(config, args) {
     obj.updateMeshCmdTimer = 'notset';
     obj.updateMeshCmd = function (func) {
         // Figure out where meshcmd.js is and read it.
-        var meshCmd = null, meshcmdPath, moduleAdditions = 'var addedModules = [];\r\n', moduleDirPath, modulesDir = null;
+        var meshCmd = null, meshcmdPath, moduleAdditions = ['var addedModules = [];\r\n'], moduleDirPath, modulesDir = null;
         if ((obj.args.minifycore !== false) && (obj.fs.existsSync(obj.path.join(obj.datapath, 'meshcmd.min.js')))) { meshcmdPath = obj.path.join(obj.datapath, 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else if (obj.fs.existsSync(obj.path.join(obj.datapath, 'meshcmd.js'))) { meshcmdPath = obj.path.join(obj.datapath, 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else if ((obj.args.minifycore !== false) && (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.min.js')))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
@@ -1268,13 +1268,14 @@ function CreateMeshCentralServer(config, args) {
                     // Merge this module
                     var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                     if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                    moduleAdditions += 'try { addModule("' + moduleName + '", "' + obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')) + '"); addedModules.push("' + moduleName + '"); } catch (e) { }\r\n';
+                    moduleAdditions.push('try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (e) { }\r\n');
                 }
             }
         }
 
         // Set the new default meshcmd.js
-        obj.defaultMeshCmd = moduleAdditions + meshCmd;
+        moduleAdditions.push(meshCmd);
+        obj.defaultMeshCmd = moduleAdditions.join('');
         //console.log('MeshCmd is ' + obj.defaultMeshCmd.length + ' bytes.'); // DEBUG, Print the merged meshcmd.js size
         //obj.fs.writeFile("C:\\temp\\meshcmd.js", obj.defaultMeshCmd.substring(4)); // DEBUG, Write merged meshcmd.js to file
         if (func != null) { func(true); }
@@ -1284,7 +1285,7 @@ function CreateMeshCentralServer(config, args) {
             obj.updateMeshCmdTimer = null;
             obj.fs.watch(meshcmdPath, function (eventType, filename) {
                 if (obj.updateMeshCmdTimer != null) { clearTimeout(obj.updateMeshCmdTimer); obj.updateMeshCmdTimer = null; }
-                obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); /*console.log('Updated meshcmd.js.');*/ }, 5000);
+                obj.updateMeshCmdTimer = setTimeout(function () { obj.updateMeshCmd(); }, 5000);
             });
         }
     };

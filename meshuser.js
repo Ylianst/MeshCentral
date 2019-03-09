@@ -15,30 +15,59 @@
 
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
+    const fs = require('fs');
+    const path = require('path');
+    const common = parent.common;
+
     var obj = {};
-    obj.db = db;
-    obj.ws = ws;
-    obj.args = args;
     obj.user = user;
-    obj.parent = parent;
     obj.domain = domain;
-    obj.common = parent.common;
-    obj.fs = require('fs');
-    obj.path = require('path');
-    obj.serverStatsTimer = null;
 
     // Send a message to the user
-    //obj.send = function (data) { try { if (typeof data == 'string') { obj.ws.send(Buffer.from(data, 'binary')); } else { obj.ws.send(data); } } catch (e) { } }
+    //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
 
     // Disconnect this user
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug(1, 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug(1, 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+
+        // Perform cleanup
+        parent.parent.RemoveAllEventDispatch(ws);
+        if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
+        if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
+        if (parent.wssessions2[ws.sessionId]) { delete parent.wssessions2[ws.sessionId]; }
+        if (parent.wssessions[ws.userid]) {
+            var i = parent.wssessions[ws.userid].indexOf(ws);
+            if (i >= 0) {
+                parent.wssessions[ws.userid].splice(i, 1);
+                var user = parent.users[ws.userid];
+                if (user) {
+                    if (parent.parent.multiServer == null) {
+                        parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: parent.wssessions[ws.userid].length, nolog: 1, domain: domain.id });
+                    } else {
+                        parent.recountSessions(ws.sessionId); // Recount sessions
+                    }
+                }
+                if (parent.wssessions[ws.userid].length == 0) { delete parent.wssessions[ws.userid]; }
+            }
+        }
+
+        // If we have peer servers, inform them of the disconnected session
+        if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
+
+        // Aggressive cleanup
+        if (obj.user) { delete obj.user; }
+        if (obj.domain) { delete obj.domain; }
+        if (ws.userid) { delete ws.userid; }
+        if (ws.domainid) { delete ws.domainid; }
+        if (ws.sessionId) { delete ws.sessionId; }
+        if (ws.HandleEvent) { delete ws.HandleEvent; }
+        ws.removeAllListeners(["message", "close", "error"]);
     };
 
     // Convert a mesh path array into a real path on the server side
     function meshPathToRealPath(meshpath, user) {
-        if (obj.common.validateArray(meshpath, 1) == false) return null;
+        if (common.validateArray(meshpath, 1) == false) return null;
         var splitid = meshpath[0].split('/');
         if (splitid[0] == 'user') {
             // Check user access
@@ -52,38 +81,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
         if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-        var path = obj.parent.path.join(obj.parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
-        for (var i = 1; i < meshpath.length; i++) { if (obj.common.IsFilenameValid(meshpath[i]) == false) { path = null; break; } path += ("/" + meshpath[i]); }
+        var path = path.join(parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
+        for (var i = 1; i < meshpath.length; i++) { if (common.IsFilenameValid(meshpath[i]) == false) { path = null; break; } path += ("/" + meshpath[i]); }
         return path;
     }
 
-    // 
+    // TODO: Replace this with something better?
     function copyFile(src, dest, func, tag) {
-        //var ss = obj.fs.createReadStream(src, { flags: 'rb' });
-        //var ds = obj.fs.createWriteStream(dest, { flags: 'wb' });
-        var ss = obj.fs.createReadStream(src);
-        var ds = obj.fs.createWriteStream(dest);
-        ss.fs = obj.fs;
+        var ss = fs.createReadStream(src), ds = fs.createWriteStream(dest);
         ss.pipe(ds);
         ds.ss = ss;
-        /*
-		if (!this._copyStreams) { this._copyStreams = {}; this._copyStreamID = 0; }
-		ss.id = this._copyStreamID++;
-		this._copyStreams[ss.id] = ss;
-        */
         if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
         else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
-        ds.on('close', function () { /*delete this.ss.fs._copyStreams[this.ss.id];*/ func(tag); });
+        ds.on('close', function () { func(tag); });
     }
 
     // Route a command to a target node
     function routeCommandToNode(command) {
-        if (obj.common.validateString(command.nodeid, 8, 128) == false) return false;
+        if (common.validateString(command.nodeid, 8, 128) == false) return false;
         var splitnodeid = command.nodeid.split('/');
         // Check that we are in the same domain and the user has rights over this node.
         if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domain.id)) {
             // See if the node is connected
-            var agent = obj.parent.wsagents[command.nodeid];
+            var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
                 var rights = user.links[agent.dbMeshKey];
@@ -95,14 +115,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             } else {
                 // Check if a peer server is connected to this agent
-                var routing = obj.parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
+                var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     var rights = user.links[routing.meshid];
                     if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
                         command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
                         command.rights = rights.rights;         // Add user rights flags to the message
-                        obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                        parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                     }
                 }
             }
@@ -116,8 +136,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // TODO !!!!
 
         // See if the node is connected
-        for (var nodeid in obj.parent.wsagents) {
-            var agent = obj.parent.wsagents[nodeid];
+        for (var nodeid in parent.wsagents) {
+            var agent = parent.wsagents[nodeid];
             if (agent.dbMeshKey == meshid) { try { agent.send(JSON.stringify(command)); } catch (ex) { } }
         }
         return true;
@@ -125,72 +145,76 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     try {
         // Check if the user is logged in
-        if (user == null) { try { obj.ws.close(); } catch (e) { } return; }
+        if (user == null) { try { ws.close(); } catch (e) { } return; }
 
         // Check if we have exceeded the user session limit
         if ((typeof domain.limits.maxusersessions == 'number') || (typeof domain.limits.maxsingleusersessions == 'number')) {
             // Count the number of user sessions for this domain
             var domainUserSessionCount = 0, selfUserSessionCount = 0;
-            for (var i in obj.parent.wssessions2) { if (obj.parent.wssessions2[i].domainid == domain.id) { domainUserSessionCount++; if (obj.parent.wssessions2[i].userid == user._id) { selfUserSessionCount++; } } }
+            for (var i in parent.wssessions2) {
+                if (parent.wssessions2[i].domainid == domain.id) {
+                    domainUserSessionCount++; if (parent.wssessions2[i].userid == user._id) { selfUserSessionCount++; }
+                }
+            }
 
             // Check if we have too many user sessions
             if (((typeof domain.limits.maxusersessions == 'number') && (domainUserSessionCount >= domain.limits.maxusersessions)) || ((typeof domain.limits.maxsingleusersessions == 'number') && (selfUserSessionCount >= domain.limits.maxsingleusersessions))) {
                 ws.send(JSON.stringify({ action: 'stopped', msg: 'Session count exceed' }));
-                try { obj.ws.close(); } catch (e) { }
+                try { ws.close(); } catch (e) { }
                 return;
             }
         }
 
         // Associate this websocket session with the web session
-        obj.ws.userid = req.session.userid;
-        obj.ws.domainid = domain.id;
+        ws.userid = req.session.userid;
+        ws.domainid = domain.id;
 
         // Create a new session id for this user.
-        obj.parent.crypto.randomBytes(20, function (err, randombuf) {
-            obj.ws.sessionId = user._id + '/' + randombuf.toString('hex');
+        parent.crypto.randomBytes(20, function (err, randombuf) {
+            ws.sessionId = user._id + '/' + randombuf.toString('hex');
 
             // Add this web socket session to session list
-            obj.parent.wssessions2[ws.sessionId] = obj.ws;
-            if (!obj.parent.wssessions[user._id]) { obj.parent.wssessions[user._id] = [ws]; } else { obj.parent.wssessions[user._id].push(obj.ws); }
-            if (obj.parent.parent.multiServer == null) {
-                obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[user._id].length, nolog: 1, domain: obj.domain.id });
+            parent.wssessions2[ws.sessionId] = ws;
+            if (!parent.wssessions[user._id]) { parent.wssessions[user._id] = [ws]; } else { parent.wssessions[user._id].push(ws); }
+            if (parent.parent.multiServer == null) {
+                parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: parent.wssessions[user._id].length, nolog: 1, domain: domain.id });
             } else {
-                obj.parent.recountSessions(obj.ws.sessionId); // Recount sessions
+                parent.recountSessions(ws.sessionId); // Recount sessions
             }
 
             // If we have peer servers, inform them of the new session
-            if (obj.parent.parent.multiServer != null) { obj.parent.parent.multiServer.DispatchMessage({ action: 'sessionStart', sessionid: obj.ws.sessionId }); }
+            if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'sessionStart', sessionid: ws.sessionId }); }
 
             // Handle events
-            obj.ws.HandleEvent = function (source, event) {
-                if (!event.domain || event.domain == obj.domain.id) {
+            ws.HandleEvent = function (source, event) {
+                if (!event.domain || event.domain == domain.id) {
                     try {
                         if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
-                        else if (event == 'resubscribe') { user.subscriptions = obj.parent.subscribe(user._id, ws); }
+                        else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
                         else { ws.send(JSON.stringify({ action: 'event', event: event })); }
                     } catch (e) { }
                 }
             };
 
-            user.subscriptions = obj.parent.subscribe(user._id, ws); // Subscribe to events
-            try { obj.ws._socket.setKeepAlive(true, 240000); } catch (ex) { } // Set TCP keep alive
+            user.subscriptions = parent.subscribe(user._id, ws); // Subscribe to events
+            try { ws._socket.setKeepAlive(true, 240000); } catch (ex) { } // Set TCP keep alive
 
             // Send current server statistics
             obj.SendServerStats = function () {
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
-                if (obj.parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
+                if (parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
                 var serverStats = {
-                    "User Accounts": Object.keys(obj.parent.users).length,
-                    "Device Groups": Object.keys(obj.parent.meshes).length,
-                    "Agent Sessions": Object.keys(obj.parent.wsagents).length,
-                    "Connected Users": Object.keys(obj.parent.wssessions).length,
-                    "Users Sessions": Object.keys(obj.parent.wssessions2).length,
-                    "Relay Sessions": obj.parent.relaySessionCount,
+                    "User Accounts": Object.keys(parent.users).length,
+                    "Device Groups": Object.keys(parent.meshes).length,
+                    "Agent Sessions": Object.keys(parent.wsagents).length,
+                    "Connected Users": Object.keys(parent.wssessions).length,
+                    "Users Sessions": Object.keys(parent.wssessions2).length,
+                    "Relay Sessions": parent.relaySessionCount,
                 };
-                if (obj.parent.relaySessionErrorCount != 0) { serverStats['Relay Errors'] = obj.parent.relaySessionErrorCount; }
-                if (obj.parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(obj.parent.parent.mpsserver.ciraConnections).length; }
+                if (parent.relaySessionErrorCount != 0) { serverStats['Relay Errors'] = parent.relaySessionErrorCount; }
+                if (parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(parent.parent.mpsserver.ciraConnections).length; }
                 stats.values = { "Server State": serverStats }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
             }
@@ -199,47 +223,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             ws.on('message', processWebSocketData);
 
             // If error, do nothing
-            ws.on('error', function (err) { console.log(err); });
+            ws.on('error', function (err) { console.log(err); obj.close(0); });
 
             // If the web socket is closed
-            ws.on('close', function (req) {
-                obj.parent.parent.RemoveAllEventDispatch(ws);
-                if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); obj.serverStatsTimer = null; }
-                if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
-                if (obj.parent.wssessions2[ws.sessionId]) { delete obj.parent.wssessions2[ws.sessionId]; }
-                if (obj.parent.wssessions[ws.userid]) {
-                    var i = obj.parent.wssessions[ws.userid].indexOf(ws);
-                    if (i >= 0) {
-                        obj.parent.wssessions[ws.userid].splice(i, 1);
-                        var user = obj.parent.users[ws.userid];
-                        if (user) {
-                            if (obj.parent.parent.multiServer == null) {
-                                obj.parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: obj.parent.wssessions[ws.userid].length, nolog: 1, domain: obj.domain.id });
-                            } else {
-                                obj.parent.recountSessions(ws.sessionId); // Recount sessions
-                            }
-                        }
-                        if (obj.parent.wssessions[ws.userid].length == 0) { delete obj.parent.wssessions[ws.userid]; }
-                    }
-                }
-
-                // If we have peer servers, inform them of the disconnected session
-                if (obj.parent.parent.multiServer != null) { obj.parent.parent.multiServer.DispatchMessage({ action: 'sessionEnd', sessionid: ws.sessionId }); }
-            });
+            ws.on('close', function (req) { obj.close(0); });
 
             // Figure out the MPS port, use the alias if set
-            var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
-            var httpport = ((obj.args.aliasport != null) ? obj.args.aliasport : obj.args.port);
+            var mpsport = ((args.mpsaliasport != null) ? args.mpsaliasport : args.mpsport);
+            var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
 
             // Build server information object
-            var serverinfo = { name: obj.parent.certificates.CommonName, mpsname: obj.parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: obj.args.mpspass, port: httpport, emailcheck: ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi')), domainauth: (domain.auth == 'sspi') };
-            if (obj.args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = obj.args.redirport; }
+            var serverinfo = { name: parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi')), domainauth: (domain.auth == 'sspi') };
+            if (args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = args.redirport; }
 
             // Send server information
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
 
             // Send user information to web socket, this is the first thing we send
-            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: obj.parent.CloneSafeUser(obj.parent.users[user._id]) })); } catch (ex) { }
+            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
             // We are all set, start receiving data
             ws._socket.resume();
@@ -250,22 +251,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function processWebSocketData(msg) {
         var command, i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
         try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
-        if (obj.common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
+        if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
         switch (command.action) {
             case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
             case 'authcookie':
                 {
                     // Renew the authentication cookie
-                    try { ws.send(JSON.stringify({ action: 'authcookie', cookie: obj.parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    try { ws.send(JSON.stringify({ action: 'authcookie', cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, parent.loginCookieEncryptionKey) })); } catch (ex) { }
                     break;
                 }
             case 'serverstats':
                 {
                     if ((user.siteadmin & 21) != 0) { // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
-                        if (obj.common.validateInt(command.interval, 1000, 1000000) == false) {
+                        if (common.validateInt(command.interval, 1000, 1000000) == false) {
                             // Clear the timer
-                            if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); obj.serverStatsTimer = null; }
+                            if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
                         } else {
                             // Set the timer
                             obj.SendServerStats();
@@ -278,7 +279,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Request a list of all meshes this user as rights to
                     var docs = [];
-                    for (i in user.links) { if ((obj.parent.meshes[i]) && (obj.parent.meshes[i].deleted == null)) { docs.push(obj.parent.meshes[i]); } }
+                    for (i in user.links) { if ((parent.meshes[i]) && (parent.meshes[i].deleted == null)) { docs.push(parent.meshes[i]); } }
                     try { ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag })); } catch (ex) { }
                     break;
                 }
@@ -291,22 +292,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else {
                         // Request list of all nodes for one specific meshid
                         meshid = command.meshid;
-                        if (obj.common.validateString(meshid, 0, 128) == false) return;
+                        if (common.validateString(meshid, 0, 128) == false) return;
                         if (meshid.split('/').length == 0) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                         if (user.links[meshid] != null) { links.push(meshid); }
                     }
 
                     // Request a list of all nodes
-                    obj.db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
                         var r = {};
                         for (i in docs) {
                             // Add the connection state
-                            var state = obj.parent.parent.GetConnectivityState(docs[i]._id);
+                            var state = parent.parent.GetConnectivityState(docs[i]._id);
                             if (state) {
                                 docs[i].conn = state.connectivity;
                                 docs[i].pwr = state.powerState;
-                                if ((state.connectivity & 1) != 0) { var agent = obj.parent.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
-                                if ((state.connectivity & 2) != 0) { var cira = obj.parent.parent.mpsserver.ciraConnections[docs[i]._id]; if (cira != null) { docs[i].cict = cira.tag.connectTime; } }
+                                if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
+                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.ciraConnections[docs[i]._id]; if (cira != null) { docs[i].cict = cira.tag.connectTime; } }
                             }
 
                             // Compress the meshid's
@@ -335,8 +336,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Query the database for the power timeline for a given node
                     // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
-                    if (obj.common.validateString(command.nodeid, 0, 128) == false) return;
-                    obj.db.getPowerTimeline(command.nodeid, function (err, docs) {
+                    if (common.validateString(command.nodeid, 0, 128) == false) return;
+                    db.getPowerTimeline(command.nodeid, function (err, docs) {
                         if (err == null && docs.length > 0) {
                             var timeline = [], time = null, previousPower;
                             for (i in docs) {
@@ -375,7 +376,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
                         } else {
                             // No records found, send current state if we have it
-                            var state = obj.parent.parent.GetConnectivityState(command.nodeid);
+                            var state = parent.parent.GetConnectivityState(command.nodeid);
                             if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
                         }
                     });
@@ -383,10 +384,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'lastconnect':
                 {
-                    if (obj.common.validateString(command.nodeid, 0, 128) == false) return;
+                    if (common.validateString(command.nodeid, 0, 128) == false) return;
 
                     // Query the database for the last time this node connected
-                    obj.db.Get('lc' + command.nodeid, function (err, docs) {
+                    db.Get('lc' + command.nodeid, function (err, docs) {
                         if ((docs != null) && (docs.length > 0)) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { } }
                     });
                     break;
@@ -402,27 +403,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check permissions
                     if ((user.siteadmin & 8) != 0) {
                         // Perform a file operation (Create Folder, Delete Folder, Delete File...)
-                        if (obj.common.validateString(command.fileop, 4, 16) == false) return;
+                        if (common.validateString(command.fileop, 4, 16) == false) return;
                         var sendUpdate = true, path = meshPathToRealPath(command.path, user); // This will also check access rights
                         if (path == null) break;
 
-                        if ((command.fileop == 'createfolder') && (obj.common.IsFilenameValid(command.newfolder) == true)) {
+                        if ((command.fileop == 'createfolder') && (common.IsFilenameValid(command.newfolder) == true)) {
                             // Create a new folder
-                            try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) {
-                                try { obj.fs.mkdirSync(path); } catch (e) { }
-                                try { obj.fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { }
+                            try { fs.mkdirSync(path + "/" + command.newfolder); } catch (e) {
+                                try { fs.mkdirSync(path); } catch (e) { }
+                                try { fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { }
                             }
                         } 
                         else if (command.fileop == 'delete') {
                             // Delete a file
-                            if (obj.common.validateArray(command.delfiles, 1) == false) return;
+                            if (common.validateArray(command.delfiles, 1) == false) return;
                             for (i in command.delfiles) {
-                                if (obj.common.IsFilenameValid(command.delfiles[i]) == true) {
-                                    var fullpath = obj.path.join(path, command.delfiles[i]);
+                                if (common.IsFilenameValid(command.delfiles[i]) == true) {
+                                    var fullpath = path.join(path, command.delfiles[i]);
                                     if (command.rec == true) {
                                         deleteFolderRecursive(fullpath); // TODO, make this an async function
                                     } else {
-                                        try { obj.fs.rmdirSync(fullpath); } catch (e) { try { obj.fs.unlinkSync(fullpath); } catch (e) { } }
+                                        try { fs.rmdirSync(fullpath); } catch (e) { try { fs.unlinkSync(fullpath); } catch (e) { } }
                                     }
                                 }
                             }
@@ -432,28 +433,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try {
                                     if (command.path[0].startsWith('mesh//')) {
                                         path = meshPathToRealPath([command.path[0]], user);
-                                        obj.fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { obj.fs.rmdir(path, function (err) { }); } });
+                                        fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { fs.rmdir(path, function (err) { }); } });
                                     }
                                 } catch (ex) { }
                             }
                         }
-                        else if ((command.fileop == 'rename') && (obj.common.IsFilenameValid(command.oldname) == true) && (obj.common.IsFilenameValid(command.newname) == true)) {
+                        else if ((command.fileop == 'rename') && (common.IsFilenameValid(command.oldname) == true) && (common.IsFilenameValid(command.newname) == true)) {
                             // Rename
-                            try { obj.fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { }
+                            try { fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { }
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
-                            if (obj.common.validateArray(command.names, 1) == false) return;
+                            if (common.validateArray(command.names, 1) == false) return;
                             var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
                             for (i in command.names) {
-                                var s = obj.path.join(scpath, command.names[i]), d = obj.path.join(path, command.names[i]);
+                                var s = path.join(scpath, command.names[i]), d = path.join(path, command.names[i]);
                                 sendUpdate = false;
-                                copyFile(s, d, function (op) { if (op != null) { obj.fs.unlink(op, function (err) { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                             }
                         }
 
-                        if (sendUpdate == true) { obj.parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
+                        if (sendUpdate == true) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
                     }
                     break;
                 }
@@ -498,12 +499,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'usersessions': {
-                            for (var i in obj.parent.wssessions) {
-                                r += (i + ', ' + obj.parent.wssessions[i].length + ' session' + ((obj.parent.wssessions[i].length > 1) ? 'a' : '') + '.<br />');
-                                for (var j in obj.parent.wssessions[i]) {
-                                    var addr = obj.parent.wssessions[i][j]._socket.remoteAddress;
+                            for (var i in parent.wssessions) {
+                                r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 'a' : '') + '.<br />');
+                                for (var j in parent.wssessions[i]) {
+                                    var addr = parent.wssessions[i][j]._socket.remoteAddress;
                                     if (addr.startsWith('::ffff:')) { addr = addr.substring(7); }
-                                    r += '    ' + addr + ' --> ' + obj.parent.wssessions[i][j].sessionId + '.<br />';
+                                    r += '    ' + addr + ' --> ' + parent.wssessions[i][j].sessionId + '.<br />';
                                 }
                             }
                             break;
@@ -514,9 +515,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'tasklimiter': {
-                            if (obj.parent.parent.taskLimiter != null) {
+                            if (parent.parent.taskLimiter != null) {
                                 //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
-                                const tl = obj.parent.parent.taskLimiter;
+                                const tl = parent.parent.taskLimiter;
                                 r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '<br />';
                                 r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '<br />';
                                 var c = [];
@@ -530,18 +531,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((args["_"].length != 1) || (parseInt(args["_"][0]) < 1) || (parseInt(args["_"][0]) > 1000)) {
                                 r = 'Usage: setmaxtasks [1 to 1000]';
                             } else {
-                                obj.parent.parent.taskLimiter.maxTasks = parseInt(args["_"][0]);
-                                r = 'MaxTasks set to ' + obj.parent.parent.taskLimiter.maxTasks + '.';
+                                parent.parent.taskLimiter.maxTasks = parseInt(args["_"][0]);
+                                r = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
                             }
                             break;
                         }
                         case 'cores': {
-                            if (obj.parent.parent.defaultMeshCores != null) { for (var i in obj.parent.parent.defaultMeshCores) { r += i + ': ' + obj.parent.parent.defaultMeshCores[i].length + ' bytes<br />'; } }
+                            if (parent.parent.defaultMeshCores != null) { for (var i in parent.parent.defaultMeshCores) { r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes<br />'; } }
                             break;
                         }
                         case 'showconfig': {
                             // Make a copy of the configuration and hide any secrets
-                            var config = obj.common.Clone(obj.parent.parent.config);
+                            var config = common.Clone(parent.parent.config);
                             if (config.settings) {
                                 if (config.settings.configkey) { config.settings.configkey = '(present)'; }
                                 if (config.settings.sessionkey) { config.settings.sessionkey = '(present)'; }
@@ -557,25 +558,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'migrationagents': {
-                            if (obj.parent.parent.swarmserver == null) {
+                            if (parent.parent.swarmserver == null) {
                                 r = 'Swarm server not running.';
                             } else {
-                                for (var i in obj.parent.parent.swarmserver.migrationAgents) {
-                                    var arch = obj.parent.parent.swarmserver.migrationAgents[i];
+                                for (var i in parent.parent.swarmserver.migrationAgents) {
+                                    var arch = parent.parent.swarmserver.migrationAgents[i];
                                     for (var j in arch) { var agent = arch[j]; r += 'Arch ' + agent.arch + ', Ver ' + agent.ver + ', Size ' + ((agent.binary == null) ? 0 : agent.binary.length) + '<br />'; }
                                 }
                             }
                             break;
                         }
                         case 'swarmstats': {
-                            if (obj.parent.parent.swarmserver == null) {
+                            if (parent.parent.swarmserver == null) {
                                 r = 'Swarm server not running.';
                             } else {
-                                for (var i in obj.parent.parent.swarmserver.stats) {
-                                    if (typeof obj.parent.parent.swarmserver.stats[i] == 'object') {
-                                        r += i + ' ' + JSON.stringify(obj.parent.parent.swarmserver.stats[i]) + '<br />';
+                                for (var i in parent.parent.swarmserver.stats) {
+                                    if (typeof parent.parent.swarmserver.stats[i] == 'object') {
+                                        r += i + ' ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '<br />';
                                     } else {
-                                        r += i + ' ' + obj.parent.parent.swarmserver.stats[i] + '<br />';
+                                        r += i + ' ' + parent.parent.swarmserver.stats[i] + '<br />';
                                     }
                                 }
                             }
@@ -620,24 +621,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
+                            db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetUserEventsWithLimit(filter, domain.id, command.user, command.limit, function (err, docs) {
+                            db.GetUserEventsWithLimit(filter, domain.id, command.user, command.limit, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
                         }
-                    } else if (obj.common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
+                    } else if (common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
                         // TODO: Check that the user has access to this nodeid
                         var limit = 10000;
-                        if (obj.common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+                        if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
 
                         // Send the list of most recent events for this session, up to 'limit' count
-                        obj.db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
+                        db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
                             if (err != null) return;
                             try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
                         });
@@ -646,13 +647,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var filter = user.subscriptions;
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            obj.db.GetEvents(filter, domain.id, function (err, docs) {
+                            db.GetEvents(filter, domain.id, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            obj.db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) {
+                            db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
@@ -664,8 +665,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Delete all events
                     if (user.siteadmin != 0xFFFFFFFF) break;
-                    obj.db.RemoveAllEvents(domain.id);
-                    obj.parent.parent.DispatchEvent(['*', 'server-global'], obj, { action: 'clearevents', nolog: 1, domain: domain.id });
+                    db.RemoveAllEvents(domain.id);
+                    parent.parent.DispatchEvent(['*', 'server-global'], obj, { action: 'clearevents', nolog: 1, domain: domain.id });
                     break;
                 }
             case 'users':
@@ -673,9 +674,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Request a list of all users
                     if ((user.siteadmin & 2) == 0) break;
                     var docs = [];
-                    for (i in obj.parent.users) {
-                        if ((obj.parent.users[i].domain == domain.id) && (obj.parent.users[i].name != '~')) {
-                            docs.push(obj.parent.CloneSafeUser(obj.parent.users[i]));
+                    for (i in parent.users) {
+                        if ((parent.users[i].domain == domain.id) && (parent.users[i].name != '~')) {
+                            docs.push(parent.CloneSafeUser(parent.users[i]));
                         }
                     }
                     try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
@@ -685,10 +686,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Change the email address
                     if (domain.auth == 'sspi') return;
-                    if (obj.common.validateEmail(command.email, 1, 256) == false) return;
-                    if (obj.parent.users[req.session.userid].email != command.email) {
+                    if (common.validateEmail(command.email, 1, 256) == false) return;
+                    if (parent.users[req.session.userid].email != command.email) {
                         // Check if this email is already validated on a different account
-                        obj.db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
+                        db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                             if (docs.length > 0) {
                                 // Notify the duplicate email error
                                 try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
@@ -697,19 +698,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var oldemail = user.email;
                                 user.email = command.email;
                                 user.emailVerified = false;
-                                obj.parent.db.SetUser(user);
+                                parent.db.SetUser(user);
 
                                 // Event the change
-                                var message = { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
+                                var message = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
                                 if (oldemail != null) {
                                     message.msg = 'Changed email of user ' + user.name + ' from ' + oldemail + ' to ' + user.email;
                                 } else {
                                     message.msg = 'Set email of user ' + user.name + ' to ' + user.email;
                                 }
-                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+                                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
 
                                 // Send the verification email
-                                if ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi')) { obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                                if ((parent.parent.mailserver != null) && (domain.auth != 'sspi')) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                             }
                         });
                     }
@@ -719,10 +720,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Send a account email verification email
                     if (domain.auth == 'sspi') return;
-                    if (obj.common.validateString(command.email, 3, 1024) == false) return;
-                    if ((obj.parent.parent.mailserver != null) && (obj.parent.users[req.session.userid].email == command.email)) {
+                    if (common.validateString(command.email, 3, 1024) == false) return;
+                    if ((parent.parent.mailserver != null) && (parent.users[req.session.userid].email == command.email)) {
                         // Send the verification email
-                        obj.parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
+                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
                     }
                     break;
                 }
@@ -731,12 +732,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Request a list of all web socket user session count
                     var wssessions = {};
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.parent.parent.multiServer == null) {
+                    if (parent.parent.multiServer == null) {
                         // No peering, use simple session counting
-                        for (i in obj.parent.wssessions) { if (obj.parent.wssessions[i][0].domainid == domain.id) { wssessions[i] = obj.parent.wssessions[i].length; } }
+                        for (i in parent.wssessions) { if (parent.wssessions[i][0].domainid == domain.id) { wssessions[i] = parent.wssessions[i].length; } }
                     } else {
                         // We have peer servers, use more complex session counting
-                        for (i in obj.parent.sessionsCount) { if (i.split('/')[1] == domain.id) { wssessions[i] = obj.parent.sessionsCount[i]; } }
+                        for (i in parent.sessionsCount) { if (i.split('/')[1] == domain.id) { wssessions[i] = parent.sessionsCount[i]; } }
                     }
                     try { ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); } catch (ex) { } // wssessions is: userid --> count
                     break;
@@ -745,8 +746,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Delete a user account
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.common.validateString(command.userid, 1, 2048) == false) break;
-                    var delusersplit = command.userid.split('/'), deluserid = command.userid, deluser = obj.parent.users[deluserid];
+                    if (common.validateString(command.userid, 1, 2048) == false) break;
+                    var delusersplit = command.userid.split('/'), deluserid = command.userid, deluser = parent.users[deluserid];
                     if ((deluser == null) || (delusersplit.length != 3) || (delusersplit[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
                     if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
 
@@ -754,30 +755,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (deluser.links != null) {
                         for (meshid in deluser.links) {
                             // Get the mesh
-                            mesh = obj.parent.meshes[meshid];
+                            mesh = parent.meshes[meshid];
                             if (mesh) {
                                 // Remove user from the mesh
-                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; obj.parent.db.Set(mesh); }
+                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
                                 // Notify mesh change
                                 change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
-                                obj.parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, { etype: 'mesh', username: user.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                                parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, { etype: 'mesh', username: user.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
                             }
                         }
                     }
 
                     // Remove notes for this user
-                    obj.db.Remove('nt' + deluser._id);
+                    db.Remove('nt' + deluser._id);
 
                     // Delete all files on the server for this account
                     try {
-                        var deluserpath = obj.parent.getServerRootFilePath(deluser);
-                        if (deluserpath != null) { obj.parent.deleteFolderRec(deluserpath); }
+                        var deluserpath = parent.getServerRootFilePath(deluser);
+                        if (deluserpath != null) { parent.deleteFolderRec(deluserpath); }
                     } catch (e) { }
 
-                    obj.db.Remove(deluserid);
-                    delete obj.parent.users[deluserid];
-                    obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
-                    obj.parent.parent.DispatchEvent([deluserid], obj, 'close');
+                    db.Remove(deluserid);
+                    delete parent.users[deluserid];
+                    parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+                    parent.parent.DispatchEvent([deluserid], obj, 'close');
 
                     break;
                 }
@@ -785,13 +786,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Broadcast a message to all currently connected users.
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
+                    if (common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
 
                     // Create the notification message
                     var notification = { "action": "msg", "type": "notify", "value": command.msg };
 
                     // Send the notification on all user sessions for this server
-                    for (var i in obj.parent.wssessions2) { try { obj.parent.wssessions2[i].send(JSON.stringify(notification)); } catch (ex) { } }
+                    for (var i in parent.wssessions2) { try { parent.wssessions2[i].send(JSON.stringify(notification)); } catch (ex) { } }
 
                     // TODO: Notify all sessions on other peers.
 
@@ -801,16 +802,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Add a new user account
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
-                    if (obj.common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
-                    if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
-                    if ((command.email != null) && (obj.common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
+                    if (common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
+                    if (common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                    if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+                    if ((command.email != null) && (common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                     var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
                     if (newusername == '~') break; // This is a reserved user name
-                    if (obj.parent.users[newuserid]) break; // Account already exists
+                    if (parent.users[newuserid]) break; // Account already exists
 
                     // Check if we exceed the maximum number of user accounts
-                    obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
+                    db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
                         if (maxExceed) {
                             // Account count exceed, do notification
 
@@ -818,7 +819,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var notification = { "action": "msg", "type": "notify", "value": "Account limit reached.", "userid": user._id, "username": user.name };
 
                             // Get the list of sessions for this user
-                            var sessions = obj.parent.wssessions[user._id];
+                            var sessions = parent.wssessions[user._id];
                             if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
                             // TODO: Notify all sessions on other peers.
                         } else {
@@ -826,15 +827,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.email != null) { newuser.email = command.email; } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
-                            obj.parent.users[newuserid] = newuser;
+                            parent.users[newuserid] = newuser;
 
                             // Create a user, generate a salt and hash the password
                             require('./pass').hash(command.pass, function (err, salt, hash) {
                                 if (err) throw err;
                                 newuser.salt = salt;
                                 newuser.hash = hash;
-                                obj.db.SetUser(newuser);
-                                obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: obj.parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
+                                db.SetUser(newuser);
+                                parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
                             });
                         }
                     });
@@ -844,20 +845,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Edit a user account, may involve changing email or administrator permissions
                     if (((user.siteadmin & 2) != 0) || (user.name == command.name)) {
-                        var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = obj.parent.users[chguserid];
+                        var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = parent.users[chguserid];
                         change = 0;
                         if (chguser) {
-                            if (obj.common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                            if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
-                            if ((obj.common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
-                            if ((user.siteadmin == 0xFFFFFFFF) && obj.common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
+                            if ((user.siteadmin == 0xFFFFFFFF) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
                             if (change == 1) {
-                                obj.db.SetUser(chguser);
-                                obj.parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
+                                db.SetUser(chguser);
+                                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
                             }
                             if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
-                                obj.parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
+                                parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                             }
                         }
                     }
@@ -866,13 +867,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'changepassword':
                 {
                     // Change our own password
-                    if (obj.common.validateString(command.oldpass, 1, 256) == false) break;
-                    if (obj.common.validateString(command.newpass, 1, 256) == false) break;
-                    if ((command.hint != null) && (obj.common.validateString(command.hint, 0, 256) == false)) break;
-                    if (obj.common.checkPasswordRequirements(command.newpass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+                    if (common.validateString(command.oldpass, 1, 256) == false) break;
+                    if (common.validateString(command.newpass, 1, 256) == false) break;
+                    if ((command.hint != null) && (common.validateString(command.hint, 0, 256) == false)) break;
+                    if (common.checkPasswordRequirements(command.newpass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
                     // Start by checking the old password
-                    obj.parent.checkUserPassword(domain, user, command.oldpass, function (result) {
+                    parent.checkUserPassword(domain, user, command.oldpass, function (result) {
                         if (result == true) {
                             // Update the password
                             require('./pass').hash(command.newpass, function (err, salt, hash) {
@@ -890,8 +891,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     user.hash = hash;
                                     user.passchange = Math.floor(Date.now() / 1000);
                                     delete user.passtype;
-                                    obj.db.SetUser(user);
-                                    obj.parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+                                    db.SetUser(user);
+                                    parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
 
                                     // Send user notification of password change
                                     displayNotificationMessage('Password changed.');
@@ -908,13 +909,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Change a user's password
                     if (user.siteadmin != 0xFFFFFFFF) break;
-                    if (obj.common.validateString(command.user, 1, 256) == false) break;
-                    if (obj.common.validateString(command.pass, 1, 256) == false) break;
-                    if ((command.hint != null) && (obj.common.validateString(command.hint, 0, 256) == false)) break;
+                    if (common.validateString(command.user, 1, 256) == false) break;
+                    if (common.validateString(command.pass, 1, 256) == false) break;
+                    if ((command.hint != null) && (common.validateString(command.hint, 0, 256) == false)) break;
                     if (typeof command.removeMultiFactor != 'boolean') break;
-                    if (obj.common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+                    if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
-                    var chguser = obj.parent.users['user/' + domain.id + '/' + command.user.toLowerCase()];
+                    var chguser = parent.users['user/' + domain.id + '/' + command.user.toLowerCase()];
                     if (chguser) {
                         // Compute the password hash & save it
                         require('./pass').hash(command.pass, function (err, salt, hash) {
@@ -933,8 +934,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (chguser.otphkeys) { delete chguser.otphkeys; }
                                     if (chguser.otpkeys) { delete chguser.otpkeys; }
                                 }
-                                obj.db.SetUser(chguser);
-                                obj.parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id });
+                                db.SetUser(chguser);
+                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id });
                             } else {
                                 // Report that the password change failed
                                 // TODO
@@ -947,17 +948,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Send a notification message to a user
                     if ((user.siteadmin & 2) == 0) break;
-                    if (obj.common.validateString(command.userid, 1, 2048) == false) break;
-                    if (obj.common.validateString(command.msg, 1, 4096) == false) break;
+                    if (common.validateString(command.userid, 1, 2048) == false) break;
+                    if (common.validateString(command.msg, 1, 4096) == false) break;
 
                     // Create the notification message
                     var notification = { "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: " + EscapeHtml(command.msg), "userid": user._id, "username": user.name };
 
                     // Get the list of sessions for this user
-                    var sessions = obj.parent.wssessions[command.userid];
+                    var sessions = parent.wssessions[command.userid];
                     if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
 
-                    if (obj.parent.parent.multiServer != null) {
+                    if (parent.parent.multiServer != null) {
                         // TODO: Add multi-server support
                     }
                     break;
@@ -968,7 +969,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 2) == 0) break;
 
                     // Setup a user-to-user session
-                    if (obj.common.validateString(command.userid, 1, 2048)) {
+                    if (common.validateString(command.userid, 1, 2048)) {
 
                         // Create the notification message
                         var notification = {
@@ -976,23 +977,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         };
 
                         // Get the list of sessions for this user
-                        var sessions = obj.parent.wssessions[command.userid];
+                        var sessions = parent.wssessions[command.userid];
                         if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
 
-                        if (obj.parent.parent.multiServer != null) {
+                        if (parent.parent.multiServer != null) {
                             // TODO: Add multi-server support
                         }
                     }
 
                     // Setup a user-to-node session
-                    if (obj.common.validateString(command.nodeid, 1, 2048)) {
-                        if (obj.args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
+                    if (common.validateString(command.nodeid, 1, 2048)) {
+                        if (args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
 
                         // Create the server url
-                        var httpsPort = ((obj.parent.args.aliasport == null) ? obj.parent.args.port : obj.parent.args.aliasport); // Use HTTPS alias port is specified
+                        var httpsPort = ((parent.args.aliasport == null) ? parent.args.port : parent.args.aliasport); // Use HTTPS alias port is specified
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += "/";
-                        var url = "http" + (obj.args.notls ? '' : 's') + "://" + obj.parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+                        var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
 
                         // Create the notification message
                         routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
@@ -1004,54 +1005,54 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check the server version
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
+                    parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
                     break;
                 }
             case 'serverupdate':
                 {
                     // Perform server update
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.performServerUpdate();
+                    parent.parent.performServerUpdate();
                     break;
                 }
             case 'servererrors':
                 {
                     // Load the server error log
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.fs.readFile(obj.parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
+                    fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
                     break;
                 }
             case 'serverclearerrorlog':
                 {
                     // Clear the server error log
                     if ((user.siteadmin & 16) == 0) break;
-                    obj.parent.parent.fs.unlink(obj.parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
+                    fs.unlink(parent.parent.getConfigFilePath('mesherrors.txt'), function (err) { });
                     break;
                 }
             case 'createmesh':
                 {
                     // In some situations, we need a verified email address to create a device group.
-                    if ((obj.parent.parent.mailserver != null) && (domain.auth != 'sspi') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
+                    if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
 
                     // Create mesh
-                    if (obj.common.validateString(command.meshname, 1, 64) == false) break; // Meshname is between 1 and 64 characters
-                    if (obj.common.validateString(command.desc, 0, 1024) == false) break; // Mesh description is between 0 and 1024 characters
+                    if (common.validateString(command.meshname, 1, 64) == false) break; // Meshname is between 1 and 64 characters
+                    if (common.validateString(command.desc, 0, 1024) == false) break; // Mesh description is between 0 and 1024 characters
 
                     // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
                     if ((command.meshtype == 1) || (command.meshtype == 2)) {
-                        obj.parent.crypto.randomBytes(48, function (err, buf) {
+                        parent.crypto.randomBytes(48, function (err, buf) {
                             meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             var links = {};
                             links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                             mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
-                            obj.db.Set(obj.common.escapeLinksFieldName(mesh));
-                            obj.parent.meshes[meshid] = mesh;
-                            obj.parent.parent.AddEventDispatch([meshid], ws);
+                            db.Set(common.escapeLinksFieldName(mesh));
+                            parent.meshes[meshid] = mesh;
+                            parent.parent.AddEventDispatch([meshid], ws);
                             if (user.links == null) user.links = {};
                             user.links[meshid] = { rights: 0xFFFFFFFF };
-                            user.subscriptions = obj.parent.subscribe(user._id, ws);
-                            obj.db.SetUser(user);
-                            obj.parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id });
+                            user.subscriptions = parent.subscribe(user._id, ws);
+                            db.SetUser(user);
+                            parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id });
                         });
                     }
                     break;
@@ -1059,83 +1060,83 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'deletemesh':
                 {
                     // Delete a mesh and all computers within it
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    obj.db.Get(command.meshid, function (err, meshes) {
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    db.Get(command.meshid, function (err, meshes) {
                         if (meshes.length != 1) return;
-                        var mesh = obj.common.unEscapeLinksFieldName(meshes[0]);
+                        var mesh = common.unEscapeLinksFieldName(meshes[0]);
 
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                         // Fire the removal event first, because after this, the event will not route
-                        obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id });
+                        parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id });
 
                         // Remove all user links to this mesh
                         for (i in meshes) {
                             var links = meshes[i].links;
                             for (var j in links) {
-                                var xuser = obj.parent.users[j];
+                                var xuser = parent.users[j];
                                 if (xuser && xuser.links) {
                                     delete xuser.links[meshes[i]._id];
-                                    obj.db.SetUser(xuser);
-                                    obj.parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+                                    db.SetUser(xuser);
+                                    parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
                                 }
                             }
                         }
 
                         // Delete all files on the server for this mesh
                         try {
-                            var meshpath = obj.parent.getServerRootFilePath(mesh);
-                            if (meshpath != null) { obj.parent.deleteFolderRec(meshpath); }
+                            var meshpath = parent.getServerRootFilePath(mesh);
+                            if (meshpath != null) { parent.deleteFolderRec(meshpath); }
                         } catch (e) { }
 
-                        obj.parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
+                        parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
 
                         // Mark the mesh as deleted
                         var dbmesh = meshes[0];
                         dbmesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
-                        obj.db.Set(obj.common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will up-delete it.
-                        obj.parent.meshes[command.meshid] = mesh; // Update the mesh in memory;
+                        db.Set(common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will up-delete it.
+                        parent.meshes[command.meshid] = mesh; // Update the mesh in memory;
 
                         // Delete all devices attached to this mesh in the database
-                        obj.db.RemoveMeshDocuments(command.meshid);
+                        db.RemoveMeshDocuments(command.meshid);
                     });
                     break;
                 }
             case 'editmesh':
                 {
                     // Change the name or description of a mesh
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    mesh = obj.parent.meshes[command.meshid];
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    mesh = parent.meshes[command.meshid];
                     change = '';
                     if (mesh) {
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) return;
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                        if ((obj.common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                        if ((obj.common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                        if ((obj.common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
-                        if (change != '') { obj.db.Set(obj.common.escapeLinksFieldName(mesh)); obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }); }
+                        if ((common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
+                        if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
+                        if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
+                        if (change != '') { db.Set(common.escapeLinksFieldName(mesh)); parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }); }
                     }
                     break;
                 }
             case 'addmeshuser':
                 {
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    if (obj.common.validateString(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters
-                    if (obj.common.validateInt(command.meshadmin) == false) break; // Mesh rights must be an integer
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    if (common.validateString(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters
+                    if (common.validateInt(command.meshadmin) == false) break; // Mesh rights must be an integer
 
                     // Check if the user exists
-                    var newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase(), newuser = obj.parent.users[newuserid];
+                    var newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase(), newuser = parent.users[newuserid];
                     if (newuser == null) {
                         // TODO: Send error back, user not found.
                         break;
                     }
 
                     // Get the mesh
-                    mesh = obj.parent.meshes[command.meshid];
+                    mesh = parent.meshes[command.meshid];
                     if (mesh) {
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
@@ -1144,53 +1145,53 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add mesh to user
                         if (newuser.links == null) newuser.links = {};
                         newuser.links[command.meshid] = { rights: command.meshadmin };
-                        obj.db.SetUser(newuser);
-                        obj.parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+                        db.SetUser(newuser);
+                        parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
                         // Add a user to the mesh
                         mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
-                        obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+                        db.Set(common.escapeLinksFieldName(mesh));
 
                         // Notify mesh change
-                        obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id });
+                        parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id });
                     }
                     break;
                 }
             case 'removemeshuser':
                 {
-                    if (obj.common.validateString(command.userid, 1, 1024) == false) break; // Check userid
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if (common.validateString(command.userid, 1, 1024) == false) break; // Check userid
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                     if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                     // Get the mesh
-                    mesh = obj.parent.meshes[command.meshid];
+                    mesh = parent.meshes[command.meshid];
                     if (mesh) {
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
 
                         // Check if the user exists - Just in case we need to delete a mesh right for a non-existant user, we do it this way. Technically, it's not possible, but just in case.
-                        var deluserid = command.userid, deluser = obj.parent.users[deluserid];
+                        var deluserid = command.userid, deluser = parent.users[deluserid];
                         if (deluser != null) {
                             // Remove mesh from user
                             if (deluser.links != null && deluser.links[command.meshid] != null) {
                                 var delmeshrights = deluser.links[command.meshid].rights;
                                 if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[deluserid].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
                                 delete deluser.links[command.meshid];
-                                obj.db.Set(deluser);
-                                obj.parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+                                db.Set(deluser);
+                                parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
                             }
                         }
 
                         // Remove user from the mesh
                         if (mesh.links[command.userid] != null) {
                             delete mesh.links[command.userid];
-                            obj.db.Set(obj.common.escapeLinksFieldName(mesh));
+                            db.Set(common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
                             if (deluser != null) {
-                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id });
+                                parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id });
                             } else {
-                                obj.parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id });
+                                parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id });
                             }
                         }
                     }
@@ -1199,15 +1200,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'meshamtpolicy':
                 {
                     // Change a mesh Intel AMT policy
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    if (obj.common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
-                    if (obj.common.validateInt(command.amtpolicy.type, 0, 2) == false) break; // Check the amtpolicy.type
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    if (common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
+                    if (common.validateInt(command.amtpolicy.type, 0, 2) == false) break; // Check the amtpolicy.type
                     if (command.amtpolicy.type === 2) {
-                        if (obj.common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
-                        if (obj.common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
-                        if (obj.common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
+                        if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
+                        if (common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
+                        if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     }
-                    mesh = obj.parent.meshes[command.meshid];
+                    mesh = parent.meshes[command.meshid];
                     change = '';
                     if (mesh) {
                         // Check if this user has rights to do this
@@ -1221,8 +1222,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var amtpolicy = { type: command.amtpolicy.type };
                         if (command.amtpolicy.type === 2) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
                         mesh.amt = amtpolicy;
-                        obj.db.Set(obj.common.escapeLinksFieldName(mesh));
-                        obj.parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                        db.Set(common.escapeLinksFieldName(mesh));
+                        parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
 
                         // Send new policy to all computers on this mesh
                         routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
@@ -1231,21 +1232,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addamtdevice':
                 {
-                    if (obj.args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                    if (obj.common.validateString(command.devicename, 1, 256) == false) break; // Check device name
-                    if (obj.common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
-                    if (obj.common.validateString(command.amtusername, 0, 16) == false) break; // Check username
-                    if (obj.common.validateString(command.amtpassword, 0, 16) == false) break; // Check password
+                    if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
+                    if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
+                    if (common.validateString(command.amtusername, 0, 16) == false) break; // Check username
+                    if (common.validateString(command.amtpassword, 0, 16) == false) break; // Check password
                     if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
                     if ((command.amttls != 1) && (command.amttls != 0)) break;
 
                     // If we are in WAN-only mode, hostname is not used
-                    if ((obj.parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
+                    if ((parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
 
                     // Get the mesh
-                    mesh = obj.parent.meshes[command.meshid];
+                    mesh = parent.meshes[command.meshid];
                     if (mesh) {
                         if (mesh.mtype != 1) return; // This operation is only allowed for mesh type 1, Intel AMT agentless mesh.
 
@@ -1253,41 +1254,41 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                         // Create a new nodeid
-                        obj.parent.crypto.randomBytes(48, function (err, buf) {
+                        parent.crypto.randomBytes(48, function (err, buf) {
                             // create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
-                            obj.db.Set(device);
+                            db.Set(device);
 
                             // Event the new node
-                            var device2 = obj.common.Clone(device);
+                            var device2 = common.Clone(device);
                             delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                            obj.parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', username: user.name, action: 'addnode', node: device2, msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
+                            parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', username: user.name, action: 'addnode', node: device2, msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
                         });
                     }
                     break;
                 }
             case 'scanamtdevice':
                 {
-                    if (obj.args.wanonly == true) return; // This is a WAN-only server, this type of scanning is not allowed.
-                    if (obj.common.validateString(command.range, 1, 256) == false) break; // Check range string
+                    if (args.wanonly == true) return; // This is a WAN-only server, this type of scanning is not allowed.
+                    if (common.validateString(command.range, 1, 256) == false) break; // Check range string
 
                     // Ask the RMCP scanning to scan a range of IP addresses
-                    if (obj.parent.parent.amtScanner) {
-                        if (obj.parent.parent.amtScanner.performRangeScan(ws.userid, command.range) == false) {
-                            obj.parent.parent.DispatchEvent(['*', ws.userid], obj, { action: 'scanamtdevice', range: command.range, results: null, nolog: 1 });
+                    if (parent.parent.amtScanner) {
+                        if (parent.parent.amtScanner.performRangeScan(ws.userid, command.range) == false) {
+                            parent.parent.DispatchEvent(['*', ws.userid], obj, { action: 'scanamtdevice', range: command.range, results: null, nolog: 1 });
                         }
                     }
                     break;
                 }
             case 'changeDeviceMesh':
                 {
-                    if (obj.common.validateStrArray(command.nodeids, 1, 256) == false) break; // Check nodeid strings
-                    if (obj.common.validateString(command.meshid, 1, 256) == false) break; // Check target meshid string
+                    if (common.validateStrArray(command.nodeids, 1, 256) == false) break; // Check nodeid strings
+                    if (common.validateString(command.meshid, 1, 256) == false) break; // Check target meshid string
 
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
-                        obj.db.Get(command.nodeids[i], function (err, nodes) {
+                        db.Get(command.nodeids[i], function (err, nodes) {
                             if (nodes.length != 1) return;
                             const node = nodes[0];
 
@@ -1295,7 +1296,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (node.meshid == command.meshid) return;
 
                             // Make sure both source and target mesh are the same type
-                            try { if (obj.parent.meshes[node.meshid].mtype != obj.parent.meshes[command.meshid].mtype) return; } catch (e) { return; };
+                            try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) return; } catch (e) { return; };
 
                             // Make sure that we have rights on both source and destination mesh
                             const sourceMeshRights = user.links[node.meshid].rights;
@@ -1305,10 +1306,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Perform the switch, start by saving the node with the new meshid.
                             const oldMeshId = node.meshid;
                             node.meshid = command.meshid;
-                            obj.db.Set(node);
+                            db.Set(node);
 
                             // If the device is connected on this server, switch it now.
-                            var agentSession = obj.parent.wsagents[node._id];
+                            var agentSession = parent.wsagents[node._id];
                             if (agentSession != null) {
                                 agentSession.dbMeshKey = command.meshid; // Switch the agent mesh
                                 agentSession.meshid = command.meshid.split('/')[2]; // Switch the agent mesh
@@ -1316,58 +1317,58 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                             // Add the connection state
-                            const state = obj.parent.parent.GetConnectivityState(node._id);
+                            const state = parent.parent.GetConnectivityState(node._id);
                             if (state) {
                                 node.conn = state.connectivity;
                                 node.pwr = state.powerState;
-                                if ((state.connectivity & 1) != 0) { var agent = obj.parent.wsagents[node._id]; if (agent != null) { node.agct = agent.connectTime; } }
-                                if ((state.connectivity & 2) != 0) { var cira = obj.parent.parent.mpsserver.ciraConnections[node._id]; if (cira != null) { node.cict = cira.tag.connectTime; } }
+                                if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[node._id]; if (agent != null) { node.agct = agent.connectTime; } }
+                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.ciraConnections[node._id]; if (cira != null) { node.cict = cira.tag.connectTime; } }
                             }
 
                             // Event the node change
-                            var newMesh = obj.parent.meshes[command.meshid];
-                            obj.parent.parent.DispatchEvent(['*', oldMeshId, command.meshid], obj, { etype: 'node', username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id });
+                            var newMesh = parent.meshes[command.meshid];
+                            parent.parent.DispatchEvent(['*', oldMeshId, command.meshid], obj, { etype: 'node', username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id });
                         });
                     }
                     break;
                 }
             case 'removedevices':
                 {
-                    if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
 
                     for (i in command.nodeids) {
                         nodeid = command.nodeids[i];
-                        if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                         if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                         // Get the device
-                        obj.db.Get(nodeid, function (err, nodes) {
+                        db.Get(nodeid, function (err, nodes) {
                             if (nodes.length != 1) return;
                             var node = nodes[0];
 
                             // Get the mesh for this device
-                            mesh = obj.parent.meshes[node.meshid];
+                            mesh = parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                                 // Delete this node including network interface information, events and timeline
-                                obj.db.Remove(node._id);                            // Remove node with that id
-                                obj.db.Remove('if' + node._id);                     // Remove interface information
-                                obj.db.Remove('nt' + node._id);                     // Remove notes
-                                obj.db.Remove('lc' + node._id);                     // Remove last connect time
-                                obj.db.RemoveSMBIOS(node._id);                      // Remove SMBios data
-                                obj.db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
-                                obj.db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
+                                db.Remove(node._id);                            // Remove node with that id
+                                db.Remove('if' + node._id);                     // Remove interface information
+                                db.Remove('nt' + node._id);                     // Remove notes
+                                db.Remove('lc' + node._id);                     // Remove last connect time
+                                db.RemoveSMBIOS(node._id);                      // Remove SMBios data
+                                db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
+                                db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
 
                                 // Event node deletion
-                                obj.parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id });
+                                parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id });
 
                                 // Disconnect all connections if needed
-                                var state = obj.parent.parent.GetConnectivityState(nodeid);
+                                var state = parent.parent.GetConnectivityState(nodeid);
                                 if ((state != null) && (state.connectivity != null)) {
-                                    if ((state.connectivity & 1) != 0) { obj.parent.wsagents[nodeid].close(); } // Disconnect mesh agent
-                                    if ((state.connectivity & 2) != 0) { obj.parent.parent.mpsserver.close(obj.parent.parent.mpsserver.ciraConnections[nodeid]); } // Disconnect CIRA connection
+                                    if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
+                                    if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[nodeid]); } // Disconnect CIRA connection
                                 }
                             }
                         });
@@ -1377,44 +1378,44 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'wakedevices':
                 {
-                    if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     // TODO: We can optimize this a lot.
                     // - We should get a full list of all MAC's to wake first.
                     // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
                     for (i in command.nodeids) {
                         nodeid = command.nodeids[i];
                         var wakeActions = 0;
-                        if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
-                            obj.db.Get(nodeid, function (err, nodes) {
+                            db.Get(nodeid, function (err, nodes) {
                                 if (nodes.length != 1) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
-                                mesh = obj.parent.meshes[node.meshid];
+                                mesh = parent.meshes[node.meshid];
                                 if (mesh) {
 
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 64) != 0)) {
 
                                         // Get the device interface information
-                                        obj.db.Get('if' + node._id, function (err, nodeifs) {
+                                        db.Get('if' + node._id, function (err, nodeifs) {
                                             if (nodeifs.length == 1) {
                                                 var nodeif = nodeifs[0];
                                                 var macs = [];
                                                 for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
 
                                                 // Have the server send a wake-on-lan packet (Will not work in WAN-only)
-                                                if (obj.parent.parent.meshScanner != null) { obj.parent.parent.meshScanner.wakeOnLan(macs); wakeActions++; }
+                                                if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); wakeActions++; }
 
                                                 // Get the list of mesh this user as access to
                                                 var targetMeshes = [];
                                                 for (i in user.links) { targetMeshes.push(i); }
 
                                                 // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
-                                                for (i in obj.parent.wsagents) {
-                                                    var agent = obj.parent.wsagents[i];
+                                                for (i in parent.wsagents) {
+                                                    var agent = parent.wsagents[i];
                                                     if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
                                                         //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
                                                         try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
@@ -1436,26 +1437,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'poweraction':
                 {
-                    if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     for (i in command.nodeids) {
                         nodeid = command.nodeids[i];
                         var powerActions = 0;
-                        if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
-                            obj.db.Get(nodeid, function (err, nodes) {
+                            db.Get(nodeid, function (err, nodes) {
                                 if (nodes.length != 1) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
-                                mesh = obj.parent.meshes[node.meshid];
+                                mesh = parent.meshes[node.meshid];
                                 if (mesh) {
 
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
 
                                         // Get this device
-                                        var agent = obj.parent.wsagents[node._id];
+                                        var agent = parent.wsagents[node._id];
                                         if (agent != null) {
                                             // Send the power command
                                             try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
@@ -1472,28 +1473,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'toast':
                 {
-                    if (obj.common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (obj.common.validateString(command.title, 1, 512) == false) break; // Check title
-                    if (obj.common.validateString(command.msg, 1, 4096) == false) break; // Check message
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (common.validateString(command.title, 1, 512) == false) break; // Check title
+                    if (common.validateString(command.msg, 1, 4096) == false) break; // Check message
                     for (i in command.nodeids) {
                         nodeid = command.nodeids[i];
                         var powerActions = 0;
-                        if (obj.common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
-                            obj.db.Get(nodeid, function (err, nodes) {
+                            db.Get(nodeid, function (err, nodes) {
                                 if (nodes.length != 1) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
-                                mesh = obj.parent.meshes[node.meshid];
+                                mesh = parent.meshes[node.meshid];
                                 if (mesh) {
 
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
 
                                         // Get this device
-                                        var agent = obj.parent.wsagents[node._id];
+                                        var agent = parent.wsagents[node._id];
                                         if (agent != null) {
                                             // Send the power command
                                             try { agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg })); } catch (ex) { }
@@ -1508,22 +1509,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'getnetworkinfo':
                 {
                     // Argument validation
-                    if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                     // Get the device
-                    obj.db.Get(command.nodeid, function (err, nodes) {
+                    db.Get(command.nodeid, function (err, nodes) {
                         if (nodes.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                         var node = nodes[0];
 
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[node.meshid];
+                        mesh = parent.meshes[node.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
 
                             // Get network information about this node
-                            obj.db.Get('if' + command.nodeid, function (err, netinfos) {
+                            db.Get('if' + command.nodeid, function (err, netinfos) {
                                 if (netinfos.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                                 var netinfo = netinfos[0];
                                 try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
@@ -1535,17 +1536,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'changedevice':
                 {
                     // Argument validation
-                    if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) return;
 
                     // Change the device
-                    obj.db.Get(command.nodeid, function (err, nodes) {
+                    db.Get(command.nodeid, function (err, nodes) {
                         if (nodes.length != 1) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[node.meshid];
+                        mesh = parent.meshes[node.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
@@ -1556,7 +1557,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event.msg = ": ";
 
                             // If we are in WAN-only mode, host is not used
-                            if ((obj.parent.parent.args.wanonly == true) && (command.host)) { delete command.host; }
+                            if ((parent.parent.args.wanonly == true) && (command.host)) { delete command.host; }
 
                             // Look for a change
                             if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
@@ -1580,21 +1581,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
                                 var ok = true;
-                                if (obj.common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
-                                if (obj.common.validateStrArray(command.tags, 1, 256) == true) { var groupTags = command.tags; for (var i in groupTags) { groupTags[i] = groupTags[i].trim(); if ((groupTags[i] == '') || (groupTags[i].indexOf(',') >= 0)) { ok = false; } } }
+                                if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
+                                if (common.validateStrArray(command.tags, 1, 256) == true) { var groupTags = command.tags; for (var i in groupTags) { groupTags[i] = groupTags[i].trim(); if ((groupTags[i] == '') || (groupTags[i].indexOf(',') >= 0)) { ok = false; } } }
                                 if (ok == true) { groupTags.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }); node.tags = groupTags; change = 1; }
                             } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
 
                             if (change == 1) {
                                 // Save the node
-                                obj.db.Set(node);
+                                db.Set(node);
 
                                 // Event the node change
                                 event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                                var node2 = obj.common.Clone(node);
+                                var node2 = common.Clone(node);
                                 if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                 event.node = node2;
-                                obj.parent.parent.DispatchEvent(['*', node.meshid], obj, event);
+                                parent.parent.DispatchEvent(['*', node.meshid], obj, event);
                             }
                         }
                     });
@@ -1602,37 +1603,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'uploadagentcore':
                 {
-                    if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if (obj.common.validateString(command.type, 1, 40) == false) break; // Check path
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    if (common.validateString(command.type, 1, 40) == false) break; // Check path
 
                     // Change the device
-                    obj.db.Get(command.nodeid, function (err, nodes) {
+                    db.Get(command.nodeid, function (err, nodes) {
                         if (nodes.length != 1) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[node.meshid];
+                        mesh = parent.meshes[node.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || (((mesh.links[user._id].rights & 16) == 0) && (user.siteadmin != 0xFFFFFFFF))) { return; }
 
                             if (command.type == 'default') {
                                 // Send the default core to the agent
-                                obj.parent.parent.updateMeshCore(function () { obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
+                                parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
                             } else if (command.type == 'clear') {
                                 // Clear the mesh agent core on the mesh agent
-                                obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
+                                parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
                             } else if (command.type == 'recovery') {
                                 // Send the recovery core to the agent
-                                obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
-                            } else if ((command.type == 'custom') && (obj.common.validateString(command.path, 1, 2048) == true)) {
+                                parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
+                            } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
                                 // Send a mesh agent core to the mesh agent
-                                var file = obj.parent.getServerFilePath(user, domain, command.path);
+                                var file = parent.getServerFilePath(user, domain, command.path);
                                 if (file != null) {
-                                    obj.parent.parent.fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                    fs.readFile(file.fullpath, 'utf8', function (err, data) {
                                         if (err != null) {
-                                            data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                            obj.parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
+                                            data = common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                                            parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
                                         }
                                     });
                                 }
@@ -1643,22 +1644,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'agentdisconnect':
                 {
-                    if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if (obj.common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    if (common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
 
                     // Change the device
-                    obj.db.Get(command.nodeid, function (err, nodes) {
+                    db.Get(command.nodeid, function (err, nodes) {
                         if (nodes.length != 1) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[node.meshid];
+                        mesh = parent.meshes[node.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || (((mesh.links[user._id].rights & 16) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
 
                             // Force mesh agent disconnection
-                            obj.parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
+                            parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
                         }
                     });
                     break;
@@ -1673,17 +1674,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'getcookie':
                 {
                     // Check if this user has rights on this nodeid
-                    if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    obj.db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                         if (nodes.length == 1) {
                             meshlinks = user.links[nodes[0].meshid];
-                            if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_REMOTECONTROL != 0)) {
+                            if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & parent.MESHRIGHT_REMOTECONTROL != 0)) {
                                 // Add a user authentication cookie to a url
                                 var cookieContent = { userid: user._id, domainid: user.domain };
                                 if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
                                 if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                                 if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
-                                command.cookie = obj.parent.parent.encodeCookie(cookieContent);
+                                command.cookie = parent.parent.encodeCookie(cookieContent);
                                 try { ws.send(JSON.stringify(command)); } catch (ex) { }
                             }
                         }
@@ -1692,13 +1693,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'inviteAgent':
                 {
-                    if ((obj.parent.parent.mailserver == null) || (obj.args.lanonly == true)) return; // This operation requires the email server
-                    if ((obj.parent.parent.certificates.CommonName == null) || (obj.parent.parent.certificates.CommonName.indexOf('.') == -1)) return; // Server name must be configured
-                    if (obj.common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
+                    if ((parent.parent.mailserver == null) || (args.lanonly == true)) return; // This operation requires the email server
+                    if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) return; // Server name must be configured
+                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                     // Get the mesh
-                    mesh = obj.parent.meshes[command.meshid];
+                    mesh = parent.meshes[command.meshid];
                     if (mesh) {
                         if (mesh.mtype != 2) return; // This operation is only allowed for mesh type 2, agent mesh
 
@@ -1706,14 +1707,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
 
                         // Perform email invitation
-                        obj.parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags);
+                        parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags);
                     }
                     break;
                 }
             case 'setNotes':
                 {
                     // Argument validation
-                    if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                    if (common.validateString(command.id, 1, 1024) == false) break; // Check id
                     var splitid = command.id.split('/');
                     if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     var idtype = splitid[0];
@@ -1721,39 +1722,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (idtype == 'node') {
                         // Check if this user has rights on this id to set notes
-                        obj.db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
+                        db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                             if (nodes.length == 1) {
                                 meshlinks = user.links[nodes[0].meshid];
-                                if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & obj.parent.MESHRIGHT_SETNOTES != 0)) {
+                                if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & parent.MESHRIGHT_SETNOTES != 0)) {
                                     // Set the id's notes
-                                    if (obj.common.validateString(command.notes, 1) == false) {
-                                        obj.db.Remove('nt' + command.id); // Delete the note for this node
+                                    if (common.validateString(command.notes, 1) == false) {
+                                        db.Remove('nt' + command.id); // Delete the note for this node
                                     } else {
-                                        obj.db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this node
+                                        db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this node
                                     }
                                 }
                             }
                         });
                     } else if (idtype == 'mesh') {
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[command.id];
+                        mesh = parent.meshes[command.id];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { return; } // Must have rights to edit the mesh
 
                             // Set the id's notes
-                            if (obj.common.validateString(command.notes, 1) == false) {
-                                obj.db.Remove('nt' + command.id); // Delete the note for this node
+                            if (common.validateString(command.notes, 1) == false) {
+                                db.Remove('nt' + command.id); // Delete the note for this node
                             } else {
-                                obj.db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this mesh
+                                db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this mesh
                             }
                         }
                     } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
                         // Set the id's notes
-                        if (obj.common.validateString(command.notes, 1) == false) {
-                            obj.db.Remove('nt' + command.id); // Delete the note for this node
+                        if (common.validateString(command.notes, 1) == false) {
+                            db.Remove('nt' + command.id); // Delete the note for this node
                         } else {
-                            obj.db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
+                            db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
                         }
                     }
 
@@ -1762,19 +1763,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-request':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
                         const otplib = require('otplib');
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
-                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, obj.parent.certificates.CommonName, secret) }));
+                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, parent.certificates.CommonName, secret) }));
                     }
                     break;
                 }
             case 'otpauth-setup':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
                         const otplib = require('otplib');
@@ -1782,11 +1783,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (otplib.authenticator.check(command.token, command.secret) === true) {
                             // Token is valid, activate 2-step login on this account.
                             user.otpsecret = command.secret;
-                            obj.parent.db.SetUser(user);
+                            parent.db.SetUser(user);
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
                             // Notify change
-                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id });
+                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
                         }
@@ -1796,16 +1797,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-clear':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Clear the one time password secret
                         if (user.otpsecret) {
                             delete user.otpsecret;
-                            obj.parent.db.SetUser(user);
+                            parent.db.SetUser(user);
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
 
                             // Notify change
-                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id });
+                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
                         }
@@ -1815,7 +1816,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-getpasswords':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Perform a sub-action
@@ -1832,7 +1833,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Save the changed user
-                    if (actionTaken) { obj.parent.db.SetUser(user); }
+                    if (actionTaken) { parent.db.SetUser(user); }
 
                     // Return one time passwords for this user
                     if (user.otpsecret || ((user.otphkeys != null) && (user.otphkeys.length > 0))) {
@@ -1840,13 +1841,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Notify change
-                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                    parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-get':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Send back the list of keys we have, just send the list of names and index
@@ -1859,7 +1860,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-remove':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false || command.index == null) break;
 
                     // Remove a key
@@ -1867,11 +1868,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].keyIndex == command.index) { foundAtIndex = i; } } }
                     if (foundAtIndex != -1) {
                         user.otphkeys.splice(foundAtIndex, 1);
-                        obj.parent.db.SetUser(user);
+                        parent.db.SetUser(user);
                     }
 
                     // Notify change
-                    obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id });
+                    parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-yubikey-add':
@@ -1879,7 +1880,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
 
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
@@ -1899,7 +1900,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
                     yubikeyotp.verifyOTP(request, function (err, results) {
                         if ((results != null) && (results.status == 'OK')) {
-                            var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
+                            var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                             var keyId = command.otp.substring(0, 12);
                             if (user.otphkeys == null) { user.otphkeys = []; }
 
@@ -1910,11 +1911,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Add the new key and notify
                             user.otphkeys.push({ name: command.name, type: 2, keyid: keyId, keyIndex: keyIndex });
-                            obj.parent.db.SetUser(user);
+                            parent.db.SetUser(user);
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: true, name: command.name, index: keyIndex }));
 
                             // Notify change TODO: Should be done on all sessions/servers for this user.
-                            obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         }
@@ -1925,7 +1926,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-setup-request':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Build list of known keys
@@ -1933,7 +1934,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { knownKeys.push(user.otphkeys[i]); } } }
 
                     // Build a key registration request and send it over
-                    require('authdog').startRegistration('https://' + obj.parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
+                    require('authdog').startRegistration('https://' + parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
                         // Save registration request to session for later use
                         obj.hardwareKeyRegistrationRequest = registrationRequest;
 
@@ -1948,20 +1949,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-setup-response':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly !== true) && (obj.args.nousers !== true));
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
 
                     // Check the key registration request
                     require('authdog').finishRegistration(obj.hardwareKeyRegistrationRequest, command.response).then(function (registrationStatus) {
-                        var keyIndex = obj.parent.crypto.randomBytes(4).readUInt32BE(0);
+                        var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
                         if (user.otphkeys == null) { user.otphkeys = []; }
                         user.otphkeys.push({ name: command.name, type: 1, publicKey: registrationStatus.publicKey, keyHandle: registrationStatus.keyHandle, certificate: registrationStatus.certificate, keyIndex: keyIndex });
-                        obj.parent.db.SetUser(user);
+                        parent.db.SetUser(user);
                         delete obj.hardwareKeyRegistrationRequest;
 
                         // Notify change
-                        obj.parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     }, function (error) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
                         delete obj.hardwareKeyRegistrationRequest;
@@ -1969,43 +1970,43 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'getClip': {
-                if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
 
                 // Get the device
-                obj.db.Get(command.nodeid, function (err, nodes) {
+                db.Get(command.nodeid, function (err, nodes) {
                     if (nodes.length != 1) return;
                     var node = nodes[0];
 
                     // Get the mesh for this device
-                    mesh = obj.parent.meshes[node.meshid];
+                    mesh = parent.meshes[node.meshid];
                     if (mesh) {
                         // Check if this user has "remote" rights to do this
                         if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 16) == 0)) return;
 
                         // Ask for clipboard data from agent
-                        var agent = obj.parent.wsagents[node._id];
+                        var agent = parent.wsagents[node._id];
                         if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
                     }
                 });
                 break;
             }
             case 'setClip': {
-                if (obj.common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                if (obj.common.validateString(command.data, 1, 65535) == false) break; // Check 
+                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (common.validateString(command.data, 1, 65535) == false) break; // Check 
 
                 // Get the device
-                obj.db.Get(command.nodeid, function (err, nodes) {
+                db.Get(command.nodeid, function (err, nodes) {
                     if (nodes.length != 1) return;
                     var node = nodes[0];
 
                     // Get the mesh for this device
-                    mesh = obj.parent.meshes[node.meshid];
+                    mesh = parent.meshes[node.meshid];
                     if (mesh) {
                         // Check if this user has "remote" rights to do this
                         if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 16) == 0)) return;
 
                         // Send clipboard data to the agent
-                        var agent = obj.parent.wsagents[node._id];
+                        var agent = parent.wsagents[node._id];
                         if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
                     }
                 });
@@ -2014,7 +2015,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'getNotes':
                 {
                     // Argument validation
-                    if (obj.common.validateString(command.id, 1, 1024) == false) break; // Check id
+                    if (common.validateString(command.id, 1, 1024) == false) break; // Check id
                     var splitid = command.id.split('/');
                     if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     var idtype = splitid[0];
@@ -2022,18 +2023,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (idtype == 'node') {
                         // Get the device
-                        obj.db.Get(command.id, function (err, nodes) {
+                        db.Get(command.id, function (err, nodes) {
                             if (nodes.length != 1) return;
                             var node = nodes[0];
 
                             // Get the mesh for this device
-                            mesh = obj.parent.meshes[node.meshid];
+                            mesh = parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
                                 if (mesh.links[user._id] == null || (mesh.links[user._id].rights == 0)) { return; }
 
                                 // Get the notes about this node
-                                obj.db.Get('nt' + command.id, function (err, notes) {
+                                db.Get('nt' + command.id, function (err, notes) {
                                     try {
                                         if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                         ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
@@ -2043,13 +2044,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else if (idtype == 'mesh') {
                         // Get the mesh for this device
-                        mesh = obj.parent.meshes[command.id];
+                        mesh = parent.meshes[command.id];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) { return; } // Must have rights to edit the mesh
 
                             // Get the notes about this node
-                            obj.db.Get('nt' + command.id, function (err, notes) {
+                            db.Get('nt' + command.id, function (err, notes) {
                                 try {
                                     if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                     ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
@@ -2058,7 +2059,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     } else if ((idtype == 'user') && ((user.siteadmin & 2) != 0)) {
                         // Get the notes about this node
-                        obj.db.Get('nt' + command.id, function (err, notes) {
+                        db.Get('nt' + command.id, function (err, notes) {
                             try {
                                 if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                 ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
@@ -2081,10 +2082,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {
-        var r = {}, dir = obj.fs.readdirSync(path);
+        var r = {}, dir = fs.readdirSync(path);
         for (var i in dir) {
             var f = { t: 3, d: 111 };
-            var stat = obj.fs.statSync(path + '/' + dir[i]);
+            var stat = fs.statSync(path + '/' + dir[i]);
             if ((stat.mode & 0x004000) == 0) { f.s = stat.size; f.d = stat.mtime.getTime(); } else { f.t = 2; f.f = readFilesRec(path + '/' + dir[i]); }
             r[dir[i]] = f;
         }
@@ -2094,16 +2095,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Delete a directory with a files and directories within it
     // TODO, make this an async function
     function deleteFolderRecursive(path) {
-        if (obj.fs.existsSync(path)) {
-            obj.fs.readdirSync(path).forEach(function (file, index) {
-                var curPath = obj.path.join(path, file);;
-                if (obj.fs.lstatSync(curPath).isDirectory()) { // recurse
+        if (fs.existsSync(path)) {
+            fs.readdirSync(path).forEach(function (file, index) {
+                var curPath = path.join(path, file);;
+                if (fs.lstatSync(curPath).isDirectory()) { // recurse
                     deleteFolderRecursive(curPath);
                 } else { // delete file
-                    obj.fs.unlinkSync(curPath);
+                    fs.unlinkSync(curPath);
                 }
             });
-            obj.fs.rmdirSync(path);
+            fs.rmdirSync(path);
         }
     };
 
@@ -2115,35 +2116,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Add user files
         files.filetree.f[user._id] = { t: 1, n: 'My Files', f: {} };
-        files.filetree.f[user._id].maxbytes = obj.parent.getQuota(user._id, domain);
+        files.filetree.f[user._id].maxbytes = parent.getQuota(user._id, domain);
         var usersplit = user._id.split('/'), domainx = 'domain';
         if (usersplit[1].length > 0) domainx = 'domain-' + usersplit[1];
 
         // Read all files recursively
         try {
-            files.filetree.f[user._id].f = readFilesRec(obj.path.join(obj.parent.filespath, domainx + "/user-" + usersplit[2]));
+            files.filetree.f[user._id].f = readFilesRec(path.join(parent.filespath, domainx + "/user-" + usersplit[2]));
         } catch (e) {
             // TODO: We may want to fake this file structure until it's needed.
             // Got an error, try to create all the folders and try again...
-            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.parent.filespath, domainx)); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
-            try { obj.fs.mkdirSync(obj.path.join(obj.parent.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
-            try { files.filetree.f[user._id].f = readFilesRec(obj.parent.path.join(obj.parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(parent.filespath); } catch (e) { }
+            try { fs.mkdirSync(path.join(parent.filespath, domainx)); } catch (e) { }
+            try { fs.mkdirSync(path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(path.join(parent.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
+            try { files.filetree.f[user._id].f = readFilesRec(path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
         }
 
         // Add files for each mesh
         for (var i in user.links) {
             if ((user.links[i].rights & 32) != 0) { // Check that we have file permissions
-                var mesh = obj.parent.meshes[i];
+                var mesh = parent.meshes[i];
                 if (mesh) {
                     var meshsplit = mesh._id.split('/');
                     files.filetree.f[mesh._id] = { t: 4, n: mesh.name, f: {} };
-                    files.filetree.f[mesh._id].maxbytes = obj.parent.getQuota(mesh._id, domain);
+                    files.filetree.f[mesh._id].maxbytes = parent.getQuota(mesh._id, domain);
 
                     // Read all files recursively
                     try {
-                        files.filetree.f[mesh._id].f = readFilesRec(obj.parent.path.join(obj.parent.filespath, domainx + "/mesh-" + meshsplit[2]));
+                        files.filetree.f[mesh._id].f = readFilesRec(path.join(parent.filespath, domainx + "/mesh-" + meshsplit[2]));
                     } catch (e) {
                         files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
                     }
@@ -2171,7 +2172,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Generate a 8 digit integer with even random probability for each value.
     function getRandomEightDigitInteger() {
         var bigInt;
-        do { bigInt = obj.parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000);
+        do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000);
         return bigInt % 100000000;
     }
 

@@ -8,7 +8,7 @@
 # Description:       <DESCRIPTION>
 ### END INIT INFO
 
-SCRIPT=/usr/local/mesh_services/meshagent/meshagent
+SCRIPT=/usr/local/mesh/meshagent
 RUNAS=root
 
 PIDFILE=/var/run/meshagent.pid

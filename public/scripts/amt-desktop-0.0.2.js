@@ -24,6 +24,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.useZRLE = true;
     obj.showmouse = true;
     obj.buttonmask = 0;
+    obj.localKeyMap = true;
     //obj.inbytes = 0;
     //obj.outbytes = 0;
     obj.spare = null;
@@ -634,7 +635,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     function _keyevent(d, e) {
         if (!e) { e = window.event; }
 
-        if (e.code) {
+        if (e.code && (obj.localKeyMap == false)) {
             // For new browsers, this mapping is keyboard language independent
             var k = convertAmtKeyCode(e);
             if (k != null) { obj.sendkey(k, d); }

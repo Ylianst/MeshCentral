@@ -311,8 +311,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { obj.stats.blockedConnect++; Debug(1, "SWARM:New blocked agent connection"); return; }
         obj.stats.connectCount++;
 
-        socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", socket: socket };
-        //socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000);
+        socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "" };
         Debug(1, 'SWARM:New legacy agent connection');
 
         if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) { obj.stats.noCertConnectCount++; } else { obj.stats.clientCertConnectCount++; }
@@ -321,12 +320,20 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         socket.addListener("close", function () {
             obj.stats.onclose++;
             Debug(1, 'Swarm:Connection closed');
-            if (this.relaySocket) { try { this.relaySocket.end(); delete this.relaySocket; } catch (ex) { } }
+            
+            // Perform aggressive cleanup
+            if (this.relaySocket) { try { this.relaySocket.end(); this.relaySocket.removeAllListeners(["data", "end", "error"]); delete this.relaySocket; } catch (ex) { } }
             if (this.pingTimer != null) { clearInterval(this.pingTimer); delete this.pingTimer; }
             if (this.tag && (typeof this.tag.taskid == 'number')) {
                 obj.parent.taskLimiter.completed(this.tag.taskid); // Indicate this task complete
                 delete this.tag.taskid;
             }
+            if (this.tag) {
+                if (this.tag.accumulator) { delete this.tag.accumulator; }
+                if (this.tag.clientCert) { delete this.tag.clientCert; }
+                delete this.tag;
+            }
+            this.removeAllListeners([ "data", "close", "error" ]);
         });
 
         socket.addListener("error", function () {
