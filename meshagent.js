@@ -98,6 +98,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.dbMeshKey) { delete obj.dbMeshKey; }
         if (obj.connectTime) { delete obj.connectTime; }
         if (obj.agentInfo) { delete obj.agentInfo; }
+        if (obj.agentExeInfo) { delete obj.agentExeInfo; }
         ws.removeAllListeners(["message", "close", "error"]);
     };
 
@@ -218,6 +219,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (obj.agentExeInfo.data == null) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
+                                    if (obj.agentExeInfo == null) return; // Agent disconnected during this call.
                                     if (err) { return console.error(err); }
                                     obj.agentUpdate = { ptr: 0, buf: Buffer.alloc(agentUpdateBlockSize + 4), fd: fd, taskid: taskid };
 
@@ -294,6 +296,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (obj.agentExeInfo.data == null) {
                             // Read the agent from disk
                             parent.fs.read(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, agentUpdateBlockSize, obj.agentUpdate.ptr, function (err, bytesRead, buffer) {
+                                if ((obj.agentExeInfo == null) || (obj.agentUpdate == null)) return; // Agent disconnected during this async call.
                                 if ((err != null) || (bytesRead < 0)) {
                                     // Error reading the agent file, stop here.
                                     try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
