@@ -464,10 +464,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (user.siteadmin != 0xFFFFFFFF) break;
 
                     var r = '';
-                    var args = splitArgs(command.value);
-                    if (args.length == 0) break;
-                    const cmd = args[0].toLowerCase();
-                    args = parseArgs(args);
+                    var cmdargs = splitArgs(command.value);
+                    if (cmdargs.length == 0) break;
+                    const cmd = cmdargs[0].toLowerCase();
+                    cmdargs = parseArgs(cmdargs);
 
                     switch (cmd) {
                         case 'help': {
@@ -495,7 +495,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'args': {
-                            r = cmd + ': ' + JSON.stringify(args);
+                            r = cmd + ': ' + JSON.stringify(cmdargs);
                             break;
                         }
                         case 'usersessions': {
@@ -528,10 +528,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'setmaxtasks': {
-                            if ((args["_"].length != 1) || (parseInt(args["_"][0]) < 1) || (parseInt(args["_"][0]) > 1000)) {
+                            if ((cmdargs["_"].length != 1) || (parseInt(cmdargs["_"][0]) < 1) || (parseInt(cmdargs["_"][0]) > 1000)) {
                                 r = 'Usage: setmaxtasks [1 to 1000]';
                             } else {
-                                parent.parent.taskLimiter.maxTasks = parseInt(args["_"][0]);
+                                parent.parent.taskLimiter.maxTasks = parseInt(cmdargs["_"][0]);
                                 r = 'MaxTasks set to ' + parent.parent.taskLimiter.maxTasks + '.';
                             }
                             break;
@@ -990,7 +990,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
 
                         // Create the server url
-                        var httpsPort = ((parent.args.aliasport == null) ? parent.args.port : parent.args.aliasport); // Use HTTPS alias port is specified
+                        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += "/";
                         var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
@@ -1243,7 +1243,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.amttls != 1) && (command.amttls != 0)) break;
 
                     // If we are in WAN-only mode, hostname is not used
-                    if ((parent.parent.args.wanonly == true) && (command.hostname)) { delete command.hostname; }
+                    if ((args.wanonly == true) && (command.hostname)) { delete command.hostname; }
 
                     // Get the mesh
                     mesh = parent.meshes[command.meshid];
@@ -1557,7 +1557,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event.msg = ": ";
 
                             // If we are in WAN-only mode, host is not used
-                            if ((parent.parent.args.wanonly == true) && (command.host)) { delete command.host; }
+                            if ((args.wanonly == true) && (command.host)) { delete command.host; }
 
                             // Look for a change
                             if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
@@ -1846,6 +1846,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-get':
                 {
+
+
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
