@@ -34,6 +34,7 @@ var MESHRIGHT_REMOTEVIEW = 256;
 var MESHRIGHT_NOTERMINAL = 512;
 var MESHRIGHT_NOFILES = 1024;
 var MESHRIGHT_NOAMT = 2048;
+var MESHRIGHT_LIMITEDINPUT = 4096;
 
 function createMeshCore(agent) {
     var obj = {};
@@ -772,12 +773,12 @@ function createMeshCore(agent) {
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
 
-                    //sendConsoleText('KVM Rights: ' + this.httprequest.rights);
-                    if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) {
+                    if ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))) {
                         // If we have remote control rights, pipe the KVM input
                         this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
                     } else {
                         // We need to only pipe non-mouse & non-keyboard inputs.
+                        //sendConsoleText('Warning: No Remote Desktop Input Rights.');
                         // TODO!!!
                     }
 

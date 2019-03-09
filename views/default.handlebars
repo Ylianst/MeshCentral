@@ -795,6 +795,7 @@
                         </div>
                     </div>
                     <div id=dialog7 style="margin:auto;margin:3px">
+                        
                         <div id="d7meshkvm">
                             <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
                             <div style="margin:3px 0 3px 0">
@@ -839,6 +840,7 @@
                                 <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
                                     <label><input type="checkbox" id='d7showfocus'>Show Focus Tool<br></label>
                                     <label><input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br></label>
+                                    <label><input type="checkbox" id='d7localKeyMap'>Local Keyboard Map<br></label>
                                 </div>
                                 <div>Other Settings</div>
                             </div>
@@ -881,7 +883,7 @@
         var wssessions = null;
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50 };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
         var terminal;
         var files;
@@ -1860,7 +1862,18 @@
         }
 
         function ondockeypress(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeys(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeys(e);
+            }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeys(e);
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) return agentConsoleHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 4) {
@@ -1908,7 +1921,18 @@
         }
 
         function ondockeydown(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleKeyDown(e); }
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeyDown(e);
+            }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyDown(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
@@ -1931,7 +1955,18 @@
         }
 
         function ondockeyup(e) {
-            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) return desktop.m.handleKeyUp(e);
+            if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeyUp(e);
+            }
             if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) return terminal.m.TermHandleKeyUp(e);
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
@@ -4080,26 +4115,27 @@
             QV('d7meshkvm', (webRtcDesktop) || ((mesh.mtype == 2) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
+            var inputAllowed = (meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) == 0));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QE('deskSaveBtn', deskState == 3);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QV('DeskCAD', meshrights & 8);
+            QV('DeskCAD', inputAllowed);
             QE('DeskCAD', deskState == 3);
             QE('DeskClip', deskState == 3);
-            QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
+            QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
             QE('DeskWD', deskState == 3);
-            QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
+            QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
             QE('deskkeys', deskState == 3);
 
-            QV('DeskToolsButton', (meshrights & 8) && (mesh.mtype == 2) && online);
-            QV('DeskChatButton', (browserfullscreen == false) && (meshrights & 8) && (mesh.mtype == 2) && online);
-            QV('DeskNotifyButton', (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8) && (mesh.mtype == 2) && online);
-            QV('DeskOpenWebButton', (browserfullscreen == false) && (meshrights & 8) && (mesh.mtype == 2) && online);
+            QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskChatButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskNotifyButton', (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
 
-            QV('DeskControlSpan', meshrights & 8)
+            QV('DeskControlSpan', inputAllowed)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
             if (meshrights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
@@ -4121,6 +4157,7 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
+                    desktop.m.localKeyMap = desktopsettings.localkeymap;
                     desktop.m.showmouse = desktopsettings.showmouse;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.m.onKvmData = function (x) {
@@ -4285,11 +4322,14 @@
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
+            desktopsettings.localkeymap = d7localKeyMap.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
-                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    if (desktop.State != 0) {
+                        desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
+                    }
                 }
                 if (desktop.contype == 2) {
                     if (desktopsettings.showfocus == false) { desktop.m.focusmode = 0; deskFocusBtn.value = 'All Focus'; }
@@ -4309,6 +4349,7 @@
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
+            if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
 
@@ -5958,6 +5999,7 @@
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>Remote View Only<br>';
+            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>Limited Input Only<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>No Terminal Access<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>No File Access<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>No Intel&reg; AMT<br>';
@@ -5984,6 +6026,7 @@
             QE('p20wakedevices', !Q('p20fulladmin').checked);
             QE('p20editnotes', !Q('p20fulladmin').checked);
             QE('p20remoteview', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
+            QE('p20remotelimitedinput', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
             QE('p20noterminal', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
             QE('p20nofiles', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
             QE('p20noamt', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
@@ -6004,6 +6047,7 @@
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
+                if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
             }
             meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
         }
@@ -6021,10 +6065,11 @@
                 if ((meshrights &   32) != 0) r += ', Server Files';
                 if ((meshrights &   64) != 0) r += ', Wake Devices';
                 if ((meshrights &  128) != 0) r += ', Edit Notes';
-                if ((meshrights &  256) != 0) r += ', Remote View Only';
-                if ((meshrights &  512) != 0) r += ', No Terminal';
-                if ((meshrights & 1024) != 0) r += ', No Files';
-                if ((meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
+                if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r += ', Remote View Only';
+                if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r += ', No Terminal';
+                if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r += ', No Files';
+                if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
+                if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r += ', Limited Input';
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
