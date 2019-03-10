@@ -88,7 +88,7 @@ function AmtManager(agent, db, isdebug) {
             amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
             amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } });
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
-            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } });
+            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } }); // Flag 2 = CCM, 4 = ACM
             //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
             amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } });
             amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
@@ -496,7 +496,7 @@ function AmtManager(agent, db, isdebug) {
         if ((amtMeiState != 3) || (typeof amtpolicy != 'object') || (typeof amtpolicy.type != 'number') || (amtpolicy.type == 0)) return;
         if ((amtpolicy.password != null) && (amtpolicy.password != '')) { intelAmtAdminPass = amtpolicy.password; }
         obj.getAmtInfo(function (meinfo) {
-            if ((amtpolicy.type == 1) && (meinfo.ProvisioningState == 2)) {
+            if ((amtpolicy.type == 1) && (meinfo.ProvisioningState == 2) && ((meinfo.Flags & 2) != 0)) {
                 // CCM Deactivation Policy.
                 wsstack = null;
                 amtstack = null;
@@ -507,14 +507,14 @@ function AmtManager(agent, db, isdebug) {
                 amtstack = null;
                 if ((amtpolicy.password == null) || (amtpolicy.password == '')) { intelAmtAdminPass = null; }
                 obj.activeToCCM(intelAmtAdminPass);
-            } else if ((amtpolicy.type == 2) && (meinfo.ProvisioningState == 2) && (intelAmtAdminPass != null)) {
+            } else if ((amtpolicy.type == 2) && (meinfo.ProvisioningState == 2) && (intelAmtAdminPass != null) && ((meinfo.Flags & 2) != 0)) {
                 // Perform password test
                 var transport = require('amt-wsman-duk');
                 var wsman = require('amt-wsman');
                 var amt = require('amt');
                 wsstack = new wsman(transport, '127.0.0.1', 16992, 'admin', intelAmtAdminPass, false);
                 amtstack = new amt(wsstack);
-                try { amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], wsmanPassTestResponse); } catch (ex) { debug(ex); }
+                try { amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP'], wsmanPassTestResponse); } catch (ex) { debug(ex); }
             } else {
                 // Other possible cases...
             }
@@ -525,8 +525,18 @@ function AmtManager(agent, db, isdebug) {
         if (status != 200) {
             if (amtpolicy.badpass == 1) { obj.deactivateCCM(); } // Something went wrong, reactivate.
         } else {
+            /*
+            var redir = (amtsysstate['AMT_RedirectionService'].response["ListenerEnabled"] == true);
+            var sol = ((amtsysstate['AMT_RedirectionService'].response["EnabledState"] & 2) != 0);
+            var ider = ((amtsysstate['AMT_RedirectionService'].response["EnabledState"] & 1) != 0);
+            var kvm = false;
+            if (amtsysstate['CIM_KVMRedirectionSAP'] != null) {
+                kvm = ((amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6 && amtsysstate['CIM_KVMRedirectionSAP'].response["RequestedState"] == 2) || amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 2 || amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6);
+            }
+            */
+
             // Success, make sure 
-            debug('SUCCESS!');
+            debug('SUCCESS!' + JSON.stringify(responses));
             // TODO: Check Intel AMT Features need to be enabled & if Intel AMT CIRA needs to be setup
         }
     }

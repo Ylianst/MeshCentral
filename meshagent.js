@@ -519,7 +519,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
-        if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentExeInfo == null)) return;
+        if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
         obj.pendingCompleteAgentConnection = true;
 
         // Check if we have too many agent sessions
@@ -568,7 +568,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Check that the node exists
         db.Get(obj.dbNodeKey, function (err, nodes) {
-            if (obj.agentExeInfo == null) { return; } // Agent has disconnected
+            if (obj.agentInfo == null) { return; }
             var device;
 
             // See if this node exists in the database

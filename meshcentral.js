@@ -278,17 +278,17 @@ function CreateMeshCentralServer(config, args) {
             // Push all relevent files from meshcentral-data into the database
             if (obj.args.dbpushconfigfiles) {
                 if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
-                if (typeof obj.args.dbpushconfigfiles != 'string') {
+                if ((obj.args.dbpushconfigfiles !== true) && (typeof obj.args.dbpushconfigfiles != 'string')) {
                     console.log('Usage: --dbpulldatafiles (path)     This will import files from folder into the database');
-                    console.log('       --dbpulldatafiles *          This will import files from meshcentral-data into the db.');
+                    console.log('       --dbpulldatafiles            This will import files from meshcentral-data into the db.');
                     process.exit();
                 } else {
-                    if (obj.args.dbpushconfigfiles == '*') { obj.args.dbpushconfigfiles = obj.datapath; }
+                    if ((obj.args.dbpushconfigfiles == '*') || (obj.args.dbpushconfigfiles === true)) { obj.args.dbpushconfigfiles = obj.datapath; }
                     obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
-                        if (err != null) { console.log('Unable to read from folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                        if (err != null) { console.log('ERROR: Unable to read from folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
                         var configFound = false;
                         for (var i in files) { if (files[i] == 'config.json') { configFound = true; } }
-                        if (configFound == false) { console.log('No config.json in folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                        if (configFound == false) { console.log('ERROR: No config.json in folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
                         obj.db.RemoveAllOfType('cfile', function () {
                             obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
                                 var lockCount = 1
