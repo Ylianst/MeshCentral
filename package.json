@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.3.0-b",
+  "version": "0.3.0-c",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -41,6 +41,7 @@
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.7.6",
+    "nodemailer": "^5.1.1",
     "otplib": "^10.0.1",
     "util.promisify": "^1.0.0",
     "ws": "^6.1.2",
