@@ -84,6 +84,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.agentUpdate != null) {
             if (obj.agentUpdate.fd) { try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { } }
             parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+            delete obj.agentUpdate.buf;
             delete obj.agentUpdate;
         }
 
@@ -241,6 +242,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                             // Error reading the agent file, stop here.
                                             try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
                                             parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                            delete obj.agentUpdate.buf;
                                             delete obj.agentUpdate;
                                         } else {
                                             // Send the first block to the agent
@@ -276,6 +278,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 } else {
                                     // Error
                                     parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                    delete obj.agentUpdate.buf;
                                     delete obj.agentUpdate;
                                 }
                             }
@@ -301,6 +304,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     // Error reading the agent file, stop here.
                                     try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
                                     parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                    delete obj.agentUpdate.buf;
                                     delete obj.agentUpdate;
                                 } else {
                                     // Send the next block to the agent
@@ -312,6 +316,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         obj.send(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
                                         try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
                                         parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                        delete obj.agentUpdate.buf;
                                         delete obj.agentUpdate;
                                     }
                                 }
@@ -329,6 +334,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 //console.log("Agent update sent from RAM.");
                                 obj.send(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
                                 parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
+                                delete obj.agentUpdate.buf;
                                 delete obj.agentUpdate;
                             }
                         }
@@ -513,7 +519,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
-        if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection) return;
+        if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentExeInfo == null)) return;
         obj.pendingCompleteAgentConnection = true;
 
         // Check if we have too many agent sessions
@@ -562,6 +568,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Check that the node exists
         db.Get(obj.dbNodeKey, function (err, nodes) {
+            if (obj.agentExeInfo == null) { return; } // Agent has disconnected
             var device;
 
             // See if this node exists in the database
