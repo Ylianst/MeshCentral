@@ -2634,10 +2634,10 @@
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>');
-                if ((node.conn & 2) != 0) states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>');
-                if ((node.conn & 4) != 0) states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>');
-                if ((node.conn & 8) != 0) states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>');
+                if ((node.conn & 1) != 0) { states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>'); }
+                if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>'); }
+                if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
@@ -3572,7 +3572,7 @@
                     var cstate = [];
                     if ((node.conn & 1) != 0) cstate.push('<span title="Mesh agent is connected and ready for use.">Mesh Agent</span>');
                     if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
-                    if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span title="Mesh agent is reachable using another agent as relay.">Mesh Relay</span>');
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
@@ -3621,7 +3621,7 @@
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
-                if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
                 if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>Last seen:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>'; }
                 QH('MainComputerState', powerstate);
 
@@ -5909,7 +5909,7 @@
             if (currentMesh.amt && currentMesh.amt.type == 2) {
                 Q('dp20amtpolicypass').value = currentMesh.amt.password;
                 Q('dp20amtbadpass').value = currentMesh.amt.badpass;
-                Q('dp20amtcira').value = currentMesh.amt.cirasetup;
+                if ((features & 0x400) == 0) { Q('dp20amtcira').value = currentMesh.amt.cirasetup; }
             }
 
             dp20amtValidatePolicy();
@@ -5920,7 +5920,7 @@
             if (ptype == 2) {
                 x = addHtmlValue('Password*', '<input id=dp20amtpolicypass style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() />')
                 x += addHtmlValue('Password mismatch', "<select id=dp20amtbadpass style=width:230px><option value=0>Do nothing</option><option value=1>Reactivate Intel&reg; AMT</option></select>");
-                x += addHtmlValue('<span title="Client Initiated Remote Access">CIRA</span>', "<select id=dp20amtcira style=width:230px><option value=0>Don't configure</option><option value=1>Don't connect to server</option><option value=2>Connect to server</option></select>");
+                if ((features & 0x400) == 0) { x += addHtmlValue('<span title="Client Initiated Remote Access">CIRA</span>', "<select id=dp20amtcira style=width:230px><option value=0>Don't configure</option><option value=1>Don't connect to server</option><option value=2>Connect to server</option></select>"); }
                 x += '<br/><span style="font-size:10px">* Recommanded, leave blank to assign a random password to each device.</span><br/>';
                 x += '<span style="font-size:10px">This policy will not impact devices with Intel&reg; AMT in ACM mode.</span><br/>';
                 x += '<span style="font-size:10px">This is not a secure policy as agents will be performing activation.</span>';
@@ -5936,7 +5936,10 @@
 
         function p20editMeshAmtEx() {
             var ptype = parseInt(Q('dp20amtpolicy').value), amtpolicy = { type: ptype };
-            if (ptype == 2) { amtpolicy = { type: ptype, password: Q('dp20amtpolicypass').value, badpass: parseInt(Q('dp20amtbadpass').value), cirasetup: parseInt(Q('dp20amtcira').value) }; }
+            if (ptype == 2) {
+                amtpolicy = { type: ptype, password: Q('dp20amtpolicypass').value, badpass: parseInt(Q('dp20amtbadpass').value) };
+                if ((features & 0x400) == 0) { amtpolicy.cirasetup = parseInt(Q('dp20amtcira').value); } else { amtpolicy.cirasetup = 1; }
+            }
             meshserver.send({ action: 'meshamtpolicy', meshid: currentMesh._id, amtpolicy: amtpolicy });
         }
 

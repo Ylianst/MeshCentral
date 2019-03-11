@@ -729,12 +729,33 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         //obj.close(1);
     }
 
-    obj.sendUpdatedIntelAmtPolicy = function() {
-        const mesh = parent.meshes[obj.dbMeshKey];
-        if (mesh != null) {
-            // Send Intel AMT policy
-            const amtPolicy = (mesh.amt != null) ? mesh.amt : null;
-            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: amtPolicy }));
+    // Take a basic Intel AMT policy and add all server information to it, making it ready to send to this agent.
+    function completeIntelAmtPolicy(amtPolicy) {
+        if (amtPolicy == null) return null;
+        if (amtPolicy.type == 2) {
+            // Add server root certificate
+            if (parent.parent.certificates.rootex == null) { parent.parent.certificates.rootex = parent.parent.certificates.root.cert.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r').join('').split('\n').join(''); }
+            amtPolicy.rootcert = parent.parent.certificates.rootex;
+        }
+        if ((amtPolicy.cirasetup == 2) && (parent.parent.mpsserver != null) && (parent.parent.certificates.AmtMpsName != null) && (args.lanonly != true) && (args.mpsport != 0)) {
+            // Add server CIRA settings
+            amtPolicy.ciraserver = {
+                name: parent.parent.certificates.AmtMpsName,
+                port: (typeof args.mpsaliasport == 'number' ? args.mpsaliasport : args.mpsport),
+                user: obj.meshid.replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16),
+                pass: args.mpspass ? args.mpspass : 'A@xew9rt', // If the MPS password is not set, just use anything. TODO: Use the password as an agent identifier?
+                home: ['sdlwerulis3wpj95dfj'] // Use a random FQDN to not have any home network.
+            };
+            if (Array.isArray(args.ciralocalfqdn)) { amtPolicy.ciraserver.home = args.ciralocalfqdn; }
+        }
+        return amtPolicy;
+    }
+
+    // Send Intel AMT policy
+    obj.sendUpdatedIntelAmtPolicy = function (policy) {
+        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) { // Only send Intel AMT policy to agents what could have AMT.
+            if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
+            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) }));
         }
     }
 
@@ -747,8 +768,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
 
         // Send Intel AMT policy
-        const amtPolicy = (mesh.amt != null) ? mesh.amt : null;
-        obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: amtPolicy }));
+        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) {  // Only send Intel AMT policy to agents what could have AMT.
+            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) }));
+        }
 
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
         if (domain.iplocation == true) {

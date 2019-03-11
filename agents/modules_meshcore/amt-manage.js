@@ -26,7 +26,7 @@ limitations under the License.
  */
 function AmtManager(agent, db, isdebug) {
     var sendConsole = function (msg) { agent.SendCommand({ "action": "msg", "type": "console", "value": msg }); }
-    var debug = function (msg) { if (isdebug) { sendConsole('amt-manager: ' + msg); } }
+    var debug = function (msg) { if (isdebug) { sendConsole('amt-manager: ' + msg + '<br />'); } }
     var amtMei = null, amtMeiState = 0;
     var amtLms = null, amtLmsState = 0;
     var amtGetVersionResult = null;
@@ -38,13 +38,12 @@ function AmtManager(agent, db, isdebug) {
     obj.lmsstate = 0;
     obj.onStateChange = null;
     obj.setDebug = function (x) { isdebug = x; }
-
+    
     // Set current Intel AMT activation policy
     obj.setPolicy = function (policy) {
         if (JSON.stringify(amtpolicy) != JSON.stringify(policy)) {
             amtpolicy = policy;
-            //debug('AMT policy set: ' + JSON.stringify(policy));
-            obj.applyPolicy();
+            if (applyPolicyTimer == null) { obj.applyPolicy(); }
         }
     }
 
@@ -159,7 +158,7 @@ function AmtManager(agent, db, isdebug) {
             amtMeiState = 3;
             obj.state = 3;
             if (obj.onStateChange != null) { obj.onStateChange(amtMeiState); }
-            obj.applyPolicy();
+            if (applyPolicyTimer == null) { obj.applyPolicy(); }
 
             //var AllWsman = "CIM_SoftwareIdentity,IPS_SecIOService,IPS_ScreenSettingData,IPS_ProvisioningRecordLog,IPS_HostBasedSetupService,IPS_HostIPSettings,IPS_IPv6PortSettings".split(',');
             //osamtstack.BatchEnum(null, AllWsman, startLmsWsmanResponse, null, true);
@@ -490,7 +489,7 @@ function AmtManager(agent, db, isdebug) {
     }
 
     // Apply Intel AMT policy
-    var intelAmtAdminPass, wsstack, amtstack, applyPolicyTimer;
+    var intelAmtAdminPass, wsstack, amtstack, applyPolicyTimer, policyWsmanRetry = 0;
     obj.applyPolicy = function () {
         applyPolicyTimer = null;
         if ((amtMeiState != 3) || (typeof amtpolicy != 'object') || (typeof amtpolicy.type != 'number') || (amtpolicy.type == 0)) return;
@@ -514,32 +513,136 @@ function AmtManager(agent, db, isdebug) {
                 var amt = require('amt');
                 wsstack = new wsman(transport, '127.0.0.1', 16992, 'admin', intelAmtAdminPass, false);
                 amtstack = new amt(wsstack);
-                try { amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP'], wsmanPassTestResponse); } catch (ex) { debug(ex); }
+                var wsmanQuery = ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP', 'AMT_PublicKeyCertificate', '*AMT_EnvironmentDetectionSettingData'];
+                if (amtpolicy.cirasetup == 2) { wsmanQuery.push("AMT_ManagementPresenceRemoteSAP", "AMT_RemoteAccessCredentialContext", "AMT_RemoteAccessPolicyAppliesToMPS", "AMT_RemoteAccessPolicyRule", "*AMT_UserInitiatedConnectionService", "AMT_MPSUsernamePassword"); }
+                try { amtstack.BatchEnum(null, wsmanQuery, wsmanPassTestResponse); } catch (ex) { debug(ex); }
             } else {
                 // Other possible cases...
             }
         });
     }
 
-    var wsmanPassTestResponse = function (stack, name, responses, status) {
+    function wsmanPassTestResponse(stack, name, responses, status) {
         if (status != 200) {
-            if (amtpolicy.badpass == 1) { obj.deactivateCCM(); } // Something went wrong, reactivate.
-        } else {
-            /*
-            var redir = (amtsysstate['AMT_RedirectionService'].response["ListenerEnabled"] == true);
-            var sol = ((amtsysstate['AMT_RedirectionService'].response["EnabledState"] & 2) != 0);
-            var ider = ((amtsysstate['AMT_RedirectionService'].response["EnabledState"] & 1) != 0);
-            var kvm = false;
-            if (amtsysstate['CIM_KVMRedirectionSAP'] != null) {
-                kvm = ((amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6 && amtsysstate['CIM_KVMRedirectionSAP'].response["RequestedState"] == 2) || amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 2 || amtsysstate['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6);
+            if (status == 401) {
+                if (amtpolicy.badpass == 1) { obj.deactivateCCM(); } // Incorrect password, reactivate
+            } else {
+                if (++policyWsmanRetry < 20) {
+                    if (policyWsmanRetry == 10) { debug('WSMAN fault, MEI Reset'); obj.reset(); }
+                    var wsmanQuery = ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP', 'AMT_PublicKeyCertificate', '*AMT_EnvironmentDetectionSettingData'];
+                    if (amtpolicy.cirasetup == 2) { wsmanQuery.push("AMT_ManagementPresenceRemoteSAP", "AMT_RemoteAccessCredentialContext", "AMT_RemoteAccessPolicyAppliesToMPS", "AMT_RemoteAccessPolicyRule", "*AMT_UserInitiatedConnectionService", "AMT_MPSUsernamePassword"); }
+                    try { amtstack.BatchEnum(null, wsmanQuery, wsmanPassTestResponse); } catch (ex) { debug(ex); }
+                } else {
+                    debug('WSMAN fault, status=' + status);
+                    policyWsmanRetry = 0;
+                }
             }
-            */
+        } else {
+            policyWsmanRetry = 0;
+            var s = {};
+            s.redir = (responses['AMT_RedirectionService'].response["ListenerEnabled"] == true);
+            s.sol = ((responses['AMT_RedirectionService'].response["EnabledState"] & 2) != 0);
+            s.ider = ((responses['AMT_RedirectionService'].response["EnabledState"] & 1) != 0);
+            s.kvm = (responses['CIM_KVMRedirectionSAP'] != null) && ((responses['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6 && responses['CIM_KVMRedirectionSAP'].response["RequestedState"] == 2) || responses['CIM_KVMRedirectionSAP'].response["EnabledState"] == 2 || responses['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6);
+            
+            // Enable Ping and RMCP if disabled
+            if ((responses['AMT_GeneralSettings'].response['PingResponseEnabled'] != true) || (responses['AMT_GeneralSettings'].response['RmcpPingResponseEnabled'] != true)) {
+                responses['AMT_GeneralSettings'].response['PingResponseEnabled'] = true;
+                responses['AMT_GeneralSettings'].response['RmcpPingResponseEnabled'] = true;
+                amtstack.Put('AMT_GeneralSettings', responses['AMT_GeneralSettings'].response, function (stack, name, response, status) { if (status != 200) { debug("Enable PING PUT Error " + status); } }, 0, 1)
+            }
 
-            // Success, make sure 
-            debug('SUCCESS!' + JSON.stringify(responses));
-            // TODO: Check Intel AMT Features need to be enabled & if Intel AMT CIRA needs to be setup
+            // Enable redirection port, SOL and IDER if needed
+            if ((s.redir == false) || (s.sol == false) || (s.ider == false)) {
+                var r = responses['AMT_RedirectionService'].response;
+                r["ListenerEnabled"] = true; // Turn on the redirection port
+                r["EnabledState"] = 32768 + 1 + 2; // Turn on IDER (1) and SOL (2)
+                amtstack.AMT_RedirectionService_RequestStateChange(r["EnabledState"], function (stack, name, response, status) { if (status != 200) { debug("Enable Redirection EXEC Error " + status); } });
+            }
+            
+            // Enable KVM if needed
+            if ((responses['CIM_KVMRedirectionSAP'] != null) && (s.kvm == false)) {
+                amtstack.CIM_KVMRedirectionSAP_RequestStateChange(2, 0,
+                    function (stack, name, response, status) {
+                        if (status != 200) { messagebox("Error", "KVMRedirectionSAP, RequestStateChange Error " + status); return; }
+                        amtstack.Put("AMT_RedirectionService", r, function (stack, name, response, status) { if (status != 200) { debug("Enable KVM PUT Error " + status); } }, 0, 1)
+                    }
+                );
+            }
+            
+            // Check if the MeshCentral root certificate is present
+            if (typeof amtpolicy.rootcert == 'string') {
+                var rootFound = false, xxCertificates = responses["AMT_PublicKeyCertificate"].responses;
+                for (var i in xxCertificates) { if ((xxCertificates[i]["X509Certificate"] == amtpolicy.rootcert) && (xxCertificates[i]["TrustedRootCertficate"] == true)) { rootFound = true; } }
+                if (rootFound == false) { amtstack.AMT_PublicKeyManagementService_AddTrustedRootCertificate(amtpolicy.rootcert, function (stack, name, response, status) { if (status != 200) { debug("Add root cert EXEC Error " + status); } }); }
+            }
+            
+            // If CIRA needs to be setup
+            if ((amtpolicy.cirasetup == 2) && (amtpolicy.ciraserver != null)) {
+                var serverFound = false, xxCiraServers = responses["AMT_ManagementPresenceRemoteSAP"].responses;
+                for (var i in xxCiraServers) { if ((xxCiraServers[i].AccessInfo == amtpolicy.ciraserver.name) && (xxCiraServers[i].Port == amtpolicy.ciraserver.port)) { serverFound = xxCiraServers[i].Name; } }
+                if (serverFound == false) {
+                    // TODO: Remove all CIRA activation policies.
+                    // amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': name }, editMpsPolicyOk2);
+                    // TODO: Remove all other MPS servers.
+
+                    // Add our MPS server
+                    amtstack.AMT_RemoteAccessService_AddMpServer(amtpolicy.ciraserver.name, 201, amtpolicy.ciraserver.port, 2, null, amtpolicy.ciraserver.user, amtpolicy.ciraserver.pass, null, function (stack, name, response, status) {
+                        if (status != 200) {
+                            debug("Add MPS server EXEC Error " + status);
+                        } else {
+                            serverFound = false;
+                            var x = response.Body.MpServer.ReferenceParameters.SelectorSet.Selector;
+                            for (var i in x) { if (x[i]['@Name'] == 'Name') { serverFound = x[i]['Value']; } }
+                            if (serverFound != false) { checkCiraTriggerPolicy(responses, serverFound); }
+                        }
+                    });
+                } else {
+                    checkCiraTriggerPolicy(responses, serverFound);
+                }
+            } else if (amtpolicy.cirasetup == 1) {
+                // This call will clear environement detection if needed.
+                checkEnvironmentDetection(responses);
+            }
         }
     }
+
+    function checkCiraTriggerPolicy(responses, serverInstanceName) {
+        // Check CIRA activation policy
+        var server1 = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="Name">' + serverInstanceName + '</Selector></SelectorSet></ReferenceParameters>';
+        amtstack.AMT_RemoteAccessService_AddRemoteAccessPolicyRule(2, 0, 'AAAAAAAAAAo=', [server1], null, function (stack, name, response, status) {
+            if (status != 200) {
+                debug("Add AddRemoteAccessPolicyRule Error " + status);
+            } else {
+                //debug('AMT_RemoteAccessService_AddRemoteAccessPolicyRule Response:' + JSON.stringify(response));
+                checkEnvironmentDetection(responses);
+            }
+        });
+    }
+
+    // Check environement detection. This will set or clear the environement detection strings as needed.
+    function checkEnvironmentDetection(responses) {
+        var t2 = [];
+        if ((amtpolicy.ciraserver != null) && (amtpolicy.ciraserver.home != null)) { t2 = amtpolicy.ciraserver.home; }
+        var t = responses["AMT_EnvironmentDetectionSettingData"].response;
+        t['DetectionStrings'] = MakeToArray(t['DetectionStrings']);
+        if (CompareStrArrays(t['DetectionStrings'], t2) == false) {
+            t['DetectionStrings'] = t2;
+            amtstack.Put('AMT_EnvironmentDetectionSettingData', t, function (stack, name, response, status) { if (status != 200) { debug("Put AMT_EnvironmentDetectionSettingData Error " + status); } }, 0, 1);
+        }
+    }
+    
+    // Imperfect compare of two string arrays.
+    function CompareStrArrays(arr1, arr2) {
+        if (arr1 == arr2) return true;
+        if (arr1 == null) { arr1 = []; }
+        if (arr2 == null) { arr2 = []; }
+        if (arr1.length != arr2.length) return false;
+        for (var i in arr1) { if (arr2.indexOf(arr1[i]) == -1) return false; }
+        return true;
+    }
+
+    function MakeToArray(v) { if (!v || v == null || typeof v == "object") return v; return [v]; };
 
 }
 

@@ -1226,7 +1226,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
 
                         // Send new policy to all computers on this mesh
-                        routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
+                        //routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
+
+                        // See if the node is connected
+                        for (var nodeid in parent.wsagents) {
+                            const agent = parent.wsagents[nodeid];
+                            if (agent.dbMeshKey == command.meshid) { agent.sendUpdatedIntelAmtPolicy(amtpolicy); }
+                        }
                     }
                     break;
                 }
