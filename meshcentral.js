@@ -1315,7 +1315,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshAgentInstallScripts[this.info.id].hash = this.hash.digest('hex');
                     obj.meshAgentInstallScripts[this.info.id].path = this.agentpath;
                     obj.meshAgentInstallScripts[this.info.id].data = this.xdata;
-                    obj.meshAgentInstallScripts[this.info.id].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?script=' + this.info.id;
+                    obj.meshAgentInstallScripts[this.info.id].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?script=' + this.info.id;
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
                     if (stats != null) { obj.meshAgentInstallScripts[this.info.id].size = stats.size; }
@@ -1376,7 +1376,7 @@ function CreateMeshCentralServer(config, args) {
                 archcount++;
                 obj.meshAgentBinaries[archid] = obj.common.Clone(obj.meshAgentsArchitectureNumbers[archid]);
                 obj.meshAgentBinaries[archid].path = agentpath;
-                obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + obj.args.port + '/meshagents?id=' + archid;
+                obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
                 if (obj.args.agentsinram) { obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath); }
                 // If this is a windows binary, pull binary information
