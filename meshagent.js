@@ -695,6 +695,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 return;
             }
 
+            // Not sure why, but in rare cases, obj.agentInfo is undefined here.
+            if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
+
             if ((obj.agentInfo.capabilities & 64) != 0) {
                 // This is a recovery agent
                 obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
@@ -755,7 +758,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.sendUpdatedIntelAmtPolicy = function (policy) {
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) { // Only send Intel AMT policy to agents what could have AMT.
             if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
-            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) }));
+            if (policy != null) { try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) })); } catch (ex) { } }
         }
     }
 
@@ -768,8 +771,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
 
         // Send Intel AMT policy
-        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) {  // Only send Intel AMT policy to agents what could have AMT.
-            obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) }));
+        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null)) {  // Only send Intel AMT policy to agents what could have AMT.
+            try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) })); } catch (ex) { }
         }
 
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
