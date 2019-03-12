@@ -392,9 +392,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                 ptr += blen;
             }
             return info;
-        } catch (e) {
-            console.log(e);
-        }
+        } catch (e) { }
         return null;
     };
 

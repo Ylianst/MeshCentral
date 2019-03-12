@@ -36,19 +36,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
         if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
         if (parent.wssessions2[ws.sessionId]) { delete parent.wssessions2[ws.sessionId]; }
-        if (parent.wssessions[ws.userid]) {
-            var i = parent.wssessions[ws.userid].indexOf(ws);
+        if (parent.wssessions[obj.user._id]) {
+            var i = parent.wssessions[obj.user._id].indexOf(ws);
             if (i >= 0) {
-                parent.wssessions[ws.userid].splice(i, 1);
-                var user = parent.users[ws.userid];
+                parent.wssessions[obj.user._id].splice(i, 1);
+                var user = parent.users[obj.user._id];
                 if (user) {
                     if (parent.parent.multiServer == null) {
-                        parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: parent.wssessions[ws.userid].length, nolog: 1, domain: domain.id });
+                        parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: obj.user.name, count: parent.wssessions[obj.user._id].length, nolog: 1, domain: domain.id });
                     } else {
                         parent.recountSessions(ws.sessionId); // Recount sessions
                     }
                 }
-                if (parent.wssessions[ws.userid].length == 0) { delete parent.wssessions[ws.userid]; }
+                if (parent.wssessions[obj.user._id].length == 0) { delete parent.wssessions[obj.user._id]; }
             }
         }
 
@@ -166,7 +166,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
 
         // Associate this websocket session with the web session
-        ws.userid = req.session.userid;
+        ws.userid = user._id;
         ws.domainid = domain.id;
 
         // Create a new session id for this user.
@@ -1281,8 +1281,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Ask the RMCP scanning to scan a range of IP addresses
                     if (parent.parent.amtScanner) {
-                        if (parent.parent.amtScanner.performRangeScan(ws.userid, command.range) == false) {
-                            parent.parent.DispatchEvent(['*', ws.userid], obj, { action: 'scanamtdevice', range: command.range, results: null, nolog: 1 });
+                        if (parent.parent.amtScanner.performRangeScan(user._id, command.range) == false) {
+                            parent.parent.DispatchEvent(['*', user._id], obj, { action: 'scanamtdevice', range: command.range, results: null, nolog: 1 });
                         }
                     }
                     break;
