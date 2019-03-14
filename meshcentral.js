@@ -517,12 +517,12 @@ function CreateMeshCentralServer(config, args) {
             var info = process.memoryUsage(), txt = [];
             info.time = Date.now();
             for (var i in info) { txt.push(i); }
-            obj.fs.appendFile(obj.getConfigFilePath('memorytracking.txt'), txt.join(',') + '\r\n', function (err) { });
+            obj.fs.appendFile(obj.getConfigFilePath('memorytracking.csv'), txt.join(',') + '\r\n', function (err) { });
             setInterval(function () {
                 var info = process.memoryUsage(), txt = [];
                 info.time = Date.now();
                 for (var i in info) { txt.push(info[i]); }
-                obj.fs.appendFile(obj.getConfigFilePath('memorytracking.txt'), txt.join(',') + '\r\n', function (err) { });
+                obj.fs.appendFile(obj.getConfigFilePath('memorytracking.csv'), txt.join(',') + '\r\n', function (err) { });
             }, (obj.args.memorytracking * 1000));
         }
 

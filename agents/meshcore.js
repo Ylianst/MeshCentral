@@ -949,6 +949,23 @@ function createMeshCore(agent) {
         }
     }
 
+    // Delete a directory with a files and directories within it
+    function deleteFolderRecursive(path, rec) {
+        if (fs.existsSync(path)) {
+            if (rec == true) {
+                fs.readdirSync(obj.path.join(path, '*')).forEach(function (file, index) {
+                    var curPath = obj.path.join(path, file);
+                    if (fs.statSync(curPath).isDirectory()) { // recurse
+                        deleteFolderRecursive(curPath, true);
+                    } else { // delete file
+                        fs.unlinkSync(curPath);
+                    }
+                });
+            }
+            fs.unlinkSync(path);
+        }
+    };
+
     // Called when receiving control data on WebRTC
     function onTunnelWebRTCControlData(data) {
         if (typeof data != 'string') return;
