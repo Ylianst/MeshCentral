@@ -154,7 +154,7 @@ module.exports.CertificateOperations = function (parent) {
         if (extKeyUsage == null) { extKeyUsage = { name: "extKeyUsage", serverAuth: true }; } else { extKeyUsage.name = "extKeyUsage"; }
         //var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true }, extKeyUsage, { name: "nsCertType", client: false, server: true, email: false, objsign: false, sslCA: false, emailCA: false, objCA: false }, { name: "subjectKeyIdentifier" }];
         var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: true, dataEncipherment: (extKeyUsage.serverAuth !== true) }, extKeyUsage, { name: "subjectKeyIdentifier" }];
-        if (extKeyUsage.serverAuth === true) { extensions.push({ name: "subjectAltName", altNames: [{ type: 6, value: "http://" + commonName + "/" }, { type: 6, value: "http://localhost/" }] }); }
+        if (extKeyUsage.serverAuth === true) { extensions.push({ name: "subjectAltName", altNames: [{ type: 6, value: "http://" + commonName + "/" }, { type: 6, value: "http://localhost/" }, { type: 6, value: commonName }, { type: 6, value: "localhost" }] }); }
 
         cert.setExtensions(extensions);
         cert.sign(rootcert.key, obj.forge.md.sha384.create());

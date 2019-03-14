@@ -131,6 +131,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This may be a ECDSA certificate, hash the entire cert.
                 obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i];
             }
+        } else if ((obj.parent.config.domains[i].dns != null) && (obj.certificates.dns[i] != null)) {
+            // If this domain has a DNS and a matching DNS cert, use it. This case works for wildcard certs.
+            obj.webCertificateFullHashs[i] = parent.certificateOperations.getCertHashBinary(obj.certificates.dns[i].cert);
+            obj.webCertificateHashs[i] = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.dns[i].cert);
         }
     }
 
@@ -2402,6 +2406,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // console.log('Agent connect: ' + ws._socket.remoteAddress);
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
+
+            // Memory Tracking
+            if (typeof obj.args.memorytracking == 'number') {
+                obj.app.get(url + 'memorytracking.csv', function (req, res) {
+                    try { res.sendFile(obj.parent.getConfigFilePath('memorytracking.csv')); } catch (e) { res.sendStatus(404); }
+                });
+            }
 
             // Creates a login token using the user/pass that is passed in as URL arguments.
             // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
