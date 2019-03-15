@@ -146,16 +146,16 @@ DownloadAgent() {
           update-rc.d meshagent defaults
           service meshagent start
           echo 'meshagent installed as init.d service.'
-          echo 'To start service: sudo  service meshagent start'
+          echo 'To start service: sudo service meshagent start'
           echo 'To stop service: sudo service meshagent stop'
       elif [ $starttype -eq 2 ]
           then
-          # upstart 
+          # upstart
           echo -e "start on runlevel [2345]\nstop on runlevel [016]\n\nrespawn\n\nchdir /usr/local/mesh\nexec /usr/local/mesh/meshagent\n\n" > /etc/init/meshagent.conf
           service meshagent start
           echo 'meshagent installed as upstart/init.d service.'
-          echo 'To start service: sudo service meshagent start'
-          echo 'To stop service: sudo service meshagent stop'
+          echo 'To start service: sudo initctl start meshagent'
+          echo 'To stop service: sudo initctl stop meshagent'
       else
           # unknown
           echo "Unknown Service Platform Type. (ie: init, systemd, etc)"
