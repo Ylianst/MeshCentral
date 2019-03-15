@@ -462,14 +462,29 @@ function createMeshCore(agent) {
                         case 'getclip': {
                             // Send the load clipboard back to the user
                             sendConsoleText('getClip: ' + JSON.stringify(data));
-                            require("clipboard").read().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
+                            if (require('MeshAgent').isService)
+                            {
+                                require('clipboard').dispatchRead().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
+                            }
+                            else
+                            {
+                                require("clipboard").read().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
+                            }
                             break;
                         }
                         case 'setclip': {
                             // Set the load clipboard to a user value
                             sendConsoleText('setClip: ' + JSON.stringify(data));
-                            if (typeof data.data == 'string') {
-                                require("clipboard")(data.data); // Set the clipboard
+                            if (typeof data.data == 'string')
+                            {
+                                if (require('MeshAgent').isService)
+                                {
+                                    require('clipboard').dispatchWrite(data.data);
+                                }
+                                else
+                                {
+                                    require("clipboard")(data.data); // Set the clipboard
+                                }
                                 mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
                             } 
                             break;

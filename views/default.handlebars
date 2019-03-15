@@ -1262,6 +1262,7 @@
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
                             message.nodes[m][n].desc = message.nodes[m][n].desc;
+                            message.nodes[m][n].ip = message.nodes[m][n].ip;
                             if (!message.nodes[m][n].icon) message.nodes[m][n].icon = 1;
                             message.nodes[m][n].ident = ++nodeShortIdent;
                             nodes.push(message.nodes[m][n]);
@@ -1673,6 +1674,7 @@
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
+                                node.ip = message.event.node.ip;
                                 node.osdesc = message.event.node.osdesc;
                                 node.publicip = message.event.node.publicip;
                                 node.iploc = message.event.node.iploc;
@@ -4174,8 +4176,8 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QV('DeskCAD', inputAllowed);
             QE('DeskCAD', deskState == 3);
-            //QV('DeskClip', (desktop == null) || (desktop.contype != 2));
-            //QE('DeskClip', deskState == 3);
+            QV('DeskClip', (desktop == null) || (desktop.contype != 2));
+            QE('DeskClip', deskState == 3);
             QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
@@ -4583,11 +4585,12 @@
         function showDeskClip() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
-            var x = '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
+            var x = '';
+            x += '<input id=dlgClipGet type=button value="Get Clipboard" style=width:120px onclick=showDeskClipGet()>';
             x += '<input id=dlgClipSet type=button value="Set Clipboard" style=width:120px onclick=showDeskClipSet()>';
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
-            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px>&nbsp;</div>';
+            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>Remote clipboard is valid for 60 seconds.</span>&nbsp;</div><div></div>';
             setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
             Q('d2clipText').focus();
         }
@@ -4600,6 +4603,7 @@
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
             meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
+            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22));
         }
 
         // Send CTRL-ALT-DEL
