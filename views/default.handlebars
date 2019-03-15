@@ -922,7 +922,7 @@
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
-            QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
+            //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
             toggleFullScreen();
 
@@ -2050,34 +2050,42 @@
                 var deviceBoxWidth = Math.floor(totalDeviceViewWidth / 301);
                 deviceBoxWidth = 301 + Math.floor((totalDeviceViewWidth - (deviceBoxWidth * 301)) / deviceBoxWidth);
 
+                if (view == 2) {
+                    r += '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>User<th style=color:gray;width:120px>Address<th style=color:gray;width:100px>Connectivity'; //<th style=color:gray;width:100px>State';
+                }
+
                 // Go thru the list of nodes and display them
                 for (var i in nodes) {
-                    if (nodes[i].v == false) continue;
-                    var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                    var node = nodes[i];
+                    if (node.v == false) continue;
+                    var mesh2 = meshes[node.meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
                     if (meshlinks == null) continue;
                     var meshrights = meshlinks.rights;
                     if ((view == 3) && (mesh2.mtype == 1)) continue;
                     if (sort == 0) {
                         // Mesh header
-                        if (nodes[i].meshid != current) {
+                        if (node.meshid != current) {
                             deviceHeaderSet();
                             var extra = '';
-                            if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
+                            if (view == 2) { r += '<tr><td colspan=5>'; }
+                            if (meshes[node.meshid].mtype == 1) { extra = '<span class=devHeaderx>, Intel&reg; AMT only</span>'; }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
+                            if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += getMeshActions(mesh2, meshrights);
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
-                            current = nodes[i].meshid;
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + node.meshid + '")>' + EscapeHtml(meshes[node.meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
+                            if (view == 2) { r += '</div>'; }
+                            current = node.meshid;
                             displayedMeshes[current] = 1;
                             c = 0;
                         }
                     } else if (sort == 1) {
                         // Power header
-                        var pwr = nodes[i].pwr?nodes[i].pwr:0;
+                        var pwr = node.pwr?node.pwr:0;
                         if (pwr !== current) {
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
-                            r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(nodes[i].pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
+                            r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(node.pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
                             current = pwr;
                             c = 0;
                         }
@@ -2087,41 +2095,52 @@
                     }
 
                     count++;
-                    var title = EscapeHtml(nodes[i].name);
+                    var title = EscapeHtml(node.name);
                     if (title.length == 0) { title = '<i>None</i>'; }
-                    if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
-                    var name = EscapeHtml(nodes[i].name);
-                    if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
+                    if ((node.rname != null) && (node.rname.length > 0)) { title += " / " + EscapeHtml(node.rname); }
+                    var name = EscapeHtml(node.name);
+                    if (showRealNames == true && node.rname != null) name = EscapeHtml(node.rname);
                     if (name.length == 0) { name = '<i>None</i>'; }
 
                     // Node
-                    var icon = nodes[i].icon;
-                    var nodestate = NodeStateStr(nodes[i]);
-                    if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
+                    var icon = node.icon;
+                    if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + nodestate + '</div></div><div class=g2></div></div></div></div>';
+                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
+                        var states = [];
+                        if (node.conn) {
+                            if ((node.conn & 1) != 0) { states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>'); }
+                            if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
+                            else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">AMT</span>'); }
+                            if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
+                        }
                         r += '<tr><td><div id=devs class=bar18 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium>';
-                        r += '<div style=width:22px;float:left;background-color:white><input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox></div>';
-                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                        r += '<div style=width:22px;float:left;background-color:white><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
+                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)><span style=float:right>' + nodestate + '</span><span style=width:300px>' + name + '</span></div></div></td></tr>';
-                    } else if ((view == 3) && (nodes[i].conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((nodes[i].agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
-                        if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0)) {
-                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + nodes[i]._id + '\',11,null,event)>';
-                            //r += '<input class="' + nodes[i].meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + nodes[i]._id + ' type=checkbox style=float:left>';
+                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
+                        r += '<td style=text-align:center>' + getUserShortStr(node);
+                        r += '<td style=text-align:center>' + (node.ip != null ? node.ip : '');
+                        r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;');
+                        //r += '<td style=text-align:center>' + (node.pwr != null ? powerStateStrings[node.pwr] : '');
+                        r += '</tr>';
+                    } else if ((view == 3) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
+                        if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + node._id) >= 0)) {
+                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event)>';
+                            //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                             r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                            r += '<span onclick=gotoDevice(\'' + nodes[i]._id + '\',null,null,event)></span><div id=xkvmid_' + nodes[i]._id.split('/')[2] + '><div id=skvmid_' + nodes[i]._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + nodes[i]._id + '\')>Disconnected</div></div>';
+                            r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\')>Disconnected</div></div>';
                             r += '</div>';
-                            kvmDivs.push(nodes[i]._id);
+                            kvmDivs.push(node._id);
                         }
                     }
 
                     // If we are displaying devices by group, put the device in the right group.
                     if ((sort == 3) && (r != '')) {
-                        if (nodes[i].tags) {
-                            for (var j in nodes[i].tags) {
-                                var tag = nodes[i].tags[j];
+                        if (node.tags) {
+                            for (var j in node.tags) {
+                                var tag = node.tags[j];
                                 if (groups[tag] == null) { groups[tag] = r; groupCount[tag] = 1; } else { groups[tag] += r; groupCount[tag] += 1; }
                                 if (view == 3) break;
                             }
@@ -2130,7 +2149,7 @@
                     }
 
                     deviceHeaderTotal++;
-                    if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
+                    if (typeof deviceHeaderCount[node.state] == 'undefined') { deviceHeaderCount[node.state] = 1; } else { deviceHeaderCount[node.state]++; }
                 }
 
                 // If displaying devices by groups, sort the group names and display the devices.
@@ -2276,6 +2295,16 @@
                 //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
                 if (node.conn & 1) { connectMultiDesktop(node, 1); }
             }
+        }
+
+        function getUserShortStr(node) {
+            if (node == null || node.users == null || node.users.length == 0) return '';
+            if (node.users.length > 1) { return '<span title="' + EscapeHtml(node.users.join(', ')) + '">' + node.users.length + '&nbsp;users</span>'; }
+            var u = node.users[0], su = u, i = u.indexOf('\\');
+            if (i > 0) { su = u.substring(i + 1); }
+            su = EscapeHtml(su);
+            if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
+            return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
         }
 
         function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
@@ -2728,9 +2757,30 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore("search", x);
+            var userSearch = null, ipSearch = null, groupSearch = null;
+            if (x.startsWith('user:')) { userSearch = x.substring(5); }
+            else if (x.startsWith('u:')) { userSearch = x.substring(2); }
+            else if (x.startsWith('ip:')) { ipSearch = x.substring(3); }
+            else if (x.startsWith('group:')) { groupSearch = x.substring(6); }
+            else if (x.startsWith('g:')) { groupSearch = x.substring(2); }
+
             if (x == '') {
+                // No search
                 for (var d in nodes) { nodes[d].v = true; }
+            } else if (ipSearch != null) {
+                // IP address search
+                for (var d in nodes) { nodes[d].v = ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)); }
+            } else if (groupSearch != null) {
+                // Group filter
+                for (var d in nodes) { nodes[d].v = (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0); }
+            } else if (userSearch != null) {
+                // User search
+                for (var d in nodes) {
+                    nodes[d].v = false;
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
+                }
             } else {
+                // Device name search
                 try {
                     var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
                     for (var d in nodes) {
@@ -4124,8 +4174,8 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QV('DeskCAD', inputAllowed);
             QE('DeskCAD', deskState == 3);
-            //QV('DeskClip', (desktop != null) && (desktop.contype == 1));
-            QE('DeskClip', deskState == 3);
+            //QV('DeskClip', (desktop == null) || (desktop.contype != 2));
+            //QE('DeskClip', deskState == 3);
             QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
@@ -6404,17 +6454,24 @@
 
             // Get search
             var userSearch = Q('UserSearchInput').value.toLowerCase();
+            var emailSearch = userSearch;
+            if (userSearch.startsWith('email:')) { userSearch = null; emailSearch = emailSearch.substring(6); }
+            else if (userSearch.startsWith('name:')) { emailSearch = null; userSearch = userSearch.substring(5); }
+            else if (userSearch.startsWith('e:')) { userSearch = null; emailSearch = emailSearch.substring(2); }
+            else if (userSearch.startsWith('n:')) { emailSearch = null; userSearch = userSearch.substring(2); }
 
             // Display the users using the sorted list
             var x = '<table style=width:100% cellpadding=0 cellspacing=0>', addHeader = true;
-
             x += '<th style=color:gray>Name<th style=color:gray;width:80px>Groups<th style=color:gray;width:120px>Last&nbsp;Access<th style=color:gray;width:120px>Permissions';
 
             // Online users
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
-                if ((sessions != null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
+                if ((sessions != null) &&
+                    ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
+                    ((emailSearch != null) && ((user.email != null) && (user.email.toLowerCase().indexOf(emailSearch) >= 0))))
+                    ) {
                     if (maxUsers > 0) {
                         if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>Online Users'; addHeader = false; }
                         x += addUserHtml(user, sessions);
@@ -6429,7 +6486,10 @@
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
-                if ((sessions == null) && (user.name.toLowerCase().indexOf(userSearch) >= 0)) {
+                if ((sessions == null) &&
+                    ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
+                    ((emailSearch != null) && ((user.email != null) && (user.email.toLowerCase().indexOf(emailSearch) >= 0))))
+                    ) {
                     if (maxUsers > 0) {
                         if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>Offline Users'; addHeader = false; }
                         x += addUserHtml(user, sessions);
