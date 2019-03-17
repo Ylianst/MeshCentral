@@ -154,7 +154,35 @@ module.exports.CertificateOperations = function (parent) {
         if (extKeyUsage == null) { extKeyUsage = { name: "extKeyUsage", serverAuth: true }; } else { extKeyUsage.name = "extKeyUsage"; }
         //var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true }, extKeyUsage, { name: "nsCertType", client: false, server: true, email: false, objsign: false, sslCA: false, emailCA: false, objCA: false }, { name: "subjectKeyIdentifier" }];
         var extensions = [{ name: "basicConstraints", cA: false }, { name: "keyUsage", keyCertSign: false, digitalSignature: true, nonRepudiation: false, keyEncipherment: true, dataEncipherment: (extKeyUsage.serverAuth !== true) }, extKeyUsage, { name: "subjectKeyIdentifier" }];
-        if (extKeyUsage.serverAuth === true) { extensions.push({ name: "subjectAltName", altNames: [{ type: 6, value: "http://" + commonName + "/" }, { type: 6, value: "http://localhost/" }, { type: 6, value: commonName }, { type: 6, value: "localhost" }] }); }
+        
+        if (extKeyUsage.serverAuth === true) {
+
+            // set subjectAltName according to commonName parsing. 
+            // Ideally, we should let opportunity in given interface to set any type of altNames according to node_forge library
+            // such as type 2, 6 and 7
+            // 2 -> DNS
+            // 6 -> URI
+            // 7 -> IP
+            var altNames = [];
+
+            // According to commonName parsing (IP or DNS), add URI and DNS and/or IP altNames
+            if (require('net').isIP(commonName)) {
+                // set both IP and DNS when commonName is an IP@
+                altNames.push({ type: 7, ip: commonName });
+                altNames.push({ type: 2, value: commonName });
+            } else {
+                // set only DNS when commonName is a FQDN
+                altNames.push({ type: 2, value: commonName });
+            }
+            altNames.push({ type: 6, value: "http://" + commonName + "/" })
+
+            // add localhost stuff for easy testing on localhost ;)
+            altNames.push({ type: 2, value: "localhost" });
+            altNames.push({ type: 6, value: "http://localhost/" });
+            altNames.push({ type: 7, ip: "127.0.0.1" });
+
+            extensions.push({ name: "subjectAltName", altNames: altNames });
+        }
 
         cert.setExtensions(extensions);
         cert.sign(rootcert.key, obj.forge.md.sha384.create());
