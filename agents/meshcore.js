@@ -1174,12 +1174,27 @@ function createMeshCore(agent) {
                     }
                     break;
                     */
-                case 'getclip': {
-                    require("clipboard").read().then(function (str) { sendConsoleText(str, sessionid); });
+                case 'getclip':
+                    if (require('MeshAgent').isService) {
+                        require('clipboard').dispatchRead().then(function (str) { sendConsoleText(str, sessionid); });
+                    }
+                    else {
+                        require("clipboard").read().then(function (str) { sendConsoleText(str, sessionid); });
+                    }
                     break;
-                }
                 case 'setclip': {
-                    if (args['_'].length != 1) { response = 'Proper usage: setclip (text)'; } else { require("clipboard")(args['_'][0]); response = 'Setting clipboard to: ' + args['_'][0]; }
+                    if (args['_'].length != 1) {
+                        response = 'Proper usage: setclip (text)';
+                    }
+                    else {
+                        if (require('MeshAgent').isService) {
+                            require('clipboard').dispatchWrite(args['_'][0]);
+                            response = 'Setting clipboard to: ' + args['_'][0];
+                        }
+                        else {
+                            require("clipboard")(args['_'][0]); response = 'Setting clipboard to: ' + args['_'][0];
+                        }
+                    }
                     break;
                 }
                 case 'amtreset': {

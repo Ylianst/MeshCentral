@@ -789,10 +789,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
 
                     // Create the notification message
-                    var notification = { "action": "msg", "type": "notify", "value": command.msg };
+                    var notification = { action: "msg", type: "notify", domain: domain.id, "value": command.msg };
 
                     // Send the notification on all user sessions for this server
-                    for (var i in parent.wssessions2) { try { parent.wssessions2[i].send(JSON.stringify(notification)); } catch (ex) { } }
+                    for (var i in parent.wssessions2) {
+                        try {
+                            if (parent.wssessions2[i].domainid == domain.id) { parent.wssessions2[i].send(JSON.stringify(notification)); }
+                        } catch (ex) { }
+                    }
 
                     // TODO: Notify all sessions on other peers.
 
@@ -816,11 +820,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Account count exceed, do notification
 
                             // Create the notification message
-                            var notification = { "action": "msg", "type": "notify", "value": "Account limit reached.", "userid": user._id, "username": user.name };
+                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", userid: user._id, username: user.name, domain: domain.id };
 
                             // Get the list of sessions for this user
                             var sessions = parent.wssessions[user._id];
-                            if (sessions != null) { for (i in sessions) { try { sessions[i].send(JSON.stringify(notification)); } catch (ex) { } } }
+                            if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == domain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
                             // TODO: Notify all sessions on other peers.
                         } else {
                             // Check if this is an existing user

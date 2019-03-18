@@ -469,7 +469,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Return the mesh for this device, in some cases, we may auto-create the mesh.
     function getMeshAutoCreate() {
-        const mesh = parent.meshes[obj.dbMeshKey];
+        var mesh = parent.meshes[obj.dbMeshKey];
         if ((mesh == null) && (typeof domain.orphanagentuser == 'string')) {
             const adminUser = parent.users['user/' + domain.id + '/' + domain.orphanagentuser.toLowerCase()];
             if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
