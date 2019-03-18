@@ -294,7 +294,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
                             if (nodes.length == 0) {
                                 // New CIRA connection for unknown node, disconnect.
-                                console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + systemid);
+                                console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
                                 socket.end();
                                 return;
                             }
