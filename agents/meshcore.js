@@ -461,7 +461,7 @@ function createMeshCore(agent) {
                         }
                         case 'getclip': {
                             // Send the load clipboard back to the user
-                            sendConsoleText('getClip: ' + JSON.stringify(data));
+                            //sendConsoleText('getClip: ' + JSON.stringify(data));
                             if (require('MeshAgent').isService)
                             {
                                 require('clipboard').dispatchRead().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
@@ -474,7 +474,7 @@ function createMeshCore(agent) {
                         }
                         case 'setclip': {
                             // Set the load clipboard to a user value
-                            sendConsoleText('setClip: ' + JSON.stringify(data));
+                            //sendConsoleText('setClip: ' + JSON.stringify(data));
                             if (typeof data.data == 'string')
                             {
                                 if (require('MeshAgent').isService)
@@ -1177,22 +1177,20 @@ function createMeshCore(agent) {
                 case 'getclip':
                     if (require('MeshAgent').isService) {
                         require('clipboard').dispatchRead().then(function (str) { sendConsoleText(str, sessionid); });
-                    }
-                    else {
+                    } else {
                         require("clipboard").read().then(function (str) { sendConsoleText(str, sessionid); });
                     }
                     break;
                 case 'setclip': {
                     if (args['_'].length != 1) {
-                        response = 'Proper usage: setclip (text)';
-                    }
-                    else {
+                        response = 'Proper usage: setclip "sample text"';
+                    } else {
                         if (require('MeshAgent').isService) {
                             require('clipboard').dispatchWrite(args['_'][0]);
-                            response = 'Setting clipboard to: ' + args['_'][0];
+                            response = 'Setting clipboard to: "' + args['_'][0] + '"';
                         }
                         else {
-                            require("clipboard")(args['_'][0]); response = 'Setting clipboard to: ' + args['_'][0];
+                            require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                         }
                     }
                     break;
