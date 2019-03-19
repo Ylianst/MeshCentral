@@ -270,7 +270,7 @@ function AmtStackCreateService(wsmanStack) {
     obj.AMT_RedirectionService_RequestStateChange = function (RequestedState, callback_func) { obj.Exec("AMT_RedirectionService", "RequestStateChange", { "RequestedState": RequestedState }, callback_func); }
     obj.AMT_RedirectionService_TerminateSession = function (SessionType, callback_func) { obj.Exec("AMT_RedirectionService", "TerminateSession", { "SessionType": SessionType }, callback_func); }
     obj.AMT_RemoteAccessService_AddMpServer = function (AccessInfo, InfoFormat, Port, AuthMethod, Certificate, Username, Password, CN, callback_func) { obj.Exec("AMT_RemoteAccessService", "AddMpServer", { "AccessInfo": AccessInfo, "InfoFormat": InfoFormat, "Port": Port, "AuthMethod": AuthMethod, "Certificate": Certificate, "Username": Username, "Password": Password, "CN": CN }, callback_func); }
-    obj.AMT_RemoteAccessService_AddRemoteAccessPolicyRule = function (Trigger, TunnelLifeTime, ExtendedData, MpServer, InternalMpServer, callback_func) { obj.Exec("AMT_RemoteAccessService", "AddRemoteAccessPolicyRule", { "Trigger": Trigger, "TunnelLifeTime": TunnelLifeTime, "ExtendedData": ExtendedData, "MpServer": MpServer, "InternalMpServer": InternalMpServer }, callback_func); }
+    obj.AMT_RemoteAccessService_AddRemoteAccessPolicyRule = function (Trigger, TunnelLifeTime, ExtendedData, MpServer, callback_func) { obj.Exec("AMT_RemoteAccessService", "AddRemoteAccessPolicyRule", { "Trigger": Trigger, "TunnelLifeTime": TunnelLifeTime, "ExtendedData": ExtendedData, "MpServer": MpServer }, callback_func); }
     obj.AMT_RemoteAccessService_CloseRemoteAccessConnection = function (_method_dummy, callback_func) { obj.Exec("AMT_RemoteAccessService", "CloseRemoteAccessConnection", { "_method_dummy": _method_dummy }, callback_func); }
     obj.AMT_SetupAndConfigurationService_CommitChanges = function (_method_dummy, callback_func, tag) { obj.Exec("AMT_SetupAndConfigurationService", "CommitChanges", { "_method_dummy": _method_dummy }, callback_func, tag); }
     obj.AMT_SetupAndConfigurationService_Unprovision = function (ProvisioningMode, callback_func) { obj.Exec("AMT_SetupAndConfigurationService", "Unprovision", { "ProvisioningMode": ProvisioningMode }, callback_func); }
@@ -720,7 +720,7 @@ function AmtStackCreateService(wsmanStack) {
 
     function _GetAuditLog0(stack, name, responses, status, tag) {
         if (status != 200) { tag[0](obj, [], status); return; }
-        var ptr, i, e, es, x, r = tag[1], t = new Date(), TimeStamp;
+        var ptr, i, e, x, r = tag[1], t = new Date(), TimeStamp;
 
         if (responses.Body['RecordsReturned'] > 0) {
             responses.Body['EventRecords'] = MakeToArray(responses.Body['EventRecords']);
@@ -728,8 +728,7 @@ function AmtStackCreateService(wsmanStack) {
             for (i in responses.Body['EventRecords']) {
                 e = null;
                 try {
-                    es = atob(responses.Body['EventRecords'][i]);
-                    e = Buffer.from(es);
+                    e = Buffer.from(responses.Body['EventRecords'][i], 'base64');
                 } catch (ex) {
                     console.log(ex + " " + responses.Body['EventRecords'][i])
                 }

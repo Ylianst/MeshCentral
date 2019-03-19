@@ -720,7 +720,7 @@ function AmtStackCreateService(wsmanStack) {
 
     function _GetAuditLog0(stack, name, responses, status, tag) {
         if (status != 200) { tag[0](obj, [], status); return; }
-        var ptr, i, e, es, x, r = tag[1], t = new Date(), TimeStamp;
+        var ptr, i, e, x, r = tag[1], t = new Date(), TimeStamp;
 
         if (responses.Body['RecordsReturned'] > 0) {
             responses.Body['EventRecords'] = MakeToArray(responses.Body['EventRecords']);
@@ -728,8 +728,7 @@ function AmtStackCreateService(wsmanStack) {
             for (i in responses.Body['EventRecords']) {
                 e = null;
                 try {
-                    es = atob(responses.Body['EventRecords'][i]);
-                    e = Buffer.from(es);
+                    e = Buffer.from(responses.Body['EventRecords'][i], 'base64');
                 } catch (ex) {
                     console.log(ex + " " + responses.Body['EventRecords'][i])
                 }
