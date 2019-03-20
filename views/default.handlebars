@@ -1279,6 +1279,7 @@
                     powerTimelineNode = message.nodeid;
                     powerTimeline = message.timeline;
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
+                    for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
                     if (currentNode._id == message.nodeid) { masterUpdate(256); }
                     break;
                 }
@@ -3867,7 +3868,13 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center>7 Day Power State</th></tr>' + x + '</tbody></table>');
+            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><img style=float:right;cursor:pointer;padding:3px onclick=p10downloadPowerEvents() title="Download power events" src="images/link4.png" />7 Day Power State</th></tr>' + x + '</tbody></table>');
+        }
+
+        // Download the power events for the current device
+        function p10downloadPowerEvents() {
+            console.log("devicepowerevents?id=" + currentNode._id);
+            fileDownload("devicepowerevents.ashx?id=" + currentNode._id, "powerevents-" + currentNode.name + ".csv");
         }
 
         // Return a color for the given power state

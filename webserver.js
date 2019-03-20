@@ -2284,6 +2284,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.send(meshsettings);
     };
 
+    // Handle a request for power events
+    obj.handleDevicePowerEvents = function (req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (req.query.id == null) || (typeof req.query.id != 'string')) { res.sendStatus(401); return; }
+        var x = req.query.id.split('/');
+        var user = obj.users[req.session.userid];
+        if ((x.length != 3) || (x[0] != 'node') || (x[1] != domain.id) || (user == null) || (user.links == null)) { res.sendStatus(401); return; }
+
+        obj.db.Get(req.query.id, function (err, docs) {
+            if (docs.length != 1) {
+                res.sendStatus(401);
+            } else {
+                var node = docs[0];
+
+                // Check if we have right to this node
+                var rights = 0;
+                for (var i in user.links) { if (i == node.meshid) { rights = user.links[i].rights; } }
+                if (rights == 0) { res.sendStatus(401); return; }
+
+                // Get the list of power events and send them
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=powerevents.csv' });
+                obj.db.getPowerTimeline(node._id, function (err, docs) {
+                    var xevents = [ 'Time, State, Previous State' ], prevState = 0;
+                    for (var i in docs) {
+                        if (docs[i].power != prevState) {
+                            prevState = docs[i].power;
+                            if (docs[i].oldPower != null) {
+                                xevents.push(docs[i].time.toString() + ',' + docs[i].power + ',' + docs[i].oldPower);
+                            } else {
+                                xevents.push(docs[i].time.toString() + ',' + docs[i].power);
+                            }
+                        }
+                    }
+                    res.send(xevents.join('\r\n'));
+                });
+            }
+        });
+    }
+
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
         // Start the server, only after users and meshes are loaded from the database.
@@ -2368,6 +2408,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'messenger', handleMessengerRequest);
             obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
             obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
+            obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
             obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
             obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
             obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);

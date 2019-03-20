@@ -342,33 +342,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var timeline = [], time = null, previousPower;
                             for (i in docs) {
                                 var doc = docs[i];
+
+                                // Skip all starting power 0 events.
+                                if ((time == null) && (doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) { continue; }
+
                                 doc.time = Date.parse(doc.time);
                                 if (time == null) {
                                     // First element
                                     time = doc.time;
                                     if (doc.oldPower) { timeline.push(doc.oldPower); } else { timeline.push(0); }
-                                    timeline.push(time);
+                                    timeline.push(time / 1000);
                                     timeline.push(doc.power);
                                     previousPower = doc.power;
                                 } else {
                                     // Delta element
-                                    if ((previousPower != doc.power) && ((doc.time - time) > 60000)) { // To boost speed, any blocks less than a minute get approximated.
+                                    if ((previousPower != doc.power) && ((doc.time - time) > 60000)) { // To boost speed, small blocks get approximated.
                                         // Create a new timeline
-                                        timeline.push(doc.time - time);
+                                        timeline.push((doc.time - time) / 1000);
                                         timeline.push(doc.power);
                                         time = doc.time;
                                         previousPower = doc.power;
                                     } else {
-                                        // Extend the previous timeline
-                                        if ((timeline.length >= 6) && (timeline[timeline.length - 3] == doc.power)) { // We can merge the block with the previous block
-                                            timeline[timeline.length - 4] += (timeline[timeline.length - 2] + (doc.time - time));
-                                            timeline.pop();
-                                            timeline.pop();
-                                        } else { // Extend the last block in the timeline
-                                            timeline[timeline.length - 2] += (doc.time - time);
-                                            timeline[timeline.length - 1] = doc.power;
-                                        }
-                                        time = doc.time;
+                                        // Merge with previous timeline
+                                        timeline[timeline.length - 2] += ((doc.time - time) / 1000);
+                                        timeline[timeline.length - 1] = doc.power;
                                         previousPower = doc.power;
                                     }
                                 }
