@@ -81,7 +81,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
         if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-        var path = path.join(parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
+        var path = parent.path.join(parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
         for (var i = 1; i < meshpath.length; i++) { if (common.IsFilenameValid(meshpath[i]) == false) { path = null; break; } path += ("/" + meshpath[i]); }
         return path;
     }
@@ -419,7 +419,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (common.validateArray(command.delfiles, 1) == false) return;
                             for (i in command.delfiles) {
                                 if (common.IsFilenameValid(command.delfiles[i]) == true) {
-                                    var fullpath = path.join(path, command.delfiles[i]);
+                                    var fullpath = parent.path.join(path, command.delfiles[i]);
                                     if (command.rec == true) {
                                         deleteFolderRecursive(fullpath); // TODO, make this an async function
                                     } else {
@@ -448,7 +448,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
                             for (i in command.names) {
-                                var s = path.join(scpath, command.names[i]), d = path.join(path, command.names[i]);
+                                var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
                                 sendUpdate = false;
                                 copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                             }
@@ -2109,7 +2109,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function deleteFolderRecursive(path) {
         if (fs.existsSync(path)) {
             fs.readdirSync(path).forEach(function (file, index) {
-                var curPath = path.join(path, file);;
+                var curPath = parent.path.join(path, file);;
                 if (fs.lstatSync(curPath).isDirectory()) { // recurse
                     deleteFolderRecursive(curPath);
                 } else { // delete file
@@ -2134,15 +2134,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Read all files recursively
         try {
-            files.filetree.f[user._id].f = readFilesRec(path.join(parent.filespath, domainx + "/user-" + usersplit[2]));
+            files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2]));
         } catch (e) {
             // TODO: We may want to fake this file structure until it's needed.
             // Got an error, try to create all the folders and try again...
             try { fs.mkdirSync(parent.filespath); } catch (e) { }
-            try { fs.mkdirSync(path.join(parent.filespath, domainx)); } catch (e) { }
-            try { fs.mkdirSync(path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
-            try { fs.mkdirSync(path.join(parent.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
-            try { files.filetree.f[user._id].f = readFilesRec(path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx)); } catch (e) { }
+            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
+            try { files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
         }
 
         // Add files for each mesh
@@ -2156,7 +2156,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Read all files recursively
                     try {
-                        files.filetree.f[mesh._id].f = readFilesRec(path.join(parent.filespath, domainx + "/mesh-" + meshsplit[2]));
+                        files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/mesh-" + meshsplit[2]));
                     } catch (e) {
                         files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
                     }
