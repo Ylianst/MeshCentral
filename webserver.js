@@ -2507,9 +2507,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((req.query.user != null) && (req.query.pass != null)) {
                 // A user/pass is provided in URL arguments
                 obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                    if ((err == null) && (obj.users[userid])) {
-                        // We are authenticated
-                        func(ws, req, domain, obj.users[userid]);
+                    var user = obj.users[userid];
+                    if ((err == null) && (user)) {
+                        // Check if a 2nd factor is needed
+                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                            if (req.query.token) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                            } else {
+                                checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
+                                    if (result == false) {
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                                    } else {
+                                        // We are authenticated with 2nd factor.
+                                        func(ws, req, domain, user);
+                                    }
+                                });
+                            }
+                        } else {
+                            // We are authenticated
+                            func(ws, req, domain, user);
+                        }
                     } else {
                         // Failed to authenticate, see if a default user is active
                         if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
@@ -2529,12 +2546,55 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
                     // Valid cookie, we are authenticated
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
-                    return;
                 } else {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
                     Debug(1, 'ERR: Websocket bad cookie auth: ' + req.query.auth);
+                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
                 }
+                return;
+            } else if (req.headers['x-meshauth'] != null) {
+                // This is authentication using a custom HTTP header
+                var s = req.headers['x-meshauth'].split(',');
+                for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
+                if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { } return; }
+                obj.authenticate(s[0], s[1], domain, function (err, userid) {
+                    var user = obj.users[userid];
+                    if ((err == null) && (user)) {
+                        // Check if a 2nd factor is needed
+                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                            if (s.length != 3) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                            } else {
+                                checkUserOneTimePassword(req, domain, user, s[2], null, function (result) {
+                                    if (result == false) {
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                                    } else {
+                                        // We are authenticated with 2nd factor.
+                                        func(ws, req, domain, user);
+                                    }
+                                });
+                            }
+                        } else {
+                            // We are authenticated
+                            func(ws, req, domain, user);
+                        }
+                    } else {
+                        // Failed to authenticate, see if a default user is active
+                        if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
+                            // A default user is active
+                            func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
+                        } else {
+                            // If not authenticated, close the websocket connection
+                            Debug(1, 'ERR: Websocket bad user/pass auth');
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
+                        }
+                    }
+                });
+                return;
             }
+
+            //console.log(req.headers['x-meshauth']);
+
             if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
                 // A default user is active
                 func(ws, req, domain, obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]);
