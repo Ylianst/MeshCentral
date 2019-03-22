@@ -258,7 +258,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'authcookie':
                 {
                     // Renew the authentication cookie
-                    try { ws.send(JSON.stringify({ action: 'authcookie', cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    try { ws.send(JSON.stringify({ action: 'authcookie', cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
                     break;
                 }
             case 'serverstats':
