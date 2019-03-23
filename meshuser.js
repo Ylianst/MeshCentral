@@ -2004,11 +2004,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((obj.webAuthnReqistrationRequest == null) || (parent.f2l == null)) return;
 
+                    // Figure out the origin
+                    var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                    var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
+                    if (httpport != 443) { origin += ':' + httpport; }
+
                     var attestationExpectations = {
                         challenge: obj.webAuthnReqistrationRequest.request.challenge.split('+').join('-').split('/').join('_').split('=').join(''), // Convert to Base64URL
-                        origin: "https://devbox.mesh.meshcentral.com",
+                        origin: origin,
                         factor: "either"
                     };
+
                     var clientAttestationResponse = command.response;
                     clientAttestationResponse.id = clientAttestationResponse.rawId;
                     clientAttestationResponse.rawId = new Uint8Array(Buffer.from(clientAttestationResponse.rawId, 'base64')).buffer;
@@ -2016,6 +2022,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     clientAttestationResponse.response.clientDataJSON = new Uint8Array(Buffer.from(clientAttestationResponse.response.clientDataJSON, 'base64')).buffer;
 
                     parent.f2l.attestationResult(clientAttestationResponse, attestationExpectations).then(function (regResult) {
+                        // If we register a WebAuthn/FIDO2 key, remove all U2F keys.
+                        // TODO
+
+                        // Add the new WebAuthn/FIDO2 keys
                         var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                         if (user.otphkeys == null) { user.otphkeys = []; }
                         user.otphkeys.push({ name: obj.webAuthnReqistrationRequest.keyname, type: 3, publicKey: regResult.authnrData.get('credentialPublicKeyPem'), counter: regResult.authnrData.get('counter'), keyIndex: keyIndex, keyId: clientAttestationResponse.id });

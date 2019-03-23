@@ -61,12 +61,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.interceptor = require('./interceptor');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
-    // Setup WebAuthn, this is an optional install.
-    // "npm install @davedoesdev/fido2-lib"
-    try {
-        const { Fido2Lib } = require("@davedoesdev/fido2-lib");
-        obj.f2l = new Fido2Lib({ attestation: "none" });
-    } catch (ex) { console.log(ex); }
+    // Setup WebAuthn / FIDO2
+    try { const { Fido2Lib } = require("@davedoesdev/fido2-lib"); obj.f2l = new Fido2Lib({ attestation: "none" }); } catch (ex) { console.log(ex); }
 
     // Variables
     obj.parent = parent;
@@ -365,9 +361,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                         // If we found a valid key to use, let's validate the response
                         if (webAuthnKey != null) {
+                            // Figure out the origin
+                            var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                            var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
+                            if (httpport != 443) { origin += ':' + httpport; }
+
                             var assertionExpectations = {
                                 challenge: req.session.u2fchallenge,
-                                origin: "https://devbox.mesh.meshcentral.com",
+                                origin: origin,
                                 factor: "either",
                                 publicKey: webAuthnKey.publicKey,
                                 prevCounter: webAuthnKey.counter,
@@ -1160,6 +1161,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
+            if (obj.f2l != null) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);

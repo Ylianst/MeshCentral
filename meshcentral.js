@@ -1596,21 +1596,30 @@ function getConfig(createSampleConfig) {
 
 // Check if a list of modules are present and install any missing ones
 function InstallModules(modules, func) {
-    if (modules.length > 0) { InstallModule(modules.shift(), InstallModules, modules, func); } else { func(); }
+    var missingModules = [];
+    if (modules.length > 0) {
+        for (var i in modules) { try { var xxmodule = require(modules[i]); } catch (e) { missingModules.push(modules[i]); } }
+        if (missingModules.length > 0) { InstallModule(missingModules.join(' '), InstallModules, modules, func); } else { func(); }
+    }
 }
 
 // Check if a module is present and install it if missing
+var InstallModuleChildProcess = null;
 function InstallModule(modulename, func, tag1, tag2) {
     try {
         var module = require(modulename);
     } catch (e) {
         console.log('Installing ' + modulename + '...');
         var child_process = require('child_process');
-        child_process.exec('npm install ' + modulename + ' --no-optional --save', { maxBuffer: 512000 }, function (error, stdout, stderr) {
+
+        // Looks like we need to keep a global reference to the child process object for this to work correctly.
+        InstallModuleChildProcess = child_process.exec('npm install ' + modulename + ' --no-optional --save', { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
+            InstallModuleChildProcess = null;
             if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error); process.exit(); return; }
             func(tag1, tag2);
             return;
         });
+
         return;
     }
     func(tag1, tag2);
@@ -1633,7 +1642,8 @@ function mainStart(args) {
 
         // Check is Windows SSPI will be used
         var sspi = false;
-        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } } }
+        var allsspi = true;
+        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } }
 
         // Build the list of required modules
         var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-handlebars'];
@@ -1642,8 +1652,14 @@ function mainStart(args) {
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
+        // Get the current node version
+        var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+
         // If running NodeJS < 8, install "util.promisify"
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { modules.push('util.promisify'); }
+        if (nodeVersion < 8) { modules.push('util.promisify'); }
+
+        // if running NodeJS 8 or higher, we can install WebAuthn/FIDO2 support
+        if ((nodeVersion >= 8) && (allsspi == false)) { modules.push('@davedoesdev/fido2-lib'); }
 
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
