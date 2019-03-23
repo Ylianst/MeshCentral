@@ -340,18 +340,64 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true));
         if (twoStepLoginSupported == false) { func(true); return; };
 
-        // Check U2F hardware key
+        // Check hardware key
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
-            // Get all U2F keys
-            var u2fKeys = [];
-            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
-            if (u2fKeys.length > 0) {
-                var authResponse = null;
-                try { authResponse = JSON.parse(hwtoken); } catch (ex) { }
-                if (authResponse != null) {
-                    // Check authentication response
-                    require('authdog').finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { func(false); });
-                    return;
+            var authResponse = null;
+            try { authResponse = JSON.parse(hwtoken); } catch (ex) { }
+            if (authResponse != null) {
+                if ((obj.f2l != null) && (authResponse.clientDataJSON)) {
+                    // Get all WebAuthn keys
+                    var webAuthnKeys = [];
+                    for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
+                    if (webAuthnKeys.length > 0) {
+                        // Decode authentication response
+                        var clientAssertionResponse = { response: {} };
+                        clientAssertionResponse.id = authResponse.id;
+                        clientAssertionResponse.rawId = new Uint8Array(Buffer.from(authResponse.id, 'base64')).buffer;
+                        clientAssertionResponse.response.authenticatorData = new Uint8Array(Buffer.from(authResponse.authenticatorData, 'base64')).buffer;
+                        clientAssertionResponse.response.clientDataJSON = new Uint8Array(Buffer.from(authResponse.clientDataJSON, 'base64')).buffer;
+                        clientAssertionResponse.response.signature = new Uint8Array(Buffer.from(authResponse.signature, 'base64')).buffer;
+                        clientAssertionResponse.response.userHandle = new Uint8Array(Buffer.from(authResponse.userHandle, 'base64')).buffer;
+
+                        // Look for the key with clientAssertionResponse.id
+                        var webAuthnKey = null;
+                        for (var i = 0; i < webAuthnKeys.length; i++) { if (webAuthnKeys[i].keyId == clientAssertionResponse.id) { webAuthnKey = webAuthnKeys[i]; } }
+
+                        // If we found a valid key to use, let's validate the response
+                        if (webAuthnKey != null) {
+                            var assertionExpectations = {
+                                challenge: req.session.u2fchallenge,
+                                origin: "https://devbox.mesh.meshcentral.com",
+                                factor: "either",
+                                publicKey: webAuthnKey.publicKey,
+                                prevCounter: webAuthnKey.counter,
+                                userHandle: Buffer(user._id, 'binary').toString('base64')
+                            };
+
+                            obj.f2l.assertionResult(clientAssertionResponse, assertionExpectations).then(
+                                function (authnResult) {
+                                    // Update the hardware key counter and accept the 2nd factor
+                                    webAuthnKey.counter = authnResult.authnrData.get('counter');
+                                    obj.db.SetUser(user);
+                                    func(true);
+                                },
+                                function (error) {
+                                    //console.log('attestationResult-error', error);
+                                    func(false);
+                                }
+                            );
+                            return;
+                        }
+                    }
+                } else {
+                    // Get all U2F keys
+                    var u2fKeys = [];
+                    for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
+                    if (u2fKeys.length > 0) {
+                        // Check authentication response
+                        require('authdog').finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { func(false); });
+                        return;
+                    }
                 }
             }
         }
@@ -400,7 +446,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.f2l.assertionOptions().then(function (authnOptions) {
                         authnOptions.type = 'webAuthn';
                         authnOptions.keyIds = [];
-                        for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[0].keyId); }
+                        for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                         req.session.u2fchallenge = authnOptions.challenge = Buffer(authnOptions.challenge).toString('base64');
                         func(JSON.stringify(authnOptions));
                     }, function (error) {

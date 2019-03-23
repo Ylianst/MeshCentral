@@ -1987,7 +1987,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.f2l.attestationOptions().then(function (registrationOptions) {
                         // Convert the challenge to base64 and add user information
                         registrationOptions.challenge = Buffer(registrationOptions.challenge).toString('base64');
-                        registrationOptions.user.id = Buffer(parent.crypto.randomBytes(16)).toString('base64');
+                        registrationOptions.user.id = Buffer(user._id, 'binary').toString('base64');
                         registrationOptions.user.name = user._id;
                         registrationOptions.user.displayName = user._id.split('/')[2];
 
