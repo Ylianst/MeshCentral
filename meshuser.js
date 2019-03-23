@@ -1978,6 +1978,60 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
+            case 'webauthn-startregister':
+                {
+                    // Check is 2-step login is supported
+                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    if ((twoStepLoginSupported == false) || (command.name == null) || (parent.f2l == null)) break;
+
+                    parent.f2l.attestationOptions().then(function (registrationOptions) {
+                        // Convert the challenge to base64 and add user information
+                        registrationOptions.challenge = Buffer(registrationOptions.challenge).toString('base64');
+                        registrationOptions.user.id = Buffer(parent.crypto.randomBytes(16)).toString('base64');
+                        registrationOptions.user.name = user._id;
+                        registrationOptions.user.displayName = user._id.split('/')[2];
+
+                        // Send the registration request
+                        obj.webAuthnReqistrationRequest = { action: 'webauthn-startregister', keyname: command.name, request: registrationOptions };
+                        ws.send(JSON.stringify(obj.webAuthnReqistrationRequest));
+                        //console.log(obj.webAuthnReqistrationRequest);
+                    }, function (error) {
+                        console.log('webauthn-startregister-error', error);
+                    });
+                    break;
+                }
+            case 'webauthn-endregister':
+                {
+                    if ((obj.webAuthnReqistrationRequest == null) || (parent.f2l == null)) return;
+
+                    var attestationExpectations = {
+                        challenge: obj.webAuthnReqistrationRequest.request.challenge.split('+').join('-').split('/').join('_').split('=').join(''), // Convert to Base64URL
+                        origin: "https://devbox.mesh.meshcentral.com",
+                        factor: "either"
+                    };
+                    var clientAttestationResponse = command.response;
+                    clientAttestationResponse.id = clientAttestationResponse.rawId;
+                    clientAttestationResponse.rawId = new Uint8Array(Buffer.from(clientAttestationResponse.rawId, 'base64')).buffer;
+                    clientAttestationResponse.response.attestationObject = new Uint8Array(Buffer.from(clientAttestationResponse.response.attestationObject, 'base64')).buffer;
+                    clientAttestationResponse.response.clientDataJSON = new Uint8Array(Buffer.from(clientAttestationResponse.response.clientDataJSON, 'base64')).buffer;
+
+                    parent.f2l.attestationResult(clientAttestationResponse, attestationExpectations).then(function (regResult) {
+                        var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
+                        if (user.otphkeys == null) { user.otphkeys = []; }
+                        user.otphkeys.push({ name: obj.webAuthnReqistrationRequest.keyname, type: 3, publicKey: regResult.authnrData.get('credentialPublicKeyPem'), counter: regResult.authnrData.get('counter'), keyIndex: keyIndex, keyId: clientAttestationResponse.id });
+                        parent.db.SetUser(user);
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
+
+                        // Notify change
+                        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                    }, function (error) {
+                        console.log('webauthn-endregister-error', error);
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
+                    });
+
+                    delete obj.hardwareKeyRegistrationRequest;
+                    break;
+                }
             case 'getClip': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
 
