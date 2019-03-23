@@ -3,13 +3,11 @@ MeshCentral
 
 For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
 
-Download the [full PDF user's guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/meshcentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu and the Raspberry Pi.
+Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu and the Raspberry Pi.
 
 This is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
-This version of MeshCentral that is completely rebuild of the original MeshCentral coded in C#. It's simpler and includes many other design improvements over the original. At some point in the future, [MeshCentral.com](http://meshcentral.com) that is still running the older code will switch to using this code base.
-
-This version is BETA and should not be used in production.
+To test this server, feel free to try [MeshCentral.com](http://meshcentral.com).
 
 
 Installation
@@ -37,7 +35,7 @@ To run MeshCentral you may need to use "nodejs" instead of "node" on Linux.
 	node meshcentral [arguments]
 ```
 
-One of the first things you will want to do is set a server name or IP address. This will be used by mesh agents to connect back to the server. So, make sure you set **a name that will resolve back to your server**. MeshCentral will not register this name for you. You must make sure to setup the DNS name yourself first, or use the right IP address. If you are just taking a quick look at MeshCentral, you can skip this step and do it at later time.
+You can launch MeshCentral with no arguments to start it in LAN mode. In LAN mode only devices on the local network can be managed. To setup a more seciour server, use --cert to specify an IP address or name that resolves to your server. This name will be used by mesh agents to connect back to the server. So, make sure you set **a name that will resolve back to your server**. MeshCentral will not register this name for you. You must make sure to setup the DNS name yourself first, or use the right IP address. If you are just taking a quick look at MeshCentral, you can skip this step and do it at later time.
 
 ```
 	node meshcentral --cert servername.domain.com

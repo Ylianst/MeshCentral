@@ -61,6 +61,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.interceptor = require('./interceptor');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
+    // Setup WebAuthn, this is an optional install.
+    // "npm install @davedoesdev/fido2-lib"
+    try {
+        const { Fido2Lib } = require("@davedoesdev/fido2-lib");
+        obj.f2l = new Fido2Lib({ attestation: "none" });
+    } catch (ex) { console.log(ex); }
+
     // Variables
     obj.parent = parent;
     obj.filespath = parent.filespath;
@@ -385,6 +392,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function getHardwareKeyChallenge(req, domain, user, func) {
         if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
         if (user.otphkeys && (user.otphkeys.length > 0)) {
+            // Get all WebAuthn keys
+            if (obj.f2l != null) {
+                var webAuthnKeys = [];
+                for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
+                if (webAuthnKeys.length > 0) {
+                    obj.f2l.assertionOptions().then(function (authnOptions) {
+                        authnOptions.type = 'webAuthn';
+                        authnOptions.keyIds = [];
+                        for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[0].keyId); }
+                        req.session.u2fchallenge = authnOptions.challenge = Buffer(authnOptions.challenge).toString('base64');
+                        func(JSON.stringify(authnOptions));
+                    }, function (error) {
+                        console.log('assertionOptions-Error', error);
+                        func('');
+                    });
+                    return;
+                }
+            }
+
             // Get all U2F keys
             var u2fKeys = [];
             for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }

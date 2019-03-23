@@ -1486,7 +1486,7 @@
                     x += "<div style='max-height:150px;overflow-y:auto;overflow-x:hidden;margin-top:6px;margin-bottom:6px'>";
                     if (message.keys && message.keys.length > 0) {
                         for (var i in message.keys) {
-                            var key = message.keys[i], type = (key.type == 1)?'U2F':'OTP';
+                            var key = message.keys[i], type = ((key.type == 1)?'U2F':(key.type == 2)?'OTP':'WebAuthn');
                             x += start + '<tr style=margin:5px><td style=width:30px><img width=24 height=18 src="images/hardware-key-' + type + '-24.png" style=margin-top:4px><td style=width:250px>' + key.name + "<td><input type=button value='Remove' onclick=account_removehkey(" + key.i + ")></input>" + end;
                         }
                     } else {
@@ -1496,6 +1496,7 @@
                     x += "<div><input type=button value='Close' onclick=setDialogMode(0) style=float:right></input>";
                     x += "<input id=d2addkey1 type=button value='Add U2F Key' onclick='account_addhkey(1);'></input>";
                     if ((features & 0x4000) != 0) { x += "<input id=d2addkey2 type=button value='Add OTP Key' onclick='account_addhkey(2);'></input>"; }
+                    x += "<input id=d2addkey3 type=button value='Add FIDO2 Key' onclick='account_addhkey(3);'></input>";
                     x += "</div><br />";
                     setDialogMode(2, "Manage Security Keys", 8, null, x, 'otpauth-hardware-manage');
                     if (u2fSupported() == false) { QE('d2addkey1', false); }
@@ -1531,6 +1532,26 @@
                     } else {
                         setDialogMode(2, "Add Security Key", 1, null, '<br />ERROR: Unable to add key.<br /><br />', 'otpauth-hardware-manage');
                     }
+                    break;
+                }
+                case 'webauthn-startregister': {
+                    if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) return;
+                    var x = "Press the key button now.<br /><br /><div style=width:100%;text-align:center><img width=120 height=117 src='images/hardware-keypress-120.png' /></div><input id=dp1keyname style=display:none value=" + message.name + " />";
+                    setDialogMode(2, "Add Security Key", 2, null, x);
+
+                    var publicKey = message.request;
+                    message.request.challenge = Uint8Array.from(atob(message.request.challenge), c => c.charCodeAt(0))
+                    message.request.user.id = Uint8Array.from(atob(message.request.user.id), c => c.charCodeAt(0))
+                    navigator.credentials.create({ publicKey })
+                        .then((newCredentialInfo) => {
+                            // Public key credential
+                            var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
+                            meshserver.send({ action: 'webauthn-endregister', response: r });
+                            setDialogMode(0);
+                        }).catch((error) => {
+                            // Error
+                            setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
+                        });
                     break;
                 }
                 case 'event': {
@@ -5611,7 +5632,7 @@
         }
 
         function account_addhkey(type) {
-            if (type == 1) {
+            if (type == 1 || type == 3) {
                 var x = "Type in the name of the key to add.<br /><br />";
                 x += addHtmlValue('Key Name', '<input id=dp1keyname style=width:230px maxlength=20 autocomplete=off placeholder="MyKey" onkeyup=account_addhkeyValidate(event,2) />');
             } else if (type == 2) {
@@ -5635,6 +5656,8 @@
             } else if (type == 2) {
                 meshserver.send({ action: 'otp-hkey-yubikey-add', name: name, otp: Q('dp1key').value });
                 setDialogMode(2, "Add Security Key", 0, null, "<br />Checking...<br /><br /><br />", 'otpauth-hardware-manage');
+            } else if (type == 3) {
+                meshserver.send({ action: 'webauthn-startregister', name: name });
             }
         }
 
