@@ -385,21 +385,18 @@
                     // New WebAuthn hardware keys
                     navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
                         function (rawAssertion) {
-                            console.log(rawAssertion);
-                            /*
                             var assertion = {
-                                id: base64encode(rawAssertion.rawId),
-                                clientDataJSON: arrayBufferToString(rawAssertion.response.clientDataJSON),
-                                userHandle: base64encode(rawAssertion.response.userHandle),
-                                signature: base64encode(rawAssertion.response.signature),
-                                authenticatorData: base64encode(rawAssertion.response.authenticatorData)
+                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))), //base64encode(rawAssertion.rawId),
+                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))), //arrayBufferToString(rawAssertion.response.clientDataJSON),
+                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))), //base64encode(rawAssertion.response.userHandle),
+                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))), //base64encode(rawAssertion.response.signature),
+                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))), //base64encode(rawAssertion.response.authenticatorData)
                             };
-                            console.log(assertion);
-                            */
+                            Q('hwtokenInput').value = JSON.stringify(assertion);
+                            QE('tokenOkButton', true);
+                            Q('tokenOkButton').click();
                         },
-                        function (error) {
-                            console.log('credentials-get error', error);
-                        }
+                        function (error) { console.log('credentials-get error', error); }
                     );
                 } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
                     // Old U2F hardware keys
