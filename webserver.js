@@ -396,7 +396,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
                     if (u2fKeys.length > 0) {
                         // Check authentication response
-                        require('authdog').finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { func(false); });
+                        var authdoglib = null;
+                        try { authdoglib = require('authdog'); } catch (ex) { }
+                        if (authdoglib == null) { func(false); } else {
+                            authdoglib.finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { console.log(error); func(false); });
+                        }
                         return;
                     }
                 }
@@ -458,24 +462,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             }
 
-            // Get all U2F keys
-            var u2fKeys = [];
-            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
+            var authdoglib = null;
+            try { authdoglib = require('authdog'); } catch (ex) { }
+            if (authdoglib != null) {
+                // Get all U2F keys
+                var u2fKeys = [];
+                for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
 
-            // Generate a U2F challenge
-            if (u2fKeys.length > 0) {
-                require('authdog').startAuthentication('https://' + obj.parent.certificates.CommonName, u2fKeys, { requestId: 0, timeoutSeconds: 60 }).then(function (registrationRequest) {
-                    // Save authentication request to session for later use
-                    req.session.u2fchallenge = registrationRequest;
+                // Generate a U2F challenge
+                if (u2fKeys.length > 0) {
+                    authdoglib.startAuthentication('https://' + obj.parent.certificates.CommonName, u2fKeys, { requestId: 0, timeoutSeconds: 60 }).then(function (registrationRequest) {
+                        // Save authentication request to session for later use
+                        req.session.u2fchallenge = registrationRequest;
 
-                    // Send authentication request to client
-                    func(JSON.stringify(registrationRequest));
-                }, function (error) {
-                    // Handle authentication request error
+                        // Send authentication request to client
+                        func(JSON.stringify(registrationRequest));
+                    }, function (error) {
+                        // Handle authentication request error
+                        func('');
+                    });
+                } else {
                     func('');
-                });
-            } else {
-                func('');
+                }
             }
         } else {
             func('');
@@ -1187,9 +1195,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If this is a 2 factor auth request, look for a hardware key challenge.
             // Normal login 2 factor request
             if ((req.session.loginmode == '4') && (req.session.tokenusername)) {
-                var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername];
+                var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername.toLowerCase()];
                 if (user != null) {
-                    getHardwareKeyChallenge(req, domain, user, function (u2fChallenge) { handleRootRequestLogin(req, res, domain, u2fChallenge, passRequirements); });
+                    getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
                     return;
                 }
             }
@@ -1202,7 +1210,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     } else {
                         var user = obj.users[docs[0]._id];
                         if (user != null) {
-                            getHardwareKeyChallenge(req, domain, user, function (u2fChallenge) { handleRootRequestLogin(req, res, domain, u2fChallenge, passRequirements); });
+                            getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
                         } else {
                             req.session = null;
                             res.redirect(domain.url);
@@ -1240,14 +1248,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.minify && !req.query.nominify) {
             // Try to server the minified version if we can.
             try {
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint, welcometext: domain.welcometext?encodeURIComponent(domain.welcometext):null });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext?encodeURIComponent(domain.welcometext):null });
             } catch (ex) {
                 // In case of an exception, serve the non-minified version.
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
             }
         } else {
             // Serve non-minified version of web pages.
-            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: hardwareKeyChallenge, message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
+            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
         }
 
         /*
