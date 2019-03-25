@@ -110,7 +110,7 @@
                 <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
                 <table id="centralTable" style=width:100%>
                     <tr>
-                        <td id="welcomeimage" align="right">
+                        <td id="welcomeimage" align="right" style="display:none">
                             <picture>
                                 <img alt="" width=359 height=310 src=welcome.jpg />
                             </picture>
@@ -332,7 +332,7 @@
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var passRequirements = "{{{passRequirements}}}";
-        var hardwareKeyChallenge = '{{{hkey}}}';
+        var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var features = parseInt('{{{features}}}');
