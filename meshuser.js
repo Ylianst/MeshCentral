@@ -2022,8 +2022,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     clientAttestationResponse.response.clientDataJSON = new Uint8Array(Buffer.from(clientAttestationResponse.response.clientDataJSON, 'base64')).buffer;
 
                     parent.f2l.attestationResult(clientAttestationResponse, attestationExpectations).then(function (regResult) {
-                        // If we register a WebAuthn/FIDO2 key, remove all U2F keys.
-                        // TODO
+                        // Since we are registering a WebAuthn/FIDO2 key, remove all U2F keys (Type 1).
+                        var otphkeys2 = [];
+                        for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type != 1) { otphkeys2.push(user.otphkeys[i]); } }
+                        user.otphkeys = otphkeys2;
 
                         // Add the new WebAuthn/FIDO2 keys
                         var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
