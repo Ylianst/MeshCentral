@@ -859,7 +859,7 @@ u2f.getApiVersion = function (callback, opt_timeoutSeconds) {
         var passRequirements = "{{{passRequirements}}}";
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
-        var hardwareKeyChallenge = '{{{hkey}}}';
+        var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         var currentpanel = 0;
 
         function startup() {
