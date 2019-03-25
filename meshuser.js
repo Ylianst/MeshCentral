@@ -1773,7 +1773,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
-                        const otplib = require('otplib');
+                        var otplib = null;
+                        try { otplib = require('otplib'); } catch (ex) { }
+                        if (otplib == null) { break; }
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
                         ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, parent.certificates.CommonName, secret) }));
                     }
@@ -1785,7 +1787,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
-                        const otplib = require('otplib');
+                        var otplib = null;
+                        try { otplib = require('otplib'); } catch (ex) { }
+                        if (otplib == null) { break; }
                         otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
                         if (otplib.authenticator.check(command.token, command.secret) === true) {
                             // Token is valid, activate 2-step login on this account.
@@ -1853,8 +1857,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-get':
                 {
-
-
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
@@ -1887,10 +1889,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-yubikey-add':
                 {
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
+                    var yubikeyotp = null;
+                    try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
 
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if ((twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
+                    if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
                     }
@@ -1904,7 +1908,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // TODO: Check if command.otp is modhex encoded, reject if not.
 
                     // Query the YubiKey server to validate the OTP
-                    var yubikeyotp = require('yubikeyotp');
                     var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
                     if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
                     yubikeyotp.verifyOTP(request, function (err, results) {
@@ -1934,16 +1937,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-setup-request':
                 {
+                    var authdoglib = null;
+                    try { authdoglib = require('authdog'); } catch (ex) { }
+
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if (twoStepLoginSupported == false) break;
+                    if ((authdoglib == null) || (twoStepLoginSupported == false)) break;
 
                     // Build list of known keys
                     var knownKeys = [];
                     if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { knownKeys.push(user.otphkeys[i]); } } }
 
                     // Build a key registration request and send it over
-                    require('authdog').startRegistration('https://' + parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
+                    authdoglib.startRegistration('https://' + parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
                         // Save registration request to session for later use
                         obj.hardwareKeyRegistrationRequest = registrationRequest;
 
@@ -1957,12 +1963,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-setup-response':
                 {
+                    var authdoglib = null;
+                    try { authdoglib = require('authdog'); } catch (ex) { }
+
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if ((twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
+                    if ((authdoglib == null) || (twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
 
                     // Check the key registration request
-                    require('authdog').finishRegistration(obj.hardwareKeyRegistrationRequest, command.response).then(function (registrationStatus) {
+                    authdoglib.finishRegistration(obj.hardwareKeyRegistrationRequest, command.response).then(function (registrationStatus) {
                         var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
                         if (user.otphkeys == null) { user.otphkeys = []; }

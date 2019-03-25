@@ -287,7 +287,34 @@
 
             if ('{{loginmode}}' == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), c => c.charCodeAt(0)).buffer;
+
+                    const publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
+                        publicKeyCredentialRequestOptions.allowCredentials.push(
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), c => c.charCodeAt(0)), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                        );
+                    }
+
+                    // New WebAuthn hardware keys
+                    navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
+                        function (rawAssertion) {
+                            var assertion = {
+                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
+                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
+                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
+                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
+                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
+                            };
+                            Q('hwtokenInput').value = JSON.stringify(assertion);
+                            QE('tokenOkButton', true);
+                            Q('tokenOkButton').click();
+                        },
+                        function (error) { console.log('credentials-get error', error); }
+                    );
+                } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    // Old U2F hardware keys
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
                         if ((currentpanel == 4) && authResponse.signatureData) {
                             Q('hwtokenInput').value = JSON.stringify(authResponse);
@@ -300,7 +327,34 @@
 
             if ('{{loginmode}}' == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), c => c.charCodeAt(0)).buffer;
+
+                    const publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
+                        publicKeyCredentialRequestOptions.allowCredentials.push(
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), c => c.charCodeAt(0)), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                        );
+                    }
+
+                    // New WebAuthn hardware keys
+                    navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
+                        function (rawAssertion) {
+                            var assertion = {
+                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
+                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
+                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
+                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
+                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
+                            };
+                            Q('resetHwtokenInput').value = JSON.stringify(assertion);
+                            QE('resetTokenOkButton', true);
+                            Q('resetTokenOkButton').click();
+                        },
+                        function (error) { console.log('credentials-get error', error); }
+                    );
+                } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    // Old U2F hardware keys
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
                         if ((currentpanel == 5) && authResponse.signatureData) {
                             Q('resetHwtokenInput').value = JSON.stringify(authResponse);

@@ -62,7 +62,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
-    try { const { Fido2Lib } = require("@davedoesdev/fido2-lib"); obj.f2l = new Fido2Lib({ attestation: "none" }); } catch (ex) { console.log(ex); }
+    try { const { Fido2Lib } = require("@davedoesdev/fido2-lib"); obj.f2l = new Fido2Lib({ attestation: "none" }); } catch (ex) { }
 
     // Variables
     obj.parent = parent;
