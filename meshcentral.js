@@ -802,22 +802,20 @@ function CreateMeshCentralServer(config, args) {
 
                 // Start collecting server stats every 5 minutes
                 setInterval(function () {
-                    obj.db.getStats(function (dbstats) {
-                        var data = {
-                            time: new Date(),
-                            mem: process.memoryUsage(),
-                            db: dbstats,
-                            cpu: process.cpuUsage(),
-                            conn: {
-                                ca: Object.keys(obj.webserver.wsagents).length,
-                                cu: Object.keys(obj.webserver.wssessions).length,
-                                us: Object.keys(obj.webserver.wssessions2).length,
-                                rs: obj.webserver.relaySessionCount
-                            }
-                        };
-                        if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
-                        obj.db.SetServerStats(data);
-                    });
+                    var data = {
+                        time: new Date(),
+                        mem: process.memoryUsage(),
+                        //cpu: process.cpuUsage(),
+                        conn: {
+                            ca: Object.keys(obj.webserver.wsagents).length,
+                            cu: Object.keys(obj.webserver.wssessions).length,
+                            us: Object.keys(obj.webserver.wssessions2).length,
+                            rs: obj.webserver.relaySessionCount
+                        }
+                    };
+                    if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
+                    obj.db.SetServerStats(data); // Save the stats to the database
+                    obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
                 }, 300000);
 
                 //obj.debug(1, 'Server started');
