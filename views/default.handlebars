@@ -759,9 +759,11 @@
                                 <option value=168>Last week</option>
                                 <option value=5040>Last 30 days</option>
                             </select>&nbsp;
+                            <img src=images/link4.png height=10 width=10 title="Download data points (.csv)" style=cursor:pointer onclick=p40downloadEvents()>&nbsp;
                         </div>
                         <div>
                             &nbsp;<input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
+                            &nbsp;<input id=p40log type="checkbox" onclick="updateServerTimelineHours()" />Log-X
                         </div>
                     </div>
                     <canvas id=serverMainStats style="height:calc(100vh - 250px);max-height:calc(100vh - 250px);width:100%"></canvas>
@@ -7264,7 +7266,7 @@
                 maintainAspectRatio: false,
                 scales: {
                     xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
-                    yAxes: [{ display: true, scaleLabel: { display: true, labelString: '' } }]
+                    yAxes: [{ type: 'linear', display: true, scaleLabel: { display: true, labelString: '' } }]
                 }
             }
         };
@@ -7295,7 +7297,11 @@
             } */
             updateServerTimelineHours();
         }
-        function updateServerTimelineHours() { serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) }; window.serverMainStats.update(); }
+        function updateServerTimelineHours() {
+            serverTimelineConfig.options.scales.yAxes[0].type = (Q('p40log').checked ? 'logarithmic' : 'linear');
+            serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) };
+            window.serverMainStats.update();
+        }
         function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
 
         function updateServerTimelineStats() {
@@ -7360,6 +7366,16 @@
             }*/
             serverTimelineConfig.data = data;
             window.serverMainStats.update();
+        }
+
+        function p40downloadEvents() {
+            var csv = "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss\r\n";
+            for (var i = 0; i < serverTimelineStats.length; i++) {
+                if (serverTimelineStats[i].conn && serverTimelineStats[i].mem) {
+                    csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
+                }
+            }
+            saveAs(new Blob([csv], { type: "application/octet-stream" }), "ServerStats.csv");
         }
 
         //

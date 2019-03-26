@@ -30,6 +30,7 @@
     },
     "_TlsOffload": true,
     "_MpsTlsOffload": true,
+    "_No2FactorAuth": true,
     "_WebRtConfig": {
       "iceServers": [
         { "urls": "stun:stun.services.mozilla.com" },

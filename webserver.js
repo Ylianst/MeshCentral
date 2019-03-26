@@ -328,12 +328,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return true if this user has 2-step auth active
     function checkUserOneTimePasswordRequired(domain, user) {
-        return ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0)));
+        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
     function checkUserOneTimePassword(req, domain, user, token, hwtoken, func) {
-        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true));
+        const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (parent.config.settings.no2factorauth !== true));
         if (twoStepLoginSupported == false) { func(true); return; };
 
         // Check hardware key
@@ -1157,19 +1157,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
             if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
             if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-            if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 0x00000020; } // Allow site within iframe
+            if (parent.config.settings.allowframing == true) { features += 0x00000020; } // Allow site within iframe
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
             if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
             if (obj.args.allowhighqualitydesktop == true) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default false)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
-            if ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
+            if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
             if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
-            if (domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
+            if ((parent.config.settings.no2factorauth !== true) && domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
-            if (obj.f2l != null) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+            if ((parent.config.settings.no2factorauth !== true) && (obj.f2l != null)) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
