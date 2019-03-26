@@ -7281,6 +7281,7 @@
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
+                if (stats.conn.am != null) { serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am }); }
             } else if (chartType == 1) {
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
