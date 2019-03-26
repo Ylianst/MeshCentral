@@ -261,17 +261,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify({ action: 'authcookie', cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
                     break;
                 }
+            case 'servertimelinestats':
+                {
+                    if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
+                    if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
+                    db.GetServerStats(command.hours, function (err, docs) {
+                        if (err == null) { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); }
+                    });
+                    break;
+                }
             case 'serverstats':
                 {
-                    if ((user.siteadmin & 21) != 0) { // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
-                        if (common.validateInt(command.interval, 1000, 1000000) == false) {
-                            // Clear the timer
-                            if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
-                        } else {
-                            // Set the timer
-                            obj.SendServerStats();
-                            obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
-                        }
+                    if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
+                    if (common.validateInt(command.interval, 1000, 1000000) == false) {
+                        // Clear the timer
+                        if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
+                    } else {
+                        // Set the timer
+                        obj.SendServerStats();
+                        obj.serverStatsTimer = setInterval(obj.SendServerStats, command.interval);
                     }
                     break;
                 }

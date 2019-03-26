@@ -800,6 +800,29 @@ function CreateMeshCentralServer(config, args) {
                     });
                 }
 
+                // Start collecting server stats every 5 minutes
+                setInterval(function () {
+                    obj.db.getStats(function (dbstats) {
+                        var data = {
+                            time: new Date(),
+                            mem: process.memoryUsage(),
+                            db: dbstats,
+                            cpu: process.cpuUsage(),
+                            conn: {
+                                ca: Object.keys(obj.webserver.wsagents).length,
+                                cu: Object.keys(obj.webserver.wssessions).length,
+                                us: Object.keys(obj.webserver.wssessions2).length,
+                                rs: obj.webserver.relaySessionCount
+                            }
+                        };
+                        if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
+                        obj.db.SetServerStats(data);
+                    });
+
+
+                    
+                }, 300000);
+
                 //obj.debug(1, 'Server started');
                 if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                 obj.updateServerState('state', 'running');
@@ -1599,7 +1622,7 @@ function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
         for (var i in modules) { try { var xxmodule = require(modules[i]); } catch (e) { missingModules.push(modules[i]); } }
-        if (missingModules.length > 0) { InstallModule(missingModules.join(' '), InstallModules, modules, func); } else { func(); }
+        if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
     }
 }
 
@@ -1610,7 +1633,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     var child_process = require('child_process');
 
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install ' + modulename + ' --no-optional --save', { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
+    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error); process.exit(); return; }
         func(tag1, tag2);
