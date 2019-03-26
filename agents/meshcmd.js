@@ -54,12 +54,12 @@ var Small_IntelAmtWebApp = "H4sIAAAAAAAEAHq/e7+Noou/c0hkgCuA0+rcdhMHwq/CcXohAVwD
 // Check the server certificate fingerprint
 function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
-    try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverHttpsHash) { return; } } } catch (e) { }
+    try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
     if (serverhash != null) { console.log('Error: Failed to verify server certificate.'); throw 'Invalid server certificate'; }
 }
 
 // Various utility functions
-function debug(level, message) { if ((settings.debugLevel != null) && (settings.debugLevel >= level)) { console.log(message); } }
+function debug(level, message) { if ((settings.debuglevel != null) && (settings.debuglevel >= level)) { console.log(message); } }
 function exit(status) { if (status == null) { status = 0; } try { process.exit(status); } catch (e) { } }
 function getInstance(x, y) { for (var i in x) { if (x[i]["InstanceID"] == y) return x[i]; } return null; }
 function md5hex(str) { return require('MD5Stream').create().syncHash(str).toString('hex'); }
@@ -102,25 +102,32 @@ function run(argv) {
     if ((actionpath != 'meshaction.txt') && (actionfile == null)) { console.log('Unable to load \"' + actionpath + '\". Create this file or specify the location using --actionfile [filename].'); exit(1); return; }
     if (actionfile != null) { try { settings = JSON.parse(actionfile); } catch (e) { console.log(actionpath, e); exit(1); return; } } else { if (argv.length >= 2) { settings = { action: argv[1] } } }
     if (settings == null) { settings = {}; }
+    var settings2 = {}; for (var i in settings) { settings2[i.toLowerCase()] = settings[i]; } settings = settings2;
 
     // Set the arguments
     if ((typeof args.action) == 'string') { settings.action = args.action; }
     if ((typeof args.localport) == 'string') { settings.localport = parseInt(args.localport); }
-    if ((typeof args.remotenodeid) == 'string') { settings.remoteNodeId = args.remotenodeid; }
+    if ((typeof args.remotenodeid) == 'string') { settings.remotenodeid = args.remotenodeid; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
     if ((typeof args.user) == 'string') { settings.username = args.user; }
     if ((typeof args.pass) == 'string') { settings.password = args.pass; }
     if ((typeof args.host) == 'string') { settings.hostname = args.host; }
     if ((typeof args.hostname) == 'string') { settings.hostname = args.hostname; }
-    if ((typeof args.serverid) == 'string') { settings.serverId = args.serverid; }
-    if ((typeof args.serverhttpshash) == 'string') { settings.serverHttpsHash = args.serverhttpshash; }
-    if ((typeof args.remoteport) == 'string') { settings.remotePort = parseInt(args.remoteport); }
+    if ((typeof args.serverid) == 'string') { settings.serverid = args.serverid; }
+    if ((typeof args.serverhttpshash) == 'string') { settings.serverhttpshash = args.serverhttpshash; }
+    if ((typeof args.remoteport) == 'string') { settings.remoteport = parseInt(args.remoteport); }
     if ((typeof args.out) == 'string') { settings.output = args.out; }
     if ((typeof args.output) == 'string') { settings.output = args.output; }
-    if ((typeof args.debug) == 'string') { settings.debugLevel = parseInt(args.debug); }
+    if ((typeof args.debug) == 'string') { settings.debuglevel = parseInt(args.debug); }
     if ((typeof args.script) == 'string') { settings.script = args.script; }
     if ((typeof args.agent) == 'string') { settings.agent = args.agent; }
+    if ((typeof args.proxy) == 'string') {
+        var proxy = args.proxy.split(':'), proxyport = (proxy.length == 2) ? parseInt(proxy[1]) : 0;
+        if ((proxy.length != 2) || (proxy[0].length < 1) || (proxyport < 1) || (proxyport > 65535)) { console.log('Invalid \"proxy\" specified, use --proxy [hostname]:[port].'); exit(1); return; }
+        console.log('Proxy set to ' + proxy[0] + ':' + proxyport);
+        require('global-tunnel').initialize({ host: proxy[0], port: proxyport });
+    }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
     if (args.nocommander) { settings.noconsole = true; }
@@ -283,14 +290,14 @@ function run(argv) {
         });
     } else if (settings.action == 'route') {
         // MeshCentral Router, port map local TCP port to a remote computer
-        if ((settings.localPort == null) || (typeof settings.localPort != 'number') || (settings.localPort < 0) || (settings.localPort > 65535)) { console.log('No or invalid \"localPort\" specified, use --localport [localport].'); exit(1); return; }
-        if ((settings.remoteNodeId == null) || (typeof settings.remoteNodeId != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); exit(1); return; }
+        if ((settings.localport == null) || (typeof settings.localport != 'number') || (settings.localport < 0) || (settings.localport > 65535)) { console.log('No or invalid \"localPort\" specified, use --localport [localport].'); exit(1); return; }
+        if ((settings.remotenodeid == null) || (typeof settings.remotenodeid != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { console.log('No or invalid \"username\" specified, use --username [username].'); exit(1); return; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
-        if ((settings.serverId == null) || (typeof settings.serverId != 'string') || (settings.serverId.length != 96)) { console.log('No or invalid \"serverId\" specified.'); exit(1); return; }
-        if ((settings.serverHttpsHash == null) || (typeof settings.serverHttpsHash != 'string') || (settings.serverHttpsHash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); exit(1); return; }
-        if ((settings.remotePort == null) || (typeof settings.remotePort != 'number') || (settings.remotePort < 0) || (settings.remotePort > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
-        if (settings.serverUrl != null) { startRouter(); } else { discoverMeshServer(); } // Start MeshCentral Router
+        if ((settings.serverid == null) || (typeof settings.serverid != 'string') || (settings.serverid.length != 96)) { console.log('No or invalid \"serverId\" specified.'); exit(1); return; }
+        if ((settings.serverhttpshash == null) || (typeof settings.serverhttpshash != 'string') || (settings.serverhttpshash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); exit(1); return; }
+        if ((settings.remoteport == null) || (typeof settings.remoteport != 'number') || (settings.remoteport < 0) || (settings.remoteport > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
+        if (settings.serverurl != null) { startRouter(); } else { discoverMeshServer(); } // Start MeshCentral Router
     } else if ((settings.action == 'amtloadwebapp') || (settings.action == 'amtloadsmallwebapp') || (settings.action == 'amtloadlargewebapp') || (settings.action == 'amtclearwebapp') || (settings.action == 'amtstoragestate')) { // Intel AMT Web Application Actions
         // Intel AMT 11.6+ Load MeshCommander into firmware
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -417,7 +424,7 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
-        if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { if (mescriptJSON != '') { settings.scriptJSON = mescriptJSON; } else { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; } }
+        if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { if (mescriptJSON != '') { settings.scriptjson = mescriptJSON; } else { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; } }
         startMeScript();
     } else if (settings.action == 'amtuuid') {
         // Start running 
@@ -751,7 +758,7 @@ function startMeScriptEx() {
     if (settings.script != null) {
         try { scriptData = fs.readFileSync(settings.script); } catch (e) { console.log('Unable to read script file (1): ' + settings.script + '.'); exit(1); return; }
     } else {
-        scriptData = settings.scriptJSON;
+        scriptData = settings.scriptjson;
     }
     if (scriptData == null) { console.log('Unable to read script file (2): ' + settings.script + '.'); exit(1); return; }
     try { scriptData = JSON.parse(scriptData); } catch (e) { console.log('Unable to read script file (3): ' + settings.script + '.'); exit(1); return; }
@@ -1362,12 +1369,12 @@ function processLmsControlData(data) {
 function startRouter() {
     tcpserver = net.createServer(OnTcpClientConnected);
     tcpserver.on('error', function (e) { console.log('ERROR: ' + JSON.stringify(e)); exit(0); return; });
-    tcpserver.listen(settings.localPort, function () {
+    tcpserver.listen(settings.localport, function () {
         // We started listening.
-        if (settings.remoteName == null) {
-            console.log('Redirecting local port ' + settings.localPort + ' to remote port ' + settings.remotePort + '.');
+        if (settings.remotename == null) {
+            console.log('Redirecting local port ' + settings.localport + ' to remote port ' + settings.remoteport + '.');
         } else {
-            console.log('Redirecting local port ' + settings.localPort + ' to ' + settings.remoteName + ':' + settings.remotePort + '.');
+            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotename + ':' + settings.remoteport + '.');
         }
         console.log('Press ctrl-c to exit.');
 
@@ -1384,7 +1391,7 @@ function OnTcpClientConnected(c) {
         c.on('end', function () { disconnectTunnel(this, this.websocket, 'Client closed'); });
         c.pause();
         try {
-            options = http.parseUri(settings.serverUrl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remoteNodeId + '&tcpport=' + settings.remotePort);
+            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport);
         } catch (e) { console.log('Unable to parse \"serverUrl\".'); process.exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
         options.rejectUnauthorized = false;
@@ -1440,7 +1447,7 @@ function discoverMeshServerOnce() {
                         multicastSockets[i].addMembership(membershipIPv4);
                         //multicastSockets[i].setMulticastLoopback(true);
                         multicastSockets[i].once('message', OnMulticastMessage);
-                        multicastSockets[i].send(settings.serverId, 16989, membershipIPv4);
+                        multicastSockets[i].send(settings.serverid, 16989, membershipIPv4);
                     } catch (e) { }
                 }
             }
@@ -1451,9 +1458,9 @@ function discoverMeshServerOnce() {
 // Called when a multicast packet is received
 function OnMulticastMessage(msg, rinfo) {
     var m = msg.toString().split('|');
-    if ((m.length == 3) && (m[0] == 'MeshCentral2') && (m[1] == settings.serverId)) {
-        settings.serverUrl = m[2].replace('%s', rinfo.address).replace('/agent.ashx', '/meshrelay.ashx');
-        console.log('Found server at ' + settings.serverUrl + '.');
+    if ((m.length == 3) && (m[0] == 'MeshCentral2') && (m[1] == settings.serverid)) {
+        settings.serverurl = m[2].replace('%s', rinfo.address).replace('/agent.ashx', '/meshrelay.ashx');
+        console.log('Found server at ' + settings.serverurl + '.');
         if (discoveryInterval != null) { clearInterval(discoveryInterval); discoveryInterval = null; }
         startRouter();
     }
