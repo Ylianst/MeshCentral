@@ -60,6 +60,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
+    obj.serverStatsCounter = Math.floor(Math.random() * 1000);
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
@@ -802,8 +803,19 @@ function CreateMeshCentralServer(config, args) {
 
                 // Start collecting server stats every 5 minutes
                 setInterval(function () {
+                    obj.serverStatsCounter++;
+                    var hours = 720; // Start with all events lasting 30 days.
+                    if (((obj.serverStatsCounter) % 2) == 1) { hours = 3; } // Half of the event get removed after 3 hours.
+                    else if ((math.floor(obj.serverStatsCounter / 2) % 2) == 1) { hours = 8; } // Another half of the event get removed after 8 hours.
+                    else if ((math.floor(obj.serverStatsCounter / 4) % 2) == 1) { hours = 24; } // Another half of the event get removed after 24 hours.
+                    else if ((math.floor(obj.serverStatsCounter / 8) % 2) == 1) { hours = 48; } // Another half of the event get removed after 48 hours.
+                    else if ((math.floor(obj.serverStatsCounter / 16) % 2) == 1) { hours = 72; } // Another half of the event get removed after 72 hours.
+                    var expire = new Date();
+                    t.setTime(t.getTime() + (60 * 60 * 1000 * hours));
+
                     var data = {
                         time: new Date(),
+                        expire: expire,
                         mem: process.memoryUsage(),
                         //cpu: process.cpuUsage(),
                         conn: {
@@ -1616,7 +1628,13 @@ function getConfig(createSampleConfig) {
 function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
-        for (var i in modules) { try { var xxmodule = require(modules[i]); } catch (e) { missingModules.push(modules[i]); } }
+        for (var i in modules) {
+            try {
+                var xxmodule = require(modules[i]);
+            } catch (e) {
+                if (previouslyInstalledModules[modules[i]] !== true) { previouslyInstalledModules[modules[i]] = true; missingModules.push(modules[i]); }
+            }
+        }
         if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
     }
 }
@@ -1641,6 +1659,7 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 
 // Load the really basic modules
 var meshserver = null;
+var previouslyInstalledModules = { };
 function mainStart(args) {
     // Check the NodeJS is version 6 or better.
     if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
@@ -1664,7 +1683,6 @@ function mainStart(args) {
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
-        if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
 
         // Get the current node version
         var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
@@ -1672,8 +1690,13 @@ function mainStart(args) {
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
 
-        // if not all SSPI, WebAuthn/FIDO2 or U2F support depending on the NodeJS version. FIDO2 does not work below NodeJS 8.x
-        if (allsspi == false) { modules.push('otplib'); if (nodeVersion >= 8) { modules.push('@davedoesdev/fido2-lib'); } else { modules.push('authdog'); } }
+        // Setup 2nd factor authentication
+        if (config.settings.no2factorauth !== true) {
+            // Setup YubiKey OTP if configured
+            if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
+            // if not all SSPI, WebAuthn/FIDO2 or U2F support depending on the NodeJS version. FIDO2 does not work below NodeJS 8.x
+            if (allsspi == false) { modules.push('otplib'); if (nodeVersion >= 8) { modules.push('@davedoesdev/fido2-lib'); } else { modules.push('authdog'); } }
+        }
         
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });

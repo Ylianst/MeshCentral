@@ -124,12 +124,13 @@ module.exports.CreateDB = function (parent) {
             // Check if we need to reset indexes
             var indexesByName = {}, indexCount = 0;
             for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 2) || (indexesByName['ExpireTime1'] == null)) {
+            if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
                 // Reset all indexes
                 console.log('Resetting server stats indexes...');
                 obj.serverstatsfile.dropIndexes(function (err) {
                     // Create all indexes
                     obj.serverstatsfile.createIndex({ "time": 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                    obj.serverstatsfile.createIndex({ "expire": 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
                 });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
                 // Reset the timeout index
@@ -197,6 +198,7 @@ module.exports.CreateDB = function (parent) {
         obj.serverstatsfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
         obj.serverstatsfile.persistence.setAutocompactionInterval(36000);
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 30 }); // Limit the server stats log to 30 days (Seconds * Minutes * Hours * Days)
+        obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
     }
 
     obj.SetupDatabase = function (func) {

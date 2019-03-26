@@ -1896,6 +1896,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
+                    if (parent.parent.config.settings.no2factorauth === true) return;
+
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
                     var yubikeyotp = null;
                     try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
@@ -1945,6 +1947,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-setup-request':
                 {
+                    if (parent.parent.config.settings.no2factorauth === true) return;
+
                     var authdoglib = null;
                     try { authdoglib = require('authdog'); } catch (ex) { }
 
@@ -1971,6 +1975,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-setup-response':
                 {
+                    if (parent.parent.config.settings.no2factorauth === true) return;
+
                     var authdoglib = null;
                     try { authdoglib = require('authdog'); } catch (ex) { }
 
@@ -1997,6 +2003,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
+                    if (parent.parent.config.settings.no2factorauth === true) return;
+
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.name == null) || (parent.f2l == null)) break;
@@ -2019,6 +2027,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
+                    if (parent.parent.config.settings.no2factorauth === true) return;
                     if ((obj.webAuthnReqistrationRequest == null) || (parent.f2l == null)) return;
 
                     // Figure out the origin
