@@ -125,8 +125,8 @@ function run(argv) {
     if ((typeof args.proxy) == 'string') {
         var proxy = args.proxy.split(':'), proxyport = (proxy.length == 2) ? parseInt(proxy[1]) : 0;
         if ((proxy.length != 2) || (proxy[0].length < 1) || (proxyport < 1) || (proxyport > 65535)) { console.log('Invalid \"proxy\" specified, use --proxy [hostname]:[port].'); exit(1); return; }
+        try { require('global-tunnel').initialize({ host: proxy[0], port: proxyport }); } catch (ex) { console.log(ex); exit(1); return; }
         console.log('Proxy set to ' + proxy[0] + ':' + proxyport);
-        require('global-tunnel').initialize({ host: proxy[0], port: proxyport });
     }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
