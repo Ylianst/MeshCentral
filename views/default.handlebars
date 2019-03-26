@@ -744,14 +744,13 @@
                     </div>
                     <div id=p31events style="max-height:calc(100vh - 267px);overflow-y:scroll"></div>
                 </div>
-                <div id=p40 style="display:none">
+                <div id=p40 style="display:none;height:calc(100vh - 170px)">
                     <h1>My Server Stats</h1>
                     <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
                         <div style="float:right">
                             <select id=p40type onchange=updateServerTimelineStats()>
                                 <option value=0>Connections</option>
                                 <option value=1>Memory</option>
-                                <option value=2>Database</option>
                             </select>&nbsp;
                             <select id=p40time onchange=updateServerTimelineHours()>
                                 <option value=3>Last 3 hours</option>
@@ -765,7 +764,7 @@
                             &nbsp;<input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
                         </div>
                     </div>
-                    <canvas id=serverMainStats style="height:calc(100vh - 250px);width:100%"></canvas>
+                    <canvas id=serverMainStats style="height:calc(100vh - 250px);max-height:calc(100vh - 250px);width:100%"></canvas>
                 </div>
                 <br id="column_l_bottomgap" />
             </div>
@@ -1591,6 +1590,7 @@
                         masterUpdate(32);
                     }
                     switch (message.event.action) {
+                        case 'servertimelinestats': { addServerTimelineStats(message.event.data); break; }
                         case 'accountcreate':
                         case 'accountchange': {
                             // An account was created or changed
@@ -6462,18 +6462,20 @@
             var x = '', dateHeader = null;
             for (var i in events) {
                 var event = events[i], time = new Date(event.time);
-                if (time.toLocaleDateString() != dateHeader) {
-                    if (dateHeader != null) x += '</table>';
-                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
-                    dateHeader = time.toLocaleDateString();
-                }
-                var icon = 'si3';
-                if (event.etype == 'user') icon = 'm2';
-                if (event.etype == 'server') icon = 'si3';
+                if (event.msg) {
+                    if (time.toLocaleDateString() != dateHeader) {
+                        if (dateHeader != null) x += '</table>';
+                        x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                        dateHeader = time.toLocaleDateString();
+                    }
+                    var icon = 'si3';
+                    if (event.etype == 'user') icon = 'm2';
+                    if (event.etype == 'server') icon = 'si3';
 
-                var msg = event.msg.split('(R)').join('&reg;');
-                if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    var msg = event.msg.split('(R)').join('&reg;');
+                    if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
+                    x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
+                }
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -7259,6 +7261,7 @@
             data: { labels: [], datasets: [{ label: '', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }] },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
                     yAxes: [{ display: true, scaleLabel: { display: true, labelString: '' } }]
@@ -7269,6 +7272,28 @@
         function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 }); }
         function pastDate(hours) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); return t; }
         function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
+        function addServerTimelineStats(stats) {
+            if (serverTimelineStats == null) return;
+            serverTimelineStats.push(stats);
+            var chartType = Q('p40type').value;
+            if (chartType == 0) {
+                serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.conn.ca });
+                serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
+                serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
+                serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
+            } else if (chartType == 1) {
+                serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
+                serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
+                serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.mem.heapTotal / (1024 * 1024) });
+                serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.mem.rss / (1024 * 1024) });
+            } /* else if (chartType == 2) {
+                serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.db.meshes });
+                serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.db.nodes });
+                serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.db.users });
+                serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.db.total });
+            } */
+            updateServerTimelineHours();
+        }
         function updateServerTimelineHours() { serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) }; window.serverMainStats.update(); }
         function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
 
@@ -7314,7 +7339,7 @@
                     data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapTotal / (1024 * 1024) });
                     data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.rss / (1024 * 1024) });
                 }
-            } else if (chartType == 2) { // Database
+            } /*else if (chartType == 2) { // Database
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Records';
                 data = {
                     labels: [pastDate(0), timeAfter],
@@ -7331,7 +7356,7 @@
                     data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.users });
                     data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.total });
                 }
-            }
+            }*/
             serverTimelineConfig.data = data;
             window.serverMainStats.update();
         }
