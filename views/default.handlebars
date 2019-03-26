@@ -141,6 +141,7 @@
                                 <table id=ServerSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
                                         <td id=ServerGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(6)>General</td>
+                                        <td id=ServerStats style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(40)>Stats</td>
                                         <td id=ServerConsole style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(115)>Console</td>
                                         <td class=style3 style=height:24px>&nbsp;</td>
                                     </tr>
@@ -743,6 +744,29 @@
                     </div>
                     <div id=p31events style="max-height:calc(100vh - 267px);overflow-y:scroll"></div>
                 </div>
+                <div id=p40 style="display:none">
+                    <h1>My Server Stats</h1>
+                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
+                        <div style="float:right">
+                            <select id=p40type onchange=updateServerTimelineStats()>
+                                <option value=0>Connections</option>
+                                <option value=1>Memory</option>
+                                <option value=2>Database</option>
+                            </select>&nbsp;
+                            <select id=p40time onchange=updateServerTimelineHours()>
+                                <option value=1>Last hour</option>
+                                <option value=4>Last 3 hours</option>
+                                <option value=24>Last day</option>
+                                <option value=168>Last week</option>
+                                <option value=5040>Last 30 days</option>
+                            </select>&nbsp;
+                        </div>
+                        <div>
+                            &nbsp;<input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
+                        </div>
+                    </div>
+                    <canvas id=serverMainStats style="height:calc(100vh - 250px);width:100%"></canvas>
+                </div>
                 <br id="column_l_bottomgap" />
             </div>
             <div id=footer class=noselect>
@@ -1014,8 +1038,9 @@
             for (var c = 1; c < 27; c++) x += "<option value='" + c + "'>Ctrl-" + String.fromCharCode(64 + c) + " (" + c + ")</option>";
             QH('specialkeylist', x);
 
-            // Setup server stats panel
-            setupServerStats();
+            // Setup server stats panels
+            setupGeneralServerStats();
+            setupServerTimelineStats();
         }
 
         // Toggle the web page to full screen
@@ -1209,7 +1234,11 @@
         function onMessage(server, message) {
             switch (message.action) {
                 case 'serverstats': {
-                    updateServerStats(message);
+                    updateGeneralServerStats(message);
+                    break;
+                }
+                case 'servertimelinestats': {
+                    setServerTimelineStats(message.events);
                     break;
                 }
                 case 'authcookie': {
@@ -7169,10 +7198,10 @@
         }
 
         //
-        // Server Statistics
+        // MyServer General
         //
 
-        function setupServerStats() {
+        function setupGeneralServerStats() {
             window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ['Used', 'Free'] },
@@ -7186,7 +7215,7 @@
         }
 
         var lastServerStats = null;
-        function updateServerStats(message) {
+        function updateGeneralServerStats(message) {
             if (message != null) { lastServerStats = message; } else { message = lastServerStats; }
             if (message == null) return;
 
@@ -7218,6 +7247,91 @@
             x += '</div>';
 
             QH('serverStatsTable', x);
+        }
+
+        //
+        // MyServer Stats
+        //
+
+        var serverTimelineStats = null;
+        var serverTimelineConfig = {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: '', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }] },
+            options: {
+                responsive: true,
+                scales: {
+                    xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
+                    yAxes: [{ display: true, scaleLabel: { display: true, labelString: '' } }]
+                }
+            }
+        };
+
+        function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 }); }
+        function pastDate(hours) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); return t; }
+        function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
+        function updateServerTimelineHours() { serverTimelineConfig.data.labels = [pastDate(0), pastDate(Q('p40time').value)]; window.serverMainStats.update(); }
+        function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
+
+        function updateServerTimelineStats() {
+            var data, chartType = Q('p40type').value;
+            if (chartType == 0) { // Connections
+                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Connection Count';
+                data = {
+                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    datasets: [
+                        { label: 'Agents', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
+                        { label: 'Users', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
+                        { label: 'User Sessions', data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
+                        { label: 'Relay Sessions', data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true },
+                        { label: 'Intel AMT', data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true }
+                    ]
+                };
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if (serverTimelineStats[i].conn) {
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.us });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.rs });
+                        if (serverTimelineStats[i].conn.am != null) { data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am }); }
+                    }
+                }
+            } else if (chartType == 1) { // Memory
+                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Megabytes';
+                data = {
+                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    datasets: [
+                        { label: 'External', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
+                        { label: 'Heap Used', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
+                        { label: 'Heap Total', data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
+                        { label: 'RSS', data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true }
+                    ]
+                };
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.external / (1024 * 1024) });
+                    data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapUsed / (1024 * 1024) });
+                    data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapTotal / (1024 * 1024) });
+                    data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.rss / (1024 * 1024) });
+                }
+            } else if (chartType == 2) { // Database
+                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Records';
+                data = {
+                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    datasets: [
+                        { label: 'Groups', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
+                        { label: 'Devices', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
+                        { label: 'Users', data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
+                        { label: 'Records', data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true }
+                    ]
+                };
+                for (var i = 0; i < serverTimelineStats.length; i++) {
+                    data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.meshes });
+                    data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.nodes });
+                    data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.users });
+                    data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].db.total });
+                }
+            }
+            serverTimelineConfig.data = data;
+            window.serverMainStats.update();
         }
 
         //
@@ -7274,7 +7388,7 @@
         function go(x) {
             if (xxdialogMode || xxcurrentView == x) return;
             // Edit this line when adding a new screen
-            for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 41; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Remove left bar selection
@@ -7307,7 +7421,7 @@
 
             // My Server
             QS('MainMenuMyServer').backgroundColor = (((x == 6) || (x == 115)) ? "#003366" : "#808080");
-            if (((x == 6) || (x == 115))) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+            if (((x == 6) || (x == 115) || (x == 40))) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
 
             // column_l max-height
             if (webPageFullScreen) {
@@ -7326,8 +7440,8 @@
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
-            QV('ServerSubMenuSpan', x == 6 || x == 115);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 115: 'ServerConsole' };
+            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
             for (var i in panels) {
                 Q(panels[i]).classList.remove('style3x');
                 Q(panels[i]).classList.remove('style3sel');
@@ -7341,6 +7455,9 @@
             if ((x == 15) || (x == 115)) { setupConsole(); }
 
             if (x == 1) masterUpdate(4);
+
+            // Fetch the server timeline stats if needed
+            if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) { document.title = 'MeshCentral - ' + currentNode.name; } else { document.title = 'MeshCentral'; }
