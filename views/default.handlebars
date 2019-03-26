@@ -25,7 +25,7 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
-    <script type="text/javascript" src="scripts/u2f-api.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
@@ -754,8 +754,8 @@
                                 <option value=2>Database</option>
                             </select>&nbsp;
                             <select id=p40time onchange=updateServerTimelineHours()>
-                                <option value=1>Last hour</option>
-                                <option value=4>Last 3 hours</option>
+                                <option value=3>Last 3 hours</option>
+                                <option value=8>Last 8 hours</option>
                                 <option value=24>Last day</option>
                                 <option value=168>Last week</option>
                                 <option value=5040>Last 30 days</option>
@@ -1569,15 +1569,15 @@
                     setDialogMode(2, "Add Security Key", 2, null, x);
 
                     var publicKey = message.request;
-                    message.request.challenge = Uint8Array.from(atob(message.request.challenge), c => c.charCodeAt(0))
-                    message.request.user.id = Uint8Array.from(atob(message.request.user.id), c => c.charCodeAt(0))
-                    navigator.credentials.create({ publicKey })
-                        .then((newCredentialInfo) => {
+                    message.request.challenge = Uint8Array.from(atob(message.request.challenge), function (c) { return c.charCodeAt(0) })
+                    message.request.user.id = Uint8Array.from(atob(message.request.user.id), function (c) { return c.charCodeAt(0) })
+                    navigator.credentials.create({ publicKey: publicKey })
+                        .then(function(newCredentialInfo) {
                             // Public key credential
                             var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
                             meshserver.send({ action: 'webauthn-endregister', response: r });
                             setDialogMode(0);
-                        }).catch((error) => {
+                        }, function(error) {
                             // Error
                             setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
                         });
@@ -7269,15 +7269,16 @@
         function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 }); }
         function pastDate(hours) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); return t; }
         function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
-        function updateServerTimelineHours() { serverTimelineConfig.data.labels = [pastDate(0), pastDate(Q('p40time').value)]; window.serverMainStats.update(); }
+        function updateServerTimelineHours() { serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) }; window.serverMainStats.update(); }
         function setupServerTimelineStats() { window.serverMainStats = new Chart(document.getElementById('serverMainStats').getContext('2d'), serverTimelineConfig); }
 
         function updateServerTimelineStats() {
-            var data, chartType = Q('p40type').value;
+            var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value);
+            serverTimelineConfig.options.scales.xAxes[0].time = { min: timeAfter };
             if (chartType == 0) { // Connections
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Connection Count';
                 data = {
-                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    labels: [pastDate(0), timeAfter],
                     datasets: [
                         { label: 'Agents', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
                         { label: 'Users', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
@@ -7287,6 +7288,7 @@
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
+                    var t = new Date(serverTimelineStats[i].time);
                     if (serverTimelineStats[i].conn) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
@@ -7298,7 +7300,7 @@
             } else if (chartType == 1) { // Memory
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Megabytes';
                 data = {
-                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    labels: [pastDate(0), timeAfter],
                     datasets: [
                         { label: 'External', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
                         { label: 'Heap Used', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
@@ -7315,7 +7317,7 @@
             } else if (chartType == 2) { // Database
                 serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Records';
                 data = {
-                    labels: [pastDate(0), pastDate(Q('p40time').value)],
+                    labels: [pastDate(0), timeAfter],
                     datasets: [
                         { label: 'Groups', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
                         { label: 'Devices', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },

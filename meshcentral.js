@@ -818,9 +818,6 @@ function CreateMeshCentralServer(config, args) {
                         if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
                         obj.db.SetServerStats(data);
                     });
-
-
-                    
                 }, 300000);
 
                 //obj.debug(1, 'Server started');

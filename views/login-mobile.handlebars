@@ -288,12 +288,12 @@
             if ('{{loginmode}}' == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), c => c.charCodeAt(0)).buffer;
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
 
-                    const publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    var publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                     for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                         publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), c => c.charCodeAt(0)), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
                         );
                     }
 
@@ -328,12 +328,12 @@
             if ('{{loginmode}}' == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), c => c.charCodeAt(0)).buffer;
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
 
-                    const publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    var publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                     for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                         publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), c => c.charCodeAt(0)), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
                         );
                     }
 

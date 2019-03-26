@@ -410,7 +410,7 @@ module.exports.CreateDB = function (parent) {
                 obj.file.count({ type: 'mesh' }, function (err, meshCount) {
                     obj.file.count({ type: 'user' }, function (err, userCount) {
                         obj.file.count({}, function (err, totalCount) {
-                            func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
+                            func({ nodes: nodeCount, meshes: meshCount, users: userCount, total: totalCount });
                         });
                     });
                 });
