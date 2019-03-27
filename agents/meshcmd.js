@@ -122,12 +122,7 @@ function run(argv) {
     if ((typeof args.debug) == 'string') { settings.debuglevel = parseInt(args.debug); }
     if ((typeof args.script) == 'string') { settings.script = args.script; }
     if ((typeof args.agent) == 'string') { settings.agent = args.agent; }
-    if ((typeof args.proxy) == 'string') {
-        var proxy = args.proxy.split(':'), proxyport = (proxy.length == 2) ? parseInt(proxy[1]) : 0;
-        if ((proxy.length != 2) || (proxy[0].length < 1) || (proxyport < 1) || (proxyport > 65535)) { console.log('Invalid \"proxy\" specified, use --proxy [hostname]:[port].'); exit(1); return; }
-        try { require('global-tunnel').initialize({ host: proxy[0], port: proxyport }); } catch (ex) { console.log(ex); exit(1); return; }
-        console.log('Proxy set to ' + proxy[0] + ':' + proxyport);
-    }
+    if ((typeof args.proxy) == 'string') { settings.proxy = args.proxy; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
     if (args.nocommander) { settings.noconsole = true; }
@@ -270,6 +265,15 @@ function run(argv) {
     }
     settings.action = settings.action.toLowerCase();
     debug(1, "Settings: " + JSON.stringify(settings));
+
+    // Setup the proxy if needed
+    if ((typeof settings.proxy) == 'string') {
+        var proxy = settings.proxy.split(':'), proxyport = (proxy.length == 2) ? parseInt(proxy[1]) : 0;
+        if ((proxy.length != 2) || (proxy[0].length < 1) || (proxyport < 1) || (proxyport > 65535)) { console.log('Invalid \"proxy\" specified, use --proxy [hostname]:[port].'); exit(1); return; }
+        try { require('global-tunnel').initialize({ host: proxy[0], port: proxyport }); } catch (ex) { console.log(ex); exit(1); return; }
+        console.log('Proxy set to ' + proxy[0] + ':' + proxyport);
+    }
+
     if (settings.action == 'smbios') {
         // Display SM BIOS tables in raw form
         SMBiosTables = require('smbios');
