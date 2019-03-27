@@ -1648,7 +1648,12 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
     InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
-        if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error); process.exit(); return; }
+        if (error != null) {
+            console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error);
+            console.log(stdout);
+            process.exit();
+            return;
+        }
         func(tag1, tag2);
         return;
     });
