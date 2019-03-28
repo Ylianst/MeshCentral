@@ -121,6 +121,7 @@ function _getChildElementsByTagName(name) { var ret = []; if (this.childNodes !=
 function _getChildElementsByTagNameNS(ns, name) { var ret = []; if (this.childNodes != null) { for (var node in this.childNodes) { if (this.childNodes[node].localName == name && (ns == '*' || this.childNodes[node].namespace == ns)) { ret.push(this.childNodes[node]); } } } return (ret); }
 function _xmlTraverseAllRec(nodes, func) { for (var i in nodes) { func(nodes[i]); if (nodes[i].childNodes) { _xmlTraverseAllRec(nodes[i].childNodes, func); } } }
 function _turnToXmlRec(text) {
+    if (text == null) return null;
     var elementStack = new _treeBuilder(), lastElement = null, x1 = text.split('<'), ret = [], element = null, currentElementName = null;
     for (var i in x1) {
         var x2 = x1[i].split('>'), x3 = x2[0].split(' '), elementName = x3[0];

@@ -1549,8 +1549,10 @@
                             meshserver.send({ action: 'otp-hkey-setup-response', response: registrationResponse, name: Q('dp1keyname').value });
                             setDialogMode(2, "Add Security Key", 0, null, '<br />Checking...<br /><br /><br />', 'otpauth-hardware-manage');
                         } else {
-                            var errorCodes = ['', 'Unknown error', 'Bad request', 'Unsupported configuration', 'This key was already registered', 'Timeout'];
-                            setDialogMode(2, "Add Security Key", 1, null, '<br />' + errorCodes[registrationResponse.errorCode] + '.<br /><br />');
+                            if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) {
+                                var errorCodes = ['', 'Unknown error', 'Bad request', 'Unsupported configuration', 'This key was already registered', 'Timeout'];
+                                setDialogMode(2, "Add Security Key", 1, null, '<br />' + errorCodes[registrationResponse.errorCode] + '.<br /><br />');
+                            }
                         }
                     }, message.request.timeoutSeconds);
                     break;

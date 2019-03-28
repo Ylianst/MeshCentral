@@ -1649,8 +1649,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if (error != null) {
-            console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error);
-            console.log(stdout);
+            console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
             return;
         }
