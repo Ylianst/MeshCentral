@@ -6,117 +6,34 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            color: black;
-            font-size: 13px;
-            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-            background-color: #d3d9d6;
-        }
-
-        #container {
-            background-color: #fff;
-            margin: 0 auto;
-            border-top: 0;
-            border-right: 1px solid #b7b7b7;
-            border-bottom: 0;
-            border-left: 1px solid #b7b7b7;
-            padding: 0;
-        }
-
-        #masthead {
-            width: auto;
-            margin: 0;
-            padding: 0;
-            overflow: auto;
-            text-align: right;
-            background-color: #036;
-        }
-
-        #column_l {
-            position: relative;
-            float: left;
-            margin: 0;
-            padding: 0 15px;
-            background-color: #fff;
-        }
-
-        #footer {
-            clear: both;
-            overflow: auto;
-            width: 100%;
-            text-align: center;
-            background-color: #113962;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        .style3 {
-            text-align: center;
-            color: white;
-            background-color: #808080;
-            font-weight: bold;
-        }
-
-        #footer {
-            clear: both;
-            overflow: auto;
-            width: 100%;
-            text-align: center;
-            background-color: #113962;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        #footer a {
-            color: #fff;
-            text-decoration: underline;
-        }
-
-            #footer a:hover {
-                color: #fff;
-                text-decoration: none;
-            }
-
-        a {
-            color: #036;
-            text-decoration: underline;
-        }
-    </style>
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/u2f-api.js"></script>
-    <title>MeshCentral - Login</title>
+    <title>{{{title}}} - Login</title>
 </head>
-<body onload="if (typeof(startup) !== 'undefined') startup();">
-    <div id=container style=max-height:100vh>
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide">
+    <div id=container>
         <div id=mastheadx></div>
-        <div id=masthead style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden">
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:20px;padding-top:8px">
-                <strong><font style="font-size:46px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
-            </div>
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:14px">
-                <strong><font style="font-size:14px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
-            </div>
+        <div id=masthead>
+            <div class="title">{{{title}}}</div>
+            <div class="title2">{{{title2}}}</div>
         </div>
-        <div id=page_content style="max-height:calc(100vh-108px)">
-            <div id=topbar class="noselect style3" style="height:24px;position:relative">
-                <div title="Toggle full width" style="cursor:pointer;color:white;position:absolute;top:3px;right:6px" onclick="toggleFullScreen(1)">&harr;</div>
+        <div id=page_content>
+            <div id=topbar class="noselect style3">
+                <div id=toggle title="Toggle full width" onclick="toggleFullScreen(1)">&harr;</div>
             </div>
             <div id=column_l>
                 <h1>Welcome</h1>
                 <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
-                <table id="centralTable" style=width:100%>
+                <table id="centralTable" style="">
                     <tr>
-                        <td id="welcomeimage" align="right">
+                        <td id="welcomeimage">
                             <picture>
-                                <img alt="" width=359 height=310 src=welcome.jpg />
+                                <img alt="" src=welcome.jpg />
                             </picture>
                         </td>
-                        <td id="logincell" align="left">
-                            <div id=loginpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                        <td id="logincell">
+                            <div id=loginpanel style="display:none">
                                 <form action="login" method=post>
                                     <div id=message1>
                                         {{{message}}}
@@ -147,7 +64,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div id=createpanel style="position:relative;background-color:#979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=createpanel style="display:none">
                                 <form action=createaccount method=post>
                                     <div id=message2>
                                         {{{message}}}
@@ -155,7 +72,7 @@
                                     <div>
                                         <b>Account Creation</b>
                                     </div>
-                                    <div id="passwordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
+                                    <div id="passwordPolicyCallout" style="display:none;"></div>
                                     <table>
                                         <tr>
                                             <td id="nuUser" align=right width=100>Username:</td>
@@ -191,7 +108,7 @@
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                 </form>
                             </div>
-                            <div id=resetpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=resetpanel style="display:none">
                                 <form action=resetaccount method=post>
                                     <div id=message3>
                                         {{{message}}}
@@ -214,7 +131,7 @@
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                 </form>
                             </div>
-                            <div id=tokenpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=tokenpanel style="display:none">
                                 <form action=tokenlogin method=post autocomplete=off>
                                     <div id=message4>
                                         {{{message}}}
@@ -236,7 +153,7 @@
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                 </form>
                             </div>
-                            <div id=resettokenpanel style="background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=resettokenpanel style="display:none">
                                 <form action=resetaccount method=post>
                                     <div id=message5>
                                         {{{message}}}
@@ -258,12 +175,12 @@
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
                                 </form>
                             </div>
-                            <div id=resetpasswordpanel style="position:relative;background-color: #979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
+                            <div id=resetpasswordpanel style="display:none">
                                 <form action=resetpassword method=post>
                                     <div id=message6>
                                         {{{message}}}
                                     </div>
-                                    <div id="rpasswordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
+                                    <div id="rpasswordPolicyCallout" style="display:none;"></div>
                                     <table>
                                         <tr>
                                             <td id="rnuPass1" width=100 align=right>Password:</td>
@@ -292,38 +209,32 @@
                 </table>
                 <br />
             </div>
-            <div id=footer>
-                <table cellpadding=0 cellspacing=10 style=width:100%>
-                    <tr>
-                        <td style=text-align:left;color:white>
-                            {{{footer}}}
-                        </td>
-                        <td style=text-align:right>
-                            {{{rootCertLink}}}
-                            &nbsp;<a href=terms>Terms &amp; Privacy</a>
-                        </td>
-                    </tr>
-                </table>
+            <div id="footer">
+                <div class="footer1">{{{footer}}}</div>
+                <div class="footer2">
+                    {{{rootCertLink}}}
+                    &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                </div>
             </div>
         </div>
     </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:180px;width:400px;display:none">
-        <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+    <div id=dialog style="display:none">
+        <div id=dialogHeader>
             <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
             <div id=id_dialogtitle style=padding:5px></div>
             <div style=width:100%;margin:6px></div>
         </div>
-        <div style="margin-right:16px;margin-left:8px">
-            <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
-                <div id=id_dialogMessage style="padding:10px"></div>
+        <div id=dialogBody>
+            <div id=dialog1>
+                <div id=id_dialogMessage style=""></div>
             </div>
-            <div id=dialog2 style="margin:auto;margin:3px">
+            <div id=dialog2 style="">
                 <div id=id_dialogOptions></div>
             </div>
         </div>
-        <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
-            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
-            <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
+        <div id="idx_dlgButtonBar" style="">
+            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+            <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
         </div>
     </div>
     <script>
@@ -680,40 +591,18 @@
         function toggleFullScreen(toggle) {
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             if (webPageFullScreen == false) {
-                QS('container').width = '960px';
-                QS('container')["min-width"] = '960px';
-                QS('container')['border-right'] = '1px solid #b7b7b7';
-                QS('container')['border-left'] = '1px solid #b7b7b7';
-                QS('container')['overflow'] = 'hidden';
-                QS('column_l').height = '';
-                QS('column_l').width = '930px';
-                QS('column_l')["overflow-y"] = '';
-                QS('column_l')["max-height"] = 'calc(100vh - 111px)';
-                QS('column_l')["min-width"] = '';
-                QS('masthead')["width"] = '960px';
+                // By adding body class, it will change a style of all ellements using CSS selector
+                // No need for JS anymore and it will be consistent style for all the templates.
+                QC('body').remove("fullscreen");
             } else {
-                QS('container').width = '100%';
-                QS('container')['min-width'] = '';
-                QS('container')['border-right'] = '0';
-                QS('container')['border-left'] = '0';
-                QS('container')['overflow'] = 'hidden';
-                QS('column_l').height = 'calc(100vh - 135px)';
-                QS('column_l').width = '';
-                QS('column_l')["overflow-y"] = 'auto';
-                QS('column_l')["max-height"] = 'calc(100vh - 111px)';
-                QS('column_l')["min-width"] = '';
-                QS('masthead')["width"] = '100%';
+                QC('body').add("fullscreen");
             }
             QV('body', true);
             center();
         }
 
         function center() {
-            var w = getDocWidth();
-            QS('dialog').left = ((((w - 400) / 2)) + "px");
-            var showimage = (webPageFullScreen == false) || (w > 800);
-            QV('welcomeimage', showimage);
-            Q('logincell').setAttribute('align', showimage?'left':'center');
+            /* Now we use CSS media to achive the same effect as deleted JS  */
 
             if (webPageFullScreen == false) {
                 QS('centralTable')['margin-top'] = '';
