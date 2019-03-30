@@ -60,6 +60,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
+    obj.serverStatsCounter = Math.floor(Math.random() * 1000);
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
@@ -799,6 +800,35 @@ function CreateMeshCentralServer(config, args) {
                         }
                     });
                 }
+
+                // Start collecting server stats every 5 minutes
+                setInterval(function () {
+                    obj.serverStatsCounter++;
+                    var hours = 720; // Start with all events lasting 30 days.
+                    if (((obj.serverStatsCounter) % 2) == 1) { hours = 3; } // Half of the event get removed after 3 hours.
+                    else if ((Math.floor(obj.serverStatsCounter / 2) % 2) == 1) { hours = 8; } // Another half of the event get removed after 8 hours.
+                    else if ((Math.floor(obj.serverStatsCounter / 4) % 2) == 1) { hours = 24; } // Another half of the event get removed after 24 hours.
+                    else if ((Math.floor(obj.serverStatsCounter / 8) % 2) == 1) { hours = 48; } // Another half of the event get removed after 48 hours.
+                    else if ((Math.floor(obj.serverStatsCounter / 16) % 2) == 1) { hours = 72; } // Another half of the event get removed after 72 hours.
+                    var expire = new Date();
+                    expire.setTime(expire.getTime() + (60 * 60 * 1000 * hours));
+
+                    var data = {
+                        time: new Date(),
+                        expire: expire,
+                        mem: process.memoryUsage(),
+                        //cpu: process.cpuUsage(),
+                        conn: {
+                            ca: Object.keys(obj.webserver.wsagents).length,
+                            cu: Object.keys(obj.webserver.wssessions).length,
+                            us: Object.keys(obj.webserver.wssessions2).length,
+                            rs: obj.webserver.relaySessionCount
+                        }
+                    };
+                    if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
+                    obj.db.SetServerStats(data); // Save the stats to the database
+                    obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
+                }, 300000);
 
                 //obj.debug(1, 'Server started');
                 if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
@@ -1598,31 +1628,34 @@ function getConfig(createSampleConfig) {
 function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
-        for (var i in modules) { try { var xxmodule = require(modules[i]); } catch (e) { missingModules.push(modules[i]); } }
-        if (missingModules.length > 0) { InstallModule(missingModules.join(' '), InstallModules, modules, func); } else { func(); }
+        for (var i in modules) {
+            try {
+                var xxmodule = require(modules[i]);
+            } catch (e) {
+                if (previouslyInstalledModules[modules[i]] !== true) { previouslyInstalledModules[modules[i]] = true; missingModules.push(modules[i]); }
+            }
+        }
+        if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
     }
 }
 
 // Check if a module is present and install it if missing
 var InstallModuleChildProcess = null;
 function InstallModule(modulename, func, tag1, tag2) {
-    try {
-        var module = require(modulename);
-    } catch (e) {
-        console.log('Installing ' + modulename + '...');
-        var child_process = require('child_process');
+    console.log('Installing ' + modulename + '...');
+    var child_process = require('child_process');
 
-        // Looks like we need to keep a global reference to the child process object for this to work correctly.
-        InstallModuleChildProcess = child_process.exec('npm install ' + modulename + ' --no-optional --save', { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
-            InstallModuleChildProcess = null;
-            if (error != null) { console.log('ERROR: Unable to install missing package \'' + modulename + '\', make sure npm is installed: ' + error); process.exit(); return; }
-            func(tag1, tag2);
+    // Looks like we need to keep a global reference to the child process object for this to work correctly.
+    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
+        InstallModuleChildProcess = null;
+        if (error != null) {
+            console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
+            process.exit();
             return;
-        });
-
+        }
+        func(tag1, tag2);
         return;
-    }
-    func(tag1, tag2);
+    });
 }
 
 // Detect CTRL-C on Linux and stop nicely
@@ -1630,6 +1663,7 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 
 // Load the really basic modules
 var meshserver = null;
+var previouslyInstalledModules = { };
 function mainStart(args) {
     // Check the NodeJS is version 6 or better.
     if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
@@ -1640,10 +1674,12 @@ function mainStart(args) {
         var config = getConfig(false);
         if (config == null) { process.exit(); }
 
-        // Check is Windows SSPI will be used
+        // Check is Windows SSPI and YubiKey OTP will be used
         var sspi = false;
         var allsspi = true;
-        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } }
+        var yubikey = false;
+        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
+        for (var i in config.domains) { if (config.domains[i].yubikey != null) { yubikey = true; } }
 
         // Build the list of required modules
         var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-handlebars'];
@@ -1658,9 +1694,14 @@ function mainStart(args) {
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
 
-        // if running NodeJS 8 or higher, we can install WebAuthn/FIDO2 support
-        if ((nodeVersion >= 8) && (allsspi == false)) { modules.push('@davedoesdev/fido2-lib'); }
-
+        // Setup 2nd factor authentication
+        if (config.settings.no2factorauth !== true) {
+            // Setup YubiKey OTP if configured
+            if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
+            // if not all SSPI, WebAuthn/FIDO2 or U2F support depending on the NodeJS version. FIDO2 does not work below NodeJS 8.x
+            if (allsspi == false) { modules.push('otplib'); if (nodeVersion >= 8) { modules.push('@davedoesdev/fido2-lib'); } else { modules.push('authdog'); } }
+        }
+        
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
     });
