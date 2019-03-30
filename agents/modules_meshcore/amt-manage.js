@@ -492,7 +492,7 @@ function AmtManager(agent, db, isdebug) {
     var intelAmtAdminPass, wsstack, amtstack, applyPolicyTimer, policyWsmanRetry = 0;
     obj.applyPolicy = function () {
         applyPolicyTimer = null;
-        if ((amtMeiState != 3) || (typeof amtpolicy != 'object') || (typeof amtpolicy.type != 'number') || (amtpolicy.type == 0)) return;
+        if ((amtMeiState != 3) || (amtpolicy == null) || (typeof amtpolicy != 'object') || (typeof amtpolicy.type != 'number') || (amtpolicy.type == 0)) return;
         if ((amtpolicy.password != null) && (amtpolicy.password != '')) { intelAmtAdminPass = amtpolicy.password; }
         obj.getAmtInfo(function (meinfo) {
             if ((amtpolicy.type == 1) && (meinfo.ProvisioningState == 2) && ((meinfo.Flags & 2) != 0)) {
