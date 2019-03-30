@@ -21,6 +21,7 @@ start() {
   fi
   echo 'Starting service…' >&2
   local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
+  cd /usr/local/mesh
   su -c "$CMD" $RUNAS > "$PIDFILE"
   echo 'Service started' >&2
 }

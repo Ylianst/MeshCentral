@@ -560,8 +560,7 @@
                             displayLocalVideo(true);
                         }
                         for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
-                    })
-                    .catch(function (err) {
+                    }, function (err) {
                         displayControl(err.message + '.');
                         hangUpButtonClick(1);
                     });

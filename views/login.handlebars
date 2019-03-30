@@ -87,7 +87,7 @@
         }
     </style>
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
-    <script type="text/javascript" src="scripts/u2f-api.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
     <title>MeshCentral - Login</title>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();">
@@ -110,7 +110,7 @@
                 <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
                 <table id="centralTable" style=width:100%>
                     <tr>
-                        <td id="welcomeimage" align="right">
+                        <td id="welcomeimage" align="right" style="display:none">
                             <picture>
                                 <img alt="" width=359 height=310 src=welcome.jpg />
                             </picture>
@@ -332,7 +332,7 @@
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var passRequirements = "{{{passRequirements}}}";
-        var hardwareKeyChallenge = '{{{hkey}}}';
+        var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var features = parseInt('{{{features}}}');
@@ -373,12 +373,12 @@
             if ('{{loginmode}}' == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), c => c.charCodeAt(0)).buffer;
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
 
-                    const publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    var publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                     for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                         publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), c => c.charCodeAt(0)), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
                         );
                     }
 
@@ -386,11 +386,11 @@
                     navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
                         function (rawAssertion) {
                             var assertion = {
-                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))), //base64encode(rawAssertion.rawId),
-                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))), //arrayBufferToString(rawAssertion.response.clientDataJSON),
-                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))), //base64encode(rawAssertion.response.userHandle),
-                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))), //base64encode(rawAssertion.response.signature),
-                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))), //base64encode(rawAssertion.response.authenticatorData)
+                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
+                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
+                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
+                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
+                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
                             };
                             Q('hwtokenInput').value = JSON.stringify(assertion);
                             QE('tokenOkButton', true);
@@ -412,7 +412,34 @@
 
             if ('{{loginmode}}' == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
+                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
+
+                    var publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                    for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
+                        publicKeyCredentialRequestOptions.allowCredentials.push(
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                        );
+                    }
+
+                    // New WebAuthn hardware keys
+                    navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
+                        function (rawAssertion) {
+                            var assertion = {
+                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
+                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
+                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
+                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
+                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
+                            };
+                            Q('resetHwtokenInput').value = JSON.stringify(assertion);
+                            QE('resetTokenOkButton', true);
+                            Q('resetTokenOkButton').click();
+                        },
+                        function (error) { console.log('credentials-get error', error); }
+                    );
+                } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
+                    // Old U2F hardware keys
                     window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
                         if ((currentpanel == 5) && authResponse.signatureData) {
                             Q('resetHwtokenInput').value = JSON.stringify(authResponse);
