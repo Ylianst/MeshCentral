@@ -30,6 +30,7 @@ module.exports.CreateDB = function (parent) {
     var Datastore = null;
     var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days. (Seconds * Minutes * Hours * Days)
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days. (Seconds * Minutes * Hours * Days)
+    var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days. (Seconds * Minutes * Hours * Days)
     obj.path = require('path');
     obj.parent = parent;
     obj.identifier = null;
@@ -39,6 +40,7 @@ module.exports.CreateDB = function (parent) {
     if (typeof obj.parent.args.dbexpire == 'object') {
         if (typeof obj.parent.args.dbexpire.events == 'number') { expireEventsSeconds = obj.parent.args.dbexpire.events; }
         if (typeof obj.parent.args.dbexpire.powerevents == 'number') { expirePowerEventsSeconds = obj.parent.args.dbexpire.powerevents; }
+        if (typeof obj.parent.args.dbexpire.statsevents == 'number') { expireServerStatsSeconds = obj.parent.args.dbexpire.statsevents; }
     }
 
     if (obj.parent.args.mongodb) {
@@ -115,6 +117,30 @@ module.exports.CreateDB = function (parent) {
 
         // Setup MongoDB smbios collection, no indexes needed
         obj.smbiosfile = db.collection('smbios');                               // Collection containing all smbios information
+
+        // Setup MongoDB server stats collection
+        obj.serverstatsfile = db.collection('serverstats');                     // Collection of server stats
+        obj.serverstatsfile.getIndexes(function (err, indexes) {
+            // Check if we need to reset indexes
+            var indexesByName = {}, indexCount = 0;
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
+            if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
+                // Reset all indexes
+                console.log('Resetting server stats indexes...');
+                obj.serverstatsfile.dropIndexes(function (err) {
+                    // Create all indexes
+                    obj.serverstatsfile.createIndex({ "time": 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                    obj.serverstatsfile.createIndex({ "expire": 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
+                });
+            } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
+                // Reset the timeout index
+                console.log('Resetting server stats expire index...');
+                obj.serverstatsfile.dropIndex("ExpireTime1", function (err) {
+                    // Reset the expire server stats index
+                    obj.serverstatsfile.createIndex({ "time": 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                });
+            }
+        });
     } else {
         // Use NeDB (The default)
         obj.databaseType = 1;
@@ -167,6 +193,12 @@ module.exports.CreateDB = function (parent) {
 
         // Setup the SMBIOS collection
         obj.smbiosfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true });
+
+        // Setup the server stats collection and setup indexes
+        obj.serverstatsfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
+        obj.serverstatsfile.persistence.setAutocompactionInterval(36000);
+        obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 30 }); // Limit the server stats log to 30 days (Seconds * Minutes * Hours * Days)
+        obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
     }
 
     obj.SetupDatabase = function (func) {
@@ -305,6 +337,10 @@ module.exports.CreateDB = function (parent) {
     obj.RemoveSMBIOS = function (id) { obj.smbiosfile.remove({ _id: id }); };
     obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
 
+    // Database actions on the Server Stats collection
+    obj.SetServerStats = function (data, func) { obj.serverstatsfile.insert(data, func); };
+    obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); obj.serverstatsfile.find({ time: { $gt: t } }, { _id: 0, cpu: 0 }, func); };
+
     // Read a configuration file from the database
     obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
 
@@ -376,7 +412,7 @@ module.exports.CreateDB = function (parent) {
                 obj.file.count({ type: 'mesh' }, function (err, meshCount) {
                     obj.file.count({ type: 'user' }, function (err, userCount) {
                         obj.file.count({}, function (err, totalCount) {
-                            func({ nodes: nodeCount, meshes: meshCount, powerEvents: powerCount, users: userCount, nodeInterfaces: nodeInterfaceCount, notes: noteCount, connectEvent: nodeLastConnectCount, smbios: nodeSmbiosCount, total: totalCount });
+                            func({ nodes: nodeCount, meshes: meshCount, users: userCount, total: totalCount });
                         });
                     });
                 });
