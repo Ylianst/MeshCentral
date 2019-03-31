@@ -12,6 +12,7 @@
     background-color: #fff;
     width: 960px;
     min-width: 960px;
+    max-height: 100vh;
     margin: 0 auto;
     border-top: 0;
     border-right: 1px solid #b7b7b7;
@@ -20,14 +21,112 @@
     padding: 0;
 }
 
+    .fullscreen #container {
+        width: 100%;
+        min-width: 700px;
+        min-height: 0px;
+        border-right: 0px none #b7b7b7;
+        border-left: 0px none #b7b7b7;
+    }
+
 #masthead {
     width: auto;
     margin: 0;
     padding: 0;
-    overflow: auto;
+    overflow: hidden;
     text-align: right;
     background-color: #036;
+    background-image: url(../logo.png);
+    background-position-x: 0px;
+    background-position-y: 0px;
+    background-attachment: initial;
+    background-repeat: no-repeat;
     width: 960px;
+    height: 66px;
+}
+
+    .fullscreen #masthead {
+        width: 100%;
+    }
+
+#masthead .title {
+    float: left;
+    height: 66px;
+    color: #c8c8c8;
+    padding-left: 20px;
+    padding-top: 8px;
+    font-size: 46px;
+    font-family: Arial,Helvetica,sans-serif;
+    font-weight: bold;
+}
+
+#masthead .title2 {
+    float: left;
+    height: 66px;
+    color: #c8c8c8;
+    padding-left: 5px;
+    padding-top: 14px;
+    font-size: 14px;
+    font-family: Arial,Helvetica,sans-serif;
+    font-weight: bold;
+}
+
+#page_content {
+    max-height: calc(100vh - 108px);
+}
+    .fullscreen #page_content {
+        position: absolute;
+        top: 66px;
+        left: 90px;
+        right: 0px;
+        bottom: 0px;
+    }
+    .arg_hide #page_content {
+        left: 0px;
+    }
+
+#page_leftbar {
+    height: calc(100vh - 66px);
+    width: 90px;
+    position: absolute;
+    z-index: 1000;
+    background: #113962;
+    background: linear-gradient(to bottom, #104893 0%,#113962 100%);
+    color: white;
+    display: none;
+}
+    .fullscreen #page_leftbar {
+        display: block;
+    }
+    .arg_hide #page_leftbar {
+        display: none;
+    }
+
+#topbar {
+    /* height: 24px; */
+    position: relative;
+}
+.topbar_td {
+    width: 100px;
+    height: 24px;
+    cursor: pointer;
+}
+.topbar_td_end {
+    text-align: right;
+    height: 24px;
+}
+
+#toggle {
+    cursor: pointer;
+    color: white;
+    position: absolute;
+    top: 3px;
+    right: 6px
+}
+
+#MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+    width: 100%;
+    height: 22px
 }
 
 #column_l {
@@ -37,6 +136,62 @@
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
+    max-height: calc(100vh - 111px);
+    min-width: unset;
+}
+
+    .fullscreen #column_l {
+        height: calc(100vh - 135px);
+        width: calc(100% - 30px);
+        overflow-y: auto;
+    }
+
+#centralTable {
+    width: 100%;
+}
+
+#welcomeimage {
+    text-align: right;
+}
+
+@media (max-width: 800px) {
+    .fullscreen #welcomeimage {
+        display: none;
+    }
+}
+
+#welcomeimage img {
+    height: 310px;
+    width: 359px;
+}
+
+#logincell {
+    text-align: center;
+}
+
+#loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel {
+    display: inline-block;
+    margin: 0;
+    background-color: #979797;
+    border-radius: 16px;
+    width: 300px;
+    padding: 16px;
+    text-align: center;
+}
+
+#passwordPolicyCallout, #rpasswordPolicyCallout {
+    left: -10px;
+    width: 100px;
+    position: absolute;
+    background-color: #FFC;
+    border-radius: 5px;
+    padding: 5px;
+    box-shadow: 0px 0px 15px #666;
+    font-size: 10px;
+}
+
+#passWarning {
+    padding-top:6px;
 }
 
 #footer {
@@ -47,6 +202,35 @@
     background-color: #113962;
     padding-top: 5px;
     padding-bottom: 5px;
+}
+
+/* Support for footer made with table */
+#footer table {
+    width:100%;
+    border-spacing: 10px;
+    border-collapse: separate;
+}
+#footer td:first-child {
+    text-align: left;
+    color:white;
+}
+#footer td {
+    padding: 0px;
+    text-align: right;
+    color: white;
+}
+
+/* Support for new footer made with div (like masterhead) */
+.footer1 {
+    text-align: left;
+    float: left;
+    padding: 10px;
+    color: white;
+}
+.footer2 {
+    padding: 10px;
+    text-align: right;
+    color: white;
 }
 
 #masthead img {
@@ -68,6 +252,71 @@
         color: #fff;
         text-decoration: none;
     }
+
+#dialog {
+    z-index: 1000;
+    background-color: #EEE;
+    box-shadow: 0px 0px 15px #666;
+    font-family: Arial,Helvetica,sans-serif;
+    border-radius: 5px;
+    position: fixed;
+    top: 180px;
+    left: 50%;
+    width: 400px;
+    margin-left: -200px;
+}
+
+#dialogHeader {
+    width: 100%;
+    background-color: #003366;
+    color: #FFF;
+    border-radius: 5px 5px 0 0;
+}
+
+#dialogBody {
+    margin-right: 16px;
+    margin-left: 8px;
+}
+
+#dialog1 {
+    margin: auto;
+    text-align: center;
+    margin: 3px;
+}
+
+#id_dialogMessage {
+    padding:10px;
+}
+
+#dialog2, #dialog3 {
+    margin: auto;
+    margin: 3px;
+}
+
+#idx_dlgButtonBar {
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+#idx_dlgCancelButton {
+    float: right;
+    width: 80px;
+    margin-left: 5px;
+}
+
+#idx_dlgOkButton {
+    float: right;
+    width: 80px;
+}
+
+#idx_dlgDeleteButton {
+    width: 80px;
+}
+
+#p0message {
+    margin: 50px;
+    text-align: center;
+}
 
 a {
     color: #036;
@@ -202,6 +451,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .lb2 {
@@ -210,6 +462,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .lb3 {
@@ -218,6 +473,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .lb4 {
@@ -226,6 +484,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .lb5 {
@@ -234,6 +495,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .lb6 {
@@ -242,6 +506,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
+    position:absolute;
+    top: 6px;
+    left: 6px
 }
 
 .m0  { background : url(../images/images16.png)  -32px 0px; height : 16px; width : 16px; border:none; float:left }
@@ -628,6 +895,16 @@ a {
     background-color: #EFE8B6;
 }
 
+#notificationCount {
+    min-width: 28px;
+    font-size: 20px;
+    border-radius: 5px;
+    background-color: lightblue;
+    text-align: center;
+    margin: 8px;
+    cursor: pointer;
+    padding: 4px
+}
 .deskToolsBar {
     padding:3px;
 }
