@@ -261,9 +261,8 @@
     border-radius: 5px;
     position: fixed;
     top: 180px;
-    left: 50%;
+    left: calc((100% / 2) - 200px);
     width: 400px;
-    margin-left: -200px;
 }
 
 #dialogHeader {
