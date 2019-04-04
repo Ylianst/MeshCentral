@@ -1926,8 +1926,8 @@
                     var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
                 }
                 return desktop.m.handleKeys(e);
             }
@@ -1985,8 +1985,8 @@
                     var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
                 }
                 return desktop.m.handleKeyDown(e);
             }
@@ -2019,8 +2019,8 @@
                     var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
-                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
-                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || (e.keyCode < 32) || (e.keyCode > 90)) return false; }
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
                 }
                 return desktop.m.handleKeyUp(e);
             }
