@@ -68,11 +68,13 @@ function CreateMeshCentralServer(config, args) {
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
         obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
+        obj.parentpath = obj.path.join(__dirname, '../..');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     } else {
         obj.datapath = obj.path.join(__dirname, '../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../meshcentral-files');
+        obj.parentpath = obj.path.join(__dirname, '..');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     }
@@ -163,7 +165,7 @@ function CreateMeshCentralServer(config, args) {
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startLine) {
         var child_process = require('child_process');
-        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: Infinity }, function (error, stdout, stderr) {
+        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (xprocess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
             } else if (xprocess.xrestart == 2) {
@@ -175,7 +177,7 @@ function CreateMeshCentralServer(config, args) {
                 if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 var child_process = require('child_process');
                 var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.path.join(__dirname, '../..') }, function (error, stdout, stderr) { });
+                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
@@ -205,7 +207,7 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.args.selfupdate == 'string') { callback(obj.currentVer, obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
             var child_process = require('child_process');
             var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-            var xprocess = child_process.exec(npmpath + ' view meshcentral dist-tags.latest', { maxBuffer: 512000 }, function (error, stdout, stderr) { });
+            var xprocess = child_process.exec(npmpath + ' view meshcentral dist-tags.latest', { maxBuffer: 512000, cwd: obj.parentpath }, function (error, stdout, stderr) { });
             xprocess.data = '';
             xprocess.stdout.on('data', function (data) { xprocess.data += data; });
             xprocess.stderr.on('data', function (data) { });
@@ -1646,7 +1648,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     var child_process = require('child_process');
 
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000 }, function (error, stdout, stderr) {
+    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000, cwd: obj.parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if (error != null) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
