@@ -138,6 +138,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If this domain has a DNS and a matching DNS cert, use it. This case works for wildcard certs.
             obj.webCertificateFullHashs[i] = parent.certificateOperations.getCertHashBinary(obj.certificates.dns[i].cert);
             obj.webCertificateHashs[i] = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.dns[i].cert);
+        } else if (i != '') {
+            // For any other domain, use the default cert.
+            obj.webCertificateFullHashs[i] = obj.webCertificateFullHashs[''];
+            obj.webCertificateHashs[i] = obj.webCertificateHashs[''];
         }
     }
 
