@@ -6,6 +6,7 @@
     font-size: 13px;
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     background-color: #d3d9d6;
+    overflow-y: hidden;
 }
 
 #container {
@@ -93,7 +94,6 @@
     background: #113962;
     background: linear-gradient(to bottom, #104893 0%,#113962 100%);
     color: white;
-    display: none;
 }
     .fullscreen #page_leftbar {
         display: block;
@@ -141,7 +141,7 @@
 }
 
     .fullscreen #column_l {
-        height: calc(100vh - 135px);
+        height: calc(100vh - 111px);
         width: calc(100% - 30px);
         overflow-y: auto;
     }
