@@ -7273,7 +7273,7 @@
             }
         };
 
-        function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 }); }
+        function refreshServerTimelineStats(stats) { meshserver.send({ action: 'servertimelinestats', hours: 24 * 30 }); }
         function pastDate(hours) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); return t; }
         function setServerTimelineStats(stats) { serverTimelineStats = stats; updateServerTimelineStats(); }
         function addServerTimelineStats(stats) {
