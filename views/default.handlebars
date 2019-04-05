@@ -4849,7 +4849,7 @@
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort, authCookie);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
-                    terminal.m.lineFeed = ([1,2,3,4,21,22].indexOf(currentNode.agent.id) >= 0)?'\r\n':'\n'; // On windows, send \r\n, on Linux only \n
+                    terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.Start(terminalNode._id);
