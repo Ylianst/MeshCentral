@@ -41,7 +41,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _VTREVERSE = 2;
     var _backSpaceErase = false;
     var _cursorVisible = true;
-    var _scrollRegion = [0, 25];
+    var _scrollRegion = [0, 24];
 
     obj.Start = function () { }
 
@@ -308,6 +308,11 @@ var CreateAmtRemoteTerminal = function (divid) {
                     break;
                 case 'r': // Set the scroll region
                     if (argslen == 2) { _scrollRegion = [args[0] - 1, args[1] - 1]; }
+                    if (_scrollRegion[0] < 0) { _scrollRegion[0] = 0; }
+                    if (_scrollRegion[0] > 24) { _scrollRegion[0] = 24; }
+                    if (_scrollRegion[1] < 0) { _scrollRegion[1] = 0; }
+                    if (_scrollRegion[1] > 24) { _scrollRegion[1] = 24; }
+                    if (_scrollRegion[0] > _scrollRegion[1]) { _scrollRegion[0] = _scrollRegion[1]; }
                     break;
                 case 'S': // Scroll up the scroll region X lines, default 1
                     var x = 1;
@@ -472,12 +477,12 @@ var CreateAmtRemoteTerminal = function (divid) {
                 break;
             case '\n': // Linefeed
                 _termy++;
-                if (_termy > (_scrollRegion[1] - 1)) {
+                if (_termy > _scrollRegion[1]) {
                     // Move everything up one line
                     _TermMoveUp(1);
-                    _termy = (obj.height - 1);
+                    _termy = _scrollRegion[1];
                 }
-                if (obj.lineFeed = '\n') { _termx = 0; } // *** If we are in Linux mode, \n will also return the cursor to the first col
+                if (obj.lineFeed = '\r') { _termx = 0; } // *** If we are in Linux mode, \n will also return the cursor to the first col
                 break;
             case '\r': // Carriage Return
                 _termx = 0;
@@ -513,9 +518,10 @@ var CreateAmtRemoteTerminal = function (divid) {
         _TermCurrentReverse = 0;
         _TermCurrentFColor = 7;
         _TermCurrentBColor = 0;
-        _TermLineWrap = true;
-        _termx = 0;
-        _termy = 0;
+        _TermLineWrap = _cursorVisible = true;
+        _termx = _termy = 0;
+        _backSpaceErase = false;
+        _scrollRegion = [0, 24];
         obj.TermClear(7 << 6);
     }
 
@@ -565,7 +571,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     obj.TermHandleKeys = function (e) {
         if (!e.ctrlKey) {
             if (e.which == 127) obj.TermSendKey(8);
-            else if (e.which == 13) obj.TermSendKeys(obj.lineFeed);
+            else if (e.which == 13) { obj.TermSendKeys(obj.lineFeed); }
             else if (e.which != 0) obj.TermSendKey(e.which);
             return false;
         }
@@ -635,7 +641,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                     buf += closetag;
                     closetag = '';
                     x1 = 6; x2 = 12;
-                    if (newat & _VTREVERSE) { x1 = 12; x2 = 6;}
+                    if (newat & _VTREVERSE) { x1 = 12; x2 = 6; }
                     buf += '<span style="color:#' + _TermColors[(newat >> x1) & 0x3F] + ';background-color:#' + _TermColors[(newat >> x2) & 0x3F];
                     if (newat & _VTUNDERLINE) buf += ';text-decoration:underline';
                     buf += ';">';
