@@ -136,7 +136,7 @@
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
-    max-height: calc(100vh - 111px);
+    /*max-height: calc(100vh - 111px);*/
     min-width: unset;
 }
 

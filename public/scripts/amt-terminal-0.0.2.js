@@ -42,6 +42,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _backSpaceErase = false;
     var _cursorVisible = true;
     var _scrollRegion = [0, 24];
+    var _altKeypadMode = false;
 
     obj.Start = function () { }
 
@@ -101,10 +102,12 @@ var CreateAmtRemoteTerminal = function (divid) {
                         break;
                     case '=':
                         // Set alternate keypad mode
+                        _altKeypadMode = true;
                         _termstate = 0;
                         break;
                     case '>':
                         // Set numeric keypad mode 
+                        _altKeypadMode = false;
                         _termstate = 0;
                         break;
                     default:
@@ -115,12 +118,8 @@ var CreateAmtRemoteTerminal = function (divid) {
             case 2:
                 if (b >= '0' && b <= '9') {
                     // This is a number
-                    if (!_escNumber[_escNumberPtr]) {
-                        _escNumber[_escNumberPtr] = (b - '0');
-                    }
-                    else {
-                        _escNumber[_escNumberPtr] = ((_escNumber[_escNumberPtr] * 10) + (b - '0'));
-                    }
+                    if (!_escNumber[_escNumberPtr]) { _escNumber[_escNumberPtr] = (b - '0'); }
+                    else { _escNumber[_escNumberPtr] = ((_escNumber[_escNumberPtr] * 10) + (b - '0')); }
                     break;
                 } else if (b == ';') {
                     // New number
@@ -201,12 +200,23 @@ var CreateAmtRemoteTerminal = function (divid) {
                         if (_termx > 79) _termx = 79;
                     }
                     break;
-                case 'P': // Move the rest of the line left, this is a guess as there is no documentation about this code (???)
-                    if (argslen == 1) {
-                        for (i = _termx; i < (obj.width - args[0]) ; i++) {
-                            _tscreen[_termy][i] = _tscreen[_termy][i + args[0]]
-                            _scratt[_termy][i] = _scratt[_termy][i + args[0]];
-                        }
+                case 'P': // Delete X Character(s), default 1 char
+                    var x = 1;
+                    if (argslen == 1) { x = args[0]; }
+                    for (i = _termx; i < (_termx + x) ; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
+                    break;
+                case 'L': // Insert X Line(s), default 1 char
+                    var linecount = 1;
+                    if (argslen == 1) { linecount = args[0]; }
+                    if (linecount == 0) { linecount = 1; }
+                    for (y = _scrollRegion[1]; y >= _termy + linecount; y--) {
+                        _tscreen[y] = _tscreen[y - linecount];
+                        _scratt[y] = _scratt[y - linecount];
+                    }
+                    for (y = _termy; y < _termy + linecount; y++) {
+                        _tscreen[y] = [];
+                        _scratt[y] = [];
+                        for (x = 0; x < obj.width; x++) { _tscreen[y][x] = ' '; _scratt[y][x] = (7 << 6); }
                     }
                     break;
                 case 'J': // ClearScreen:
@@ -288,14 +298,10 @@ var CreateAmtRemoteTerminal = function (divid) {
                 case 'K': // EraseLine:
                     if (argslen == 0 || (argslen == 1 && (!args[0] || args[0] == 0))) {
                         _EraseCursorToEol(); // Erase from the cursor to the end of the line
-                    }
-                    else if (argslen == 1) {
-                        if (args[0] == 1) // Erase from the beginning of the line to the cursor
-                        {
+                    } else if (argslen == 1) {
+                        if (args[0] == 1) { // Erase from the beginning of the line to the cursor
                             _EraseBolToCursor();
-                        }
-                        else if (args[0] == 2) // Erase the line with the cursor
-                        {
+                        } else if (args[0] == 2) { // Erase the line with the cursor
                             _EraseLine(_termy);
                         }
                     }
@@ -336,7 +342,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                     break;
                 default:
                     //if (code != '@') alert(code);
-                    //console.log('unknown process', code, args, mode);
+                    //console.log('unknown terminal code', code, args, mode);
                     break;
             }
         }
@@ -522,6 +528,7 @@ var CreateAmtRemoteTerminal = function (divid) {
         _termx = _termy = 0;
         _backSpaceErase = false;
         _scrollRegion = [0, 24];
+        _altKeypadMode = false;
         obj.TermClear(7 << 6);
     }
 
@@ -594,10 +601,19 @@ var CreateAmtRemoteTerminal = function (divid) {
             return;
         }
         if (e.which == 27) { obj.TermSendKeys(String.fromCharCode(27)); return true; }; // ESC
-        if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 91, 68)); return true; }; // Left
-        if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 91, 65)); return true; }; // Up
-        if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 91, 67)); return true; }; // Right
-        if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 91, 66)); return true; }; // Down
+
+        if (_altKeypadMode == true) {
+            if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 79, 68)); return true; }; // Left
+            if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 79, 65)); return true; }; // Up
+            if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 79, 67)); return true; }; // Right
+            if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 79, 66)); return true; }; // Down
+        } else {
+            if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 91, 68)); return true; }; // Left
+            if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 91, 65)); return true; }; // Up
+            if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 91, 67)); return true; }; // Right
+            if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 91, 66)); return true; }; // Down
+        }
+
         if (e.which == 9) { obj.TermSendKeys("\t"); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return true; }; // TAB
 
         // F1 to F12 keys

@@ -1040,6 +1040,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createmesh':
                 {
+                    // Check if we have new group restriction
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0)) break;
+
                     // In some situations, we need a verified email address to create a device group.
                     if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
 

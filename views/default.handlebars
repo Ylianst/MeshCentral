@@ -1217,6 +1217,7 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
+            masterUpdate(4 + 128);
 
             if (typeof userinfo.passchange == 'number') {
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
@@ -1656,6 +1657,7 @@
                                 }
                             }
                             masterUpdate(4 + 128);
+                            if (currentNode && (currentNode.meshid == message.event.meshid)) { refreshDevice(currentNode._id); }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -2260,8 +2262,8 @@
 
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
-                if ((view < 3) && (sort == 0) && (meshcount > 0)) { r += '<a onclick=account_createMesh() title="Create a new group of devices." style=cursor:pointer>Add Device Group</a>&nbsp'; }
-                r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a></div>';
+                if ((view < 3) && (sort == 0) && (meshcount > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) { r += '<a onclick=account_createMesh() title="Create a new group of devices." style=cursor:pointer>Add Device Group</a>&nbsp'; }
+                if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a></div>'; }
                 r += '</div><br/>';
 
                 QH('xdevices', r);
@@ -3540,7 +3542,6 @@
         //
         // MY DEVICE
         //
-
         function refreshDevice(nodeid) {
             if (!currentNode || currentNode._id != nodeid) return;
             gotoDevice(nodeid, xxcurrentView, true);
@@ -3578,7 +3579,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>None</i>'; }
-                if ((meshrights & 4) != 0) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
@@ -5779,6 +5780,9 @@
         function account_createMesh() {
             if (xxdialogMode) return;
 
+            // Check if we are disallowed from creating a device group
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group."); return; }
+
             // Check if we are allowed to create a new device group
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
@@ -5933,7 +5937,10 @@
 
             // Display features
             var meshFeatures = [];
-            if (currentMesh.flags) { if (currentMesh.flags & 1) { meshFeatures.push('Auto-Remove'); } }
+            if (currentMesh.flags) {
+                if (currentMesh.flags & 1) { meshFeatures.push('Auto-Remove'); }
+                if (currentMesh.flags & 2) { meshFeatures.push('Hostname Sync'); }
+            }
             meshFeatures = meshFeatures.join(', ');
             if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
             x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', (meshrights & 1) != 0));
@@ -6100,12 +6107,14 @@
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0;
             var x = "<div><input type=checkbox id=d20flag1 " + ((flags & 1)?'checked':'') + ">Remove device on disconnect<br></div>";
+            x += "<div><input type=checkbox id=d20flag2 " + ((flags & 2) ? 'checked' : '') + ">Sync server device name to hostname<br></div>";
             setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
         }
 
         function p20editmeshfeaturesEx() {
             var flags = 0;
             if (Q('d20flag1').checked) { flags += 1; }
+            if (Q('d20flag2').checked) { flags += 2; }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 
@@ -6593,7 +6602,7 @@
             if (self) { permissions += "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + encodeURIComponent(user._id) + "\")>"; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked,&nbsp;"; }
             permissions += "<span title='Server Permissions'>";
-            if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) {
+            if ((user.siteadmin == null) || (user.siteadmin == 0) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) {
                 permissions += "User";
             } else if (user.siteadmin == 8) {
                 permissions += "User + Files";
@@ -6602,6 +6611,7 @@
             } else {
                 permissions += "Partial";
             }
+            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { permissions += "*"; }
             permissions += "</span>";
             //if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
             if (self) { permissions += "</a>"; }
@@ -6713,6 +6723,8 @@
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>Server Updates<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>Manage Users<br>';
             x += '<hr/><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>Lock Account<br>';
+            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>No New Device Groups<br>';
+            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>No MeshCmd<br>';
             x += '</div>';
             var user = users[userid.toLowerCase()];
             setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
@@ -6724,6 +6736,8 @@
                 Q('ua_fileaccess').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 8) != 0));       // Server Files
                 Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));    // Server Update
                 Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));   // Account locked
+                Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));     // No New Groups
+                Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));      // No MeshCmd
             }
             QE('ua_fulladmin', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverbackup', userinfo.siteadmin == 0xFFFFFFFF);
@@ -6731,6 +6745,9 @@
             QE('ua_serverrestore', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_fileaccess', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverupdate', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_lockedaccount', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_nonewgroups', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_nomeshcmd', userinfo.siteadmin == 0xFFFFFFFF);
             Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
             return false;
@@ -6743,6 +6760,9 @@
                 QE('ua_serverrestore', !Q('ua_fulladmin').checked);
                 QE('ua_fileaccess', !Q('ua_fulladmin').checked);
                 QE('ua_serverupdate', !Q('ua_fulladmin').checked);
+                QE('ua_lockedaccount', !Q('ua_fulladmin').checked);
+                QE('ua_nonewgroups', !Q('ua_fulladmin').checked);
+                QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
                 QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
             }
         }
@@ -6756,6 +6776,8 @@
                 if (Q('ua_fileaccess').checked == true) siteadmin += 8;
                 if (Q('ua_serverupdate').checked == true) siteadmin += 16;
                 if (Q('ua_lockedaccount').checked == true) siteadmin += 32;
+                if (Q('ua_nonewgroups').checked == true) siteadmin += 64;
+                if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
             }
             var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
@@ -6783,16 +6805,17 @@
             if (activeSessions == 0) { Q('MainUserImage').classList.add('gray'); }
 
             // Server permissions
-            var msg = '', premsg = '';
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg += 'Locked account, '; }
-            if ((user.siteadmin == null) || (user.siteadmin == 0) || (user.siteadmin == 32)) { msg += "No server rights"; } else if (user.siteadmin == 8) { msg += "Access to server files"; } else if (user.siteadmin == 0xFFFFFFFF) { msg += "Full administrator"; } else { msg += "Partial rights"; }
+            var msg = [], premsg = '';
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg.push("Locked account"); }
+            if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
+            if ((user.siteadmin != null) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
             x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton width=10 height=10 src="images/link1.png" /></a>');
-            x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg + "</a>");
+            x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg.join(', ') + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
             if (user.login) x += addDeviceAttribute('Last Login', new Date(user.login * 1000).toLocaleString());
