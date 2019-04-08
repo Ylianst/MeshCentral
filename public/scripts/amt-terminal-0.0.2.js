@@ -4,6 +4,8 @@
 * @version v0.0.2c
 */
 
+// https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
 // Construct a MeshServer object
 var CreateAmtRemoteTerminal = function (divid) {
     var obj = {};
@@ -32,10 +34,15 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _termstate = 0;
     var _escNumber = [];
     var _escNumberPtr = 0;
+    var _escNumberMode = 0;
     var _scratt = [];
     var _tscreen = [];
     var _VTUNDERLINE = 1;
     var _VTREVERSE = 2;
+    var _backSpaceErase = false;
+    var _cursorVisible = true;
+    var _scrollRegion = [0, 24];
+    var _altKeypadMode = false;
 
     obj.Start = function () { }
 
@@ -72,6 +79,9 @@ var CreateAmtRemoteTerminal = function (divid) {
                 switch (c) {
                     case 27: // ESC
                         _termstate = 1;
+                        _escNumber = [];
+                        _escNumberPtr = 0;
+                        _escNumberMode = 0;
                         break;
                     default:
                         // Process a single char
@@ -82,8 +92,6 @@ var CreateAmtRemoteTerminal = function (divid) {
             case 1:
                 switch (b) {
                     case '[':
-                        _escNumberPtr = 0;
-                        _escNumber = [];
                         _termstate = 2;
                         break;
                     case '(':
@@ -91,6 +99,16 @@ var CreateAmtRemoteTerminal = function (divid) {
                         break;
                     case ')':
                         _termstate = 5;
+                        break;
+                    case '=':
+                        // Set alternate keypad mode
+                        _altKeypadMode = true;
+                        _termstate = 0;
+                        break;
+                    case '>':
+                        // Set numeric keypad mode 
+                        _altKeypadMode = false;
+                        _termstate = 0;
                         break;
                     default:
                         _termstate = 0;
@@ -100,23 +118,20 @@ var CreateAmtRemoteTerminal = function (divid) {
             case 2:
                 if (b >= '0' && b <= '9') {
                     // This is a number
-                    if (!_escNumber[_escNumberPtr]) {
-                        _escNumber[_escNumberPtr] = (b - '0');
-                    }
-                    else {
-                        _escNumber[_escNumberPtr] = ((_escNumber[_escNumberPtr] * 10) + (b - '0'));
-                    }
+                    if (!_escNumber[_escNumberPtr]) { _escNumber[_escNumberPtr] = (b - '0'); }
+                    else { _escNumber[_escNumberPtr] = ((_escNumber[_escNumberPtr] * 10) + (b - '0')); }
                     break;
-                }
-                else if (b == ';') {
+                } else if (b == ';') {
                     // New number
                     _escNumberPtr++;
                     break;
-                }
-                else {
+                } else if (b == '?') {
+                    _escNumberMode = 1;
+                    break;
+                } else {
                     // Process Escape Sequence
                     if (!_escNumber[0]) _escNumber[0] = 0;
-                    _ProcessEscapeHandler(b, _escNumber, _escNumberPtr + 1);
+                    _ProcessEscapeHandler(b, _escNumber, _escNumberPtr + 1, _escNumberMode);
                     _termstate = 0;
                 }
                 break;
@@ -129,151 +144,207 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
     }
 
-    function _ProcessEscapeHandler(code, args, argslen) {
-        var i;
-        switch (code) {
-            case 'c': // ResetDevice
-                // Reset
-                obj.TermResetScreen();
-                break;
-            case 'A': // Move cursor up n lines
-                if (argslen == 1) {
-                    _termy -= args[0];
-                    if (_termy < 0) _termy = 0;
-                }
-                break;
-            case 'B': // Move cursor down n lines
-                if (argslen == 1) {
-                    _termy += args[0];
-                    if (_termy > obj.height) _termy = obj.height;
-                }
-                break;
-            case 'C': // Move cursor right n lines
-                if (argslen == 1) {
-                    _termx += args[0];
-                    if (_termx > obj.width) _termx = obj.width;
-                }
-                break;
-            case 'D': // Move cursor left n lines
-                if (argslen == 1) {
-                    _termx -= args[0];
-                    if (_termx < 0) _termx = 0;
-                }
-                break;
-            case 'd': // Set cursor to line n
-                if (argslen == 1) {
-                    _termy = args[0] - 1;
-                    if (_termy > obj.height) _termy = obj.height;
-                    if (_termy < 0) _termy = 0;
-                }
-                break;
-            case 'G': // Set cursor to col n
-                if (argslen == 1) {
-                    _termx = args[0] - 1;
-                    if (_termx < 0) _termx = 0;
-                    if (_termx > 79) _termx = 79;
-                }
-                break;
-            case 'J': // ClearScreen:
-                if (argslen == 1 && args[0] == 2) {
-                    obj.TermClear((_TermCurrentBColor << 12) + (_TermCurrentFColor << 6)); // Erase entire screen
-                    _termx = 0;
-                    _termy = 0;
-                }
-                else if (argslen == 0 || argslen == 1 && args[0] == 0) // Erase cursor down
-                {
-                    _EraseCursorToEol();
-                    for (i = _termy + 1; i < obj.height; i++) _EraseLine(i);
-                }
-                else if (argslen == 1 && args[0] == 1) // Erase cursor up
-                {
-                    _EraseCursorToEol();
-                    for (i = 0; i < _termy - 1; i++) _EraseLine(i);
-                }
-                break;
-            case 'H': // MoveCursor:
-                if (argslen == 2) {
-                    if (args[0] < 1) args[0] = 1;
-                    if (args[1] < 1) args[1] = 1;
-                    if (args[0] > obj.height) args[0] = obj.height;
-                    if (args[1] > obj.width) args[1] = obj.width;
-                    _termy = args[0] - 1;
-                    _termx = args[1] - 1;
-                }
-                else {
-                    _termy = 0;
-                    _termx = 0;
-                }
-                break;
-            case 'm': // ScreenAttribs:
-                // Change attributes
-                for (i = 0; i < argslen; i++) {
-                    if (!args[i] || args[i] == 0) {
-                        // Reset Attributes
-                        _TermCurrentBColor = 0;
-                        _TermCurrentFColor = 7;
-                        _TermCurrentReverse = 0;
+    function _ProcessEscapeHandler(code, args, argslen, mode) {
+        //console.log('process', code, args, mode);
+        if (mode == 1) {
+            switch (code) {
+                case 'l': // Hide the cursor
+                    if (args[0] == 25) { _cursorVisible = false; }
+                    break;
+                case 'h': // Show the cursor
+                    if (args[0] == 25) { _cursorVisible = true; }
+                    break;
+            }
+        } else if (mode == 0) {
+            var i;
+            switch (code) {
+                case 'c': // ResetDevice
+                    // Reset
+                    obj.TermResetScreen();
+                    break;
+                case 'A': // Move cursor up n lines
+                    if (argslen == 1) {
+                        if (args[0] == 0) { _termy--; } else { _termy -= args[0]; }
+                        if (_termy < 0) _termy = 0;
                     }
-                    else if (args[i] == 1) {
-                        // Bright
-                        if (_TermCurrentFColor < 8) _TermCurrentFColor += 8;
+                    break;
+                case 'B': // Move cursor down n lines
+                    if (argslen == 1) {
+                        if (args[0] == 0) { _termy++; } else { _termy += args[0]; }
+                        if (_termy > obj.height) _termy = obj.height;
                     }
-                    else if (args[i] == 2 || args[i] == 22) {
-                        // Dim
-                        if (_TermCurrentFColor >= 8) _TermCurrentFColor -= 8;
+                    break;
+                case 'C': // Move cursor right n lines
+                    if (argslen == 1) {
+                        if (args[0] == 0) { _termx++; } else { _termx += args[0]; }
+                        if (_termx > obj.width) _termx = obj.width;
                     }
-                    else if (args[i] == 7) {
-                        // Set Reverse attribute true
-                        _TermCurrentReverse = 2;
+                    break;
+                case 'D': // Move cursor left n lines
+                    if (argslen == 1) {
+                        if (args[0] == 0) { _termx--; } else { _termx -= args[0]; }
+                        if (_termx < 0) _termx = 0;
                     }
-                    else if (args[i] == 27) {
-                        // Set Reverse attribute false
-                        _TermCurrentReverse = 0;
+                    break;
+                case 'd': // Set cursor to line n
+                    if (argslen == 1) {
+                        _termy = args[0] - 1;
+                        if (_termy > obj.height) _termy = obj.height;
+                        if (_termy < 0) _termy = 0;
                     }
-                    else if (args[i] >= 30 && args[i] <= 37) {
-                        // Set Foreground Color
-                        var bright = (_TermCurrentFColor >= 8);
-                        _TermCurrentFColor = (args[i] - 30);
-                        if (bright && _TermCurrentFColor <= 8) _TermCurrentFColor += 8;
+                    break;
+                case 'G': // Set cursor to col n
+                    if (argslen == 1) {
+                        _termx = args[0] - 1;
+                        if (_termx < 0) _termx = 0;
+                        if (_termx > 79) _termx = 79;
                     }
-                    else if (args[i] >= 40 && args[i] <= 47) {
-                        // Set Background Color
-                        _TermCurrentBColor = (args[i] - 40);
+                    break;
+                case 'P': // Delete X Character(s), default 1 char
+                    var x = 1;
+                    if (argslen == 1) { x = args[0]; }
+                    for (i = _termx; i < (_termx + x) ; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
+                    break;
+                case 'L': // Insert X Line(s), default 1 char
+                    var linecount = 1;
+                    if (argslen == 1) { linecount = args[0]; }
+                    if (linecount == 0) { linecount = 1; }
+                    for (y = _scrollRegion[1]; y >= _termy + linecount; y--) {
+                        _tscreen[y] = _tscreen[y - linecount];
+                        _scratt[y] = _scratt[y - linecount];
                     }
-                    else if (args[i] >= 90 && args[i] <= 99) {
-                        // Set Bright Foreground Color
-                        _TermCurrentFColor = (args[i] - 82);
+                    for (y = _termy; y < _termy + linecount; y++) {
+                        _tscreen[y] = [];
+                        _scratt[y] = [];
+                        for (x = 0; x < obj.width; x++) { _tscreen[y][x] = ' '; _scratt[y][x] = (7 << 6); }
                     }
-                    else if (args[i] >= 100 && args[i] <= 109) {
-                        // Set Bright Background Color
-                        _TermCurrentBColor = (args[i] - 92);
+                    break;
+                case 'J': // ClearScreen:
+                    if (argslen == 1 && args[0] == 2) {
+                        obj.TermClear((_TermCurrentBColor << 12) + (_TermCurrentFColor << 6)); // Erase entire screen
+                        _termx = 0;
+                        _termy = 0;
                     }
-                }
-                break;
-            case 'K': // EraseLine:
-                if (argslen == 0 || (argslen == 1 && (!args[0] || args[0] == 0))) {
-                    _EraseCursorToEol(); // Erase from the cursor to the end of the line
-                }
-                else if (argslen == 1) {
-                    if (args[0] == 1) // Erase from the beginning of the line to the cursor
+                    else if (argslen == 0 || argslen == 1 && args[0] == 0) // Erase cursor down
                     {
-                        _EraseBolToCursor();
+                        _EraseCursorToEol();
+                        for (i = _termy + 1; i < obj.height; i++) _EraseLine(i);
                     }
-                    else if (args[0] == 2) // Erase the line with the cursor
+                    else if (argslen == 1 && args[0] == 1) // Erase cursor up
                     {
-                        _EraseLine(_termy);
+                        _EraseCursorToEol();
+                        for (i = 0; i < _termy - 1; i++) _EraseLine(i);
                     }
-                }
-                break;
-            case 'h': // EnableLineWrap:
-                _TermLineWrap = true;
-                break;
-            case 'l': // DisableLineWrap:
-                _TermLineWrap = false;
-                break;
-            default:
-                //if (code != '@') alert(code);
-                break;
+                    break;
+                case 'H': // MoveCursor:
+                    if (argslen == 2) {
+                        if (args[0] < 1) args[0] = 1;
+                        if (args[1] < 1) args[1] = 1;
+                        if (args[0] > obj.height) args[0] = obj.height;
+                        if (args[1] > obj.width) args[1] = obj.width;
+                        _termy = args[0] - 1;
+                        _termx = args[1] - 1;
+                    }
+                    else {
+                        _termy = 0;
+                        _termx = 0;
+                    }
+                    break;
+                case 'm': // ScreenAttribs:
+                    // Change attributes
+                    for (i = 0; i < argslen; i++) {
+                        if (!args[i] || args[i] == 0) {
+                            // Reset Attributes
+                            _TermCurrentBColor = 0;
+                            _TermCurrentFColor = 7;
+                            _TermCurrentReverse = 0;
+                        }
+                        else if (args[i] == 1) {
+                            // Bright
+                            if (_TermCurrentFColor < 8) _TermCurrentFColor += 8;
+                        }
+                        else if (args[i] == 2 || args[i] == 22) {
+                            // Dim
+                            if (_TermCurrentFColor >= 8) _TermCurrentFColor -= 8;
+                        }
+                        else if (args[i] == 7) {
+                            // Set Reverse attribute true
+                            _TermCurrentReverse = 2;
+                        }
+                        else if (args[i] == 27) {
+                            // Set Reverse attribute false
+                            _TermCurrentReverse = 0;
+                        }
+                        else if (args[i] >= 30 && args[i] <= 37) {
+                            // Set Foreground Color
+                            var bright = (_TermCurrentFColor >= 8);
+                            _TermCurrentFColor = (args[i] - 30);
+                            if (bright && _TermCurrentFColor <= 8) _TermCurrentFColor += 8;
+                        }
+                        else if (args[i] >= 40 && args[i] <= 47) {
+                            // Set Background Color
+                            _TermCurrentBColor = (args[i] - 40);
+                        }
+                        else if (args[i] >= 90 && args[i] <= 99) {
+                            // Set Bright Foreground Color
+                            _TermCurrentFColor = (args[i] - 82);
+                        }
+                        else if (args[i] >= 100 && args[i] <= 109) {
+                            // Set Bright Background Color
+                            _TermCurrentBColor = (args[i] - 92);
+                        }
+                    }
+                    break;
+                case 'K': // EraseLine:
+                    if (argslen == 0 || (argslen == 1 && (!args[0] || args[0] == 0))) {
+                        _EraseCursorToEol(); // Erase from the cursor to the end of the line
+                    } else if (argslen == 1) {
+                        if (args[0] == 1) { // Erase from the beginning of the line to the cursor
+                            _EraseBolToCursor();
+                        } else if (args[0] == 2) { // Erase the line with the cursor
+                            _EraseLine(_termy);
+                        }
+                    }
+                    break;
+                case 'h': // EnableLineWrap:
+                    _TermLineWrap = true;
+                    break;
+                case 'l': // DisableLineWrap:
+                    _TermLineWrap = false;
+                    break;
+                case 'r': // Set the scroll region
+                    if (argslen == 2) { _scrollRegion = [args[0] - 1, args[1] - 1]; }
+                    if (_scrollRegion[0] < 0) { _scrollRegion[0] = 0; }
+                    if (_scrollRegion[0] > 24) { _scrollRegion[0] = 24; }
+                    if (_scrollRegion[1] < 0) { _scrollRegion[1] = 0; }
+                    if (_scrollRegion[1] > 24) { _scrollRegion[1] = 24; }
+                    if (_scrollRegion[0] > _scrollRegion[1]) { _scrollRegion[0] = _scrollRegion[1]; }
+                    break;
+                case 'S': // Scroll up the scroll region X lines, default 1
+                    var x = 1;
+                    if (argslen == 1) { x = args[0] }
+                    for (var y = _scrollRegion[0]; y <= _scrollRegion[1] - x; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = _tscreen[y + x][z]; _scratt[y][z] = _scratt[y + x][z]; }
+                    }
+                    for (var y = _scrollRegion[1] - x + 1; y < _scrollRegion[1]; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
+                    }
+                    break;
+                case 'T': // Scroll down the scroll region X lines, default 1
+                    var x = 1;
+                    if (argslen == 1) { x = args[0] }
+                    for (var y = _scrollRegion[1]; y > _scrollRegion[0] + x; y--) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = _tscreen[y - x][z]; _scratt[y][z] = _scratt[y - x][z]; }
+                    }
+                    for (var y = _scrollRegion[0] + x; y > _scrollRegion[0]; y--) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
+                    }
+                    break;
+                default:
+                    //if (code != '@') alert(code);
+                    //console.log('unknown terminal code', code, args, mode);
+                    break;
+            }
         }
     }
 
@@ -366,6 +437,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     function _ProcessVt100Char(c) {
         if (c == '\0' || c.charCodeAt() == 7) return; // Ignore null & bell
         var ch = c.charCodeAt();
+        //console.log('_ProcessVt100Char', ch, c);
 
         // ###BEGIN###{Terminal-Enumation-All}
         // UTF8 Terminal
@@ -401,8 +473,8 @@ var CreateAmtRemoteTerminal = function (divid) {
         switch (c) {
             case '\b': // Backspace
                 if (_termx > 0) {
-                    _termx = _termx - 1;
-                    _TermDrawChar(' ');
+                    _termx--;
+                    if (_backSpaceErase) { _TermDrawChar(' '); }
                 }
                 break;
             case '\t': // tab
@@ -411,12 +483,12 @@ var CreateAmtRemoteTerminal = function (divid) {
                 break;
             case '\n': // Linefeed
                 _termy++;
-                if (_termy > (obj.height - 1)) {
+                if (_termy > _scrollRegion[1]) {
                     // Move everything up one line
                     _TermMoveUp(1);
-                    _termy = (obj.height - 1);
+                    _termy = _scrollRegion[1];
                 }
-                if (obj.lineFeed = '\n') { _termx = 0; } // *** If we are in Linux mode, \n will also return the cursor to the first col
+                if (obj.lineFeed = '\r') { _termx = 0; } // *** If we are in Linux mode, \n will also return the cursor to the first col
                 break;
             case '\r': // Carriage Return
                 _termx = 0;
@@ -452,14 +524,16 @@ var CreateAmtRemoteTerminal = function (divid) {
         _TermCurrentReverse = 0;
         _TermCurrentFColor = 7;
         _TermCurrentBColor = 0;
-        _TermLineWrap = true;
-        _termx = 0;
-        _termy = 0;
+        _TermLineWrap = _cursorVisible = true;
+        _termx = _termy = 0;
+        _backSpaceErase = false;
+        _scrollRegion = [0, 24];
+        _altKeypadMode = false;
         obj.TermClear(7 << 6);
     }
 
     function _EraseCursorToEol() {
-        var t = (_TermCurrentBColor << 12);
+        var t = (_TermCurrentFColor << 6) + (_TermCurrentBColor << 12) + _TermCurrentReverse;
         for (var x = _termx; x < obj.width; x++) {
             _tscreen[_termy][x] = ' ';
             _scratt[_termy][x] = t;
@@ -467,7 +541,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     }
 
     function _EraseBolToCursor() {
-        var t = (_TermCurrentBColor << 12);
+        var t = (_TermCurrentFColor << 6) + (_TermCurrentBColor << 12) + _TermCurrentReverse;
         for (var x = 0; x < _termx; x++) {
             _tscreen[_termy][x] = ' ';
             _scratt[_termy][x] = t;
@@ -475,7 +549,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     }
 
     function _EraseLine(line) {
-        var t = (_TermCurrentBColor << 12);
+        var t = (_TermCurrentFColor << 6) + (_TermCurrentBColor << 12) + _TermCurrentReverse;
         for (var x = 0; x < obj.width; x++) {
             _tscreen[line][x] = ' ';
             _scratt[line][x] = t;
@@ -487,11 +561,11 @@ var CreateAmtRemoteTerminal = function (divid) {
 
     function _TermMoveUp(linecount) {
         var x, y;
-        for (y = 0; y < obj.height - linecount; y++) {
+        for (y = _scrollRegion[0]; y <= _scrollRegion[1] - linecount; y++) {
             _tscreen[y] = _tscreen[y + linecount];
             _scratt[y] = _scratt[y + linecount];
         }
-        for (y = obj.height - linecount; y < obj.height; y++) {
+        for (y = _scrollRegion[1] - linecount + 1; y <= _scrollRegion[1]; y++) {
             _tscreen[y] = [];
             _scratt[y] = [];
             for (x = 0; x < obj.width; x++) {
@@ -504,7 +578,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     obj.TermHandleKeys = function (e) {
         if (!e.ctrlKey) {
             if (e.which == 127) obj.TermSendKey(8);
-            else if (e.which == 13) obj.TermSendKeys(obj.lineFeed);
+            else if (e.which == 13) { obj.TermSendKeys(obj.lineFeed); }
             else if (e.which != 0) obj.TermSendKey(e.which);
             return false;
         }
@@ -527,10 +601,19 @@ var CreateAmtRemoteTerminal = function (divid) {
             return;
         }
         if (e.which == 27) { obj.TermSendKeys(String.fromCharCode(27)); return true; }; // ESC
-        if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 91, 68)); return true; }; // Left
-        if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 91, 65)); return true; }; // Up
-        if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 91, 67)); return true; }; // Right
-        if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 91, 66)); return true; }; // Down
+
+        if (_altKeypadMode == true) {
+            if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 79, 68)); return true; }; // Left
+            if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 79, 65)); return true; }; // Up
+            if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 79, 67)); return true; }; // Right
+            if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 79, 66)); return true; }; // Down
+        } else {
+            if (e.which == 37) { obj.TermSendKeys(String.fromCharCode(27, 91, 68)); return true; }; // Left
+            if (e.which == 38) { obj.TermSendKeys(String.fromCharCode(27, 91, 65)); return true; }; // Up
+            if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 91, 67)); return true; }; // Right
+            if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 91, 66)); return true; }; // Down
+        }
+
         if (e.which == 9) { obj.TermSendKeys("\t"); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return true; }; // TAB
 
         // F1 to F12 keys
@@ -569,12 +652,12 @@ var CreateAmtRemoteTerminal = function (divid) {
         for (var y = 0; y < obj.height; ++y) {
             for (var x = 0; x < obj.width; ++x) {
                 newat = _scratt[y][x];
-                if (_termx == x && _termy == y) { newat |= _VTREVERSE; } // If this is the cursor location, reverse the color.
+                if (_termx == x && _termy == y && _cursorVisible) { newat |= _VTREVERSE; } // If this is the cursor location, reverse the color.
                 if (newat != oldat) {
                     buf += closetag;
                     closetag = '';
                     x1 = 6; x2 = 12;
-                    if (newat & _VTREVERSE) { x1 = 12; x2 = 6;}
+                    if (newat & _VTREVERSE) { x1 = 12; x2 = 6; }
                     buf += '<span style="color:#' + _TermColors[(newat >> x1) & 0x3F] + ';background-color:#' + _TermColors[(newat >> x2) & 0x3F];
                     if (newat & _VTUNDERLINE) buf += ';text-decoration:underline';
                     buf += ';">';
@@ -584,17 +667,11 @@ var CreateAmtRemoteTerminal = function (divid) {
 
                 c = _tscreen[y][x];
                 switch (c) {
-                    case '&':
-                        buf += '&amp;'; break;
-                    case '<':
-                        buf += '&lt;'; break;
-                    case '>':
-                        buf += '&gt;'; break;
-                    case ' ':
-                        buf += '&nbsp;'; break;
-                    default:
-                        buf += c;
-                        break;
+                    case '&': buf += '&amp;'; break;
+                    case '<': buf += '&lt;'; break;
+                    case '>': buf += '&gt;'; break;
+                    case ' ': buf += '&nbsp;'; break;
+                    default: buf += c; break;
                 }
             }
             if (y != (obj.height - 1)) buf += '<br>';
