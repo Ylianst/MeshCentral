@@ -30,7 +30,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.1.1.20151003.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
-    <title>MeshCentral</title>
+    <title>{{{title}}}</title>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none">
     <!-- right click menu -->
@@ -42,113 +42,107 @@
         <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
         <div id="cxconsole" class="cmtext" onclick="cmaction(6,event)">Console</div>
         <hr id="cxmgroupsplit" />
-        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style=display:none>Multi-Desktop</div>
+        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style="display:none">Multi-Desktop</div>
     </div>
     <div id="meshContextMenu" class="contextMenu,noselect" style="display: none; min-width: 0px">
         <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1,event)">Select All</div>
         <div id="cxselectnone" class="cmtext" onclick="cmmeshaction(2,event)">Select None</div>
-        <hr id="cxmgroupsplit2" style=display:none />
-        <div id="cxmmdesktop" class="cmtext" style=display:none onclick="cmmeshaction(3,event)">Multi-Desktop</div>
+        <hr id="cxmgroupsplit2" style="display:none" />
+        <div id="cxmmdesktop" class="cmtext" style="display:none" onclick="cmmeshaction(3,event)">Multi-Desktop</div>
     </div>
     <!-- main page -->
     <div id=container style=max-height:100vh;position:relative>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
         <div id=mastheadx></div>
-        <div id=masthead class=noselect style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden">
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:20px;padding-top:8px">
-                <strong><font style="font-size:46px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
-            </div>
-            <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:14px">
-                <strong><font style="font-size:14px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
-            </div>
+        <div id=masthead class=noselect>
+            <div class="title">{{{title}}}</div>
+            <div class="title2">{{{title2}}}</div>
             <div style="float:right">
-                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display:none;min-width:28px;font-size:20px;border-radius:5px;background-color:lightblue;text-align:center;margin:8px;cursor:pointer;padding:4px" title="Click to view current notifications">0</div>
+                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
             <p id="logoutControl">{{{logoutControl}}}</p>
         </div>
-        <div id="page_leftbar" style="height:calc(100vh - 66px);width:90px;position:absolute;z-index:1000;background:#113962;background:linear-gradient(to bottom, #104893 0%,#113962 100%);color:white;display:none">
+        <div id="page_leftbar">
             <div style="height:16px"></div>
             <div id=LeftMenuMyDevices class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1)>
-                <div class="lb2" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb2"></div>
             </div>
             <div id=LeftMenuMyAccount class="lbbutton" title="My Account" onclick=go(2)>
-                <div class="lb1" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb1"></div>
             </div>
             <div id=LeftMenuMyEvents class="lbbutton" title="My Events" onclick=go(3)>
-                <div class="lb3" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb3"></div>
             </div>
             <div id=LeftMenuMyFiles class="lbbutton" title="My Files" onclick=go(5)>
-                <div class="lb4" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb4"></div>
             </div>
             <div id=LeftMenuMyUsers class="lbbutton" title="My Users" onclick=go(4)>
-                <div class="lb5" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb5"></div>
             </div>
             <div id=LeftMenuMyServer class="lbbutton" title="My Server" onclick=go(6) style="display:none">
-                <div class="lb6" style="position:absolute;top:6px;left:6px"></div>
+                <div class="lb6"></div>
             </div>
         </div>
-        <div id="page_content" style="max-height:calc(100vh - 130px)">
+        <div id="page_content">
             <div id=topbarmaster>
                 <div id=topbar class=noselect>
                     <div>
                         <div style="position:relative">
-                            <div style="position:absolute;top:3px;right:6px">
-                                <span title="Toggle full width" style="cursor:pointer;color:white" onclick="toggleFullScreen(1)">&harr;</span>
-                            </div>
-                            <table id=MainMenuSpan style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                            <div id=toggle title="Toggle full width" onclick="toggleFullScreen(1)">&harr;</div>
+                            <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
-                                    <td id=MainMenuMyDevices style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(1)>My Devices</td>
-                                    <td id=MainMenuMyAccount style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(2)>My Account</td>
-                                    <td id=MainMenuMyEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(3)>My Events</td>
-                                    <td id=MainMenuMyFiles style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(5)>My Files</td>
-                                    <td id=MainMenuMyUsers style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(4)>My Users</td>
-                                    <td id=MainMenuMyServer style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(6)>My Server</td>
-                                    <td class=style3 style="text-align:right;height:24px">&nbsp;</td>
+                                    <td id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1)>My Devices</td>
+                                    <td id=MainMenuMyAccount class="topbar_td style3x" onclick=go(2)>My Account</td>
+                                    <td id=MainMenuMyEvents class="topbar_td style3x" onclick=go(3)>My Events</td>
+                                    <td id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5)>My Files</td>
+                                    <td id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4)>My Users</td>
+                                    <td id=MainMenuMyServer class="topbar_td style3x" onclick=go(6)>My Server</td>
+                                    <td class="topbar_td_end style3">&nbsp;</td>
                                 </tr>
                             </table>
-                            <div id=MainSubMenuSpan style=display:none>
-                                <table id=MainSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                            <div id=MainSubMenuSpan style="display:none">
+                                <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=MainDev style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(10)>General</td>
-                                        <td id=MainDevDesktop style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(11)>Desktop</td>
-                                        <td id=MainDevTerminal style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(12)>Terminal</td>
-                                        <td id=MainDevFiles style=width:100px;height:24px;cursor:pointer;display:none class=style3x onclick=go(13)>Files</td>
-                                        <td id=MainDevEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(16)>Events</td>
-                                        <td id=MainDevAmt style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(14)>Intel&reg; AMT</td>
-                                        <td id=MainDevConsole style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(15)>Console</td>
-                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                        <td id=MainDev class="topbar_td style3x" onclick=go(10)>General</td>
+                                        <td id=MainDevDesktop class="topbar_td style3x" onclick=go(11)>Desktop</td>
+                                        <td id=MainDevTerminal class="topbar_td style3x" onclick=go(12)>Terminal</td>
+                                        <td id=MainDevFiles class="topbar_td style3x" onclick=go(13)>Files</td>
+                                        <td id=MainDevEvents class="topbar_td style3x" onclick=go(16)>Events</td>
+                                        <td id=MainDevAmt class="topbar_td style3x" onclick=go(14)>Intel&reg; AMT</td>
+                                        <td id=MainDevConsole class="topbar_td style3x" onclick=go(15)>Console</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
                                     </tr>
                                 </table>
                             </div>
-                            <div id=MeshSubMenuSpan style=display:none>
-                                <table id=MeshSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                            <div id=MeshSubMenuSpan style="display:none">
+                                <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=MeshGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(20)>General</td>
-                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                        <td id=MeshGeneral class="topbar_td style3x" onclick=go(20)>General</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
                                     </tr>
                                 </table>
                             </div>
-                            <div id=UserSubMenuSpan style=display:none>
-                                <table id=UserSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                            <div id=UserSubMenuSpan style="display:none">
+                                <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=UserGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(30)>General</td>
-                                        <td id=UserEvents style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(31)>Events</td>
-                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                        <td id=UserGeneral class="topbar_td style3x" onclick=go(30)>General</td>
+                                        <td id=UserEvents class="topbar_td style3x" onclick=go(31)>Events</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
                                     </tr>
                                 </table>
                             </div>
-                            <div id=ServerSubMenuSpan style=display:none>
-                                <table id=ServerSubMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                            <div id=ServerSubMenuSpan style="display:none">
+                                <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
                                     <tr>
-                                        <td id=ServerGeneral style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(6)>General</td>
-                                        <td id=ServerStats style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(40)>Stats</td>
-                                        <td id=ServerConsole style=width:100px;height:24px;cursor:pointer class=style3x onclick=go(115)>Console</td>
-                                        <td class=style3 style=height:24px>&nbsp;</td>
+                                        <td id=ServerGeneral class="topbar_td style3x" onclick=go(6)>General</td>
+                                        <td id=ServerStats class="topbar_td style3x" onclick=go(40)>Stats</td>
+                                        <td id=ServerConsole class="topbar_td style3x" onclick=go(115)>Console</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
                                     </tr>
                                 </table>
                             </div>
                             <div id=UserDummyMenuSpan>
-                                <table id=UserDummyMenu style=width:100%;height:22px cellpadding=0 cellspacing=0 class=style1>
+                                <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
                                     <tr><td class=style3 style="text-align:right;height:24px">&nbsp;</td></tr>
                                 </table>
                             </div>
@@ -157,38 +151,38 @@
                 </div>
             </div>
             <div id="column_l">
-                <div id=p0 style=display:none>
-                    <div id=p0message style=margin:50px;text-align:center><span id=p0span>Server disconnected</span>, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
+                <div id=p0 style="display:none">
+                    <div id=p0message><span id=p0span>Server disconnected</span>, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
                 </div>
-                <div id=p1 style=display:none>
-                    <div style="float:right;display:none" id="devListToolbarViewIcons">
+                <div id=p1 style="display:none">
+                    <div style="display:none" id="devListToolbarViewIcons">
                         <div id=devViewButton1 class="viewSelector" onclick=onDeviceViewChange(1) title="Columns"><div class="viewSelector2"></div></div>
                         <div id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) title="List"><div class="viewSelector1"></div></div>
                         <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
                         <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
                     </div><div><h1>My Devices</h1></div>
-                    <table class="noselect" style=width:100%;height:24px;background-color:#d3d9d6;vertical-align:middle;border-spacing:0>
+                    <table id="devListToolbarSpan" class="noselect">
                         <tr>
                             <td class=h1></td>
-                            <td id=devListToolbar class=style14 style=display:none>
+                            <td id=devListToolbar class=style14 style="display:none">
                                 &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                                 <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                                <input id=SearchInput type=text style=width:120px placeholder=Filter onchange=masterUpdate(5) onkeyup=masterUpdate(5) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                                <input id=SearchInput type=text placeholder=Filter onchange=masterUpdate(5) onkeyup=masterUpdate(5) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                                 <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                             </td>
-                            <td id=kvmListToolbar class=style14 style=height:100%;display:none>
+                            <td id=kvmListToolbar class=style14 style="display:none">
                                 &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                                 <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                                 <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                                 <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                             </td>
-                            <td id=devMapToolbar class=style14 style=height:100%;display:none>
+                            <td id=devMapToolbar class=style14 style="display:none">
                                 &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
                                 <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                                <input type=button id=refreshmap title="Reset map view" value=Reset style=margin-left:5px onclick=refreshMap(false,true) />
+                                <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                             </td>
                             <td class="auto-style1" style=height:100%>
-                                <div style="float:right;display:none" id=devListToolbarView>
+                                <div style="display:none" id=devListToolbarView>
                                     View
                                     <select id=viewselect onchange=onDeviceViewChange()>
                                         <option value=1>Columns</option>
@@ -197,7 +191,7 @@
                                         <option id=viewselectmapoption value=4>Map</option>
                                     </select>
                                 </div>
-                                <div style=float:right;display:none id=devListToolbarSort>
+                                <div style="display:none" id=devListToolbarSort>
                                     Sort
                                     <select id=sortselect onchange=masterUpdate(6)>
                                         <option>Group</option>
@@ -207,7 +201,7 @@
                                     </select>
                                     &nbsp;
                                 </div>
-                                <div style=float:right;display:none id=devListToolbarSize>
+                                <div style="display:none" id=devListToolbarSize>
                                     Size
                                     <select id=sizeselect onchange=onDeviceViewChange()>
                                         <option value=0>Small</option>
@@ -220,65 +214,65 @@
                             <td class=h2></td>
                         </tr>
                     </table>
-                    <div id=NoMeshesPanel style=display:none>
-                        <table style="width:100%;padding:20px">
+                    <div id=NoMeshesPanel style="display:none">
+                        <table>
                             <tr>
                                 <td valign="top" style="width: 50px">
-                                    <img src="images/info.png" height="48" width="47" />
+                                    <img src="images/info.png" />
                                 </td>
                                 <td>
-                                    To get started, <a onclick=account_createMesh() style=cursor:pointer><strong>click here to create a device group</strong></a>.
+                                    To get started, <a onclick=account_createMesh() ><strong>click here to create a device group</strong></a>.
                                 </td>
                             </tr>
                         </table>
                     </div>
-                    <div id="xdevices" class="noselect" style="max-height:calc(100vh - 239px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:none"></div>
-                    <div id="xdevicesmap" style="height:calc(100vh - 239px);width:100%;overflow:hidden;position:relative;display:none">
-                        <div id=xmapSearchResultsDlg style="position:absolute;display:none;max-height:280px;left:5px;top:5px;max-width:250px;z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666">
-                            <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
-                                <div id=xmapSearchClose style=float:right;padding:5px;cursor:pointer onclick=mapCloseSearchWindow()><b>X</b></div>
+                    <div id="xdevices" class="noselect" style="display:none"></div>
+                    <div id="xdevicesmap" style="display:none">
+                        <div id=xmapSearchResultsDlg style="display:none">
+                            <div id=xmapSearchResultsBck>
+                                <div id=xmapSearchClose onclick=mapCloseSearchWindow()><b>X</b></div>
                                 <div style=padding:5px>Location Results</div>
                                 <div style=width:100%;margin:6px></div>
                             </div>
                             <div id=xmapSearchResults style=margin:6px></div>
                         </div>
                     </div>
-                    <div id="xmap-info-window" style="text-shadow: 0px 0px 15px #FFF"></div>
+                    <div id="xmap-info-window"></div>
                 </div>
                 <div id=p2 style="display:none">
                     <h1>My Account</h1>
-                    <img id="p2AccountImage" alt="" width=150 height=103 src=images/mainaccount.jpg style=margin-bottom:10px;margin-right:20px;float:right />
+                    <img id="p2AccountImage" alt="" src="images/mainaccount.jpg"/>
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
-                            <div id="manageAuthApp"><div style="width:15px;display:inline-block"><span id="authAppSetupCheck" style="color:green;font-size:10px"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a><br /></span></div>
-                            <div id="manageHardwareOtp"><div style="width:15px;display:inline-block"><span id="authKeySetupCheck" style="color:green;font-size:10px"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageHardwareOtp(0)" style="cursor:pointer">Manage security keys</a><br /></span></div>
-                            <div id="manageOtp"><div style="width:15px;display:inline-block"><span id="authCodesSetupCheck" style="color:green;font-size:10px"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a><br /></span></div>
+                            <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
+                            <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
+                            <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a onclick="account_manageOtp(0)">Manage backup codes</a><br /></span></div>
                         </div>
                     </div>
                     <div id="p2AccountActions">
                         <p><strong>Account actions</strong></p>
                         <p style="margin-left:40px">
-                            <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a><br /></span>
-                            <a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a><br />
-                            <a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
-                            <a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a><br />
+                            <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()">Verify email</a><br /></span>
+                            <a onclick="account_showChangeEmail()">Change email address</a><br />
+                            <a onclick="account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
+                            <a onclick="account_showDeleteAccount()">Delete account</a><br />
                         </p>
                         <br style=clear:both />
                     </div>
                     <strong>Device Groups</strong>
-                    ( <a onclick=account_createMesh() style=cursor:pointer><img height=12 src="images/icon-addnew.png" width=12 border=0 /> New</a> )
+                    ( <a onclick=account_createMesh() class="newMeshBtn"> New</a> )
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style=margin-left:40px;display:none>No device groups. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
+                    <div id=p2noMeshFound style="display:none">No device groups. <a onclick=account_createMesh()><strong>Get started here!</strong></a></div>
                     <br style=clear:both />
                 </div>
-                <div id=p3 style=display:none>
+                <div id=p3 style="display:none">
                     <h1>My Events</h1>
-                    <table style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0>
+                    <table class="pTable">
                         <tr>
                             <td class=h1></td>
-                            <td>&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style=display:none value="Delete All..." /></td>
+                            <td>&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style="display:none" value="Delete All..." /></td>
                             <td class=auto-style1>
                                 Show
                                 <select id=p3limitdropdown onchange=refreshEvents()>
@@ -292,11 +286,11 @@
                             <td class=h2></td>
                         </tr>
                     </table>
-                    <div id=p3events style="height:calc(100vh - 243px);overflow-y:scroll"></div>
+                    <div id=p3events style=""></div>
                 </div>
-                <div id=p4 style=display:none>
+                <div id=p4 style="display:none">
                     <h1>My Users</h1>
-                    <table style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0>
+                    <table class="pTable">
                         <tr>
                             <td class=h1></td>
                             <td class=style14>
@@ -311,14 +305,14 @@
                             <td class=h2></td>
                         </tr>
                     </table>
-                    <div id="p3users" style="max-height:calc(100vh - 243px);overflow-y:auto"></div>
+                    <div id="p3users"></div>
                 </div>
-                <div id=p5 style=display:none>
+                <div id=p5 style="display:none">
                     <h1>My Files</h1>
                     <table id="p5toolbar" style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
-                                <div id="p5rightOfButtons" style="float:right;margin-top:3px"></div>
+                            <td id="p5filehead" valign=bottom>
+                                <div id="p5rightOfButtons"></div>
                                 <div>
                                     <input type=button id=p5FolderUp disabled="disabled" onclick="p5folderup();" value="Up" />&nbsp;
                                     <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" onkeypress="return false;" onkeydown="return false;" />&nbsp;
@@ -333,7 +327,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="background-color:#E4E9E7;height:28px">
+                            <td id="p5filesubhead">
                                 <div style=float:right>
                                     <select id=p5sortdropdown onchange=updateFiles()>
                                         <option value="1" selected="selected">Sort by name</option>
@@ -348,7 +342,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id="p5filetable" style="width:100%;height:calc(100vh - 294px);overflow:auto;-webkit-user-select:none;position:relative">
+                    <div id="p5filetable">
                         <!--
                         <form id=p5fileCatchAll method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
                             <input type=file id=p5fileCatchAllInput name=files style="position:absolute;left:0;width:100%;top:0;bottom:0;opacity:0;display:none" onchange="p5fileCatchAllInputChanged(event)" />
@@ -356,34 +350,34 @@
                             <input type=submit id=p5fileCatchAllSubmit style="display:none" />
                         </form>
                         -->
-                        <div id="p5PublicShare" style="display:none;width:100%;overflow:auto;-webkit-user-select:none;background-color:lightsteelblue"><div style="padding:4px">These files are shared publicly, click "link" to get public url.</div></div>
-                        <div id="bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:20px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
-                        <div id="bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:20px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
+                        <div id="p5PublicShare" style=""><div style="padding:4px">These files are shared publicly, click "link" to get public url.</div></div>
+                        <div id="bigok" style="display:none"><b>&checkmark;</b></div>
+                        <div id="bigfail" style="display:none"><b>&#10007;</b></div>
                         <span id="p5files"></span>
                     </div>
                     <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                        <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td></tr>
+                        <tr><td class=style6>&nbsp;<span id="p5bottomstatus"></span></td></tr>
                     </table>
                 </div>
-                <div id=p6 style=display:none>
-                    <img id=MainMeshImage src="serverpic.ashx" style=border-width:0px;height:200px;width:200px;float:right>
+                <div id=p6 style="display:none">
+                    <img id=MainMeshImage src="serverpic.ashx">
                     <h1>My Server</h1>
                     <p id="p2ServerActions"><strong>Server actions</strong></p>
                     <p style="margin-left:40px">
-                        <div id="p2ServerActionsBackup" style="margin-left:40px"><a href="/backup.zip" rel="noreferrer noopener" target="_blank" style="cursor:pointer">Download server backup</a></div>
-                        <div id="p2ServerActionsRestore" style="margin-left:40px"><a onclick="server_showRestoreDlg()" style="cursor:pointer">Restore server with backup</a></div>
-                        <div id="p2ServerActionsVersion" style="margin-left:40px"><a onclick="server_showVersionDlg()" style="cursor:pointer">Check server version</a></div>
-                        <div id="p2ServerActionsErrors" style="margin-left:40px"><a onclick="server_showErrorsDlg()" style="cursor:pointer">Show server error log</a></div>
+                        <div id="p2ServerActionsBackup"><a href="/backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                        <div id="p2ServerActionsRestore"><a onclick="server_showRestoreDlg()">Restore server with backup</a></div>
+                        <div id="p2ServerActionsVersion"><a onclick="server_showVersionDlg()">Check server version</a></div>
+                        <div id="p2ServerActionsErrors"><a onclick="server_showErrorsDlg()">Show server error log</a></div>
                     </p>
                     <br /><strong>Server Statistics</strong><br /><br />
-                    <div id="serverStats" style="margin-left:40px">
+                    <div id="serverStats">
                         <div id="serverCpuChartView" style="display:none">
-                            <div style="width:60px;display:inline-block"><canvas id="serverCpuChart" style="width:60px;height:60px"></canvas></div>
-                            <div style="width:160px;display:inline-block" id="serverCpuChartText"></div>
+                            <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
+                            <div class="chartViewText" id="serverCpuChartText"></div>
                         </div>
                         <div id="serverMemoryChartView" style="display:none">
-                            <div style="width:60px;display:inline-block"><canvas id="serverMemoryChart" style="width:60px;height:60px"></canvas></div>
-                            <div style="width:160px;display:inline-block" id="serverMemoryChartText"></div>
+                            <div class="chartViewCanvas"><canvas id="serverMemoryChart"></canvas></div>
+                            <div class="chartViewText" id="serverMemoryChartText"></div>
                         </div><br /><br />
                         <div id="serverStatsTable"></div>
                     </div>
@@ -393,36 +387,36 @@
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id=p10title>
-                                    <div id="p10BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                                    <div id="p10BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                                     <h1>General - <span id=p10deviceName></span></h1>
                                 </div>
                                 <div id=p10html></div>
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px>
-                                <a style=cursor:pointer onclick=p10showiconselector()><img id=MainComputerImage style=border-width:0px;height:200px;width:200px></a>
-                                <div style="width:100%;text-align:center"><strong><span id=MainComputerState></span></strong></div>
+                                <a onclick=p10showiconselector()><img id=MainComputerImage></a>
+                                <div id=MainComputerState></div>
                             </td>
                         </tr>
                     </table><br>
                     <div id=p10html2></div>
                     <div id=p10html3></div>
                 </div>
-                <div id=p11 class=noselect style=display:none>
+                <div id=p11 class="noselect" style="display:none">
                     <div id="p11title">
                         <div id=p11deviceNameHeader>
-                            <div id="p11BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
-                            <div style="float:right" id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
+                            <div id="p11BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                            <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                             <h1>Desktop - <span id=p11deviceName></span></h1>
                         </div>
                     </div>
-                    <div id="p14warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showFeaturesDlg()">
-                        <div class=icon2 style="float:left;margin:7px"></div>
-                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+                    <div id="p14warning" onclick="showFeaturesDlg()">
+                        <div class="icon2"></div>
+                        <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
                     </div>
-                    <div id="p14warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick="showPowerActionDlg()">
-                        <div class=icon2 style="float:left;margin:7px"></div>
-                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
+                    <div id="p14warning2" onclick="showPowerActionDlg()">
+                        <div class="icon2"></div>
+                        <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                     </div>
                     <table id=deskarea0 cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr id=deskarea1>
@@ -438,7 +432,7 @@
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
                                 </div>
                                 <div>
-                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:left;font-size:large;cursor:pointer;display:none">&nbsp;&#x2716;</div>
+                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
                                     <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                                     <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
@@ -453,17 +447,17 @@
                             </td>
                         </tr>
                         <tr id=deskarea3>
-                            <td id=deskarea3x style="background:black;text-align:center;position:relative;overflow:hidden">
-                                <div id=DeskFocus style="overflow:hidden;color:transparent;border:3px dotted rgba(255,0,0,.2);position:absolute;border-radius:5px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
-                                <div id=DeskParent style="overflow:hidden">
-                                    <canvas id=Desk width=640 height=480 style="overflow:hidden;width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                            <td id=deskarea3x style="">
+                                <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
+                                <div id=DeskParent>
+                                    <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                                 </div>
-                                <div id=DeskTools style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
-                                    <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
-                                    <div id=DeskToolsBar style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
+                                <div id=DeskTools>
+                                    <a id=DeskToolsRefreshButton style="" onclick="refreshDeskTools()">Refresh</a>
+                                    <div id=DeskToolsBar>Processes</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
                                         <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer title="Sort by process id" onclick=sortProcess(0)>PID</a><a style=cursor:pointer title="Sort by name" onclick=sortProcess(1)>Name</a></div>
-                                        <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
+                                        <div id="DeskToolsProcesses" style=""></div>
                                     </div>
                                 </div>
                             </td>
@@ -471,7 +465,7 @@
                         <tr id=deskarea4>
                             <td style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
-                                    <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
+                                    <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
                                     <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                                     <span id=DeskChatButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
                                     <span id=DeskNotifyButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
@@ -501,13 +495,13 @@
                         <div id="p12BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Terminal - <span id=p12deviceName></span></h1>
                     </div>
-                    <div id="p12warning" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showFeaturesDlg()>
-                        <div class="icon2" style="float:left;margin:7px"></div>
-                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+                    <div id="p12warning" onclick=showFeaturesDlg()>
+                        <div class="icon2"></div>
+                        <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
                     </div>
-                    <div id="p12warning2" style='max-width:100%;display:none;cursor:pointer;margin-bottom:5px' onclick=showPowerActionDlg()>
-                        <div class="icon2" style="float:left;margin:7px"></div>
-                        <div style='width:auto;border-radius:8px;padding:8px;background-color:lightsalmon'>Remote computer is not powered on, click here to issue a power command.</div>
+                    <div id="p12warning2" onclick=showPowerActionDlg()>
+                        <div class="icon2"></div>
+                        <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                     </div>
                     <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
                         <tr>
@@ -557,7 +551,7 @@
                         </tr>
                     </table>
                 </div>
-                <div id=p13 style=display:none>
+                <div id=p13 style="display:none">
                     <div id="p13title">
                         <div id="p13BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Files - <span id=p13deviceName></span></h1>
@@ -614,17 +608,17 @@
                         <span id="p13files"></span>
                     </div>
                     <table id="p13toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                        <tr><td class=style6 style="text-align:left;padding:3px">&nbsp;<span id="p13bottomstatus"></span></td></tr>
+                        <tr><td class=style6>&nbsp;<span id="p13bottomstatus"></span></td></tr>
                     </table>
                 </div>
-                <div id=p14 style=display:none>
+                <div id=p14 style="display:none">
                     <div id="p14title">
                         <div id="p14BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
                     </div>
                     <iframe id=p14iframe style="width:100%;height:calc(100vh - 242px);border:0;overflow:hidden" src="/commander.htm"></iframe>
                 </div>
-                <div id=p15 style=display:none>
+                <div id=p15 style="display:none">
                     <div id="p15title">
                         <div id="p15BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1><span id=p15deviceName></span></h1>
@@ -664,16 +658,16 @@
                         </tr>
                     </table>
                 </div>
-                <div id=p16 style=display:none>
+                <div id=p16 style="display:none">
                     <div id="p16title">
                         <div id="p16BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Events - <span id=p16deviceName></span></h1>
                     </div>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
-                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
-                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style=display:none value="Delete All..." />&nbsp;</div>-->
-                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshDeviceEvents() />&nbsp;</div>
+                    <div style="width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px">
+                        <div class="h1pre">&nbsp;</div>
+                        <div class="h1" style="float:left">&nbsp;</div>
+                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style="display:none" value="Delete All..." />&nbsp;</div>-->
+                        <div class="style14" style="float:left">&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshDeviceEvents() />&nbsp;</div>
                         <div class="auto-style1" style="height:100%;float:right">
                             Show
                             <select id=p16limitdropdown onchange=refreshDeviceEvents()>
@@ -683,8 +677,8 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
-                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
-                            <div class=h2 style=height:100%;float:right>&nbsp;</div>
+                            <div class="h2end"></div>
+                            <div class="h2" style="height:100%;float:right">&nbsp;</div>
                         </div>
                     </div>
                     <div id=p16events style="max-height:calc(100vh - 267px);overflow-y:auto"></div>
@@ -698,7 +692,7 @@
                     <h1>General - <span id=p20meshName></span></h1>
                     <p id=p20info></p>
                 </div>
-                <div id=p30 style=display:none>
+                <div id=p30 style="display:none">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
@@ -721,14 +715,14 @@
                     <div id=p30html2></div>
                     <div id=p30html3></div>
                 </div>
-                <div id=p31 style=display:none>
+                <div id=p31 style="display:none">
                     <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                     <h1>Events - <span id=p31userName></span></h1>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
-                        <div class=style7 style=width:16px;height:100%;float:left>&nbsp;</div>
-                        <div class=h1 style=height:100%;float:left>&nbsp;</div>
-                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style=display:none value="Delete All..." />&nbsp;</div>-->
-                        <div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshUsersEvents() />&nbsp;</div>
+                    <div style="width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px">
+                        <div class="h1pre">&nbsp;</div>
+                        <div class="h1" style="height:100%;float:left">&nbsp;</div>
+                        <!--<div class=style14 style=float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style="display:none" value="Delete All..." />&nbsp;</div>-->
+                        <div class="style14" style="float:left">&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshUsersEvents() />&nbsp;</div>
                         <div class="auto-style1" style="height:100%;float:right">
                             Show
                             <select id=p31limitdropdown onchange=refreshUsersEvents()>
@@ -738,7 +732,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
-                            <div style="height:100%;width:20px;float:right;background-color:#ffffff"></div>
+                            <div class="h2end"></div>
                             <div class="h2" style="height:100%;float:right;">&nbsp;</div>
                         </div>
                     </div>
@@ -783,20 +777,20 @@
                     </tr>
                 </table>
             </div>
-            <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;left:calc((100% / 2) - 200px);display:none">
-                <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
+            <div id=dialog style="display:none">
+                <div id=dialogHeader>
                     <div id=id_dialogclose style=float:right;padding:3px;margin-right:3px;cursor:pointer onclick=setDialogMode()>&#x2716;</div>
                     <div id=id_dialogtitle style=padding:5px></div>
                     <div style=width:100%;margin:6px></div>
                 </div>
-                <div style="margin-right:16px;margin-left:8px">
-                    <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
-                        <div id=id_dialogMessage style="padding:10px"></div>
+                <div id=dialogBody>
+                    <div id=dialog1>
+                        <div id=id_dialogMessage style=""></div>
                     </div>
-                    <div id=dialog2 style="margin:auto;margin:3px">
+                    <div id=dialog2 style="">
                         <div id=id_dialogOptions></div>
                     </div>
-                    <div id=dialog3 style="margin:auto;margin:3px">
+                    <div id=dialog3 style="">
                         <div style=height:26px>
                             <select id=d3uploadMode style=float:right;width:260px onchange=d3modechange()>
                                 <option value=1>Local file upload</option>
@@ -806,9 +800,9 @@
                         </div>
                         <div id=d3localmode style=height:26px;display:none>
                             <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
-                                <input type=text id=d3attrib name=attrib style=display:none />
+                                <input type=text id=d3attrib name=attrib style="display:none" />
                                 <input type=file id=d3localFile name=files style=float:right;width:260px onchange=d3setActions() />
-                                <input type=submit id=d3submit style=display:none />
+                                <input type=submit id=d3submit style="display:none" />
                             </form>
                             <div>Upload File</div>
                         </div>
@@ -873,14 +867,14 @@
                     </div>
                 </div>
                 <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:4px">
-                    <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
-                    <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
-                    <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="width:80px;display:none" onclick="dialogclose(2)"></div>
+                    <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+                    <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+                    <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="display:none" onclick="dialogclose(2)"></div>
                 </div>
             </div>
-            <iframe name="fileUploadFrame" style=display:none></iframe>
-            <form style=display:none method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style=display:none /></form>
-            <form style=display:none method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style=display:none /></form>
+            <iframe name="fileUploadFrame" style="display:none"></iframe>
+            <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style="display:none" /></form>
+            <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style="display:none" /></form>
             <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
         </div>
     </div>
@@ -964,10 +958,10 @@
                 QV('p14title', !(hide & 8));
                 QV('p15title', !(hide & 8));
                 QV('p16title', !(hide & 8));
-                if (hide & 16) {
-                    QV('page_leftbar', false);
-                    QS('page_content').left = '0px';
-                }
+                //if (hide & 16) {
+                //    QV('page_leftbar', false);
+                //    QS('page_content').left = '0px';
+                //}
             }
 
             // We are looking at a single device, remove all the back buttons
@@ -1049,8 +1043,11 @@
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             var hide = 0;
             if (args.hide) { hide = parseInt(args.hide); }
+            console.log("-----------hide:", hide)
             if (webPageFullScreen == false) {
-                QS('container').width = '960px';
+                QC('body').remove("fullscreen");
+                QC('body').remove("arg_hide");
+            /*    QS('container').width = '960px';
                 QS('container')['border-right'] = '1px solid #b7b7b7';
                 QS('container')['border-left'] = '1px solid #b7b7b7';
                 QS('container')['min-width'] = '960px';
@@ -1061,12 +1058,14 @@
                 QS('column_l')["overflow-y"] = '';
                 QS('column_l')["max-height"] = (xxcurrentView >= 10) ? 'calc(100vh - 159px)' : 'calc(100vh - 135px)';
                 QS('container').position = '';
-                QS('page_content').position = '';
-                QV('MainMenuSpan', true);
+                QS('page_content').position = ''; 
+                QV('MainMenuSpan', true); */
                 QV('UserDummyMenuSpan', false);
                 QV('page_leftbar', false);
             } else {
-                QS('container').position = 'absolute';
+                QC('body').add("fullscreen");
+                if (hide & 16) QC('body').add("arg_hide");
+            /*    QS('container').position = 'absolute';
                 QS('container').width = '100%';
                 QS('container').top = '0px';
                 QS('container').bottom = '0px';
@@ -1083,7 +1082,7 @@
                 QS('column_l').width = 'calc(100% - 30px)';
                 QS('column_l')["overflow-y"] = 'auto';
                 QS('column_l')["max-height"] = 'calc(100vh - 135px)';
-                QV('MainMenuSpan', false);
+                QV('MainMenuSpan', false); */
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 QV('page_leftbar', !(hide & 16));
             }
@@ -1320,7 +1319,7 @@
                         node.lastconnect = message.time;
                         node.lastaddr = message.addr;
                         if ((currentNode._id == node._id) && (Q('MainComputerState').innerHTML == '')) {
-                            QH('MainComputerState', '<span style=font-size:12px>Last seen:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>');
+                            QH('MainComputerState', '<span>Last seen:<br />' + new Date(node.lastconnect).toLocaleDateString() + ', ' + new Date(node.lastconnect).toLocaleTimeString() + '</span>');
                         }
                     }
                     break;
@@ -1364,7 +1363,7 @@
                         if (message.netif == null) {
                             QH('d2netinfo', 'No network interface information available for this device.');
                         } else {
-                            var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow-y:auto;line-height:160%>';
+                            var x = '<div class=dialogText>';
 
                             if (currentNode.lastconnect) { x += addHtmlValue2('Last agent connection', new Date(currentNode.lastconnect).toLocaleString()); }
                             if (currentNode.lastaddr) {
@@ -1396,7 +1395,7 @@
                 }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate'))  {
-                        var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow-y:auto;line-height:160%>';
+                        var x = '<div class=dialogText>';
                         if (!message.current) { message.current = 'Unknown'; }
                         if (!message.latest) { message.latest = 'Unknown'; }
                         x += addHtmlValue2('Current Version', '<b>' + EscapeHtml(message.current) + '</b>');
@@ -1416,7 +1415,7 @@
                         if (message.data == null) {
                             setDialogMode(2, "MeshCentral Server Errors", 1, null, 'Server has no error log.');
                         } else {
-                            var x = '<div style=width:100%;max-height:260px;overflow-x:hidden;overflow:auto;line-height:160%;font-size:10px><pre>' + message.data + '<pre></div>';
+                            var x = '<div class="dialogText dialogTextLog"><pre>' + message.data + '<pre></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x + '<br /><label><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to clear error log.</label>');
                             server_showVersionDlgUpdate();
                         }
@@ -2717,7 +2716,7 @@
 
         var powerStateStrings = ['', '<span title="Device is powered on.">Powered</span>', '<span title="Device is in sleep state (S1).">Sleeping</span>', '<span title="Device is in sleep state (S2).">Sleeping</span>', '<span title="Device is in deep sleep state (S3).">Deep Sleep</span>', '<span title="Device is in hibernating state (S4).">Hibernating</span>', '<span title="Device is in powered off state (S5).">Soft-Off</span>', '<span title="Device is detected but power state could not be obtained.">Present</span>'];
         var powerStateStrings2 = ['', 'Device is powered', 'Device is in sleep state (S1)', 'Device is in sleep state (S2)', 'Device is in deep sleep state (S3)', 'Device is hibernating (S4)', 'Device is in soft-off state (S5)', 'Device is present, but power state cannot be determined'];
-        var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
+        var powerColorTable = ['pwsTransparent', 'pwsBlack', 'pwsBlue', 'pwsBlue2', 'pwsLightblue', 'pwsBlueviolet', 'pwsDarkgreen', 'pwsLightseagreen', 'pwsLightseagreen2'];
         function NodeStateStr(node) {
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
@@ -2766,7 +2765,7 @@
 
         function groupActionFunction() {
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2groupop style=float:right;width:250px><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move to device group</option><option value=101>Delete devices</option></select>');
+            x += addHtmlValue('Operation', '<select id=d2groupop><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move to device group</option><option value=101>Delete devices</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -3480,12 +3479,12 @@
         function formatSearchData(data) {
             try {
                 QH('xmapSearchResults','');
-                var dataInfo = JSON.parse(data), count = 0, x = '<div style="overflow-y:auto;width:100%;max-height:240px">';
+                var dataInfo = JSON.parse(data), count = 0, x = '<div class="xmapItem">';
                 for (var i = 0; i < dataInfo.length; i++) {
                     if (dataInfo[i].display_name && dataInfo[i].boundingbox[0] && dataInfo[i].boundingbox[1] && dataInfo[i].boundingbox[2] && dataInfo[i].boundingbox[3]) {
                         count++;
-                        var color = (i % 2 == 0)?'F5F5F5':'EBEBEB';
-                        x += '<div style=cursor:pointer;padding:5px;background-color:#' + color + ' onclick=mapGotoSelectedLocation(this)><div>' + dataInfo[i].display_name + '</div><div style=display:none>' + dataInfo[i].boundingbox[0] + '!#!' + dataInfo[i].boundingbox[1] + '!#!' + dataInfo[i].boundingbox[2] + '!#!' + dataInfo[i].boundingbox[3] + '</div></div>';
+                        var itemclass = (i % 2 == 0)?'xmapItemSel1':'xmapItemSel1';
+                        x += '<div class="' + itemclass + '" onclick=mapGotoSelectedLocation(this)><div>' + dataInfo[i].display_name + '</div><div style=display:none>' + dataInfo[i].boundingbox[0] + '!#!' + dataInfo[i].boundingbox[1] + '!#!' + dataInfo[i].boundingbox[2] + '!#!' + dataInfo[i].boundingbox[3] + '</div></div>';
                     }
                 }
                 x += '</div>';
@@ -3579,7 +3578,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>None</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span title="Click here to edit the server-side device name" onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
@@ -3613,7 +3612,7 @@
                 // Attribute: Description
                 var description = node.desc?EscapeHtml(node.desc):"<i>None</i>";
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>');
+                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton src="images/link5.png" /></span>');
                 } else {
                     x += addDeviceAttribute('Description', description);
                 }
@@ -3687,8 +3686,8 @@
 
                 // Node grouping tags
                 var groupingTags = '<i>None</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
-                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton width=10 height=10 src="images/link5.png" /></span>');
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class="tagSpan">' + node.tags[i] + '</span>'; } }
+                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" /></span>');
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
@@ -3701,23 +3700,23 @@
                 masterUpdate(256);
 
                 // Show bottom buttons
-                x = '<div style=float:right;font-size:x-small>';
+                x = '<div class="p10html3right">';
                 if ((meshrights & 4) != 0) {
                     // TODO: Show change group only if there is another mesh of the same type.
-                    x += '&nbsp;<a style=cursor:pointer onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="Move this device to a different device group">Change Group</a>';
-                    x += '&nbsp;<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                    x += '&nbsp;<a onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="Move this device to a different device group">Change Group</a>';
+                    x += '&nbsp;<a onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
                 }
-                x += '</div><div style=font-size:x-small>';
-                if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
-                if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
-                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a style=cursor:pointer onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+                x += '</div><div class="p10html3left">';
+                if (mesh.mtype == 2) x += '<a onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
+                if (xxmap != null) x += '<a onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
+                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a onclick=p10clickOnce("' + node._id + '","RDP2",3389) title="Requires Microsoft ClickOnce support in your browser.">RDP</a>&nbsp;'; }
                     if (node.agent.id > 4) {
-                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","PSSH",22) title="Requires Microsoft ClickOnce support in your browser.">Putty</a>&nbsp;';
-                        x += '<a style=cursor:pointer onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
+                        x += '<a onclick=p10clickOnce("' + node._id + '","PSSH",22) title="Requires Microsoft ClickOnce support in your browser.">Putty</a>&nbsp;';
+                        x += '<a onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
                     }
                 }
                 x += '</div><br>'
@@ -3788,7 +3787,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = 'MeshCentral - ' + currentNode.name; } else { document.title = 'MeshCentral'; }
+                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -3915,15 +3914,15 @@
                         var width = Math.round(((te - ts) * totalWidth) / 86400000);
                         if (width > 0) {
                             var title = powerStateStrings2[block[2]] + ' from ' + new Date(ts).toLocaleTimeString() + ' to ' + new Date(te).toLocaleTimeString() + '.';
-                            datavalue += '<div title="' + title + '" style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>';
+                            datavalue += '<div class="pwState ' + powerColor(block[2]) + '" title="' + title + '" style="width:' + width + 'px;"></div>';
                         }
                     }
                 }
-                x += '<tr style=' + (((count % 2) == 0)?'background-color:#DDD':'') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                x += '<tr class=' + (((count % 2) == 0)?'altBack':'') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><img style=float:right;cursor:pointer;padding:3px onclick=p10downloadPowerEvents() title="Download power events" src="images/link4.png" />7 Day Power State</th></tr>' + x + '</tbody></table>');
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><img onclick=p10downloadPowerEvents() title="Download power events" src="images/link4.png" />7 Day Power State</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Download the power events for the current device
@@ -3933,7 +3932,7 @@
         }
 
         // Return a color for the given power state
-        function powerColor(x) { if (x < powerColorTable.length) { return powerColorTable[x]; } return 'yellow'; }
+        function powerColor(x) { if (x < powerColorTable.length) { return powerColorTable[x]; } return 'pwsYellow'; }
 
         // Return true if the time block is visible within the start/end period
         function isTimeBlockInside(start, end, blockStart, blockEnd) {
@@ -3943,7 +3942,7 @@
             return false;
         }
 
-        function addDeviceAttribute(name, value) { return '<tr><td class=style7 style=width:180px>' + name + '</td><td class=style9 style=max-width:400px;overflow:hidden>' + value + '</td></tr>'; }
+        function addDeviceAttribute(name, value) { return '<tr><td class=style7>' + name + '</td><td class=style9>' + value + '</td></tr>'; }
 
         function editDeviceAmtSettings(nodeid, func) {
             if (xxdialogMode) return;
@@ -4493,19 +4492,20 @@
         var browserfullscreen = false;
         function deskToggleFull(e) {
             fullscreen = !fullscreen;
-            QV('mastheadx', !fullscreen);
+            /* QV('mastheadx', !fullscreen);
             QV('masthead', !fullscreen);
-            QV('topbar', !fullscreen);
+            QV('topbar', !fullscreen); 
             QV('p11deviceNameHeader', !fullscreen);
             QV('footer', !fullscreen);
             QV('column_l_bottomgap', !fullscreen);
             QV('idx_deskFullBtn2', fullscreen);
             QV('deskFullBtn', !fullscreen);
-            QV('page_leftbar', !fullscreen);
+            QV('page_leftbar', !fullscreen); */
             if (fullscreen) {
+                QC('body').add("fulldesk");
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
-                QS('column_l').width = '930px';
+                /* QS('column_l').width = '930px';
                 QS('column_l').height = '';
                 QS('column_l')['margin-left'] = '';
                 QS('column_l')['overflow-y'] = '';
@@ -4517,15 +4517,16 @@
                 QS('container')['border-left'] = '0';
                 QS('column_l').padding = '0';
                 QS('column_l').width = '100%';
-                QS('column_l')["max-height"] = '';
+                QS('column_l')["max-height"] = ''; */
             } else {
+                QC('body').remove("fulldesk");
                 exitBrowserFullscreen();
                 browserfullscreen = false;
-                QS('container').width = '960px';
+                /* QS('container').width = '960px';
                 QS('container')['border-right'] = '1px solid #b7b7b7';
                 QS('container')['border-left'] = '1px solid #b7b7b7';
                 QS('column_l').padding = '0 15px';
-                QS('column_l').width = '930px';
+                QS('column_l').width = '930px'; */
                 toggleFullScreen();
             }
             deskAdjust();
@@ -6478,7 +6479,7 @@
                 if (event.msg) {
                     if (time.toLocaleDateString() != dateHeader) {
                         if (dateHeader != null) x += '</table>';
-                        x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
+                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + time.toLocaleDateString() + '</td></tr>';
                         dateHeader = time.toLocaleDateString();
                     }
                     var icon = 'si3';
@@ -6487,7 +6488,7 @@
 
                     var msg = event.msg.split('(R)').join('&reg;');
                     if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                    x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + time.toLocaleTimeString() + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -6539,8 +6540,8 @@
             else if (userSearch.startsWith('n:')) { emailSearch = null; userSearch = userSearch.substring(2); }
 
             // Display the users using the sorted list
-            var x = '<table style=width:100% cellpadding=0 cellspacing=0>', addHeader = true;
-            x += '<th style=color:gray>Name<th style=color:gray;width:80px>Groups<th style=color:gray;width:120px>Last&nbsp;Access<th style=color:gray;width:120px>Permissions';
+            var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
+            x += '<th>Name<th style=width:80px>Groups<th style=width:120px>Last&nbsp;Access<th style=width:120px>Permissions';
 
             // Online users
             for (var i in sortedUserIds) {
@@ -6627,9 +6628,9 @@
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" />'; }
 
             x += '<tr onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0)><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
-            x += '<div class=bar style=height:24px;width:100%;font-size:medium>';
-            x += '<div style=float:left;height:24px;width:24px;background-color:white><div class="' + icon + gray + '" style=width:16px;margin-top:4px;margin-left:2px;height:16px></div></div>';
-            x += '<div class=g1 style=height:24px;float:left></div><div class=g2 style=height:24px;float:right></div>';
+            x += '<div class=bar>';
+            x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
+            x += '<div class=g1></div><div class=g2></div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
         }
@@ -6671,7 +6672,7 @@
 
         function showUserBroadcastDialog() {
             if (xxdialogMode) return;
-            var x = 'Broadcast a message to all connected users.<textarea id=broadcastMessage value="" style=width:370px;height:100px;resize:none maxlength=256 /></textarea>';
+            var x = 'Broadcast a message to all connected users.<textarea id=broadcastMessage value="" maxlength="256"/></textarea>';
             setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x);
             Q('broadcastMessage').focus();
         }
@@ -6683,10 +6684,10 @@
         function showCreateNewAccountDialog() {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue('Name', '<input id=p4name style=width:230px maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Email', '<input id=p4email style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Name', '<input id=p4name maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Email', '<input id=p4email maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Password', '<input id=p4pass1 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('Password', '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
 
             if (passRequirements) {
@@ -6716,7 +6717,7 @@
             haltEvent(e);
             userid = decodeURIComponent(userid);
             var x = '<div>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>Server Files, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 style=width:80px;text-align:right id=ua_fileaccessquota>k max, blank for default<br><hr/>';
+            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>Server Files, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>k max, blank for default<br><hr/>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>Full Administrator<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>Server Backup<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>Server Restore<br>';
@@ -6814,7 +6815,7 @@
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
-            x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton width=10 height=10 src="images/link1.png" /></a>');
+            x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg.join(', ') + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
@@ -7460,50 +7461,64 @@
             for (var i = 0; i < 41; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
+            // Remove top bar selection
+            var mainBarItems = ['MainMenuMyDevices', 'MainMenuMyAccount', 'MainMenuMyEvents', 'MainMenuMyFiles', 'MainMenuMyUsers', 'MainMenuMyServer'];
+            for (var i in mainBarItems) {
+                QC(mainBarItems[i]).remove('fullselect');
+                QC(mainBarItems[i]).remove('semiselect');
+            }
+
             // Remove left bar selection
             var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers', 'LeftMenuMyServer'];
-            for (var i in leftBarItems) { Q(leftBarItems[i]).classList.remove('lbbuttonsel'); Q(leftBarItems[i]).classList.remove('lbbuttonsel2'); }
+            for (var i in leftBarItems) {
+                QC(leftBarItems[i]).remove('lbbuttonsel');
+                QC(leftBarItems[i]).remove('lbbuttonsel2');
+            }
+
+            QV('topbar', x != 0);
+            // Define class for Menu(s) as fully or semi active.
+            var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
+            var leftMenuActiveClass = (x < 9 ? 'lbbuttonsel2' : 'lbbuttonsel');
 
             // My Devices
-            QV('topbar', x != 0);
-            if (x >= 10 && x < 20) { QS('MainMenuMyDevices').backgroundColor = "#606060"; } else { QS('MainMenuMyDevices').backgroundColor = ((x == 1) ? "#003366" : "#808080"); }
-            if (x == 1 || (x >= 10 && x < 20)) { Q('LeftMenuMyDevices').classList.add('lbbuttonsel'); }
-            if (x == 1) { Q('LeftMenuMyDevices').classList.add('lbbuttonsel2'); }
+            if (x == 1 || (x >= 10 && x < 20)) QC('MainMenuMyDevices').add(mainMenuActiveClass);
+            if (x == 1 || (x >= 10 && x < 20)) QC('LeftMenuMyDevices').add(leftMenuActiveClass);
 
             // My Account
-            if (x >= 20 && x < 30) { QS('MainMenuMyAccount').backgroundColor = "#606060"; } else { QS('MainMenuMyAccount').backgroundColor = ((x == 2) ? "#003366" : "#808080"); }
-            if (x == 2 || (x >= 20 && x < 30)) { Q('LeftMenuMyAccount').classList.add('lbbuttonsel'); }
-            if (x == 2) { Q('LeftMenuMyAccount').classList.add('lbbuttonsel2'); }
+            if (x == 2 || (x >= 20 && x < 30)) QC('MainMenuMyAccount').add(mainMenuActiveClass);
+            if (x == 2 || (x >= 20 && x < 30)) QC('LeftMenuMyAccount').add(leftMenuActiveClass);
 
             // My Events
-            QS('MainMenuMyEvents').backgroundColor = ((x == 3) ? "#003366" : "#808080");
-            if (x == 3) { Q('LeftMenuMyEvents').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+            if (x == 3) QC('MainMenuMyEvents').add(mainMenuActiveClass);
+            if (x == 3) QC('LeftMenuMyEvents').add(leftMenuActiveClass);
 
             // My Users
-            if (x >= 30 && x < 40) { QS('MainMenuMyUsers').backgroundColor = "#606060"; } else { QS('MainMenuMyUsers').backgroundColor = ((x == 4) ? "#003366" : "#808080"); }
-            if (x == 4 || (x >= 30 && x < 40)) { Q('LeftMenuMyUsers').classList.add('lbbuttonsel'); }
-            if (x == 4) { Q('LeftMenuMyUsers').classList.add('lbbuttonsel2'); }
+            if (x == 4 || (x >= 30 && x < 40)) QC('MainMenuMyUsers').add(mainMenuActiveClass);
+            if (x == 4 || (x >= 30 && x < 40)) QC('LeftMenuMyUsers').add(leftMenuActiveClass);
 
             // My Files
-            QS('MainMenuMyFiles').backgroundColor = ((x == 5) ? "#003366" : "#808080");
-            if (x == 5) { Q('LeftMenuMyFiles').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+            if (x == 5) QC('MainMenuMyFiles').add(mainMenuActiveClass);
+            if (x == 5) QC('LeftMenuMyFiles').add(leftMenuActiveClass);
 
             // My Server
-            QS('MainMenuMyServer').backgroundColor = (((x == 6) || (x == 115)) ? "#003366" : "#808080");
-            if (((x == 6) || (x == 115) || (x == 40))) { Q('LeftMenuMyServer').classList.add('lbbuttonsel', 'lbbuttonsel2'); }
+            if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
+            if ((x == 6) || (x == 115) || (x == 40)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
 
             // column_l max-height
-            if (webPageFullScreen) {
-                QS('column_l')["max-height"] = 'calc(100vh - 135px)';
+            if (!webPageFullScreen && x >= 10) {
+                QC('column_l').add('room4submenu');
             } else {
-                QS('column_l')["max-height"] = (x >= 10) ? 'calc(100vh - 159px)' : 'calc(100vh - 135px)';
+                QC('column_l').remove('room4submenu');
             }
+            
+            // Jovan, please check. I think this part is not needed anymore. Removing class will revert to default style
+            /*
             if ((x == 0) && (webPageFullScreen)) {
                 QS('page_content').position = '';
                 QV('page_leftbar', false);
                 QS('column_l').height = 'calc(100vh - 110px)';
                 QS('column_l')["max-height"] = '';
-            }
+            } */
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
@@ -7512,9 +7527,9 @@
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
             var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
             for (var i in panels) {
-                Q(panels[i]).classList.remove('style3x');
-                Q(panels[i]).classList.remove('style3sel');
-                Q(panels[i]).classList.add((x == i) ? 'style3sel' : 'style3x');
+                QC(panels[i]).remove('style3x');
+                QC(panels[i]).remove('style3sel');
+                QC(panels[i]).add((x == i) ? 'style3sel' : 'style3x');
             }
 
             // Panel 115 is weird, it's panel 15 for device console but used as a server console.
@@ -7529,7 +7544,7 @@
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
             // Update the web page title
-            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = 'MeshCentral - ' + currentNode.name; } else { document.title = 'MeshCentral'; }
+            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
         }
 
         // Generic methods
@@ -7537,7 +7552,7 @@
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
-        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton width=10 height=10 src=images/link5.png></span>"; }
+        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton src=images/link5.png></span>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }
