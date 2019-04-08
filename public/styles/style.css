@@ -30,6 +30,15 @@
         border-left: 0px none #b7b7b7;
     }
 
+    .fulldesk #container {
+        width: 100%;
+        min-width: 700px;
+        min-height: 0px;
+        border-right: 0px none #b7b7b7;
+        border-left: 0px none #b7b7b7;
+        position: unset;
+    }
+
 #masthead {
     width: auto;
     margin: 0;
@@ -48,6 +57,16 @@
 
     .fullscreen #masthead {
         width: 100%;
+    }
+
+    .fulldesk #masthead {
+        display: none;
+    }
+    .fulldesk #mastheadx {
+        display: none;
+    }
+    .fulldesk #p11deviceNameHeader {
+        display: none;
     }
 
 #masthead .title {
@@ -85,6 +104,13 @@
     .arg_hide #page_content {
         left: 0px;
     }
+    .fulldesk #page_content {
+        position: static;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
 
 #page_leftbar {
     height: calc(100vh - 66px);
@@ -101,11 +127,19 @@
     .arg_hide #page_leftbar {
         display: none;
     }
+    .fulldesk #page_leftbar {
+        display: none;
+    }
 
 #topbar {
     /* height: 24px; */
     position: relative;
 }
+
+    .fulldesk #topbar {
+        display: none;
+    }
+
 .topbar_td {
     width: 100px;
     height: 24px;
@@ -129,6 +163,16 @@
     height: 22px
 }
 
+#MainMenuSpan {
+    display: table;
+}
+    .fullscreen #MainMenuSpan {
+        display: none;
+    }
+    .fulldesk #MainMenuSpan {
+        display: none;
+    }
+
 #column_l {
     position: relative;
     float: left;
@@ -139,11 +183,26 @@
     /*max-height: calc(100vh - 111px);*/
     min-width: unset;
 }
+.room4submenu {
+    max-height: calc(100vh - 159px) !important;
+}
 
     .fullscreen #column_l {
         height: calc(100vh - 111px);
         width: calc(100% - 30px);
         overflow-y: auto;
+    }
+
+    .fulldesk #column_l {
+        width: 100%;
+        height: unset;
+        margin-left: unset;
+        overflow-y: unset;
+        padding: 0;
+        max-height: unset;
+    }
+    .fulldesk #column_l_bottomgap {
+        display: none;
     }
 
 #centralTable {
@@ -203,6 +262,9 @@
     padding-top: 5px;
     padding-bottom: 5px;
 }
+    .fulldesk #footer {
+        display: none;
+    }
 
 /* Support for footer made with table */
 #footer table {
@@ -277,6 +339,17 @@
     margin-left: 8px;
 }
 
+.dialogText {
+    width: 100%;
+    max-height: 260px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    line-height: 160%
+}
+.dialogTextLog {
+    font-size:10px
+}
+
 #dialog1 {
     margin: auto;
     text-align: center;
@@ -312,9 +385,390 @@
     width: 80px;
 }
 
+#ua_fileaccessquota {
+    width: 80px;
+    text-align: right
+}
+
+#broadcastMessage {
+    width: 370px;
+    height: 100px;
+    resize: none;
+}
+
+#idx_deskFullBtn2 {
+    float: left;
+    font-size: large;
+    cursor: pointer;
+    display: none;
+}
+    .fulldesk #idx_deskFullBtn2 {
+        display: block;
+    }
+    .fulldesk #deskFullBtn {
+        display: none;
+    }
+
 #p0message {
     margin: 50px;
     text-align: center;
+}
+
+#devListToolbarViewIcons {
+    float:right;
+}
+
+#devListToolbarSpan {
+    width: 100%;
+    height: 24px;
+    background-color: #d3d9d6;
+    vertical-align: middle;
+    border-spacing: 0
+}
+
+#SearchInput {
+    width:120px;
+}
+
+#devListToolbarView, #devListToolbarSort, #devListToolbarSize {
+    float: right;
+}
+
+#refreshmap {
+    margin-left:5px;
+}
+
+/* Example if <table> is relplaced with <div><p> then image can be defined in css 
+#NoMeshesPanel {
+    background: url(../images/info.png) no-repeat 23px 20px;
+    height: 48px;
+    width: 47px;
+    width: 100%;
+    border: none;
+    margin: auto;
+    padding: 20px;
+}
+    #NoMeshesPanel p {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 60px;
+    } */
+
+    #NoMeshesPanel a {
+        cursor: pointer;
+    }
+    #NoMeshesPanel table {
+        width: 100%;
+        padding: 20px
+    }
+    NoMeshesPanel img {
+        height: 48px;
+        width: 47px;
+    }
+
+#xdevices {
+    max-height: calc(100vh - 239px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+#xdevicesmap {
+    height: calc(100vh - 239px);
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+#xmapSearchResultsDlg {
+    position: absolute;
+    max-height: 280px;
+    left: 5px;
+    top: 5px;
+    max-width: 250px;
+    z-index: 1000;
+    background-color: #EEE;
+    box-shadow: 0px 0px 15px #666;
+}
+#xmapSearchResultsBck {
+    width: 100%;
+    background-color: #003366;
+    color: #FFF;
+    border-radius: 5px 5px 0 0;
+}
+
+#xmapSearchClose {
+    float: right;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.xmapItem {
+    overflow-y: auto;
+    width: 100%;
+    max-height: 240px
+}
+.xmapItemSel1 {
+    cursor: pointer;
+    padding: 5px;
+    background-color: #F5F5F5;
+}
+.xmapItemSel1 {
+    cursor: pointer;
+    padding: 5px;
+    background-color: #EBEBEB;
+}
+
+#xmap-info-window {
+    text-shadow: 0px 0px 15px #FFF
+}
+
+#p2 a, #p6 a, #p10 a {
+    cursor: pointer;
+}
+
+#p2AccountImage {
+    width: 150px;
+    height: 103px;
+    margin-bottom: 10px;
+    margin-right: 20px;
+    float:right;
+}
+
+.p2AccountActions {
+    width: 15px;
+    display: inline-block;
+}
+.p2AccountActions span {
+    color: green;
+    font-size: 10px;
+}
+
+.newMeshBtn  {
+    background: url(../images/icon-addnew.png) no-repeat 0px 0px;
+    height: 12px;
+    width: 12px;
+    cursor: pointer;
+    border: none;
+    padding-left: 15px;
+}
+
+#p2noMeshFound, #p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors, #serverStats {
+    margin-left:40px;
+}
+
+.pTable {
+    width: 100%;
+    height: 24px;
+    background-color: #d3d9d6;
+    margin-bottom: 4px;
+    vertical-align: middle;
+    border-spacing: 0;
+
+}
+
+#p3users {
+    max-height: calc(100vh - 243px);
+    overflow-y: auto;
+}
+.p3usersTable {
+    width: 100%;
+    border-spacing: 0;
+    padding: 0;
+}
+.p3usersTable th {
+    color: gray;
+}
+
+#p3events {
+    height: calc(100vh - 243px);
+    overflow-y: scroll
+}
+
+.p3eventsTable {
+    width: 100%;
+    border-spacing: 0;
+    padding: 0;
+}
+.p3eventsTable {
+    width: 100%;
+    border-spacing: 0;
+    padding: 0;
+}
+
+#p4name, #p4email, #p4pass1, #p4pass2 {
+    width: 230px;
+}
+
+#p5filehead {
+    width: 100%;
+    background-color: #d3d9d6;
+    text-align: left;
+    padding: 4px;
+}
+
+#p5filesubhead {
+    background-color: #E4E9E7;
+    height: 28px;
+}
+
+#p5rightOfButtons {
+    float: right;
+    margin-top: 3px;
+}
+
+#p5filetable {
+    width: 100%;
+    height: calc(100vh - 294px);
+    overflow: auto;
+    -webkit-user-select: none;
+    position: relative;
+}
+
+#p5PublicShare {
+    display: none;
+    width: 100%;
+    overflow: auto;
+    -webkit-user-select: none;
+    background-color: lightsteelblue;
+}
+
+#bigok {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 20px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+#bigfail {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 20px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+.chartViewCanvas {
+    width: 60px;
+    display: inline-block;
+}
+
+.chartViewText {
+    width: 160px;
+    display: inline-block;
+}
+
+#serverCpuChart, #serverMemoryChart {
+    width: 60px;
+    height: 60px;
+}
+
+#p10BackButton, #p11BackButton {
+    float:left
+}
+
+#p10html2 table {
+    color: black;
+    background-color: #EEE;
+    border-color: #AAA;
+    border-width: 1px;
+    border-style: solid;
+    border-collapse: collapse;
+    width: 100%;
+}
+    #p10html2 thead {
+        background-color:#AAAAAA;
+        font-weight:bold;
+    }
+    #p10html2 thead tr {
+        background-color:#AAAAAA;
+        font-weight:bold;
+    }
+    #p10html2 thead img {
+        float: right;
+        cursor: pointer;
+        padding: 3px;
+    }
+    #p10html2 .altBack {
+        background-color: #DDD;
+    }
+
+.pwState {
+    display: table-cell;
+    height: 16px;
+}
+.pwsYellow          { background-color: yellow; }
+.pwsTransparent     { background-color: #00000000; }
+.pwsBlack           { background-color: black; }
+.pwsBlue            { background-color: blue; }
+.pwsBlue2           { background-color: blue; }
+.pwsLightblue       { background-color: lightblue; }
+.pwsBlueviolet      { background-color: blueviolet; }
+.pwsDarkgreen       { background-color: darkgreen; }
+.pwsLightseagreen   { background-color: lightseagreen; }
+.pwsLightseagreen2  { background-color: lightseagreen; }
+
+.p10html3right {
+    float: right;
+    font-size: x-small;
+}
+
+.p10html3left {
+    font-size: x-small;
+}
+
+#MainComputerImage {
+    border-width: 0px;
+    height: 200px;
+    width: 200px;
+}
+
+#MainComputerState {
+    font-size: 12px;
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+}
+
+#d2groupop {
+    float: right;
+    width: 250px;
+}
+
+#p12warning, #p12warning2, #p14warning, #p14warning2 {
+    max-width: 100%;
+    display:none;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+#MainMeshImage {
+    border-width: 0px;
+    height: 200px;
+    width: 200px;
+    float: right;
+}
+
+#DeskTools {
+    position: absolute;
+    width: 400px;
+    height: 100%;
+    background-color: gray;
+    top: 0;
+    right: 0;
+    border-left: 2px solid lightgray;
+    display: none;
+}
+#DeskToolsRefreshButton {
+    float: right;
+    padding: 3px;
+    cursor: pointer;
 }
 
 a {
@@ -558,12 +1012,21 @@ a {
         background-color: #606060;
     }
 
+    .style3x.fullselect {
+        background-color: #003366;
+    }
+    
+    .style3x.semiselect {
+        background-color: #606060;
+    }
+
 .style3sel {
     text-align: center;
     color: white;
     background-color: #003366;
     font-weight: bold;
 }
+
 
 .style4 {
     color: white;
@@ -577,13 +1040,20 @@ a {
 }
 
 .style6 {
-    text-align: center;
+    text-align: left;
     background-color: #D3D9D6;
+    padding:3px;
 }
 
 .style7 {
     font-size: large;
     background-color: #FFFFFF;
+    width: 180px;
+}
+
+.style9 {
+    max-width: 400px;
+    overflow: hidden;
 }
 
 .style10 {
@@ -596,6 +1066,7 @@ a {
 }
 
 .style14 {
+    height: 100%;
     text-align: left;
     background-color: #D3D9D6;
 }
@@ -605,6 +1076,17 @@ a {
     background-color: #D3D9D6;
 }
 
+.icon2 {
+    float: left;
+    margin: 7px;
+}
+
+.warningbox {
+    width: auto;
+    border-radius: 8px;
+    padding: 8px;
+    background-color: lightsalmon;
+}
 
 .fileIcon1 {
     background: url(data:image/gif;base64,R0lGODlhEAAQAJEDAPb49Y2Sj9LT2f///yH5BAEAAAMALAAAAAAQABAAAAImnI+py+1vhJwyUYAzHTL4D3qdlJWaIFJqmKod607sDKIiDUP63hQAOw==);
@@ -685,6 +1167,13 @@ a {
     background-repeat: repeat;
     background-attachment: scroll;
 }
+    #p3events .g1 {
+        float: none;
+    }
+    #p3users .g1 {
+        height:24px;
+        float: left;
+    }
 
 .g1s {
     background-image: linear-gradient(to right, #ffffff 0%, #b9b9b9 100%);
@@ -703,9 +1192,24 @@ a {
     background-repeat: repeat;
     background-attachment: scroll;
 }
+    #p3events .g2 {
+        float: none;
+    }
+    #p3users .g2 {
+        height:24px;
+        float: right;
+    }
 
 .g2s {
     background-image: linear-gradient(to right, #b9b9b9 0%, #ffffff 100%);
+}
+
+.h1pre {
+    width: 16px;
+    height: 100%;
+    float: left;
+    font-size: large;
+    background-color: #FFFFFF;
 }
 
 .h1 {
@@ -719,6 +1223,13 @@ a {
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.h2end {
+    height: 100%;
+    width: 20px;
+    float: right;
+    background-color: #ffffff
 }
 
 .h2 {
@@ -761,6 +1272,23 @@ a {
     float: left;
     margin-bottom: 2px;
 }
+    #p3users .bar {
+        width: 100%;
+        font-size: medium;
+    }
+
+.baricon {
+    float: left;
+    height: 24px;
+    width: 24px;
+    background-color: white;
+}
+    .baricon div {
+        width: 16px;
+        margin-top: 4px;
+        margin-left: 2px;
+        height: 16px
+    }
 
 .bar2 {
     font-size: large;
@@ -904,13 +1432,60 @@ a {
     cursor: pointer;
     padding: 4px
 }
-.deskToolsBar {
-    padding:3px;
+
+#deskarea3x {
+    background: black;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
+#DeskFocus {
+    overflow: hidden;
+    color: transparent;
+    border:3px dotted rgba(255,0,0,.2);
+    position: absolute;
+    border-radius: 5px;
+}
+
+#DeskParent {
+    overflow:hidden
+}
+
+#Desk {
+    overflow: hidden;
+    width: 100%;
+    -ms-touch-action: none;
+    margin-left: 0px;
+}
+
+
+#deskToolsBar {
+    position: absolute;
+    padding: 3px;
+    border-radius: 3px 3px 0px 0px;
+    top: 5px;
+    left: 4px;
+    bottom: 26px;
+    background-color:lightgray;
+    cursor: pointer;
+}
+
+#DeskToolsProcesses {
+    overflow-y: scroll;
+    position: absolute;
+    top: 24px;
+    bottom: 0px;
+    width: 100%
+}
+
+.deskToolsBar {
+    padding: 3px;
+}
 .deskToolsBar:hover {
     background-color: #EFE8B6;
 }
+
 
 .userTableHeader {
     border-bottom: 1pt solid lightgray;
@@ -1005,8 +1580,17 @@ a {
 
 .hoverButton {
     opacity: 0.5;
+    width: 10px;
+    height: 10px;
 }
 
     .hoverButton:hover {
         opacity: 1;
     }
+
+.tagSpan {
+    background-color: lightgray;
+    padding: 3px;
+    margin-right: 4px;
+    border-radius: 5px;
+}
