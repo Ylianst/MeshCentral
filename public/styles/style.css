@@ -180,7 +180,7 @@
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
-    max-height: calc(100vh - 111px);
+    /*max-height: calc(100vh - 111px);*/
     min-width: unset;
 }
 .room4submenu {
@@ -188,7 +188,7 @@
 }
 
     .fullscreen #column_l {
-        height: calc(100vh - 135px);
+        height: calc(100vh - 111px);
         width: calc(100% - 30px);
         overflow-y: auto;
     }
