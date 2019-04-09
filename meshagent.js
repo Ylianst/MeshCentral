@@ -46,38 +46,41 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
 
-        // Remove this agent from the webserver list
-        if (parent.wsagents[obj.dbNodeKey] == obj) {
-            delete parent.wsagents[obj.dbNodeKey];
-            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
-        }
-
-        // Get the current mesh
-        const mesh = parent.meshes[obj.dbMeshKey];
-
-        // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
-        if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
-            // Delete this node including network interface information and events
-            db.Remove(obj.dbNodeKey);                       // Remove node with that id
-            db.Remove('if' + obj.dbNodeKey);                // Remove interface information
-            db.Remove('nt' + obj.dbNodeKey);                // Remove notes
-            db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
-            db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
-            db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
-            db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
-
-            // Event node deletion
-            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
-
-            // Disconnect all connections if needed
-            const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
-            if ((state != null) && (state.connectivity != null)) {
-                if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
-                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
+        // If this is a recovery agent, don't bother with all this clean up.
+        if ((obj.agentInfo.capabilities & 0x40) == 0) {
+            // Remove this agent from the webserver list
+            if (parent.wsagents[obj.dbNodeKey] == obj) {
+                delete parent.wsagents[obj.dbNodeKey];
+                parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
             }
-        } else {
-            // Update the last connect time
-            if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
+
+            // Get the current mesh
+            const mesh = parent.meshes[obj.dbMeshKey];
+
+            // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
+            if (((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
+                // Delete this node including network interface information and events
+                db.Remove(obj.dbNodeKey);                       // Remove node with that id
+                db.Remove('if' + obj.dbNodeKey);                // Remove interface information
+                db.Remove('nt' + obj.dbNodeKey);                // Remove notes
+                db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
+                db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
+                db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
+                db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
+
+                // Event node deletion
+                parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
+
+                // Disconnect all connections if needed
+                const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
+                if ((state != null) && (state.connectivity != null)) {
+                    if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
+                    if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
+                }
+            } else {
+                // Update the last connect time
+                if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
+            }
         }
 
         // If we where updating the agent, clean that up.
@@ -522,6 +525,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
         obj.pendingCompleteAgentConnection = true;
 
+        if (obj.agentInfo.capabilities & 0x40) {
+            // This is a recovery agent
+            obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+            return;
+        }
+
         // Check if we have too many agent sessions
         if (typeof domain.limits.maxagentsessions == 'number') {
             // Count the number of agent sessions for this domain
@@ -700,38 +709,23 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Not sure why, but in rare cases, obj.agentInfo is undefined here.
             if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
 
-            if ((obj.agentInfo.capabilities & 64) != 0) {
-                // This is a recovery agent
-                obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-            } else {
-                // Check if we need to make an native update check
-                obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-                const corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
-                if (corename == null) { obj.send(common.ShortToStr(10) + common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
+            // Check if we need to make an native update check
+            obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+            const corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+            if (corename == null) { obj.send(common.ShortToStr(10) + common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
 
-                if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
-                    // Ask the agent for it's executable binary hash
-                    obj.send(common.ShortToStr(12) + common.ShortToStr(0));
+            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
+                // Ask the agent for it's executable binary hash
+                obj.send(common.ShortToStr(12) + common.ShortToStr(0));
+            } else {
+                // Check the mesh core, if the agent is capable of running one
+                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
+                    obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
                 } else {
-                    // Check the mesh core, if the agent is capable of running one
-                    if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
-                        obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-                    } else {
-                        agentCoreIsStable(); // No updates needed, agent is ready to go.
-                    }
+                    agentCoreIsStable(); // No updates needed, agent is ready to go.
                 }
             }
         });
-    }
-
-    function recoveryAgentCoreIsStable() {
-        // Recovery agent is doing ok, lets perform main agent checking.
-
-        // TODO
-        console.log('recoveryAgentCoreIsStable()');
-
-        // Close the recovery agent connection when done.
-        //obj.close(1);
     }
 
     // Take a basic Intel AMT policy and add all server information to it, making it ready to send to this agent.
@@ -764,6 +758,21 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
     }
 
+    function recoveryAgentCoreIsStable(mesh) {
+        // Recovery agent is doing ok, lets perform main agent checking.
+        //console.log('recoveryAgentCoreIsStable()');
+
+        // Fetch the the real agent nodeid
+        db.Get('da' + obj.dbNodeKey, function (err, nodes) {
+            if (nodes.length == 1) {
+                obj.realNodeKey = nodes[0].raid;
+                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.realNodeKey } }));
+            } else {
+                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
+            }
+        });
+    }
+
     function agentCoreIsStable() {
         // Check that the mesh exists
         const mesh = parent.meshes[obj.dbMeshKey];
@@ -771,6 +780,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // TODO: Mark this agent as part of a mesh that does not exists.
             return; // Probably not worth doing anything else. Hold this agent.
         }
+
+        // Fetch the the real agent nodeid
+        db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+            if (nodes.length == 1) {
+                obj.diagnosticNodeKey = nodes[0].daid;
+                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.diagnosticNodeKey } }));
+            }
+        });
+
+        // Check if this is a recovery agent
+        if (obj.agentInfo.capabilities & 0x40) { recoveryAgentCoreIsStable(mesh); return; }
 
         // Send Intel AMT policy
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null)) {  // Only send Intel AMT policy to agents what could have AMT.
@@ -1066,6 +1086,48 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'diagnostic':
+                    {
+                        if (typeof command.value == 'object') {
+                            switch (command.value.command) {
+                                case 'register': {
+                                    // Only main agent can do this
+                                    if (((obj.agentInfo.capabilities & 0x40) == 0) && (typeof command.value.command.value == 'string') && (command.value.command.value.length == 64)) {
+                                        // Store links to diagnostic agent id
+                                        var daNodeKey = 'node/' + domain.id + '/' + command.value.command.value;
+                                        db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
+                                        db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
+                                    }
+                                    break;
+                                }
+                                case 'query': {
+                                    // Only the diagnostic agent can do
+                                    if ((obj.agentInfo.capabilities & 0x40) != 0) {
+                                        // Return nodeid of main agent + connection status
+                                        db.Get('da' + obj.dbNodeKey, function (err, nodes) {
+                                            if (nodes.length == 1) {
+                                                obj.realNodeKey = nodes[0].raid;
+                                                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.realNodeKey } }));
+                                            } else {
+                                                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
+                                            }
+                                        });
+                                    }
+                                    break;
+                                }
+                                case 'log': {
+                                    // Only the diagnostic agent can do
+                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.command.value == 'string') && (command.value.command.value.length < 256)) {
+                                        // Log a value in the event log of the main again
+                                        var event = { etype: 'node', action: 'diagnostic', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.value.command.value };
+                                        parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
                 default: {
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
                     break;
@@ -1076,6 +1138,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentCoreInfo(command) {
+        if (obj.agentInfo.capabilities & 0x40) return;
         if ((command == null) || (command == null)) return; // Safety, should never happen.
 
         // Check that the mesh exists
@@ -1137,6 +1200,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {
+        if (obj.agentInfo.capabilities & 0x40) return;
         if ((command == null) || (command == null)) { return; } // Safety, should never happen.
 
         // Check that the mesh exists
@@ -1172,6 +1236,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Update the mesh agent tab in the database
     function ChangeAgentTag(tag) {
+        if (obj.agentInfo.capabilities & 0x40) return;
         if (tag.length == 0) { tag = null; }
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) {
