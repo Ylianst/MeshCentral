@@ -188,7 +188,7 @@
 }
 
     .fullscreen #column_l {
-        height: calc(100vh - 111px);
+        height: calc(100vh - 135px);
         width: calc(100% - 30px);
         overflow-y: auto;
     }
