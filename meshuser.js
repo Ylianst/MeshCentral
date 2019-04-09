@@ -1396,6 +1396,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 db.RemoveSMBIOS(node._id);                      // Remove SMBios data
                                 db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
                                 db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
+                                db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                    if (nodes.length == 1) { db.Remove('da' + nodes[0].daid); }     // Remove diagnostic agent to real agent link
+                                    db.Remove('ra' + node._id);                                     // Remove real agent to diagnostic agent link
+                                });
 
                                 // Event node deletion
                                 parent.parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id });

@@ -1043,7 +1043,6 @@
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             var hide = 0;
             if (args.hide) { hide = parseInt(args.hide); }
-            console.log("-----------hide:", hide)
             if (webPageFullScreen == false) {
                 QC('body').remove("fullscreen");
                 QC('body').remove("arg_hide");

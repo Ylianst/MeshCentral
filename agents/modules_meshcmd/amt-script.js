@@ -109,10 +109,10 @@ module.exports.setup = function(binary, startvars) {
             var argcount = ReadShort(obj.script, obj.ip + 4);
             var argptr = obj.ip + 6;
             var args = [];
-            
+
             // Clear all temp variables (This is optional)
             for (var i in obj.variables) { if (i.startsWith('__')) { delete obj.variables[i]; } }
-            
+
             // Loop on each argument, moving forward by the argument length each time
             for (var i = 0; i < argcount; i++) {
                 var arglen = ReadShort(obj.script, argptr);
@@ -122,7 +122,7 @@ module.exports.setup = function(binary, startvars) {
                 if (argtyp < 2) {
                     // Get the value and replace all {var} with variable values
                     argval = argval.toString();
-                    while (argval.split("{").length > 1) { var t = argval.split("{").pop().split("}").shift(); argval = argval.replace('{' + t + '}', obj.getVar(t)); }
+                    if (argval != null) { while (argval.split("{").length > 1) { var t = argval.split("{").pop().split("}").shift(); argval = argval.replace('{' + t + '}', obj.getVar(t)); } }
                     if (argtyp == 1) { obj.variables['__' + i] = decodeURI(argval); argval = '__' + i; } // If argtyp is 1, this is a literal. Store in temp variable.
                     args.push(argval);
                 }
@@ -132,7 +132,7 @@ module.exports.setup = function(binary, startvars) {
                 }
                 argptr += (2 + arglen);
             }
-            
+
             // Move instruction pointer forward by command size
             obj.ip += cmdlen;
 
