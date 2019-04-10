@@ -2185,6 +2185,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (nodes.length != 1) { res.sendStatus(401); return; }
                     var node = nodes[0];
+
                     // Create the meshaction.txt file for meshcmd.exe
                     var meshaction = {
                         action: req.query.meshaction,
@@ -2195,7 +2196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         username: '',
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                        serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                        serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                         debugLevel: 0
                     };
                     if (user != null) { meshaction.username = user.name; }
@@ -2210,7 +2211,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     username: '',
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                    serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                    serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                     debugLevel: 0
                 };
                 if (user != null) { meshaction.username = user.name; }
