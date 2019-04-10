@@ -249,10 +249,10 @@
                                 <br style=clear:both />
                             </div>
                             <strong>Device Groups</strong>
-                            ( <a onclick=account_createMesh() style=cursor:pointer><img src="images/icon-addnew.png" width=12 height=12 border=0 /> New</a> )
+                            <span id="p3createMeshLink1">( <a onclick=account_createMesh() style=cursor:pointer><img src="images/icon-addnew.png" width=12 height=12 border=0 /> New</a> )</span>
                             <br /><br />
                             <div id=p3meshes></div>
-                            <div id=p3noMeshFound style=margin-left:9px;display:none>No device groups. <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></div>
+                            <div id=p3noMeshFound style=margin-left:9px;display:none>No device groups.<span id="p3createMeshLink2"> <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></span></div>
                             <br style=clear:both />
                         </div>
                     </div>
@@ -654,6 +654,10 @@
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageAuthApp', features & 4096);
             QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
+
+            // On the mobile app, don't allow group creation (for now).
+            QV('p3createMeshLink1', false);
+            QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
@@ -1164,6 +1168,9 @@
 
         function account_createMesh() {
             if (xxdialogMode) return;
+
+            // Check if we are disallowed from creating a device group
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group."); return; }
 
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
