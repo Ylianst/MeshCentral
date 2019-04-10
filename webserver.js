@@ -1174,6 +1174,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
             if ((parent.config.settings.no2factorauth !== true) && (obj.f2l != null)) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+            if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
