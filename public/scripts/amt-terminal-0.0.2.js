@@ -356,6 +356,16 @@ var CreateAmtRemoteTerminal = function (divid) {
                         for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
                     }
                     break;
+                case 'M': // Delete X lines, default 1
+                    var x = 1;
+                    if (argslen == 1) { x = args[0] }
+                    for (var y = _termy; y <= _scrollRegion[1] - x; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = _tscreen[y + x][z]; _scratt[y][z] = _scratt[y + x][z]; }
+                    }
+                    for (var y = _scrollRegion[1] - x + 1; y < _scrollRegion[1]; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
+                    }
+                    break;
                 case 'T': // Scroll down the scroll region X lines, default 1
                     var x = 1;
                     if (argslen == 1) { x = args[0] }
