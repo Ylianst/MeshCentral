@@ -221,7 +221,8 @@
                                     <img src="images/info.png" />
                                 </td>
                                 <td>
-                                    To get started, <a onclick=account_createMesh() ><strong>click here to create a device group</strong></a>.
+                                    <div id="getStarted1">To get started, <a onclick=account_createMesh()><strong>click here to create a device group</strong></a>.</div>
+                                    <div id="getStarted2">No device groups.</div>
                                 </td>
                             </tr>
                         </table>
@@ -261,10 +262,10 @@
                         <br style=clear:both />
                     </div>
                     <strong>Device Groups</strong>
-                    ( <a onclick=account_createMesh() class="newMeshBtn"> New</a> )
+                    <span id="p2createMeshLink1">( <a onclick=account_createMesh() class="newMeshBtn"> New</a> )</span>
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style="display:none">No device groups. <a onclick=account_createMesh()><strong>Get started here!</strong></a></div>
+                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a onclick=account_createMesh()><strong>Get started here!</strong></a></span></div>
                     <br style=clear:both />
                 </div>
                 <div id=p3 style="display:none">
@@ -1216,6 +1217,13 @@
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
             masterUpdate(4 + 128);
+
+            // If we can't create new groups, hide all links that can do that.
+            var newGroupsAllowed = ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0));
+            QV('p2createMeshLink1', newGroupsAllowed);
+            QV('p2createMeshLink2', newGroupsAllowed);
+            QV('getStarted1', newGroupsAllowed);
+            QV('getStarted2', !newGroupsAllowed);
 
             if (typeof userinfo.passchange == 'number') {
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
@@ -7480,7 +7488,6 @@
                 QC(leftBarItems[i]).remove('lbbuttonsel2');
             }
 
-            //QV('topbar', x != 0);
             // Define class for Menu(s) as fully or semi active.
             var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
             var leftMenuActiveClass = (x < 9 ? 'lbbuttonsel2' : 'lbbuttonsel');
@@ -7516,15 +7523,19 @@
                 QC('column_l').remove('room4submenu');
             }
             
-            // Please check. I think this part is not needed anymore. Removing class will revert to default style
-            /*
+            // If we are going to panel 0 in "full screen mode", hide the left bar.
+            QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) {
-                QS('page_content').position = '';
-                QV('page_leftbar', false);
+                QC('body').add("arg_hide");
                 QS('column_l').height = 'calc(100vh - 110px)';
-                QS('column_l')["max-height"] = '';
+
+                // Please check. I think this part is not needed anymore. Removing class will revert to default style
+                //QS('page_content').position = '';
+                //QV('page_leftbar', false);
+                //QS('column_l')["max-height"] = '';
+                //QV('column_l').left = 0;
+                //QV('page_content').left = 0;
             }
-            */
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
