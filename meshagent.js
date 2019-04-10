@@ -46,41 +46,38 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
 
-        // If this is a recovery agent, don't bother with all this clean up.
-        if ((obj.agentInfo.capabilities & 0x40) == 0) {
-            // Remove this agent from the webserver list
-            if (parent.wsagents[obj.dbNodeKey] == obj) {
-                delete parent.wsagents[obj.dbNodeKey];
-                parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
+        // Remove this agent from the webserver list
+        if (parent.wsagents[obj.dbNodeKey] == obj) {
+            delete parent.wsagents[obj.dbNodeKey];
+            parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
+        }
+
+        // Get the current mesh
+        const mesh = parent.meshes[obj.dbMeshKey];
+
+        // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
+        if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
+            // Delete this node including network interface information and events
+            db.Remove(obj.dbNodeKey);                       // Remove node with that id
+            db.Remove('if' + obj.dbNodeKey);                // Remove interface information
+            db.Remove('nt' + obj.dbNodeKey);                // Remove notes
+            db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
+            db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
+            db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
+            db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
+
+            // Event node deletion
+            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
+
+            // Disconnect all connections if needed
+            const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
+            if ((state != null) && (state.connectivity != null)) {
+                if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
+                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
             }
-
-            // Get the current mesh
-            const mesh = parent.meshes[obj.dbMeshKey];
-
-            // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
-            if (((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
-                // Delete this node including network interface information and events
-                db.Remove(obj.dbNodeKey);                       // Remove node with that id
-                db.Remove('if' + obj.dbNodeKey);                // Remove interface information
-                db.Remove('nt' + obj.dbNodeKey);                // Remove notes
-                db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
-                db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
-                db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
-                db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
-
-                // Event node deletion
-                parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
-
-                // Disconnect all connections if needed
-                const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
-                if ((state != null) && (state.connectivity != null)) {
-                    if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
-                    if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
-                }
-            } else {
-                // Update the last connect time
-                if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
-            }
+        } else {
+            // Update the last connect time
+            if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport }); }
         }
 
         // If we where updating the agent, clean that up.
@@ -525,9 +522,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
         obj.pendingCompleteAgentConnection = true;
 
+        // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
-            // This is a recovery agent
-            obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+            // Inform mesh agent that it's authenticated.
+            delete obj.pendingCompleteAgentConnection;
+            obj.authenticated = 2;
+            obj.send(common.ShortToStr(4));
+
+            // Ask for mesh core hash.
+            obj.send(common.ShortToStr(11) + common.ShortToStr(0));
             return;
         }
 
@@ -656,6 +659,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (mesh.flags && (mesh.flags & 2) && (device.name != obj.agentInfo.computerName)) { device.name = obj.agentInfo.computerName; change = 1; } // We want the server name to be sync'ed to the hostname
 
                 if (change == 1) {
+                    // Do some clean up if needed, these values should not be in the database.
+                    if (device.conn != null) { delete device.conn; }
+                    if (device.pwr != null) { delete device.pwr; }
+                    if (device.agct != null) { delete device.agct; }
+                    if (device.cict != null) { delete device.cict; }
+
+                    // Save the updated device in the database
                     db.Set(device);
 
                     // If this is a temporary device, don't log changes
@@ -781,6 +791,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             return; // Probably not worth doing anything else. Hold this agent.
         }
 
+        // Check if this is a recovery agent
+        if (obj.agentInfo.capabilities & 0x40) {
+            recoveryAgentCoreIsStable(mesh);
+            return;
+        }
+
         // Fetch the the real agent nodeid
         db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
             if (nodes.length == 1) {
@@ -788,9 +804,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.diagnosticNodeKey } }));
             }
         });
-
-        // Check if this is a recovery agent
-        if (obj.agentInfo.capabilities & 0x40) { recoveryAgentCoreIsStable(mesh); return; }
 
         // Send Intel AMT policy
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null)) {  // Only send Intel AMT policy to agents what could have AMT.
@@ -1182,6 +1195,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // If there are changes, event the new device
                 if (change == 1) {
+                    // Do some clean up if needed, these values should not be in the database.
+                    if (device.conn != null) { delete device.conn; }
+                    if (device.pwr != null) { delete device.pwr; }
+                    if (device.agct != null) { delete device.agct; }
+                    if (device.cict != null) { delete device.cict; }
+
                     // Save to the database
                     db.Set(device);
 
@@ -1220,6 +1239,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // If there are changes, save and event
                 if (change == 1) {
+                    // Do some clean up if needed, these values should not be in the database.
+                    if (device.conn != null) { delete device.conn; }
+                    if (device.pwr != null) { delete device.pwr; }
+                    if (device.agct != null) { delete device.agct; }
+                    if (device.cict != null) { delete device.cict; }
+
+                    // Save the device
                     db.Set(device);
 
                     // Event the node change
@@ -1244,6 +1270,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             const device = nodes[0];
             if (device.agent) {
                 if (device.agent.tag != tag) {
+                    // Do some clean up if needed, these values should not be in the database.
+                    if (device.conn != null) { delete device.conn; }
+                    if (device.pwr  != null) { delete device.pwr; }
+                    if (device.agct != null) { delete device.agct; }
+                    if (device.cict != null) { delete device.cict; }
+
+                    // Set the new tag
                     device.agent.tag = tag;
                     db.Set(device);
 
