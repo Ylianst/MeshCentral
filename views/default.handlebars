@@ -7510,21 +7510,22 @@
                 QC('column_l').remove('room4submenu');
             }
             
-            // Jovan, please check. I think this part is not needed anymore. Removing class will revert to default style
+            // Please check. I think this part is not needed anymore. Removing class will revert to default style
             /*
             if ((x == 0) && (webPageFullScreen)) {
                 QS('page_content').position = '';
                 QV('page_leftbar', false);
                 QS('column_l').height = 'calc(100vh - 110px)';
                 QS('column_l')["max-height"] = '';
-            } */
+            }
+            */
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
