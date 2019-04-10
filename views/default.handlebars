@@ -3789,7 +3789,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
+                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -7550,7 +7550,7 @@
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
             // Update the web page title
-            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
+            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
         }
 
         // Generic methods
