@@ -327,6 +327,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
                         var r = {};
                         for (i in docs) {
+                            // Remove any connectivity and power state information, that should not be in the database anyway.
+                            // TODO: Find why these are sometimes saves in the db.
+                            if (docs[i].conn != null) { delete docs[i].conn; }
+                            if (docs[i].pwr != null) { delete docs[i].pwr; }
+                            if (docs[i].agct != null) { delete docs[i].agct; }
+                            if (docs[i].cict != null) { delete docs[i].cict; }
+
                             // Add the connection state
                             var state = parent.parent.GetConnectivityState(docs[i]._id);
                             if (state) {
