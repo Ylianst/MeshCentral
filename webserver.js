@@ -217,35 +217,70 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
-        var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
-        // Query the db for the given username
-        if (!user) { fn(new Error('cannot find user')); return; }
-        // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
-        if (user.salt == null) {
-            fn(new Error('invalid password'));
+
+        if (domain.auth == 'ldap') {
+            // LDAP login
+            var LdapAuth = require('ldapauth-fork');
+            var ldap = new LdapAuth(domain.ldapoptions);
+            ldap.authenticate(name, pass, function (err, xxuser) {
+                try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
+                if (err) { fn(new Error('invalid password')); return; }
+                if (xxuser.objectSid == null) { fn(new Error('no objectSid')); return; }
+                var userid = 'user/' + domain.id + '/' + Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase();
+                var user = obj.users[userid];
+                if (user == null) {
+                    // This user does not exist, create a new account.
+                    var name = null;
+                    if (xxuser.displayName) { name = xxuser.displayName; }
+                    else if (xxuser.name) { name = xxuser.name; }
+                    else if (xxuser.cn) { name = xxuser.cn; }
+                    if (name == null) { fn(new Error('no user name')); return; }
+                    var user = { type: 'user', _id: userid, name: name, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                    var usercount = 0;
+                    for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                    if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                    obj.users[user._id] = user;
+                    obj.db.SetUser(user);
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                    return fn(null, user._id);
+                } else {
+                    // This is an existing user
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                    return fn(null, user._id);
+                }
+            });
         } else {
-            if (user.passtype != null) {
-                // IIS default clear or weak password hashing (SHA-1)
-                require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
-                        // Update the password to the stronger format.
-                        require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
-                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-                        return fn(null, user._id);
-                    }
-                    fn(new Error('invalid password'), null, user.passhint);
-                });
+            // Regular login
+            var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
+            // Query the db for the given username
+            if (!user) { fn(new Error('cannot find user')); return; }
+            // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
+            if (user.salt == null) {
+                fn(new Error('invalid password'));
             } else {
-                // Default strong password hashing (pbkdf2 SHA384)
-                require('./pass').hash(pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
-                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-                        return fn(null, user._id);
-                    }
-                    fn(new Error('invalid password'), null, user.passhint);
-                });
+                if (user.passtype != null) {
+                    // IIS default clear or weak password hashing (SHA-1)
+                    require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            // Update the password to the stronger format.
+                            require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                } else {
+                    // Default strong password hashing (pbkdf2 SHA384)
+                    require('./pass').hash(pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                }
             }
         }
     };
@@ -611,7 +646,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
 
@@ -684,8 +719,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
-
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                                 });
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                             }
@@ -702,7 +736,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
 
         // Check everything is ok
-        if ((domain == null) || (domain.auth == 'sspi') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             delete req.session.loginmode;
             delete req.session.tokenusername;
             delete req.session.tokenpassword;
@@ -776,7 +810,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Get the email from the body or session.
         var email = req.body.email;
@@ -840,7 +874,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -927,7 +961,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -998,7 +1032,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -1038,15 +1072,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } });
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
-            var userid = 'user/' + domain.id + '/' + req.query.user.toLowerCase();
-            if (obj.users[userid] != null) {
-                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                    req.session.userid = userid;
-                    req.session.domainid = domain.id;
-                    req.session.currentNode = '';
-                    handleRootRequestEx(req, res, domain);
-                });
-            }
+            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                req.session.userid = userid;
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+                handleRootRequestEx(req, res, domain);
+            });
         } else {
             // Login using a different system
             handleRootRequestEx(req, res, domain);

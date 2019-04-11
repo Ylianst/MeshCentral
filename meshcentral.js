@@ -479,7 +479,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Lower case all keys in the config file
                     try {
-                        require('./common.js').objKeysToLower(config2);
+                        require('./common.js').objKeysToLower(config2, ["ldapoptions"]);
                     } catch (ex) {
                         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
                         process.exit();
@@ -543,8 +543,9 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.domains[''].dns != null) { console.log("ERROR: Default domain can't have a DNS name."); return; }
         var xdomains = {}; for (i in obj.config.domains) { if (obj.config.domains[i].title == null) { obj.config.domains[i].title = 'MeshCentral'; } if (obj.config.domains[i].title2 == null) { obj.config.domains[i].title2 = '2.0 Beta 2'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
-        for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
+        for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {
+            if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
@@ -552,6 +553,11 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { obj.config.domains[i].userblockedip = null; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userallowedip.split(','); } }
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { obj.config.domains[i].agentallowedip = null; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { obj.config.domains[i].agentblockedip = null; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(','); } }
+            if ((obj.config.domains[i].auth == 'ldap') && (typeof obj.config.domains[i].ldapoptions != 'object')) {
+                if (i == '') { console.log("ERROR: Default domain is LDAP, but is missing LDAPOptions."); } else { console.log("ERROR: Domain '" + i + "' is LDAP, but is missing LDAPOptions."); }
+                process.exit();
+                return;
+            }
         }
 
         // Log passed arguments into Windows Service Log
@@ -1618,11 +1624,12 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config);
+        require('./common.js').objKeysToLower(config, ["ldapoptions"]);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();
     }
+
     return config;
 }
 
@@ -1680,16 +1687,24 @@ function mainStart(args) {
         var config = getConfig(false);
         if (config == null) { process.exit(); }
 
+        // Lowercase the auth value is present
+        for (var i in config.domains) { if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); } }
+
         // Check is Windows SSPI and YubiKey OTP will be used
         var sspi = false;
+        var ldap = false;
         var allsspi = true;
         var yubikey = false;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
-        for (var i in config.domains) { if (config.domains[i].yubikey != null) { yubikey = true; } }
+        for (var i in config.domains) {
+            if (config.domains[i].yubikey != null) { yubikey = true; }
+            if (config.domains[i].auth == 'ldap') { ldap = true; }
+        }
 
         // Build the list of required modules
         var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
+        if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
