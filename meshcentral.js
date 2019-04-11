@@ -558,6 +558,7 @@ function CreateMeshCentralServer(config, args) {
                 process.exit();
                 return;
             }
+            if ((obj.config.domains[i].auth == 'ldap') || (obj.config.domains[i].auth == 'sspi')) { obj.config.domains[i].newaccounts = 0; } // No new accounts allowed in SSPI/LDAP authentication modes.
         }
 
         // Log passed arguments into Windows Service Log
