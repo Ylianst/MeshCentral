@@ -219,36 +219,64 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
 
         if (domain.auth == 'ldap') {
-            // LDAP login
-            var LdapAuth = require('ldapauth-fork');
-            var ldap = new LdapAuth(domain.ldapoptions);
-            ldap.authenticate(name, pass, function (err, xxuser) {
-                try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
-                if (err) { fn(new Error('invalid password')); return; }
-                if (xxuser.objectSid == null) { fn(new Error('no objectSid')); return; }
-                var userid = 'user/' + domain.id + '/' + Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase();
-                var user = obj.users[userid];
-                if (user == null) {
-                    // This user does not exist, create a new account.
-                    var name = null;
-                    if (xxuser.displayName) { name = xxuser.displayName; }
-                    else if (xxuser.name) { name = xxuser.name; }
-                    else if (xxuser.cn) { name = xxuser.cn; }
-                    if (name == null) { fn(new Error('no user name')); return; }
-                    var user = { type: 'user', _id: userid, name: name, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
-                    var usercount = 0;
-                    for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                    if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
-                    obj.users[user._id] = user;
-                    obj.db.SetUser(user);
-                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
-                    return fn(null, user._id);
+            if (domain.ldapoptions.url == 'test') {
+                // Fake LDAP login
+                var xxuser = domain.ldapoptions[name.toLowerCase()];
+                if (xxuser == null) {
+                    fn(new Error('invalid password'));
+                    return;
                 } else {
-                    // This is an existing user
-                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-                    return fn(null, user._id);
+                    var shortname = null;
+                    if (xxuser.name) { shortname = xxuser.name; }
+                    else if (xxuser.cn) { shortname = xxuser.cn; }
+                    if (shortname == null) { fn(new Error('no short name')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+                    if (user == null) {
+                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                        return fn(null, user._id);
+                    }
                 }
-            });
+            } else {
+                // LDAP login
+                var LdapAuth = require('ldapauth-fork');
+                var ldap = new LdapAuth(domain.ldapoptions);
+                ldap.authenticate(name, pass, function (err, xxuser) {
+                    try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
+                    if (err) { fn(new Error('invalid password')); return; }
+                    var shortname = null;
+                    if (xxuser.name) { shortname = xxuser.name; }
+                    else if (xxuser.cn) { shortname = xxuser.cn; }
+                    if (shortname == null) { fn(new Error('no short name')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+                    if (user == null) {
+                        // This user does not exist, create a new account.
+                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                        return fn(null, user._id);
+                    }
+                });
+            }
         } else {
             // Regular login
             var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
