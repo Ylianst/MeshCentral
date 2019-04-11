@@ -251,7 +251,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
 
             // Build server information object
-            var serverinfo = { name: parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi')), domainauth: (domain.auth == 'sspi') };
+            var serverinfo = { name: parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap')), domainauth: ((domain.auth == 'sspi') || (domain.auth == 'ldap')) };
             if (args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = args.redirport; }
 
             // Send server information
@@ -715,7 +715,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'changeemail':
                 {
                     // Change the email address
-                    if (domain.auth == 'sspi') return;
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateEmail(command.email, 1, 256) == false) return;
                     if (parent.users[req.session.userid].email != command.email) {
                         // Check if this email is already validated on a different account
@@ -740,7 +740,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
 
                                 // Send the verification email
-                                if ((parent.parent.mailserver != null) && (domain.auth != 'sspi')) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                             }
                         });
                     }
@@ -749,7 +749,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'verifyemail':
                 {
                     // Send a account email verification email
-                    if (domain.auth == 'sspi') return;
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateString(command.email, 3, 1024) == false) return;
                     if ((parent.parent.mailserver != null) && (parent.users[req.session.userid].email == command.email)) {
                         // Send the verification email
@@ -1069,7 +1069,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0)) break;
 
                     // In some situations, we need a verified email address to create a device group.
-                    if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
+                    if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
 
                     // Create mesh
                     if (common.validateString(command.meshname, 1, 64) == false) break; // Meshname is between 1 and 64 characters

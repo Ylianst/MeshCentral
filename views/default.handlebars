@@ -73,13 +73,13 @@
             <div id=LeftMenuMyEvents class="lbbutton" title="My Events" onclick=go(3)>
                 <div class="lb3"></div>
             </div>
-            <div id=LeftMenuMyFiles class="lbbutton" title="My Files" onclick=go(5)>
+            <div id=LeftMenuMyFiles class="lbbutton" style="display:none" title="My Files" onclick=go(5)>
                 <div class="lb4"></div>
             </div>
-            <div id=LeftMenuMyUsers class="lbbutton" title="My Users" onclick=go(4)>
+            <div id=LeftMenuMyUsers class="lbbutton" style="display:none" title="My Users" onclick=go(4)>
                 <div class="lb5"></div>
             </div>
-            <div id=LeftMenuMyServer class="lbbutton" title="My Server" onclick=go(6) style="display:none">
+            <div id=LeftMenuMyServer class="lbbutton" style="display:none" title="My Server" onclick=go(6) style="display:none">
                 <div class="lb6"></div>
             </div>
         </div>
@@ -1663,7 +1663,7 @@
                                 }
                             }
                             masterUpdate(4 + 128);
-                            if (currentNode && (currentNode.meshid == message.event.meshid)) { refreshDevice(currentNode._id); }
+                            if (currentNode && (currentNode.meshid == message.event.meshid)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
