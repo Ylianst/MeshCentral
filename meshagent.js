@@ -1134,9 +1134,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 }
                                 case 'log': {
                                     // Only the diagnostic agent can do
-                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.command.value == 'string') && (command.value.command.value.length < 256)) {
+                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256))
+                                    {
                                         // Log a value in the event log of the main again
-                                        var event = { etype: 'node', action: 'diagnostic', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.value.command.value };
+                                        var event = { etype: 'node', action: 'diagnostic', nodeid: obj.realNodeKey, domain: domain.id, msg: command.value.value };
                                         parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
                                     }
                                     break;
