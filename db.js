@@ -281,7 +281,27 @@ module.exports.CreateDB = function (parent) {
 
     // Database actions on the main collection
     obj.Set = function (data, func) { obj.file.update({ _id: data._id }, data, { upsert: true }, func); };
-    obj.Get = function (id, func) { obj.file.find({ _id: id }, func); };
+    obj.Get = function (id, func)
+    {
+        if (arguments.length > 2)
+        {
+            var parms = [func];
+            for (var parmx = 2; parmx < arguments.length; ++parmx) { parms.push(arguments[parmx]); }
+            var func2 = function _func2(arg1, arg2)
+            {
+                var userCallback = _func2.userArgs.shift();
+                _func2.userArgs.unshift(arg2);
+                _func2.userArgs.unshift(arg1);
+                userCallback.apply(obj, _func2.userArgs);
+            };
+            func2.userArgs = parms;
+            obj.file.find({ _id: id }, func2);
+        }
+        else
+        {
+            obj.file.find({ _id: id }, func);
+        }
+    };
     obj.GetAll = function (func) { obj.file.find({}, func); };
     obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, func); };
     obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, func); };
@@ -422,6 +442,7 @@ module.exports.CreateDB = function (parent) {
 
     // This is used to rate limit a number of operation per day. Returns a startValue each new days, but you can substract it and save the value in the db.
     obj.getValueOfTheDay = function (id, startValue, func) { obj.Get(id, function (err, docs) { var date = new Date(), t = date.toLocaleDateString(); if (docs.length == 1) { var r = docs[0]; if (r.day == t) { func({ _id: id, value: r.value, day: t }); return; } } func({ _id: id, value: startValue, day: t }); }); };
+    obj.escapeBase64 = function escapeBase64(val) { return (val.replace(/\+/g, '@').replace(/\//g, '$')); }
 
     function Clone(v) { return JSON.parse(JSON.stringify(v)); }
 
