@@ -778,7 +778,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (nodes.length == 1)
             {
                 self.realNodeKey = nodes[0].raid;
-                self.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: self.realNodeKey } }));
+
+                // Get agent connection state
+                var agentConnected = false;
+                var state = parent.parent.GetConnectivityState(self.realNodeKey);
+                if (state) { agentConnected = ((state.connectivity & 1) != 0) }
+
+                self.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: self.realNodeKey, agent: agentConnected } }));
             } else
             {
                 self.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
@@ -1124,7 +1130,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         db.Get('da' + obj.dbNodeKey, function (err, nodes) {
                                             if (nodes.length == 1) {
                                                 obj.realNodeKey = nodes[0].raid;
-                                                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.realNodeKey } }));
+
+                                                // Get agent connection state
+                                                var agentConnected = false;
+                                                var state = parent.parent.GetConnectivityState(obj.realNodeKey);
+                                                if (state) { agentConnected = ((state.connectivity & 1) != 0) }
+
+                                                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.realNodeKey, agent: agentConnected } }));
                                             } else {
                                                 obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
                                             }
