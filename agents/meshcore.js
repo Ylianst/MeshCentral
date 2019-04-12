@@ -423,6 +423,8 @@ function createMeshCore(agent) {
                                     tunnel.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
                                     tunnel.sessionid = data.sessionid;
                                     tunnel.rights = data.rights;
+                                    tunnel.consent = data.consent;
+                                    tunnel.username = data.username;
                                     tunnel.state = 0;
                                     tunnel.url = xurl;
                                     tunnel.protocol = 0;
@@ -706,6 +708,11 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Perform notification if needed
+                    if (this.httprequest.consent && (this.httprequest.consent & 2)) {
+                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.');
+                    }
+
                     // Remote terminal using native pipes
                     if (process.platform == "win32")
                     {
@@ -759,13 +766,15 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Perform notification if needed
+                    if (this.httprequest.consent && (this.httprequest.consent & 1)) {
+                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.');
+                    }
+
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
-
-                    // Display a toast message
-                    //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Started.');
 
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
@@ -809,6 +818,11 @@ function createMeshCore(agent) {
                         this.httprequest.s.end();
                         sendConsoleText('Error: No Files Control Rights.');
                         return;
+                    }
+
+                    // Perform notification if needed
+                    if (this.httprequest.consent && (this.httprequest.consent & 4)) {
+                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file access.');
                     }
 
                     // Setup files

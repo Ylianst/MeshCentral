@@ -53,7 +53,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
-        var rights;
+        var rights, mesh;
         if (command.nodeid == null) return false;
         var user = obj.parent.users[userid];
         if (user == null) return false;
@@ -66,9 +66,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             if (agent != null) {
                 // Check if we have permission to send a message to that node
                 rights = user.links[agent.dbMeshKey];
-                if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                mesh = parent.meshes[agent.dbMeshKey];
+                if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     command.sessionid = ws.sessionId;   // Set the session id, required for responses.
                     command.rights = rights.rights;     // Add user rights flags to the message
+                    command.consent = mesh.consent;     // Add user consent
+                    if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                    command.username = user.name;       // Add user name
                     delete command.nodeid;              // Remove the nodeid since it's implyed.
                     agent.send(JSON.stringify(command));
                     return true;
@@ -79,9 +83,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     rights = user.links[routing.meshid];
+                    mesh = parent.meshes[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
                         command.rights = rights.rights;         // Add user rights flags to the message
+                        command.consent = mesh.consent;         // Add user consent
+                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                        command.username = user.name;           // Add user name
                         obj.parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         return true;
                     }

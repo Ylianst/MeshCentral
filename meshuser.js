@@ -125,10 +125,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (agent != null) {
                 // Check if we have permission to send a message to that node
                 var rights = user.links[agent.dbMeshKey];
-                if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission, 256 is desktop read only
-                    command.sessionid = ws.sessionId;   // Set the session id, required for responses.
+                var mesh = parent.meshes[agent.dbMeshKey];
+                if ((rights != null) && (mesh != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission, 256 is desktop read only
+                    command.sessionid = ws.sessionId;   // Set the session id, required for responses
                     command.rights = rights.rights;     // Add user rights flags to the message
-                    delete command.nodeid;              // Remove the nodeid since it's implyed.
+                    command.consent = mesh.consent;     // Add user consent
+                    if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                    command.username = user.name;       // Add user name
+                    delete command.nodeid;              // Remove the nodeid since it's implied
                     try { agent.send(JSON.stringify(command)); } catch (ex) { }
                 }
             } else {
@@ -137,9 +141,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     var rights = user.links[routing.meshid];
-                    if ((rights != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
-                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses.
+                    var mesh = parent.meshes[agent.dbMeshKey];
+                    if ((rights != null) && (mesh != null) && ((rights.rights & 8) || (rights.rights & 256))) { // 8 is remote control permission
+                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = rights.rights;         // Add user rights flags to the message
+                        command.consent = mesh.consent;         // Add user consent
+                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                        command.username = user.name;           // Add user name
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                     }
                 }
@@ -253,6 +261,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Build server information object
             var serverinfo = { name: parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap')), domainauth: ((domain.auth == 'sspi') || (domain.auth == 'ldap')) };
             if (args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = args.redirport; }
+            if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
 
             // Send server information
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
@@ -1147,6 +1156,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                     mesh = parent.meshes[command.meshid];
                     change = '';
+
                     if (mesh) {
                         // Check if this user has rights to do this
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 1) == 0)) return;
@@ -1155,7 +1165,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
                         if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
-                        if (change != '') { db.Set(common.escapeLinksFieldName(mesh)); parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }); }
+                        if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }
+                        if (change != '') { db.Set(common.escapeLinksFieldName(mesh)); parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, { etype: 'mesh', username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id }); }
                     }
                     break;
                 }
@@ -1249,7 +1260,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     change = '';
                     if (mesh) {
                         // Check if this user has rights to do this
-                        if ((mesh.links[user._id] == null) || (mesh.links[user._id].rights != 0xFFFFFFFF)) return;
+                        if ((mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) return;
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                         // TODO: Check if this is a change from the existing policy
