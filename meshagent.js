@@ -773,14 +773,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         //console.log('recoveryAgentCoreIsStable()');
 
         // Fetch the the real agent nodeid
-        db.Get('da' + obj.dbNodeKey, function (err, nodes) {
-            if (nodes.length == 1) {
-                obj.realNodeKey = nodes[0].raid;
-                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.realNodeKey } }));
-            } else {
-                obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
+        db.Get('da' + obj.dbNodeKey, function (err, nodes, self)
+        {
+            if (nodes.length == 1)
+            {
+                self.realNodeKey = nodes[0].raid;
+                self.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: self.realNodeKey } }));
+            } else
+            {
+                self.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: null } }));
             }
-        });
+        }, obj);
     }
 
     function agentCoreIsStable() {
@@ -1105,9 +1108,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             switch (command.value.command) {
                                 case 'register': {
                                     // Only main agent can do this
-                                    if (((obj.agentInfo.capabilities & 0x40) == 0) && (typeof command.value.command.value == 'string') && (command.value.command.value.length == 64)) {
+                                    if (((obj.agentInfo.capabilities & 0x40) == 0) && (typeof command.value.value == 'string') && (command.value.value.length == 64))
+                                    {
                                         // Store links to diagnostic agent id
-                                        var daNodeKey = 'node/' + domain.id + '/' + command.value.command.value;
+                                        var daNodeKey = 'node/' + domain.id + '/' + db.escapeBase64(command.value.value);
                                         db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
                                         db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
                                     }
