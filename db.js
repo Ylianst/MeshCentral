@@ -289,7 +289,6 @@ module.exports.CreateDB = function (parent) {
             for (var parmx = 2; parmx < arguments.length; ++parmx) { parms.push(arguments[parmx]); }
             var func2 = function _func2(arg1, arg2)
             {
-                console.log('callback');
                 var userCallback = _func2.userArgs.shift();
                 _func2.userArgs.unshift(arg2);
                 _func2.userArgs.unshift(arg1);
