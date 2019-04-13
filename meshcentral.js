@@ -1204,8 +1204,8 @@ function CreateMeshCentralServer(config, args) {
 
         // Read the agent recovery core if present
         var meshAgentRecoveryCore = null;
-        if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')) == true) {
-            try { meshAgentRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')).toString(); } catch (ex) { }
+        if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcore_diagnostic.js')) == true) {
+            try { meshAgentRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'meshcore_diagnostic.js')).toString(); } catch (ex) { }
             if (meshAgentRecoveryCore != null) {
                 modulesAdd['windows-agentrecovery'] = ['var addedModules = [];\r\n'];
                 modulesAdd['linux-agentrecovery'] = ['var addedModules = [];\r\n'];
