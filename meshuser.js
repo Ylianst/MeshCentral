@@ -895,6 +895,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                             if ((user.siteadmin == 0xFFFFFFFF) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+
+                            if ((Array.isArray(command.groups)) && (user.name != command.name)) {
+                                if (command.groups.length == 0) {
+                                    if (chguser.groups != null) { delete chguser.groups; change = 1; }
+                                } else {
+                                    if (chguser.groups != command.groups) { chguser.groups = command.groups; change = 1; }
+                                }
+                            }
+
                             if (change == 1) {
                                 db.SetUser(chguser);
                                 parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
