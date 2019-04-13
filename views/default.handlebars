@@ -6775,6 +6775,34 @@
             meshserver.send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked });
         }
 
+        function showUserGroupDialog(e, userid) {
+            if (xxdialogMode) return;
+            haltEvent(e);
+            userid = decodeURIComponent(userid);
+            var user = users[userid.toLowerCase()], groups = "";
+            if (user.groups != null) { groups = user.groups.join(', ') }
+            var x = 'Enter a comma seperate list of groups.<br /><br />';
+            x += addHtmlValue('Groups', '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="Group1, Group2, Group3" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
+            setDialogMode(2, "User Groups", 3, showUserGroupDialogEx, x, user);
+            focusTextBox('dp4usergroups');
+            p4validateUserGroups();
+            return false;
+        }
+
+        function p4validateUserGroups() {
+            var groups = Q('dp4usergroups').value;
+            var k = 0, i = groups.indexOf('\"') + groups.indexOf('/') + groups.indexOf('>') + groups.indexOf('<') + groups.indexOf('\'');
+            var g = groups.split(',');
+            for (var j in g) { if (g[j].trim().length == 0) k++; }
+            QE('idx_dlgOkButton', (groups == '') || ((i == -5) && (k < 1)));
+        }
+
+        function showUserGroupDialogEx(event, user) {
+            var groups = Q('dp4usergroups').value, g = groups.split(','), g2 = [];
+            for (var j in g) { var x = g[j].trim(); if (x.length > 0) { g2.push(x); } }
+            meshserver.send({ action: 'edituser', name: user.name, groups: g2 });
+        }
+
         function showUserAdminDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
@@ -6886,12 +6914,17 @@
             if (user.passchange == -1) { x += addDeviceAttribute('Password', 'Will be changed on next login.'); }
             else if (user.passchange) { x += addDeviceAttribute('Password', 'Last changed: ' + new Date(user.passchange * 1000).toLocaleString()); }
 
+            // Device Groups
             var linkCount = 0, linkCountStr = '<i>None<i>';
             if (user.links) {
                 for (var i in user.links) { linkCount++; }
                 if (linkCount == 1) { linkCountStr = '1 group'; } else if (linkCount > 1) { linkCountStr = linkCount + ' groups'; }
             }
             x += addDeviceAttribute('Device Groups', linkCountStr);
+
+            // User Groups
+            if (user.groups) { linkCountStr = EscapeHtml(user.groups.join(', ')); } else { linkCountStr = '<i>None<i>'; }
+            x += addDeviceAttribute('User Groups', addLinkConditional(linkCountStr, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
 
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
