@@ -887,8 +887,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'edituser':
                 {
                     // Edit a user account, may involve changing email or administrator permissions
-                    if (((user.siteadmin & 2) != 0) || (user.name == command.name)) {
-                        var chguserid = 'user/' + domain.id + '/' + command.name.toLowerCase(), chguser = parent.users[chguserid];
+                    if (((user.siteadmin & 2) != 0) || (user._id == command.id)) {
+                        var chguser = parent.users[command.id];
                         change = 0;
                         if (chguser) {
                             if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
@@ -896,20 +896,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                             if ((user.siteadmin == 0xFFFFFFFF) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
 
-                            if ((Array.isArray(command.groups)) && (user.name != command.name)) {
+                            if ((Array.isArray(command.groups)) && (user._id != command.id)) {
                                 if (command.groups.length == 0) {
+                                    // Remove the user groups
                                     if (chguser.groups != null) { delete chguser.groups; change = 1; }
                                 } else {
-                                    if (chguser.groups != command.groups) { chguser.groups = command.groups; change = 1; }
+                                    // Arrange the user groups
+                                    var groups2 = [];
+                                    for (var i in command.groups) {
+                                        if (typeof command.groups[i] == 'string') {
+                                            var gname = command.groups[i].trim().toLowerCase();
+                                            if ((gname.length > 0) && (gname.length <= 64) && (groups2.indexOf(gname) == -1)) { groups2.push(gname); }
+                                        }
+                                    }
+                                    groups2.sort();
+
+                                    // Set the user groups
+                                    if (chguser.groups != groups2) { chguser.groups = groups2; change = 1; }
                                 }
                             }
 
                             if (change == 1) {
+                                // Update the user
                                 db.SetUser(chguser);
                                 parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + command.name, domain: domain.id });
+                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: domain.id });
                             }
                             if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
+                                // If the user is locked out of this account, disconnect now
                                 parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                             }
                         }
@@ -1206,7 +1220,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
                         // Add a user to the mesh
-                        mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
+                        mesh.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: command.meshadmin };
                         db.Set(common.escapeLinksFieldName(mesh));
 
                         // Notify mesh change
@@ -1647,10 +1661,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                             }
                             if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
-                                var ok = true;
+                                var ok = true, group2 = [];
                                 if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
-                                if (common.validateStrArray(command.tags, 1, 256) == true) { var groupTags = command.tags; for (var i in groupTags) { groupTags[i] = groupTags[i].trim(); if ((groupTags[i] == '') || (groupTags[i].indexOf(',') >= 0)) { ok = false; } } }
-                                if (ok == true) { groupTags.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }); node.tags = groupTags; change = 1; }
+                                for (var i in command.tags) { var tname = command.tags[i].trim(); if ((tname.length > 0) && (tname.length < 64) && (group2.indexOf(tname) == -1)) { group2.push(tname); } }
+                                group2.sort();
+                                if (node.tags != group2) { node.tags = group2; change = 1; }
                             } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
 
                             if (change == 1) {

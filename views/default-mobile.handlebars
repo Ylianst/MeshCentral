@@ -813,7 +813,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if (message.event.links[userinfo._id] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 updateMeshes();
                                 updateDevices();
@@ -834,7 +834,7 @@
                                 meshes[message.event.meshid].links = message.event.links;
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()] == null) {
+                                if (meshes[message.event.meshid].links[userinfo._id] == null) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -1250,7 +1250,7 @@
                 count++;
 
                 // Mesh rights
-                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = meshes[i].links[userinfo._id].rights;
                 var rights = 'Partial Rights';
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
@@ -1541,7 +1541,7 @@
             // Go thru the list of nodes and display them
             for (var i in nodes) {
                 if (nodes[i].v == false) continue;
-                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links[userinfo._id];
                 if (meshlinks == null) continue;
                 var meshrights = meshlinks.rights;
 
@@ -1612,7 +1612,7 @@
             // Display all empty meshes, we need to do this because users can add devices to these at any time.
             if (sort == 0) {
                 for (var i in meshes) {
-                    var mesh = meshes[i], meshlink = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                    var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
                     if (meshlink != null) {
                         var meshrights = meshlink.rights;
                         if (displayedMeshes[mesh._id] == null) {
@@ -1700,7 +1700,7 @@
 
         function getNodeRights(nodeid) {
             var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
-            return mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            return mesh.links[userinfo._id].rights;
         }
 
         var currentDevicePanel = 0;
@@ -1722,7 +1722,7 @@
             if (node == null) { goBack(); return; }
             var mesh = meshes[node.meshid];
             if (mesh == null) { goBack(); return; }
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -1882,7 +1882,7 @@
 
         function setupDeviceMenu(op, obj) {
             var meshrights = 0;
-            if (currentNode) { meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; }
+            if (currentNode) { meshrights = meshes[currentNode.meshid].links[userinfo._id].rights; }
             if (op != null) { currentDevicePanel = op; }
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
@@ -1896,7 +1896,7 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
             var y = '<select id=d2deviceop style=float:right;width:170px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
@@ -2039,7 +2039,7 @@
         function p10showiconselector() {
             if (xxdialogMode) return;
             var mesh = meshes[currentNode.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 4) == 0) return;
 
             var x = '<table align=center><td>';
@@ -2117,7 +2117,7 @@
             var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
@@ -2859,7 +2859,7 @@
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
-            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links[userinfo._id].rights;
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT group';
             if (currentMesh.mtype == 2) meshtype = 'Software agent group';
 
@@ -2872,7 +2872,7 @@
             //x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
-            var currentMeshLinks = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+            var currentMeshLinks = currentMesh.links[userinfo._id];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a></div>'; }
 
             /*
@@ -2988,7 +2988,7 @@
         }
 
         function p20validateAddMeshUserDialog() {
-            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links[userinfo._id].rights;
             QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
@@ -3027,7 +3027,7 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
+            var r = '', cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
                 if ((meshrights & 1) != 0) r += ', Edit Device Group';
                 if ((meshrights & 2) != 0) r += ', Manage Device Group Users';
@@ -3046,7 +3046,7 @@
             if (r == '') { r = 'No Rights'; }
             var buttons = 1, x = addHtmlValue('User', EscapeHtml(decodeURIComponent(userid.split('/')[2])));
             x += addHtmlValue('Permissions', r);
-            if ((('user/' + domain + '/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+            if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
         }
 

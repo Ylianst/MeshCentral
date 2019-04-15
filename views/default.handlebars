@@ -1627,7 +1627,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if (message.event.links[userinfo._id] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 masterUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
@@ -1650,7 +1650,7 @@
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()] == null) {
+                                if (meshes[message.event.meshid].links[userinfo._id] == null) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -1932,7 +1932,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -1991,7 +1991,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2025,7 +2025,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2124,7 +2124,7 @@
                 for (var i in nodes) {
                     var node = nodes[i];
                     if (node.v == false) continue;
-                    var mesh2 = meshes[node.meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                    var mesh2 = meshes[node.meshid], meshlinks = mesh2.links[userinfo._id];
                     if (meshlinks == null) continue;
                     var meshrights = meshlinks.rights;
                     if ((view == 3) && (mesh2.mtype == 1)) continue;
@@ -2242,7 +2242,7 @@
                 // Display all empty meshes, we need to do this because users can add devices to these at any time.
                 if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
                     for (var i in meshes) {
-                        var mesh = meshes[i], meshlink = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                        var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
                         if (meshlink != null) {
                             var meshrights = meshlink.rights;
                             if (displayedMeshes[mesh._id] == null) {
@@ -2355,7 +2355,7 @@
         }
 
         function toggleKvmDevice(nodeid) {
-            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 8) || (meshrights & 256)) { // Requires remote control rights or desktop view only rights
                 //var conn = 0;
                 //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
@@ -2892,7 +2892,7 @@
             var nodeid = contextelement.children[1].attributes.onclick.value;
             var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
             var mesh = meshes[node.meshid];
-            var meshlinks = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+            var meshlinks = mesh.links[userinfo._id];
             var meshrights = meshlinks.rights;
             var consoleRights = ((meshrights & 16) != 0);
 
@@ -3556,7 +3556,7 @@
 
         function getNodeRights(nodeid) {
             var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
-            return mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            return mesh.links[userinfo._id].rights;
         }
 
         var currentNode;
@@ -3582,7 +3582,7 @@
             //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
             var mesh = meshes[node.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -3841,7 +3841,7 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
             var y = '<select id=d2deviceop style=float:right;width:250px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
@@ -3998,7 +3998,7 @@
             // List all available alternative groups
             var y = "<select id=p10newGroup style=width:236px>", count = 0;
             for (var i in meshes) {
-                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = meshes[i].links[userinfo._id].rights;
                 if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { count++; y += "<option value='" + meshes[i]._id + "'>" + meshes[i].name + "</option>"; }
             }
             y += "</select>";
@@ -4130,7 +4130,7 @@
         function p10showiconselector() {
             if (xxdialogMode) return;
             var mesh = meshes[currentNode.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 4) == 0) return;
 
             var x = '<br><div style=display:inline-block;width:40px></div>';
@@ -4227,7 +4227,7 @@
             var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
@@ -5508,7 +5508,7 @@
                 consoleNode = currentNode;
 
                 var mesh = meshes[consoleNode.meshid];
-                var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = mesh.links[userinfo._id].rights;
                 if ((meshrights & 16) != 0) {
                     if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
                     if (samenode == false) {
@@ -5880,7 +5880,7 @@
 
                 // Mesh rights
                 var meshrights = 0;
-                if (meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()]) { meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; }
+                if (meshes[i].links[userinfo._id]) { meshrights = meshes[i].links[userinfo._id].rights; }
                 var rights = 'Partial Rights';
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
@@ -5942,7 +5942,7 @@
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
             var meshrights = 0;
-            try { meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; } catch (ex) { }
+            try { meshrights = currentMesh.links[userinfo._id].rights; } catch (ex) { }
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT only, no agent';
             if (currentMesh.mtype == 2) meshtype = 'Managed using a software agent';
 
@@ -5996,7 +5996,7 @@
             if (meshrights & 1) { x += '<br><input type=button value=Notes title="View notes about this device group" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
 
             x += '<br style=clear:both><br>';
-            var currentMeshLinks = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+            var currentMeshLinks = currentMesh.links[userinfo._id];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
 
             if ((meshrights & 4) != 0) {
@@ -6031,7 +6031,12 @@
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
-            for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
+            for (var i in currentMesh.links) {
+                var uname = i.split('/')[2];
+                if (currentMesh.links[i].name) { uname = currentMesh.links[i].name; }
+                if (i == userinfo._id) { uname = userinfo.name; }
+                sortedusers.push({ id: i, name: uname, rights: currentMesh.links[i].rights });
+            }
             sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
 
             // Display all users for this mesh
@@ -6208,7 +6213,7 @@
         }
 
         function p20validateAddMeshUserDialog() {
-            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links[userinfo._id].rights;
             QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
@@ -6249,7 +6254,7 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
+            var r = '', cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
                 if ((meshrights &    1) != 0) r += ', Edit Device Group';
                 if ((meshrights &    2) != 0) r += ', Manage Device Group Users';
@@ -6267,9 +6272,14 @@
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
-            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            var uname = userid.split('/')[2];
+            if (users) { uname = users[userid].name; }
+            if (userinfo._id == userid) { uname = userinfo.name; }
+            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(uname));
+            if (userid.split('/')[2] != uname) { x += addHtmlValue('User Identifier', EscapeHtml(userid.split('/')[2])); }
+
             x += addHtmlValue('Permissions', r);
-            if ((('user/' + domain + '/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+            if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
         }
 
@@ -6800,7 +6810,7 @@
         function showUserGroupDialogEx(event, user) {
             var groups = Q('dp4usergroups').value, g = groups.split(','), g2 = [];
             for (var j in g) { var x = g[j].trim(); if (x.length > 0) { g2.push(x); } }
-            meshserver.send({ action: 'edituser', name: user.name, groups: g2 });
+            meshserver.send({ action: 'edituser', id: user._id, groups: g2 });
         }
 
         function showUserAdminDialog(e, userid) {
@@ -6871,7 +6881,7 @@
                 if (Q('ua_nonewgroups').checked == true) siteadmin += 64;
                 if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
             }
-            var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
+            var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
             meshserver.send(x);
         }
@@ -6900,12 +6910,13 @@
             var msg = [], premsg = '';
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg.push("Locked account"); }
             if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
-            if ((user.siteadmin != null) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
+            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
+            if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute('User Identifier', user._id.split('/')[2]); }
             x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg.join(', ') + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
@@ -6923,8 +6934,9 @@
             x += addDeviceAttribute('Device Groups', linkCountStr);
 
             // User Groups
-            if (user.groups) { linkCountStr = EscapeHtml(user.groups.join(', ')); } else { linkCountStr = '<i>None<i>'; }
-            x += addDeviceAttribute('User Groups', addLinkConditional(linkCountStr, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
+            var userGroups = '<i>None</i>';
+            if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
+            x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
 
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
@@ -6995,7 +7007,7 @@
 
         // Send to the server the new user's email address and validation status
         function p30showUserEmailChangeDialogEx() {
-            var x = { action: 'edituser', name: currentUser.name, email: Q('dp30email').value };
+            var x = { action: 'edituser', id: currentUser._id, email: Q('dp30email').value };
             if (serverinfo.emailcheck) { x.emailVerified = (Q('dp30verified').value == 1); }
             meshserver.send(x);
         }
