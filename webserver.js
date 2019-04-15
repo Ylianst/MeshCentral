@@ -226,23 +226,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     fn(new Error('invalid password'));
                     return;
                 } else {
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
                     var shortname = null;
-                    if (xxuser.name) { shortname = xxuser.name; }
-                    else if (xxuser.cn) { shortname = xxuser.cn; }
-                    if (shortname == null) { fn(new Error('no short name')); return; }
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex'); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
                     var userid = 'user/' + domain.id + '/' + shortname;
                     var user = obj.users[userid];
+
                     if (user == null) {
-                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        // Create a new user
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
-                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: userid, username: username, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
                         return fn(null, user._id);
                     } else {
                         // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
@@ -255,11 +278,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
                     if (err) { fn(new Error('invalid password')); return; }
                     var shortname = null;
-                    if (xxuser.name) { shortname = xxuser.name; }
-                    else if (xxuser.cn) { shortname = xxuser.cn; }
-                    if (shortname == null) { fn(new Error('no short name')); return; }
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
                     var userid = 'user/' + domain.id + '/' + shortname;
                     var user = obj.users[userid];
+
                     if (user == null) {
                         // This user does not exist, create a new account.
                         var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
@@ -272,6 +310,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         return fn(null, user._id);
                     } else {
                         // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
