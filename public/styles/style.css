@@ -195,11 +195,14 @@
 
     .fulldesk #column_l {
         width: 100%;
-        height: unset;
+        /*height: unset;*/
+        /*max-height: unset;*/
+        /*overflow-y: unset;*/
         margin-left: unset;
-        overflow-y: unset;
         padding: 0;
-        max-height: unset;
+        max-height:100vh;
+        height:100vh;
+        overflow-y:hidden;
     }
     .fulldesk #column_l_bottomgap {
         display: none;
@@ -763,7 +766,6 @@
     top: 0;
     right: 0;
     border-left: 2px solid lightgray;
-    display: none;
 }
 #DeskToolsRefreshButton {
     float: right;
