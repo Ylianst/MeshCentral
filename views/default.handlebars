@@ -53,7 +53,6 @@
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
-        <div id=mastheadx></div>
         <div id=masthead class=noselect>
             <div class="title">{{{title}}}</div>
             <div class="title2">{{{title2}}}</div>
@@ -73,22 +72,23 @@
             <div id=LeftMenuMyEvents class="lbbutton" title="My Events" onclick=go(3)>
                 <div class="lb3"></div>
             </div>
-            <div id=LeftMenuMyFiles class="lbbutton" title="My Files" onclick=go(5)>
+            <div id=LeftMenuMyFiles class="lbbutton" style="display:none" title="My Files" onclick=go(5)>
                 <div class="lb4"></div>
             </div>
-            <div id=LeftMenuMyUsers class="lbbutton" title="My Users" onclick=go(4)>
+            <div id=LeftMenuMyUsers class="lbbutton" style="display:none" title="My Users" onclick=go(4)>
                 <div class="lb5"></div>
             </div>
-            <div id=LeftMenuMyServer class="lbbutton" title="My Server" onclick=go(6) style="display:none">
+            <div id=LeftMenuMyServer class="lbbutton" style="display:none" title="My Server" onclick=go(6) style="display:none">
                 <div class="lb6"></div>
             </div>
         </div>
-        <div id="page_content">
+        {{!-- <div id="page_content"> --}}
             <div id=topbarmaster>
                 <div id=topbar class=noselect>
                     <div>
                         <div style="position:relative">
                             <div id=toggle title="Toggle full width" onclick="toggleFullScreen(1)">&harr;</div>
+                            <div id=toggle2 title="Toggle Main Menu position" onclick="toggleStackMenu(1)">&varr;</div>
                             <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                                 <tr>
                                     <td id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1)>My Devices</td>
@@ -221,7 +221,8 @@
                                     <img src="images/info.png" />
                                 </td>
                                 <td>
-                                    To get started, <a onclick=account_createMesh() ><strong>click here to create a device group</strong></a>.
+                                    <div id="getStarted1">To get started, <a onclick=account_createMesh()><strong>click here to create a device group</strong></a>.</div>
+                                    <div id="getStarted2">No device groups.</div>
                                 </td>
                             </tr>
                         </table>
@@ -252,7 +253,7 @@
                     </div>
                     <div id="p2AccountActions">
                         <p><strong>Account actions</strong></p>
-                        <p style="margin-left:40px">
+                        <p class="mL">
                             <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()">Verify email</a><br /></span>
                             <a onclick="account_showChangeEmail()">Change email address</a><br />
                             <a onclick="account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
@@ -261,19 +262,19 @@
                         <br style=clear:both />
                     </div>
                     <strong>Device Groups</strong>
-                    ( <a onclick=account_createMesh() class="newMeshBtn"> New</a> )
+                    <span id="p2createMeshLink1">( <a onclick=account_createMesh() class="newMeshBtn"> New</a> )</span>
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style="display:none">No device groups. <a onclick=account_createMesh()><strong>Get started here!</strong></a></div>
+                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a onclick=account_createMesh()><strong>Get started here!</strong></a></span></div>
                     <br style=clear:both />
                 </div>
                 <div id=p3 style="display:none">
                     <h1>My Events</h1>
                     <table class="pTable">
                         <tr>
-                            <td class=h1></td>
-                            <td>&nbsp;<input id=p2deleteall type=button onclick=showDeleteAllEventsDialog() style="display:none" value="Delete All..." /></td>
-                            <td class=auto-style1>
+                            <td class="h1"></td>
+                            <td>&nbsp;<input id="p2deleteall" type=button onclick=showDeleteAllEventsDialog() style="display:none" value="Delete All..." /></td>
+                            <td class="auto-style1">
                                 Show
                                 <select id=p3limitdropdown onchange=refreshEvents()>
                                     <option value=60>Last 60</option>
@@ -283,7 +284,7 @@
                                     <option value=1000>Last 1000</option>
                                 </select>
                             </td>
-                            <td class=h2></td>
+                            <td class="h2"></td>
                         </tr>
                     </table>
                     <div id=p3events style=""></div>
@@ -292,8 +293,8 @@
                     <h1>My Users</h1>
                     <table class="pTable">
                         <tr>
-                            <td class=h1></td>
-                            <td class=style14>
+                            <td class="h1"></td>
+                            <td class="style14">
                                 <div style="float:right">
                                     <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 </div>
@@ -302,14 +303,14 @@
                                     <input id=UserSearchInput type=text style=width:120px;margin-left:6px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
                             </td>
-                            <td class=h2></td>
+                            <td class="h2"></td>
                         </tr>
                     </table>
                     <div id="p3users"></div>
                 </div>
                 <div id=p5 style="display:none">
                     <h1>My Files</h1>
-                    <table id="p5toolbar" style="width:100%" cellpadding="0" cellspacing="0">
+                    <table id="p5toolbar" cellpadding="0" cellspacing="0">
                         <tr>
                             <td id="p5filehead" valign=bottom>
                                 <div id="p5rightOfButtons"></div>
@@ -350,7 +351,7 @@
                             <input type=submit id=p5fileCatchAllSubmit style="display:none" />
                         </form>
                         -->
-                        <div id="p5PublicShare" style=""><div style="padding:4px">These files are shared publicly, click "link" to get public url.</div></div>
+                        <div id="p5PublicShare" style=""><div>These files are shared publicly, click "link" to get public url.</div></div>
                         <div id="bigok" style="display:none"><b>&checkmark;</b></div>
                         <div id="bigfail" style="display:none"><b>&#10007;</b></div>
                         <span id="p5files"></span>
@@ -362,13 +363,15 @@
                 <div id=p6 style="display:none">
                     <img id=MainMeshImage src="serverpic.ashx">
                     <h1>My Server</h1>
-                    <p id="p2ServerActions"><strong>Server actions</strong></p>
-                    <p style="margin-left:40px">
-                        <div id="p2ServerActionsBackup"><a href="/backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
-                        <div id="p2ServerActionsRestore"><a onclick="server_showRestoreDlg()">Restore server with backup</a></div>
-                        <div id="p2ServerActionsVersion"><a onclick="server_showVersionDlg()">Check server version</a></div>
-                        <div id="p2ServerActionsErrors"><a onclick="server_showErrorsDlg()">Show server error log</a></div>
-                    </p>
+                    <div id="p2ServerActions">
+                        <p><strong>Server actions</strong></p>
+                        <div class="mL">
+                            <div id="p2ServerActionsBackup"><a href="/backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsRestore"><a onclick="server_showRestoreDlg()">Restore server with backup</a></div>
+                            <div id="p2ServerActionsVersion"><a onclick="server_showVersionDlg()">Check server version</a></div>
+                            <div id="p2ServerActionsErrors"><a onclick="server_showErrorsDlg()">Show server error log</a></div>
+                        </div>
+                    </div>
                     <br /><strong>Server Statistics</strong><br /><br />
                     <div id="serverStats">
                         <div id="serverCpuChartView" style="display:none">
@@ -418,81 +421,77 @@
                         <div class="icon2"></div>
                         <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                     </div>
-                    <table id=deskarea0 cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
-                        <tr id=deskarea1>
-                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                                <div style="float:right;text-align:right">
-                                    <span id="p14power"></span>&nbsp;
-                                    <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
-                                    <div style='cursor:pointer;border:none;float:right;font-size:130%;margin-right:4px' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
-                                    <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
-                                    <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() style=margin-right:3px>
-                                    <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
-                                    <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="margin-right:3px">
-                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px;display:none">
+                    
+                    <div id=deskarea0 cellpadding=0 cellspacing=0>
+                        <div id=deskarea1 class="areaHead">
+                            <div class="toright2">
+                                <span id="p14power"></span>&nbsp;
+                                <div class='deskareaicon' title="Toggle Aspect Ratio" onclick="toggleAspectRatio(1)">&#8690;</div>
+                                <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
+                                <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
+                                <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
+                                <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() class="mR">
+                                <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
+                                <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR">
+                                <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
+                            </div>
+                            <div>
+                                <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
+                                <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
+                                <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false"></span>
+                                &nbsp;<span id="deskstatus">Disconnected</span>
+                            </div>
+                        </div>
+                        <div id=deskarea2 style="">
+                            <div class="areaProgress"><div id="progressbar" style=""></div></div>
+                        </div>
+                        <div id=deskarea3x>
+                            <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
+                            <div id=DeskParent>
+                                <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                            </div>
+                            <div id=DeskTools>
+                                <a id=DeskToolsRefreshButton style="" onclick="refreshDeskTools()">Refresh</a>
+                                <div id=DeskToolsBar>Processes</div>
+                                <div id=deskToolsArea>
+                                    <div id=deskToolsHeader>
+                                        <a class="colmn1" title="Sort by process id" onclick=sortProcess(0)>PID</a>
+                                        <a class="colmn2" title="Sort by name" onclick=sortProcess(1)>Name</a></div>
+                                    <div id="DeskToolsProcesses" style=""></div>
                                 </div>
-                                <div>
-                                    <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
-                                    <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none">
-                                    <span id=connectbutton1span>&nbsp;<input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                                    <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                                    <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false"></span>
-                                    &nbsp;<span id="deskstatus">Disconnected</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr id=deskarea2>
-                            <td>
-                                <div style=background-color:gray><div id=progressbar style=height:2px;width:0%;background-color:red></div></div>
-                            </td>
-                        </tr>
-                        <tr id=deskarea3>
-                            <td id=deskarea3x style="">
-                                <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
-                                <div id=DeskParent>
-                                    <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
-                                </div>
-                                <div id=DeskTools>
-                                    <a id=DeskToolsRefreshButton style="" onclick="refreshDeskTools()">Refresh</a>
-                                    <div id=DeskToolsBar>Processes</div>
-                                    <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
-                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer title="Sort by process id" onclick=sortProcess(0)>PID</a><a style=cursor:pointer title="Sort by name" onclick=sortProcess(1)>Name</a></div>
-                                        <div id="DeskToolsProcesses" style=""></div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr id=deskarea4>
-                            <td style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
-                                <div style=float:right;text-align:right>
-                                    <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
-                                    <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
-                                    <span id=DeskChatButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
-                                    <span id=DeskNotifyButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
-                                    <span id=DeskOpenWebButton style="float:right;margin-top:1px;margin-right:4px;cursor:pointer" title="Open a web address on remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
-                                </div>
-                                <div>
-                                    <select style="margin-left:6px" id="deskkeys">
-                                        <option value=5>Win</option>
-                                        <option value=0>Win+Down</option>
-                                        <option value=1>Win+Up</option>
-                                        <option value=2>Win+L</option>
-                                        <option value=3>Win+M</option>
-                                        <option value=4>Shift+Win+M</option>
-                                        <option value=6>Win+R</option>
-                                    </select>
-                                    <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
-                                    <input id="DeskClip" style="margin-left:6px;display:none" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
-                                    <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
-                                    <label><span id="DeskControlSpan" style="margin-left:6px" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span></label>&nbsp;
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                            </div>
+                        </div>
+                        <div id=deskarea4 class="areaFoot">
+                            <div class="toright2">
+                                <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
+                                <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
+                                <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
+                                <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
+                                <span id=DeskOpenWebButton title="Open a web address on remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
+                            </div>
+                            <div>
+                                <select id="deskkeys">
+                                    <option value=5>Win</option>
+                                    <option value=0>Win+Down</option>
+                                    <option value=1>Win+Up</option>
+                                    <option value=2>Win+L</option>
+                                    <option value=3>Win+M</option>
+                                    <option value=4>Shift+Win+M</option>
+                                    <option value=6>Win+R</option>
+                                </select>
+                                <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
+                                <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
+                                <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
+                                <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span></label>&nbsp;
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id=p12 style="display:none">
                     <div id="p12title">
-                        <div id="p12BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p12BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Terminal - <span id=p12deviceName></span></h1>
                     </div>
                     <div id="p12warning" onclick=showFeaturesDlg()>
@@ -503,11 +502,11 @@
                         <div class="icon2"></div>
                         <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                     </div>
-                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                    <table id=termTable cellpadding=0 cellspacing=0>
                         <tr>
-                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                                <div style="float:right;text-align:right">
-                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                            <td class="areaHead">
+                                <div class="toright2">
+                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction()/>
                                 </div>
                                 <div>
                                     <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
@@ -520,23 +519,23 @@
                         </tr>
                         <tr>
                             <td>
-                                <div style="background-color:gray"><div id="termprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                                <div class="areaProgress"><div id="termprogressbar" style=""></div></div>
                             </td>
                         </tr>
                         <tr>
-                            <td style="background:black;text-align:center;height:500px;position:relative">
-                                <pre id="Term" style="background:black;margin:0;padding:0"></pre>
+                            <td id="termarea3x">
+                                <pre id="Term"></pre>
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
-                                <div style="float:right;text-align:right">
+                            <td class="areaFoot">
+                                <div class="toright2">
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
                                         <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
                                     </span>
-                                    <select id="specialkeylist" onkeypress="return false" style="margin-left:5px"></select>
+                                    <select id="specialkeylist" onkeypress="return false"></select>
                                     <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
                                 <div>
@@ -556,11 +555,11 @@
                         <div id="p13BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Files - <span id=p13deviceName></span></h1>
                     </div>
-                    <table id="p13toolbar" style="width: 100%" cellpadding="0" cellspacing="0">
+                    <table id="p13toolbar" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
-                                <div style="float:right;text-align:right">
-                                    <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:3px />
+                            <td class="areaHead">
+                                <div class="toright2">
+                                    <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                 </div>
                                 <div>
                                     <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
@@ -570,8 +569,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
-                                <div id="p13rightOfButtons" style="float:right;margin-top:3px"></div>
+                            <td class="areaHead2" valign=bottom>
+                                <div id="p13rightOfButtons" class="toright2"></div>
                                 <div>
                                     <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
                                     <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" onkeypress="return false" onkeydown="return false" />&nbsp;
@@ -587,8 +586,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="background-color:#E4E9E7;height:28px">
-                                <div style=float:right>
+                            <td class="areaHead3">
+                                <div class="toright2">
                                     <select id=p13sortdropdown onchange=p13updateFiles()>
                                         <option value=1 selected="selected">Sort by name</option>
                                         <option value=2>Sort by size</option>
@@ -602,12 +601,12 @@
                             </td>
                         </tr>
                     </table>
-                    <div id="p13filetable" style="width:100%;height:calc(100vh - 346px);overflow:auto;-webkit-user-select:none">
-                        <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
-                        <div id="p13bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
+                    <div id="p13filetable" style="">
+                        <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
+                        <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
                         <span id="p13files"></span>
                     </div>
-                    <table id="p13toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
+                    <table id="p13toolbarBottom" cellpadding=0 cellspacing=0>
                         <tr><td class=style6>&nbsp;<span id="p13bottomstatus"></span></td></tr>
                     </table>
                 </div>
@@ -616,18 +615,18 @@
                         <div id="p14BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
                     </div>
-                    <iframe id=p14iframe style="width:100%;height:calc(100vh - 242px);border:0;overflow:hidden" src="/commander.htm"></iframe>
+                    <iframe id=p14iframe src="/commander.htm"></iframe>
                 </div>
                 <div id=p15 style="display:none">
                     <div id="p15title">
                         <div id="p15BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1><span id=p15deviceName></span></h1>
                     </div>
-                    <table cellpadding=0 cellspacing=0 style="width:100%;padding:0px;padding:0px;margin-top:0px">
+                    <table id="consoleTable" cellpadding=0 cellspacing=0>
                         <tr>
-                            <td style=background:#C0C0C0>
-                                <div style=float:right;padding-right:4px>
-                                    <div style=padding:4px;display:inline-block id=p15coreName title="Information about current core running on this agent"></div>
+                            <td class="areaHead">
+                                <div class="toright2">
+                                    <div id=p15coreName title="Information about current core running on this agent"></div>
                                     <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
                                 </div>
                                 <div id="p15statetext" style=padding:4px></div>
@@ -635,16 +634,16 @@
                         </tr>
                         <tr>
                             <td>
-                                <div style="background-color:gray"><div id="consoleprogressbar" style="height:2px;width:0%;background-color:red"></div></div>
+                                <div class="areaProgress"><div id="consoleprogressbar" style=""></div></div>
                             </td>
                         </tr>
                         <tr>
-                            <td id=p15agentConsole style="background:black;margin:0;padding:0;color:lightgray;width:100%;height:calc(100vh - 296px);max-height:500px;position:relative">
-                                <pre id=p15agentConsoleText style="position:absolute;margin:0;padding:0;top:0;bottom:0;left:0;right:0;overflow-y:scroll;overflow-x:auto"></pre>
+                            <td id=p15agentConsole>
+                                <pre id=p15agentConsoleText></pre>
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                            <td class="areaFoot">
                                 <table style="width:100%">
                                     <tr>
                                         <td style="width:99%">
@@ -663,25 +662,24 @@
                         <div id="p16BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                         <h1>Events - <span id=p16deviceName></span></h1>
                     </div>
-                    <div style="width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px">
-                        <div class="h1pre">&nbsp;</div>
-                        <div class="h1" style="float:left">&nbsp;</div>
-                        <!--<div class=style14 style=height:100%;float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style="display:none" value="Delete All..." />&nbsp;</div>-->
-                        <div class="style14" style="float:left">&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshDeviceEvents() />&nbsp;</div>
-                        <div class="auto-style1" style="height:100%;float:right">
-                            Show
-                            <select id=p16limitdropdown onchange=refreshDeviceEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                            </select>
-                            <div class="h2end"></div>
-                            <div class="h2" style="height:100%;float:right">&nbsp;</div>
-                        </div>
-                    </div>
-                    <div id=p16events style="max-height:calc(100vh - 267px);overflow-y:auto"></div>
+                    <table class="pTable">
+                        <tr>
+                            <td class="h1"></td>
+                            <td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>
+                            <td class="auto-style1">
+                                Show
+                                <select id=p16limitdropdown onchange=refreshDeviceEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                </select>
+                            </td>
+                            <td class="h2"></td>
+                        </tr>
+                    </table>
+                    <div id=p16events></div>
                 </div>
                 <div id=p20 style="display:none">
                     <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
@@ -718,30 +716,29 @@
                 <div id=p31 style="display:none">
                     <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                     <h1>Events - <span id=p31userName></span></h1>
-                    <div style="width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px">
-                        <div class="h1pre">&nbsp;</div>
-                        <div class="h1" style="height:100%;float:left">&nbsp;</div>
-                        <!--<div class=style14 style=float:left>&nbsp;&nbsp;<input id=p31deleteall type=button style="display:none" value="Delete All..." />&nbsp;</div>-->
-                        <div class="style14" style="float:left">&nbsp;&nbsp;<input type=button value=Refresh onclick=refreshUsersEvents() />&nbsp;</div>
-                        <div class="auto-style1" style="height:100%;float:right">
-                            Show
-                            <select id=p31limitdropdown onchange=refreshUsersEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                            </select>
-                            <div class="h2end"></div>
-                            <div class="h2" style="height:100%;float:right;">&nbsp;</div>
-                        </div>
-                    </div>
-                    <div id=p31events style="max-height:calc(100vh - 267px);overflow-y:scroll"></div>
+                    <table class="pTable">
+                        <tr>
+                            <td class="h1"></td>
+                            <td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>
+                            <td class="auto-style1">
+                                Show
+                                <select id=p31limitdropdown onchange=refreshUsersEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                </select>
+                            </td>
+                            <td class="h2"></td>
+                        </tr>
+                    </table>
+                    <div id=p31events></div>
                 </div>
-                <div id=p40 style="display:none;height:calc(100vh - 170px)">
+                <div id=p40 style="display:none;">
                     <h1>My Server Stats</h1>
-                    <div style=width:100%;height:24px;background-color:#d3d9d6;margin-bottom:4px>
-                        <div style="float:right">
+                    <div class="areaHead">
+                        <div class="toright2">
                             <select id=p40type onchange=updateServerTimelineStats()>
                                 <option value=0>Connections</option>
                                 <option value=1>Memory</option>
@@ -751,7 +748,7 @@
                                 <option value=8>Last 8 hours</option>
                                 <option value=24>Last day</option>
                                 <option value=168>Last week</option>
-                                <option value=5040>Last 30 days</option>
+                                <option value=720>Last 30 days</option>
                             </select>&nbsp;
                             <img src=images/link4.png height=10 width=10 title="Download data points (.csv)" style=cursor:pointer onclick=p40downloadEvents()>&nbsp;
                         </div>
@@ -764,24 +761,17 @@
                 </div>
                 <br id="column_l_bottomgap" />
             </div>
-            <div id=footer class=noselect>
-                <table cellpadding=0 cellspacing=10 style="width:100%">
-                    <tr>
-                        <td style="text-align:left;color:white">
-                            {{{footer}}}
-                        </td>
-                        <td style="text-align:right">
-                            <a id="verifyEmailId2" style="color:yellow;margin-left:3px;cursor:pointer;display:none" onclick="account_showVerifyEmail()">Verify Email</a>
-                            <a style="margin-left:3px" href="terms">Terms &amp; Privacy</a>
-                        </td>
-                    </tr>
-                </table>
+            <div id="footer">
+                <div class="footer1">{{{footer}}}</div>
+                <div class="footer2">
+                    <a id="verifyEmailId2" style="display:none" onclick="account_showVerifyEmail()">Verify Email</a>
+                    &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                </div>
             </div>
             <div id=dialog style="display:none">
                 <div id=dialogHeader>
-                    <div id=id_dialogclose style=float:right;padding:3px;margin-right:3px;cursor:pointer onclick=setDialogMode()>&#x2716;</div>
-                    <div id=id_dialogtitle style=padding:5px></div>
-                    <div style=width:100%;margin:6px></div>
+                    <div id=id_dialogclose onclick=setDialogMode()>&#x2716;</div>
+                    <div id=id_dialogtitle></div>
                 </div>
                 <div id=dialogBody>
                     <div id=dialog1>
@@ -791,38 +781,38 @@
                         <div id=id_dialogOptions></div>
                     </div>
                     <div id=dialog3 style="">
-                        <div style=height:26px>
-                            <select id=d3uploadMode style=float:right;width:260px onchange=d3modechange()>
+                        <div id=d3upload>
+                            <div>File Selection</div>
+                            <select id=d3uploadMode onchange=d3modechange()>
                                 <option value=1>Local file upload</option>
                                 <option value=2>Server file selection</option>
                             </select>
-                            <div>File Selection</div>
                         </div>
-                        <div id=d3localmode style=height:26px;display:none>
+                        <div id=d3localmode style="display:none">
+                            <div>Upload File</div>
                             <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
                                 <input type=text id=d3attrib name=attrib style="display:none" />
-                                <input type=file id=d3localFile name=files style=float:right;width:260px onchange=d3setActions() />
+                                <input type=file id=d3localFile name=files onchange=d3setActions() />
                                 <input type=submit id=d3submit style="display:none" />
                             </form>
-                            <div>Upload File</div>
                         </div>
                         <div id=d3servermode>
-                            <div style="width:100%;background-color:#d3d9d6;text-align:left;padding:3px" valign=bottom>
+                            <div id=d3serveraction valign=bottom>
                                 <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;
                             </div>
-                            <div id=d3serverfiles style="width:100%;height:150px;background-color:white;padding:2px;border:1px solid gray;overflow-y:scroll"></div>
+                            <div id=d3serverfiles></div>
                         </div>
                     </div>
-                    <div id=dialog7 style="margin:auto;margin:3px">
-                        
+                    <div id=dialog7 style="">
                         <div id="d7meshkvm">
-                            <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
-                            <div style="margin:3px 0 3px 0">
-                                <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl"></select>
-                                <div style="height:20px">Quality</div>
+                            <h4>Agent Remote Desktop</h4>
+                            <div>
+                                <div>Quality</div>
+                                <select id="d7bitmapquality" dir="rtl"></select>
                             </div>
-                            <div style="margin:3px 0 3px 0">
-                                <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
+                            <div>
+                                <div>Scaling</div>
+                                <select id="d7bitmapscaling" style="" dir="rtl">
                                     <option selected=selected value=1024>100%</option>
                                     <option value=896>87.5%</option>
                                     <option value=768>75%</option>
@@ -832,51 +822,50 @@
                                     <option value=256>25%</option>
                                     <option value=128>12.5%</option>
                                 </select>
-                                <div style="height:20px">Scaling</div>
                             </div>
-                            <div style="margin:3px 0 3px 0">
-                                <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
+                            <div>
+                                <div>Frame rate</div>
+                                <select id="d7framelimiter" dir="rtl">
                                     <option selected=selected value=50>Fast</option>
                                     <option value=100>Medium</option>
                                     <option value=400>Slow</option>
                                     <option value=1000>Very slow</option>
                                 </select>
-                                <div style="height:20px">Frame rate</div>
                             </div>
                         </div>
                         <div id="d7amtkvm">
-                            <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
-                            <div style='height:26px'>
-                                <select id="d7desktopmode" style="float:right;width:200px">
+                            <h4>Intel&reg; AMT Hardware KVM</h4>
+                            <div>
+                                <div>Image Encoding</div>
+                                <select id="d7desktopmode">
                                     <option value="1">RLE8, Fastest</option>
                                     <option value="2">RLE16, Recommended</option>
                                     <option value="3">RAW8, Slow</option>
                                     <option value="4">RAW16, Very Slow</option>
                                 </select>
-                                <div>Image Encoding</div>
                             </div>
-                            <div style="height:60px">
-                                <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
+                            <div>
+                                <div>Other Settings</div>
+                                <div id="d7otherset">
                                     <label><input type="checkbox" id='d7showfocus'>Show Focus Tool<br></label>
                                     <label><input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br></label>
                                     <label><input type="checkbox" id='d7localKeyMap'>Local Keyboard Map<br></label>
                                 </div>
-                                <div>Other Settings</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:4px">
+                <div id="idx_dlgButtonBar">
                     <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
                     <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
-                    <div style="height:25px"><input id=idx_dlgDeleteButton type=button value=Delete style="display:none" onclick="dialogclose(2)"></div>
+                    <div><input id=idx_dlgDeleteButton type=button value=Delete style="display:none" onclick="dialogclose(2)"></div>
                 </div>
             </div>
             <iframe name="fileUploadFrame" style="display:none"></iframe>
             <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style="display:none" /></form>
             <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style="display:none" /></form>
             <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
-        </div>
+        {{!-- </div> --}}
     </div>
     <script type="text/javascript">
         'use strict';
@@ -904,6 +893,7 @@
         var desktop;
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
+        var deskAspectRatio = getstore('deskAspectRatio', false);
         var terminal;
         var files;
         var debugLevel = parseInt("{{{debuglevel}}}");
@@ -925,6 +915,10 @@
         if (webPageFullScreen == 'true') { webPageFullScreen = true; }
         var passRequirements = "{{{passRequirements}}}";
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+                
+        var webPageStackMenu = getstore('webPageStackMenu', false);
+        if (webPageStackMenu == true || webPageStackMenu == 'true') { webPageStackMenu = true } else { webPageStackMenu = false };
+        toggleStackMenu(0)
 
         function startup() {
             if ((features & 32) == 0) {
@@ -1039,54 +1033,45 @@
         }
 
         // Toggle the web page to full screen
+        function toggleAspectRatio(toggle) {
+            if (toggle === 1) { deskAspectRatio = !deskAspectRatio; putstore('deskAspectRatio', deskAspectRatio); }
+            deskAdjust()
+        }
+        
+        // If FullScreen, toggle menu to be horisontal or vertical
+        function toggleStackMenu(toggle) {
+            if (webPageFullScreen == true) {
+                if (toggle === 1) {
+                    webPageStackMenu = !webPageStackMenu;
+                    putstore('webPageStackMenu', webPageStackMenu); 
+                }
+                if (webPageStackMenu == false) {
+                    QC('body').remove("menu_stack");
+                } else {
+                    QC('body').add("menu_stack");
+                    if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
+                }
+                deskAdjust();
+            }
+        }
+
+        // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             var hide = 0;
             if (args.hide) { hide = parseInt(args.hide); }
-            console.log("-----------hide:", hide)
             if (webPageFullScreen == false) {
                 QC('body').remove("fullscreen");
                 QC('body').remove("arg_hide");
-            /*    QS('container').width = '960px';
-                QS('container')['border-right'] = '1px solid #b7b7b7';
-                QS('container')['border-left'] = '1px solid #b7b7b7';
-                QS('container')['min-width'] = '960px';
-                QS('container')['overflow'] = '';
-                QS('column_l').width = '930px';
-                QS('column_l').height = '';
-                QS('column_l')['margin-left'] = '';
-                QS('column_l')["overflow-y"] = '';
-                QS('column_l')["max-height"] = (xxcurrentView >= 10) ? 'calc(100vh - 159px)' : 'calc(100vh - 135px)';
-                QS('container').position = '';
-                QS('page_content').position = ''; 
-                QV('MainMenuSpan', true); */
+                if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
                 QV('UserDummyMenuSpan', false);
-                QV('page_leftbar', false);
+                //QV('page_leftbar', false);
             } else {
                 QC('body').add("fullscreen");
-                if (hide & 16) QC('body').add("arg_hide");
-            /*    QS('container').position = 'absolute';
-                QS('container').width = '100%';
-                QS('container').top = '0px';
-                QS('container').bottom = '0px';
-                QS('container')['border-right'] = '0';
-                QS('container')['border-left'] = '0';
-                QS('container')['min-width'] = '700px';
-                QS('container')['overflow'] = 'hidden';
-                QS('page_content').position = 'absolute';
-                QS('page_content').top = '66px';
-                QS('page_content').left = (hide & 16)?'0px':'90px';
-                QS('page_content').right = '0px';
-                QS('page_content').bottom = '0px';
-                QS('column_l').height = 'calc(100vh - 135px)';
-                QS('column_l').width = 'calc(100% - 30px)';
-                QS('column_l')["overflow-y"] = 'auto';
-                QS('column_l')["max-height"] = 'calc(100vh - 135px)';
-                QV('MainMenuSpan', false); */
+                if (hide & 16) QC('body').add("arg_hide"); // This is replacement for QV('page_leftbar', !(hide & 16));
+                if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
-                QV('page_leftbar', !(hide & 16));
             }
-            //center();
             masterUpdate(512);
             QV('body', true);
         }
@@ -1217,6 +1202,13 @@
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
             masterUpdate(4 + 128);
+
+            // If we can't create new groups, hide all links that can do that.
+            var newGroupsAllowed = ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0));
+            QV('p2createMeshLink1', newGroupsAllowed);
+            QV('p2createMeshLink2', newGroupsAllowed);
+            QV('getStarted1', newGroupsAllowed);
+            QV('getStarted2', !newGroupsAllowed);
 
             if (typeof userinfo.passchange == 'number') {
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
@@ -1620,7 +1612,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links['user/' + domain + '/' + userinfo.name.toLowerCase()] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if (message.event.links[userinfo._id] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 masterUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
@@ -1638,11 +1630,12 @@
                                 if (message.event.name) { meshes[message.event.meshid].name = message.event.name; }
                                 if (message.event.desc) { meshes[message.event.meshid].desc = message.event.desc; }
                                 if (message.event.flags != null) { meshes[message.event.meshid].flags = message.event.flags; }
+                                if (message.event.consent != null) { meshes[message.event.meshid].consent = message.event.consent; }
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()] == null) {
+                                if (meshes[message.event.meshid].links[userinfo._id] == null) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -1656,7 +1649,7 @@
                                 }
                             }
                             masterUpdate(4 + 128);
-                            if (currentNode && (currentNode.meshid == message.event.meshid)) { refreshDevice(currentNode._id); }
+                            if (currentNode && (currentNode.meshid == message.event.meshid)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -1924,7 +1917,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -1983,7 +1976,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2017,7 +2010,7 @@
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                    var meshrights = mesh.links[userinfo._id].rights;
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2116,7 +2109,7 @@
                 for (var i in nodes) {
                     var node = nodes[i];
                     if (node.v == false) continue;
-                    var mesh2 = meshes[node.meshid], meshlinks = mesh2.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                    var mesh2 = meshes[node.meshid], meshlinks = mesh2.links[userinfo._id];
                     if (meshlinks == null) continue;
                     var meshrights = meshlinks.rights;
                     if ((view == 3) && (mesh2.mtype == 1)) continue;
@@ -2234,7 +2227,7 @@
                 // Display all empty meshes, we need to do this because users can add devices to these at any time.
                 if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
                     for (var i in meshes) {
-                        var mesh = meshes[i], meshlink = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+                        var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
                         if (meshlink != null) {
                             var meshrights = meshlink.rights;
                             if (displayedMeshes[mesh._id] == null) {
@@ -2314,7 +2307,7 @@
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
-                                QH('DeskParent', '<canvas id="Desk" width="640" height="480" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                                QH('DeskParent', '<canvas id="Desk" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                             } else {
                                 // This is a new device, create a canvas for it.
                                 var c = document.createElement('canvas');
@@ -2347,7 +2340,7 @@
         }
 
         function toggleKvmDevice(nodeid) {
-            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 8) || (meshrights & 256)) { // Requires remote control rights or desktop view only rights
                 //var conn = 0;
                 //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
@@ -2884,7 +2877,7 @@
             var nodeid = contextelement.children[1].attributes.onclick.value;
             var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
             var mesh = meshes[node.meshid];
-            var meshlinks = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+            var meshlinks = mesh.links[userinfo._id];
             var meshrights = meshlinks.rights;
             var consoleRights = ((meshrights & 16) != 0);
 
@@ -3548,7 +3541,7 @@
 
         function getNodeRights(nodeid) {
             var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
-            return mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            return mesh.links[userinfo._id].rights;
         }
 
         var currentNode;
@@ -3559,8 +3552,10 @@
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
 
-            // Check if we are allowed to create a new device group
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            // Remind the user to verify the email address
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
@@ -3571,7 +3566,7 @@
             //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
             var mesh = meshes[node.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -3787,7 +3782,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
+                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -3830,7 +3825,7 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var meshrights = meshes[currentNode.meshid].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
             var x = "Select an operation to perform on this device.<br /><br />";
             var y = '<select id=d2deviceop style=float:right;width:250px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
@@ -3987,7 +3982,7 @@
             // List all available alternative groups
             var y = "<select id=p10newGroup style=width:236px>", count = 0;
             for (var i in meshes) {
-                var meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = meshes[i].links[userinfo._id].rights;
                 if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { count++; y += "<option value='" + meshes[i]._id + "'>" + meshes[i].name + "</option>"; }
             }
             y += "</select>";
@@ -4119,7 +4114,7 @@
         function p10showiconselector() {
             if (xxdialogMode) return;
             var mesh = meshes[currentNode.meshid];
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 4) == 0) return;
 
             var x = '<br><div style=display:inline-block;width:40px></div>';
@@ -4143,7 +4138,7 @@
         var showEditNodeValueDialog_modes3 = ['', '', '', 'Tag1, Tag2, Tag3'];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:230px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
@@ -4182,7 +4177,6 @@
                     QH('DeskParent', '');
                     var c = xdesk.m.CanvasId;
                     c.setAttribute('id', 'Desk');
-                    c.setAttribute('style', 'width:100%;-ms-touch-action:none;margin-left:0px');
                     c.setAttribute('onmousedown', 'dmousedown(event)');
                     c.setAttribute('onmouseup', 'dmouseup(event)');
                     c.setAttribute('onmousemove', 'dmousemove(event)');
@@ -4196,7 +4190,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    QH('DeskParent', '<canvas id=Desk width=640 height=480 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                    QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -4216,7 +4210,7 @@
             var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
-            var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = mesh.links[userinfo._id].rights;
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
@@ -4492,45 +4486,19 @@
         var browserfullscreen = false;
         function deskToggleFull(e) {
             fullscreen = !fullscreen;
-            /* QV('mastheadx', !fullscreen);
-            QV('masthead', !fullscreen);
-            QV('topbar', !fullscreen); 
-            QV('p11deviceNameHeader', !fullscreen);
-            QV('footer', !fullscreen);
-            QV('column_l_bottomgap', !fullscreen);
-            QV('idx_deskFullBtn2', fullscreen);
-            QV('deskFullBtn', !fullscreen);
-            QV('page_leftbar', !fullscreen); */
             if (fullscreen) {
                 QC('body').add("fulldesk");
+                QS('deskarea3x').height = null;
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
-                /* QS('column_l').width = '930px';
-                QS('column_l').height = '';
-                QS('column_l')['margin-left'] = '';
-                QS('column_l')['overflow-y'] = '';
-                QS('container').position = '';
-                QS('page_content').position = '';
-                QV('MainMenuSpan', true);
-                QS('container').width = '100%';
-                QS('container')['border-right'] = '0';
-                QS('container')['border-left'] = '0';
-                QS('column_l').padding = '0';
-                QS('column_l').width = '100%';
-                QS('column_l')["max-height"] = ''; */
             } else {
                 QC('body').remove("fulldesk");
                 exitBrowserFullscreen();
                 browserfullscreen = false;
-                /* QS('container').width = '960px';
-                QS('container')['border-right'] = '1px solid #b7b7b7';
-                QS('container')['border-left'] = '1px solid #b7b7b7';
-                QS('column_l').padding = '0 15px';
-                QS('column_l').width = '930px'; */
                 toggleFullScreen();
             }
             deskAdjust();
-            deskAdjust();
+            //deskAdjust();
             updateDesktopButtons();
         }
 
@@ -4540,33 +4508,33 @@
         }
 
         function deskAdjust() {
-            var x = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('Desk').clientHeight + Q('deskarea4').clientHeight + 2)) / 2;
-            if (fullscreen) {
-                document.documentElement.style.overflow = 'hidden';
+            if (deskAspectRatio) {
+                QS('Desk').width = '100%';
+                QS('Desk').height = '100%';
                 QS('deskarea3x').height = null;
-                if (x < 0) {
-                    var mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (Q('deskarea1').clientHeight + Q('deskarea2').clientHeight + Q('deskarea4').clientHeight));
-                    var mw = 9999;
-                    if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
-                    if (webRtcDesktop && webRtcDesktop.softdesktop) { mw = (webRtcDesktop.softdesktop.m.width / webRtcDesktop.softdesktop.m.height) * mh; }
-                    QS('Desk')['max-height'] = mh + 'px';
-                    QS('Desk')['max-width'] = mw + 'px';
-                    x = 0;
-                } else {
-                    QS('Desk')['max-height'] = null;
-                    QS('Desk')['max-width'] = null;
-                }
-                QS('Desk')['margin-top'] = x + 'px';
-                QS('Desk')['margin-bottom'] = x + 'px';
             } else {
-                var mw = 9999, mh = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - (webPageFullScreen?276:290));
-                if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
-                if (webRtcDesktop && webRtcDesktop.softdesktop) { mw = (webRtcDesktop.softdesktop.m.width / webRtcDesktop.softdesktop.m.height) * mh; }
-                document.documentElement.style.overflow = 'auto';
-                QS('Desk')['max-height'] = mh + 'px';
-                QS('Desk')['max-width'] = mw + 'px';
-                QS('Desk')['margin-top'] = '0';
-                QS('Desk')['margin-bottom'] = '0';
+                var parentH = Q('DeskParent').clientHeight;
+                var parentW = Q('DeskParent').clientWidth;
+                var deskH = Q('Desk').height;
+                var deskW = Q('Desk').width;
+                if (parentH / parentW > deskH / deskW) {
+                    var hNew = (deskH * parentW / deskW) + 'px';
+                    if (webPageFullScreen || fullscreen) {
+                        QS('deskarea3x').height = null;
+                    } else {
+                        QS('deskarea3x').height = hNew;
+                    }
+                    QS('Desk').height = hNew;
+                    QS('Desk').width = '100%';
+                } else {
+                    var wNew = (deskW * parentH / deskH) + 'px';
+                    if (webPageFullScreen || fullscreen) {
+                        QS('Desk').height = null;
+                    } else {
+                        QS('Desk').height = '100%';
+                    }
+                    QS('Desk').width = wNew;
+                }
             }
         }
 
@@ -5497,7 +5465,7 @@
                 consoleNode = currentNode;
 
                 var mesh = meshes[consoleNode.meshid];
-                var meshrights = mesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+                var meshrights = mesh.links[userinfo._id].rights;
                 if ((meshrights & 16) != 0) {
                     if (consoleNode.consoleText == null) { consoleNode.consoleText = ''; }
                     if (samenode == false) {
@@ -5784,8 +5752,10 @@
             // Check if we are disallowed from creating a device group
             if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group."); return; }
 
-            // Check if we are allowed to create a new device group
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "New Device Group", 1, null, "Unable to create a new device group until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            // Remind the user to verify the email address
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below.<br /><br />";
@@ -5866,7 +5836,7 @@
 
                 // Mesh rights
                 var meshrights = 0;
-                if (meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()]) { meshrights = meshes[i].links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; }
+                if (meshes[i].links[userinfo._id]) { meshrights = meshes[i].links[userinfo._id].rights; }
                 var rights = 'Partial Rights';
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
@@ -5928,13 +5898,17 @@
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = 'Unknown #' + currentMesh.mtype;
             var meshrights = 0;
-            try { meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights; } catch (ex) { }
+            try { meshrights = currentMesh.links[userinfo._id].rights; } catch (ex) { }
             if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT only, no agent';
             if (currentMesh.mtype == 2) meshtype = 'Managed using a software agent';
 
             var x = '';
             x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
             x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):'<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
+
+            // Display group type
+            x += addHtmlValue('Type', meshtype);
+            //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
             // Display features
             var meshFeatures = [];
@@ -5944,11 +5918,21 @@
             }
             meshFeatures = meshFeatures.join(', ');
             if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
-            x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', (meshrights & 1) != 0));
+            x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
+            // Display user consent
+            meshFeatures = [];
+            var consent = 0;
+            if (currentMesh.consent) { consent = currentMesh.consent; }
+            if (serverinfo.consent) { consent |= serverinfo.consent; }
+            if (consent & 1) { meshFeatures.push('Desktop Notify'); }
+            if (consent & 2) { meshFeatures.push('Terminal Notify'); }
+            if (consent & 4) { meshFeatures.push('Files Notify'); }
+            //if ((consent & 7) == 7) { meshFeatures.push('Always Notify'); } else if ((currentMesh.consent & 7) != 0) { meshFeatures.push('Notify Sometimes'); }
+            //if ((consent & 56) == 56) { meshFeatures.push('Always Blink Border'); } else if ((currentMesh.consent & 56) != 0) { meshFeatures.push('Blick Border Sometimes'); }
 
-            // Display group type
-            x += addHtmlValue('Type', meshtype);
-            //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
+            meshFeatures = meshFeatures.join(', ');
+            if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
+            x += addHtmlValue('User Consent', addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
 
             // Intel AMT setup
             if (currentMesh.mtype == 2) {
@@ -5960,14 +5944,14 @@
                         if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += ' + CIRA'; }
                     }
                 }
-                x += addHtmlValue('Intel&reg; AMT', addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', (meshrights & 0xFFFFFFFF) != 0));
+                x += addHtmlValue('Intel&reg; AMT', addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
             }
 
             // Display group note support
             if (meshrights & 1) { x += '<br><input type=button value=Notes title="View notes about this device group" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
 
             x += '<br style=clear:both><br>';
-            var currentMeshLinks = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()];
+            var currentMeshLinks = currentMesh.links[userinfo._id];
             if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
 
             if ((meshrights & 4) != 0) {
@@ -6002,7 +5986,12 @@
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
-            for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
+            for (var i in currentMesh.links) {
+                var uname = i.split('/')[2];
+                if (currentMesh.links[i].name) { uname = currentMesh.links[i].name; }
+                if (i == userinfo._id) { uname = userinfo.name; }
+                sortedusers.push({ id: i, name: uname, rights: currentMesh.links[i].rights });
+            }
             sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
 
             // Display all users for this mesh
@@ -6104,6 +6093,40 @@
             QE('idx_dlgOkButton', Q('dp20meshname').value.length > 0);
         }
 
+        function p20editmeshconsent() {
+            if (xxdialogMode) return;
+            var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>Desktop</b></div>';
+            x += "<div><input type=checkbox id=d20flag1 " + ((consent & 0x0001) ? 'checked' : '') + ">Notify User</div>";
+            //x += "<div><input type=checkbox id=d20flag2 " + ((consent & 0x0008) ? 'checked' : '') + ">Blinking Border</div>";
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Terminal</b></div>';
+            x += "<div><input type=checkbox id=d20flag3 " + ((consent & 0x0002) ? 'checked' : '') + ">Notify User</div>";
+            //x += "<div><input type=checkbox id=d20flag4 " + ((consent & 0x0010) ? 'checked' : '') + ">Blinking Border</div>";
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Files</b></div>';
+            x += "<div><input type=checkbox id=d20flag5 " + ((consent & 0x0004) ? 'checked' : '') + ">Notify User</div>";
+            //x += "<div><input type=checkbox id=d20flag6 " + ((consent & 0x0020) ? 'checked' : '') + ">Blinking Border</div>";
+            setDialogMode(2, "Edit Device Group User Consent", 3, p20editmeshconsentEx, x);
+            if (serverinfo.consent) {
+                if (serverinfo.consent & 1) { Q('d20flag1').checked = true; }
+                if (serverinfo.consent & 2) { Q('d20flag3').checked = true; }
+                if (serverinfo.consent & 4) { Q('d20flag5').checked = true; }
+                QE('d20flag1', !(serverinfo.consent & 1));
+                QE('d20flag3', !(serverinfo.consent & 2));
+                QE('d20flag5', !(serverinfo.consent & 4));
+            }
+        }
+
+        function p20editmeshconsentEx() {
+            var consent = 0;
+            if (Q('d20flag1').checked) { consent += 0x0001; }
+            //if (Q('d20flag2').checked) { consent += 0x0008; }
+            if (Q('d20flag3').checked) { consent += 0x0002; }
+            //if (Q('d20flag4').checked) { consent += 0x0010; }
+            if (Q('d20flag5').checked) { consent += 0x0004; }
+            //if (Q('d20flag6').checked) { consent += 0x0020; }
+            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent });
+        }
+
         function p20editmeshfeatures() {
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0;
@@ -6145,7 +6168,7 @@
         }
 
         function p20validateAddMeshUserDialog() {
-            var meshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights;
+            var meshrights = currentMesh.links[userinfo._id].rights;
             QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
@@ -6186,7 +6209,7 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links['user/' + domain + '/' + userinfo.name.toLowerCase()].rights, meshrights = currentMesh.links[userid].rights;
+            var r = '', cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
             if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
                 if ((meshrights &    1) != 0) r += ', Edit Device Group';
                 if ((meshrights &    2) != 0) r += ', Manage Device Group Users';
@@ -6204,9 +6227,14 @@
             }
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
-            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            var uname = userid.split('/')[2];
+            if (users) { uname = users[userid].name; }
+            if (userinfo._id == userid) { uname = userinfo.name; }
+            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(uname));
+            if (userid.split('/')[2] != uname) { x += addHtmlValue('User Identifier', EscapeHtml(userid.split('/')[2])); }
+
             x += addHtmlValue('Permissions', r);
-            if ((('user/' + domain + '/' + userinfo.name.toLowerCase()) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+            if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
         }
 
@@ -6712,6 +6740,34 @@
             meshserver.send({ action: 'adduser', username: Q('p4name').value, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked });
         }
 
+        function showUserGroupDialog(e, userid) {
+            if (xxdialogMode) return;
+            haltEvent(e);
+            userid = decodeURIComponent(userid);
+            var user = users[userid.toLowerCase()], groups = "";
+            if (user.groups != null) { groups = user.groups.join(', ') }
+            var x = 'Enter a comma seperate list of groups.<br /><br />';
+            x += addHtmlValue('Groups', '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="Group1, Group2, Group3" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
+            setDialogMode(2, "User Groups", 3, showUserGroupDialogEx, x, user);
+            focusTextBox('dp4usergroups');
+            p4validateUserGroups();
+            return false;
+        }
+
+        function p4validateUserGroups() {
+            var groups = Q('dp4usergroups').value;
+            var k = 0, i = groups.indexOf('\"') + groups.indexOf('/') + groups.indexOf('>') + groups.indexOf('<') + groups.indexOf('\'');
+            var g = groups.split(',');
+            for (var j in g) { if (g[j].trim().length == 0) k++; }
+            QE('idx_dlgOkButton', (groups == '') || ((i == -5) && (k < 1)));
+        }
+
+        function showUserGroupDialogEx(event, user) {
+            var groups = Q('dp4usergroups').value, g = groups.split(','), g2 = [];
+            for (var j in g) { var x = g[j].trim(); if (x.length > 0) { g2.push(x); } }
+            meshserver.send({ action: 'edituser', id: user._id, groups: g2 });
+        }
+
         function showUserAdminDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
@@ -6780,7 +6836,7 @@
                 if (Q('ua_nonewgroups').checked == true) siteadmin += 64;
                 if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
             }
-            var x = { action: 'edituser', name: user.name, siteadmin: siteadmin };
+            var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
             meshserver.send(x);
         }
@@ -6809,12 +6865,13 @@
             var msg = [], premsg = '';
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg.push("Locked account"); }
             if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
-            if ((user.siteadmin != null) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
+            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
+            if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute('User Identifier', user._id.split('/')[2]); }
             x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
             x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg.join(', ') + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
@@ -6823,12 +6880,19 @@
             if (user.passchange == -1) { x += addDeviceAttribute('Password', 'Will be changed on next login.'); }
             else if (user.passchange) { x += addDeviceAttribute('Password', 'Last changed: ' + new Date(user.passchange * 1000).toLocaleString()); }
 
+            // Device Groups
             var linkCount = 0, linkCountStr = '<i>None<i>';
             if (user.links) {
                 for (var i in user.links) { linkCount++; }
                 if (linkCount == 1) { linkCountStr = '1 group'; } else if (linkCount > 1) { linkCountStr = linkCount + ' groups'; }
             }
             x += addDeviceAttribute('Device Groups', linkCountStr);
+
+            // User Groups
+            var userGroups = '<i>None</i>';
+            if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
+            x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
+
 
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
@@ -6899,7 +6963,7 @@
 
         // Send to the server the new user's email address and validation status
         function p30showUserEmailChangeDialogEx() {
-            var x = { action: 'edituser', name: currentUser.name, email: Q('dp30email').value };
+            var x = { action: 'edituser', id: currentUser._id, email: Q('dp30email').value };
             if (serverinfo.emailcheck) { x.emailVerified = (Q('dp30verified').value == 1); }
             meshserver.send(x);
         }
@@ -7441,7 +7505,7 @@
         }
 
         function center() {
-            if (xxcurrentView == 11) { deskAdjust(); } //deskAdjust(); }
+            if (xxcurrentView == 11) { deskAdjust(); }
             else if (xxcurrentView == 10) { masterUpdate(256); }
             else if (xxcurrentView == 1) { masterUpdate(4); }
         }
@@ -7475,7 +7539,6 @@
                 QC(leftBarItems[i]).remove('lbbuttonsel2');
             }
 
-            QV('topbar', x != 0);
             // Define class for Menu(s) as fully or semi active.
             var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
             var leftMenuActiveClass = (x < 9 ? 'lbbuttonsel2' : 'lbbuttonsel');
@@ -7511,21 +7574,20 @@
                 QC('column_l').remove('room4submenu');
             }
             
-            // Jovan, please check. I think this part is not needed anymore. Removing class will revert to default style
-            /*
+            // If we are going to panel 0 in "full screen mode", hide the left bar.
+            QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) {
-                QS('page_content').position = '';
-                QV('page_leftbar', false);
-                QS('column_l').height = 'calc(100vh - 110px)';
-                QS('column_l')["max-height"] = '';
-            } */
+                QC('body').add("arg_hide");
+                // QS('column_l').height = 'calc(100vh - 111px)';
+            }
 
             QV('MainSubMenuSpan', x >= 10 && x < 20);
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
+             var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
+
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -7544,7 +7606,7 @@
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
             // Update the web page title
-            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = '{{{title}}} - ' + currentNode.name; } else { document.title = '{{{title}}}'; }
+            if ((currentNode) && (x >= 10) && (x < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
         }
 
         // Generic methods
