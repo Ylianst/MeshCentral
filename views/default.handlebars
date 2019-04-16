@@ -3554,6 +3554,7 @@
 
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
@@ -5754,6 +5755,7 @@
 
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
@@ -5919,6 +5921,7 @@
             meshFeatures = meshFeatures.join(', ');
             if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
             x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
+
             // Display user consent
             meshFeatures = [];
             var consent = 0;
@@ -6893,7 +6896,6 @@
             if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
             x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
 
-
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
                 multiFactor = 1;
@@ -7586,8 +7588,8 @@
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
-             var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
 
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');

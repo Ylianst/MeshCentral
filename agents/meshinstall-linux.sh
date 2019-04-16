@@ -152,7 +152,7 @@ DownloadAgent() {
           then
           # upstart
           echo -e "start on runlevel [2345]\nstop on runlevel [016]\n\nrespawn\n\nchdir /usr/local/mesh\nexec /usr/local/mesh/meshagent\n\n" > /etc/init/meshagent.conf
-          service meshagent start
+		  initctl start meshagent
           echo 'meshagent installed as upstart/init.d service.'
           echo 'To start service: sudo initctl start meshagent'
           echo 'To stop service: sudo initctl stop meshagent'
@@ -193,7 +193,7 @@ UninstallAgent() {
         rm -f /sbin/meshcmd /etc/init.d/meshagent
     elif [ $starttype -eq 2 ]; then
         # upstart 
-        service meshagent stop
+        initctl stop meshagent
         rm -f /sbin/meshcmd 
         rm -f /etc/init/meshagent.conf
         rm -f /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
