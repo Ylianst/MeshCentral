@@ -92,7 +92,7 @@
 }
 
 #page_content {
-    max-height: calc(100vh - 108px);
+    /*max-height: calc(100vh - 108px);*/
 }
     .fullscreen #page_content {
         position: absolute;
@@ -655,11 +655,7 @@
 }
 
 .chartViewCanvas {
-<<<<<<< HEAD
     width: 80px;
-=======
-    width: 60px;
->>>>>>> b375b9fdb2584c2cd6311834bd6c540545d075b4
     display: inline-block;
 }
 
