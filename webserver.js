@@ -217,35 +217,143 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
-        var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
-        // Query the db for the given username
-        if (!user) { fn(new Error('cannot find user')); return; }
-        // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
-        if (user.salt == null) {
-            fn(new Error('invalid password'));
-        } else {
-            if (user.passtype != null) {
-                // IIS default clear or weak password hashing (SHA-1)
-                require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
-                        // Update the password to the stronger format.
-                        require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+
+        if (domain.auth == 'ldap') {
+            if (domain.ldapoptions.url == 'test') {
+                // Fake LDAP login
+                var xxuser = domain.ldapoptions[name.toLowerCase()];
+                if (xxuser == null) {
+                    fn(new Error('invalid password'));
+                    return;
+                } else {
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                    var shortname = null;
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex'); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+
+                    if (user == null) {
+                        // Create a new user
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: userid, username: username, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
-                    fn(new Error('invalid password'), null, user.passhint);
-                });
+                }
             } else {
-                // Default strong password hashing (pbkdf2 SHA384)
-                require('./pass').hash(pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
+                // LDAP login
+                var LdapAuth = require('ldapauth-fork');
+                var ldap = new LdapAuth(domain.ldapoptions);
+                ldap.authenticate(name, pass, function (err, xxuser) {
+                    try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
+                    if (err) { fn(new Error('invalid password')); return; }
+                    var shortname = null;
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+
+                    if (user == null) {
+                        // This user does not exist, create a new account.
+                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
-                    fn(new Error('invalid password'), null, user.passhint);
                 });
+            }
+        } else {
+            // Regular login
+            var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
+            // Query the db for the given username
+            if (!user) { fn(new Error('cannot find user')); return; }
+            // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
+            if (user.salt == null) {
+                fn(new Error('invalid password'));
+            } else {
+                if (user.passtype != null) {
+                    // IIS default clear or weak password hashing (SHA-1)
+                    require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            // Update the password to the stronger format.
+                            require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                } else {
+                    // Default strong password hashing (pbkdf2 SHA384)
+                    require('./pass').hash(pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                }
             }
         }
     };
@@ -611,7 +719,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
 
@@ -684,8 +792,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
-
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                                 });
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                             }
@@ -702,7 +809,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
 
         // Check everything is ok
-        if ((domain == null) || (domain.auth == 'sspi') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             delete req.session.loginmode;
             delete req.session.tokenusername;
             delete req.session.tokenpassword;
@@ -776,7 +883,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Get the email from the body or session.
         var email = req.body.email;
@@ -840,7 +947,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -927,7 +1034,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -998,7 +1105,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -1038,15 +1145,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } });
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
-            var userid = 'user/' + domain.id + '/' + req.query.user.toLowerCase();
-            if (obj.users[userid] != null) {
-                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                    req.session.userid = userid;
-                    req.session.domainid = domain.id;
-                    req.session.currentNode = '';
-                    handleRootRequestEx(req, res, domain);
-                });
-            }
+            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                req.session.userid = userid;
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+                handleRootRequestEx(req, res, domain);
+            });
         } else {
             // Login using a different system
             handleRootRequestEx(req, res, domain);
@@ -1174,6 +1278,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
             if ((parent.config.settings.no2factorauth !== true) && (obj.f2l != null)) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+            if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -1185,14 +1290,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.minify && !req.query.nominify) {
                 // Try to server the minified version if we can.
                 try {
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile-min' : 'default-min'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile-min' : 'default-min'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 } catch (ex) {
                     // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
                 }
             } else {
                 // Serve non-minified version of web pages.
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
             }
         } else {
             // Send back the login application
@@ -2184,6 +2289,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (nodes.length != 1) { res.sendStatus(401); return; }
                     var node = nodes[0];
+
                     // Create the meshaction.txt file for meshcmd.exe
                     var meshaction = {
                         action: req.query.meshaction,
@@ -2194,7 +2300,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         username: '',
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                        serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                        serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                         debugLevel: 0
                     };
                     if (user != null) { meshaction.username = user.name; }
@@ -2209,7 +2315,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     username: '',
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                    serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                    serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                     debugLevel: 0
                 };
                 if (user != null) { meshaction.username = user.name; }

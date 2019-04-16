@@ -31,6 +31,8 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _TermLineWrap = true;
     var _termx = 0;
     var _termy = 0;
+    var _termsavex = 0;
+    var _termsavey = 0;
     var _termstate = 0;
     var _escNumber = [];
     var _escNumberPtr = 0;
@@ -110,7 +112,31 @@ var CreateAmtRemoteTerminal = function (divid) {
                         _altKeypadMode = false;
                         _termstate = 0;
                         break;
+                    case '7':
+                        // Save Cursor
+                        _termsavex = _termx;
+                        _termsavey = _termy;
+                        _termstate = 0;
+                        break;
+                    case '8':
+                        // Restore Cursor
+                        _termx = _termsavex;
+                        _termy = _termsavey;
+                        _termstate = 0;
+                        break;
+                    case 'M':
+                        // Scroll down one
+                        var x = 1;
+                        for (var y = _scrollRegion[1]; y >= _scrollRegion[0] + x; y--) {
+                            for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = _tscreen[y - x][z]; _scratt[y][z] = _scratt[y - x][z]; }
+                        }
+                        for (var y = _scrollRegion[0] + x - 1; y > _scrollRegion[0] - 1; y--) {
+                            for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
+                        }
+                        _termstate = 0;
+                        break;
                     default:
+                        console.log('unknown terminal short code', b);
                         _termstate = 0;
                         break;
                 }
@@ -203,7 +229,8 @@ var CreateAmtRemoteTerminal = function (divid) {
                 case 'P': // Delete X Character(s), default 1 char
                     var x = 1;
                     if (argslen == 1) { x = args[0]; }
-                    for (i = _termx; i < (_termx + x) ; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
+                    for (i = _termx; i < 80 - x; i++) { _tscreen[_termy][i] = _tscreen[_termy][i + x]; _scratt[_termy][i] = _scratt[_termy][i + x]; }
+                    for (i = (80 - x); i < 80; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
                     break;
                 case 'L': // Insert X Line(s), default 1 char
                     var linecount = 1;
@@ -244,8 +271,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                         if (args[1] > obj.width) args[1] = obj.width;
                         _termy = args[0] - 1;
                         _termx = args[1] - 1;
-                    }
-                    else {
+                    } else {
                         _termy = 0;
                         _termx = 0;
                     }
@@ -330,6 +356,16 @@ var CreateAmtRemoteTerminal = function (divid) {
                         for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
                     }
                     break;
+                case 'M': // Delete X lines, default 1
+                    var x = 1;
+                    if (argslen == 1) { x = args[0] }
+                    for (var y = _termy; y <= _scrollRegion[1] - x; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = _tscreen[y + x][z]; _scratt[y][z] = _scratt[y + x][z]; }
+                    }
+                    for (var y = _scrollRegion[1] - x + 1; y < _scrollRegion[1]; y++) {
+                        for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
+                    }
+                    break;
                 case 'T': // Scroll down the scroll region X lines, default 1
                     var x = 1;
                     if (argslen == 1) { x = args[0] }
@@ -340,9 +376,14 @@ var CreateAmtRemoteTerminal = function (divid) {
                         for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
                     }
                     break;
+                case 'X': // Erase X characters, default 1 (untested)
+                    var x = 1;
+                    if (argslen == 1) { x = args[0] }
+                    while ((x > 0) && (_termx > 0)) { _tscreen[_termy][_termx] = ' '; _termx--; x--; }
+                    break;
                 default:
                     //if (code != '@') alert(code);
-                    //console.log('unknown terminal code', code, args, mode);
+                    console.log('unknown terminal code', code, args, mode);
                     break;
             }
         }
@@ -613,6 +654,13 @@ var CreateAmtRemoteTerminal = function (divid) {
             if (e.which == 39) { obj.TermSendKeys(String.fromCharCode(27, 91, 67)); return true; }; // Right
             if (e.which == 40) { obj.TermSendKeys(String.fromCharCode(27, 91, 66)); return true; }; // Down
         }
+
+        if (e.which == 33) { obj.TermSendKeys(String.fromCharCode(27, 91, 53, 126)); return true; }; // PageUp
+        if (e.which == 34) { obj.TermSendKeys(String.fromCharCode(27, 91, 54, 126)); return true; }; // PageDown
+        if (e.which == 35) { obj.TermSendKeys(String.fromCharCode(27, 91, 70)); return true; }; // End
+        if (e.which == 36) { obj.TermSendKeys(String.fromCharCode(27, 91, 72)); return true; }; // Home
+        if (e.which == 45) { obj.TermSendKeys(String.fromCharCode(27, 91, 50, 126)); return true; }; // Insert
+        if (e.which == 46) { obj.TermSendKeys(String.fromCharCode(27, 91, 51, 126)); return true; }; // Delete
 
         if (e.which == 9) { obj.TermSendKeys("\t"); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return true; }; // TAB
 
