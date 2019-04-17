@@ -1449,7 +1449,7 @@
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
                         var basicPort = "{{{serverRedirPort}}}" == "" ? "{{{serverPublicPort}}}" : "{{{serverRedirPort}}}";
-                        var rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + ((debugmode == 1) ? "" : "&XHOL=1");
+                        var rdpurl = "http://" + window.location.hostname + ":" + basicPort + "/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F" + window.location.hostname + "%2Fmeshrelay.ashx%3Fauth=" + message.cookie + "&CH={{{webcerthash}}}&AP=" + message.protocol + ((debugmode == 1) ? "" : "&HOL=1");
                         var newWindow = window.open(rdpurl, '_blank');
                         newWindow.opener = null;
                     }
