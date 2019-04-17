@@ -1609,12 +1609,32 @@
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
+                                var oldgroups = userinfo.groups;
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
                                 updateSelf();
+
+                                if ((userinfo.siteadmin & 2) != 0) {
+                                    // Compare our groups
+                                    var og = oldgroups ? oldgroups : [];
+                                    var ng = userinfo.groups ? userinfo.groups : [];
+                                    if (og.join(',') != ng.join(',')) {
+                                        // Our groups have changed, re-ask for a list of users.
+                                        users = wssessions = null;
+                                        meshserver.send({ action: 'users' });
+                                        meshserver.send({ action: 'wssessioncount' });
+                                    }
+                                }
                             }
                             if (users == null) break;
-                            users[message.event.account._id] = message.event.account;
+
+                            // Check if the account if part of our user group
+                            if ((userinfo.groups == null) || (userinfo.groups.length == 0) || (findOne(message.event.account.groups, userinfo.groups) == true)) {
+                                users[message.event.account._id] = message.event.account; // Part of our groups, update this user.
+                            } else {
+                                delete users[message.event.account._id]; // No longer part of our groups, remove this user.
+                            }
+
                             updateUsers();
                             break;
                         }
@@ -7037,7 +7057,7 @@
             var removeMultiFactor = false;
             if ((tag == 1) && (Q('p4twoFactorRemove').checked == true)) { removeMultiFactor = true; }
             if (Q('p4pass1').value == Q('p4pass2').value) {
-                var r = { action: 'changeuserpass', user: currentUser.name, pass: Q('p4pass1').value, removeMultiFactor: removeMultiFactor, resetNextLogin: Q('p4resetNextLogin').checked };
+                var r = { action: 'changeuserpass', userid: currentUser._id, pass: Q('p4pass1').value, removeMultiFactor: removeMultiFactor, resetNextLogin: Q('p4resetNextLogin').checked };
                 if (features & 0x00010000) { r.hint = Q('p4hint').value; }
                 meshserver.send(r);
             }
@@ -7694,6 +7714,7 @@
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
         function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
+        function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
 
     </script>
 </body>

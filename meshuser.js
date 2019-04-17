@@ -715,7 +715,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var docs = [];
                     for (i in parent.users) {
                         if ((parent.users[i].domain == domain.id) && (parent.users[i].name != '~')) {
-                            docs.push(parent.CloneSafeUser(parent.users[i]));
+                            // If we are part of a user group, we can only see other members of our own group
+                            if ((user.groups == null) || (user.groups.length == 0) || ((parent.users[i].groups != null) && (findOne(parent.users[i].groups, user.groups)))) {
+                                docs.push(parent.CloneSafeUser(parent.users[i]));
+                            }
                         }
                     }
                     try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
@@ -723,7 +726,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changeemail':
                 {
-                    // Change the email address
+                    // Change our own email address
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateEmail(command.email, 1, 256) == false) return;
                     if (parent.users[req.session.userid].email != command.email) {
@@ -746,7 +749,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 } else {
                                     message.msg = 'Set email of user ' + user.name + ' to ' + user.email;
                                 }
-                                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, message);
+
+                                var targets = ['*', 'server-users', user._id];
+                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, message);
 
                                 // Send the verification email
                                 if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
@@ -773,10 +779,36 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 2) == 0) break;
                     if (parent.parent.multiServer == null) {
                         // No peering, use simple session counting
-                        for (i in parent.wssessions) { if (parent.wssessions[i][0].domainid == domain.id) { wssessions[i] = parent.wssessions[i].length; } }
+                        for (i in parent.wssessions) {
+                            if (parent.wssessions[i][0].domainid == domain.id) {
+                                if ((user.groups == null) || (user.groups.length == 0)) {
+                                    // No user groups, count everything
+                                    wssessions[i] = parent.wssessions[i].length;
+                                } else {
+                                    // Only count if session is for a user in our user groups
+                                    var sessionUser = parent.users[parent.wssessions[i][0].userid];
+                                    if ((sessionUser != null) && findOne(sessionUser.groups, user.groups)) {
+                                        wssessions[i] = parent.wssessions[i].length;
+                                    }
+                                }
+                            }
+                        }
                     } else {
                         // We have peer servers, use more complex session counting
-                        for (i in parent.sessionsCount) { if (i.split('/')[1] == domain.id) { wssessions[i] = parent.sessionsCount[i]; } }
+                        for (i in parent.sessionsCount) {
+                            if (i.split('/')[1] == domain.id) {
+                                if ((user.groups == null) || (user.groups.length == 0)) {
+                                    // No user groups, count everything
+                                    wssessions[i] = parent.sessionsCount[i];
+                                } else {
+                                    // Only count if session is for a user in our user groups
+                                    var sessionUser = parent.users[i];
+                                    if ((sessionUser != null) && findOne(sessionUser.groups, user.groups)) {
+                                        wssessions[i] = parent.sessionsCount[i];
+                                    }
+                                }
+                            }
+                        }
                     }
                     try { ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: wssessions, tag: command.tag })); } catch (ex) { } // wssessions is: userid --> count
                     break;
@@ -789,6 +821,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var delusersplit = command.userid.split('/'), deluserid = command.userid, deluser = parent.users[deluserid];
                     if ((deluser == null) || (delusersplit.length != 3) || (delusersplit[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
                     if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
+                    if ((user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) break; // Can only perform this operation on other users of our group.
 
                     // Remove all the mesh links to this user
                     if (deluser.links != null) {
@@ -816,7 +849,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     db.Remove(deluserid);
                     delete parent.users[deluserid];
-                    parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+
+                    var targets = ['*', 'server-users'];
+                    if (deluser.groups) { for (var i in deluser.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
                     parent.parent.DispatchEvent([deluserid], obj, 'close');
 
                     break;
@@ -833,7 +869,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Send the notification on all user sessions for this server
                     for (var i in parent.wssessions2) {
                         try {
-                            if (parent.wssessions2[i].domainid == domain.id) { parent.wssessions2[i].send(JSON.stringify(notification)); }
+                            if (parent.wssessions2[i].domainid == domain.id) {
+                                if ((user.groups == null) || (user.groups.length == 0)) {
+                                    // We are part of no user groups, send to everyone.
+                                    parent.wssessions2[i].send(JSON.stringify(notification));
+                                } else {
+                                    // We are part of user groups, only send to sessions of users in our groups.
+                                    var sessionUser = parent.users[parent.wssessions2[i].userid];
+                                    if ((sessionUser != null) && findOne(sessionUser.groups, user.groups)) {
+                                        parent.wssessions2[i].send(JSON.stringify(notification));
+                                    }
+                                }
+                            }
                         } catch (ex) { }
                     }
 
@@ -870,6 +917,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.email != null) { newuser.email = command.email; } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
+                            if ((user.groups != null) && (user.groups.length > 0)) { newuser.groups = user.groups; } // New account are automatically part of our groups.
                             parent.users[newuserid] = newuser;
 
                             // Create a user, generate a salt and hash the password
@@ -878,7 +926,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 newuser.salt = salt;
                                 newuser.hash = hash;
                                 db.SetUser(newuser);
-                                parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
+
+                                var targets = ['*', 'server-users'];
+                                if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
                             });
                         }
                     });
@@ -895,7 +946,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                             if ((user.siteadmin == 0xFFFFFFFF) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break; // Can only perform this operation on other users of our group.
 
+                            // Went sending a notification about a group change, we need to send to all the previous and new groups.
+                            var allTargetGroups = chguser.groups;
                             if ((Array.isArray(command.groups)) && (user._id != command.id)) {
                                 if (command.groups.length == 0) {
                                     // Remove the user groups
@@ -913,6 +967,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                     // Set the user groups
                                     if (chguser.groups != groups2) { chguser.groups = groups2; change = 1; }
+
+                                    // Add any missing groups in the target list
+                                    if (allTargetGroups == null) { allTargetGroups = []; }
+                                    for (var i in groups2) { if (allTargetGroups.indexOf(i) == -1) { allTargetGroups.push(i); } }
                                 }
                             }
 
@@ -920,7 +978,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Update the user
                                 db.SetUser(chguser);
                                 parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
-                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: domain.id });
+
+                                var targets = ['*', 'server-users', user._id, chguser._id];
+                                if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: domain.id });
                             }
                             if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
                                 // If the user is locked out of this account, disconnect now
@@ -958,7 +1019,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     user.passchange = Math.floor(Date.now() / 1000);
                                     delete user.passtype;
                                     db.SetUser(user);
-                                    parent.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+
+                                    var targets = ['*', 'server-users'];
+                                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
 
                                     // Send user notification of password change
                                     displayNotificationMessage('Password changed.');
@@ -975,14 +1039,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Change a user's password
                     if (user.siteadmin != 0xFFFFFFFF) break;
-                    if (common.validateString(command.user, 1, 256) == false) break;
+                    if (common.validateString(command.userid, 1, 256) == false) break;
                     if (common.validateString(command.pass, 1, 256) == false) break;
                     if ((command.hint != null) && (common.validateString(command.hint, 0, 256) == false)) break;
                     if (typeof command.removeMultiFactor != 'boolean') break;
                     if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
 
-                    var chguser = parent.users['user/' + domain.id + '/' + command.user.toLowerCase()];
+                    var chguser = parent.users[command.userid];
                     if (chguser) {
+                        // Can only perform this operation on other users of our group.
+                        if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
+
                         // Compute the password hash & save it
                         require('./pass').hash(command.pass, function (err, salt, hash) {
                             if (!err) {
@@ -1001,7 +1068,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (chguser.otpkeys) { delete chguser.otpkeys; }
                                 }
                                 db.SetUser(chguser);
-                                parent.parent.DispatchEvent(['*', 'server-users', user._id, chguser._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id });
+
+                                var targets = ['*', 'server-users', user._id, chguser._id];
+                                if (chguser.groups) { for (var i in chguser.groups) { targets.push('server-users:' + i); } }
+                                parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id });
                             } else {
                                 // Report that the password change failed
                                 // TODO
@@ -1016,6 +1086,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 2) == 0) break;
                     if (common.validateString(command.userid, 1, 2048) == false) break;
                     if (common.validateString(command.msg, 1, 4096) == false) break;
+
+                    // Can only perform this operation on other users of our group.
+                    var chguser = parent.users[command.userid];
+                    if (chguser == null) break; // This user does not exists
+                    if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
                     var notification = { "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: " + EscapeHtml(command.msg), "userid": user._id, "username": user.name };
@@ -1036,6 +1111,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Setup a user-to-user session
                     if (common.validateString(command.userid, 1, 2048)) {
+
+                        // Can only perform this operation on other users of our group.
+                        var chguser = parent.users[command.userid];
+                        if (chguser == null) break; // This user does not exists
+                        if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                         // Create the notification message
                         var notification = {
@@ -1836,6 +1916,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (common.validateString(command.notes, 1) == false) {
                             db.Remove('nt' + command.id); // Delete the note for this node
                         } else {
+                            // Can only perform this operation on other users of our group.
+                            var chguser = parent.users[command.id];
+                            if (chguser == null) break; // This user does not exists
+                            if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
                             db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
                         }
                     }
@@ -1873,7 +1957,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: true })); // Report success
 
                             // Notify change
-                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id });
+                            var targets = ['*', 'server-users', user._id];
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-setup', success: false })); // Report fail
                         }
@@ -1892,7 +1978,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: true })); // Report success
 
                             // Notify change
-                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id });
+                            var targets = ['*', 'server-users', user._id];
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otpauth-clear', success: false })); // Report fail
                         }
@@ -1927,7 +2015,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Notify change
-                    parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-get':
@@ -1958,7 +2048,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Notify change
-                    parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id });
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id });
                     break;
                 }
             case 'otp-hkey-yubikey-add':
@@ -2004,7 +2096,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: true, name: command.name, index: keyIndex }));
 
                             // Notify change TODO: Should be done on all sessions/servers for this user.
-                            parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                            var targets = ['*', 'server-users', user._id];
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                         } else {
                             ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         }
@@ -2061,7 +2155,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         delete obj.hardwareKeyRegistrationRequest;
 
                         // Notify change
-                        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     }, function (error) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
                         delete obj.hardwareKeyRegistrationRequest;
@@ -2128,7 +2224,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
 
                         // Notify change
-                        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
                     }, function (error) {
                         console.log('webauthn-endregister-error', error);
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
@@ -2359,6 +2457,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (current != null) { results[current] = true; }
         return results;
     }
+
+    // Return true if at least one element of arr2 is in arr1
+    function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
 
     return obj;
 };

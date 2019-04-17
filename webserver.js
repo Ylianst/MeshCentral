@@ -1770,7 +1770,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const subscriptions = [userid, 'server-global'];
         if (user.siteadmin != null) {
             if (user.siteadmin == 0xFFFFFFFF) subscriptions.push('*');
-            if ((user.siteadmin & 2) != 0) subscriptions.push('server-users');
+            if ((user.siteadmin & 2) != 0) {
+                if ((user.groups == null) || (user.groups.length == 0)) {
+                    // Subscribe to all user changes
+                    subscriptions.push('server-users');
+                } else {
+                    // Subscribe to user changes for some groups
+                    for (var i in user.groups) { subscriptions.push('server-users:' + i); }
+                }
+            }
         }
         if (user.links != null) { for (var i in user.links) { subscriptions.push(i); } }
         obj.parent.RemoveAllEventDispatch(target);
