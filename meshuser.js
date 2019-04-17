@@ -1846,7 +1846,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
                                 if (command.tcpaddr) { cookieContent.tcpaddr = command.tcpaddr; } // Indicates the browser want to agent to TCP connect to a remote address
                                 if (command.tcpport) { cookieContent.tcpport = command.tcpport; } // Indicates the browser want to agent to TCP connect to a remote port
-                                command.cookie = parent.parent.encodeCookie(cookieContent);
+                                command.cookie = parent.parent.encodeCookie(cookieContent, parent.parent.loginCookieEncryptionKey);
                                 try { ws.send(JSON.stringify(command)); } catch (ex) { }
                             }
                         }
