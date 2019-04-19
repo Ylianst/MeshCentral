@@ -11,18 +11,17 @@
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
     <title>{{{title}}} - Login</title>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide login">
     <div id=container>
-        <div id=mastheadx></div>
         <div id=masthead>
             <div class="title">{{{title}}}</div>
             <div class="title2">{{{title2}}}</div>
         </div>
-        <div id=page_content>
+        
             <div id=topbar class="noselect style3">
                 <div id=toggle title="Toggle full width" onclick="toggleFullScreen(1)">&harr;</div>
             </div>
-            <div id=column_l style="height:calc(100vh - 111px)">
+            <div id=column_l>
                 <h1>Welcome</h1>
                 <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
                 <table id="centralTable" style="">
@@ -216,7 +215,7 @@
                     &nbsp;<a href=terms>Terms &amp; Privacy</a>
                 </div>
             </div>
-        </div>
+        
     </div>
     <div id=dialog style="display:none">
         <div id=dialogHeader>
