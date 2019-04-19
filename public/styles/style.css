@@ -1,9 +1,4 @@
-﻿
-html, body {
-    width: 100%;
-    height: 100%;
-}
-body {
+﻿body {
     margin: 0;
     padding: 0;
     border: 0;
@@ -11,7 +6,7 @@ body {
     font-size: 13px;
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     background-color: #d3d9d6;
-    /* overflow-y: hidden; */
+    overflow-y: hidden;
 }
 
 #container {
@@ -61,11 +56,10 @@ body {
     }
     .fullscreen #container {
         width: 100%;
-        min-width: 100%;
+        min-width: 700px;
         min-height: 0px;
         border-right: 0px none #b7b7b7;
         border-left: 0px none #b7b7b7;
-
         height: calc(100% - 0px);
         position: relative;
         display: -ms-grid;
@@ -81,10 +75,9 @@ body {
         -ms-grid-rows: 66px 24px 1fr 45px;
         grid-template-rows: 66px 24px auto 45px;
     }
-    
+
     .fulldesk #container {
         width: 100%;
-        height: 100%;
         min-width: 700px;
         min-height: 0px;
         border-right: 0px none #b7b7b7;
@@ -162,19 +155,14 @@ body {
     -ms-grid-row-span: 3;
     /* height: calc(100vh - 66px); */
     width: 90px;
+    position: absolute;
     z-index: 1000;
     background: #113962;
     background: linear-gradient(to bottom, #104893 0%,#113962 100%);
     color: white;
-    overflow-y: hidden;
-    display: none;
 }
     .fullscreen #page_leftbar {
-        grid-area: sidebar;
         display: block;
-    }
-    .menu_stack #page_leftbar {
-        display: none;
     }
     .arg_hide #page_leftbar {
         display: none;
@@ -182,7 +170,6 @@ body {
     .fulldesk #page_leftbar {
         display: none;
     }
-
 
 #topbar {
     position: relative;
@@ -217,41 +204,21 @@ body {
     top: 3px;
     right: 6px
 }
-#toggle2 {
-    cursor: pointer;
-    color: white;
-    position: absolute;
-    top: 3px;
-    right: 26px;
-    display: none;
-}
-    .fullscreen #toggle2 {
-        display: block;
-    }
 
     /* #UserDummyMenuSpan,  */
 #MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
     width: 100%;
-    height: 24px;
-    color: white;
-    background-color: #808080;
+    height: 22px
 }
-    .menu_stack #UserDummyMenu {
-        display: none;
-    }
 
 #MainMenuSpan {
     display: table;
 }
-
     .fullscreen #MainMenuSpan {
         display: none;
     }
     .fulldesk #MainMenuSpan {
         display: none;
-    }
-    .menu_stack #MainMenuSpan {
-        display: block;
     }
 
 #column_l {
@@ -262,8 +229,11 @@ body {
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
-    /* max-height: calc(100vh - 151px); */
+    /*max-height: calc(100vh - 111px);*/
     min-width: unset;
+}
+.room4submenu {
+    max-height: calc(100vh - 159px) !important;
 }
 
     .menu_stack.fullscreen.fulldesk #column_l {
@@ -277,8 +247,6 @@ body {
         -ms-grid-row: 3;
         grid-area: content;
         width: unset;
-        /* height: calc(100vh - 111px);
-        width: calc(100% - 30px); */
         overflow-y: auto;
     }
 
@@ -301,10 +269,6 @@ body {
     .fulldesk #column_l_bottomgap {
         display: none;
     }
-
-.room4submenu {
-  min-height: calc(100vh - 159px);
-}
 
 #centralTable {
     width: 100%;
@@ -424,12 +388,6 @@ body {
         text-decoration: none;
     }
 
-#verifyEmailId2 {
-    color:yellow;
-    margin-left:3px;
-    cursor:pointer;
-}
-
 #dialog {
     z-index: 1000;
     background-color: #EEE;
@@ -447,18 +405,6 @@ body {
     background-color: #003366;
     color: #FFF;
     border-radius: 5px 5px 0 0;
-    margin-bottom: 6px;
-}
-
-#id_dialogclose {
-    float: right;
-    padding: 3px;
-    margin-right: 3px;
-    cursor: pointer;
-}
-
-#id_dialogtitle {
-    padding: 5px;
 }
 
 #dialogBody {
@@ -487,56 +433,9 @@ body {
     padding:10px;
 }
 
-#dialog2, #dialog3, #dialog7 {
+#dialog2, #dialog3 {
+    margin: auto;
     margin: 3px;
-}
-
-#d3uploadMode, #d3localFile {
-    float:right;
-    width:260px;
-}
-
-#d3serveraction {
-    width: 100%;
-    background-color: #d3d9d6;
-    text-align: left;
-    padding: 3px;
-}
-
-#d3serverfiles {
-    width: 100%;
-    height: 150px;
-    background-color: white;
-    padding: 2px;
-    border: 1px solid gray;
-    overflow-y: scroll;
-}
-
-
-#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode {
-    float: right;
-    width: 200px;
-    height: 20px;
-}
-
-#dialog7 h4 {
-    width:100%;
-    border-bottom: 1px solid gray;
-}
-
-#d7meshkvm div, #d7amtkvm div, #d3upload, #d3localmode {
-    margin:3px 0 3px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-#d7otherset {
-    display: block;
-    border: 1px solid #666;
-    width: 200px;
-    height: 60px;
-    overflow-y: scroll;
-    background-color: white;
 }
 
 #idx_dlgButtonBar {
@@ -574,7 +473,7 @@ body {
 
 #idx_deskFullBtn2 {
     float: left;
-    font-size: 16px;
+    font-size: large;
     cursor: pointer;
     display: none;
 }
@@ -719,14 +618,6 @@ body {
     font-size: 10px;
 }
 
-#p2AccountActions .mL {
-    margin-left: 40px;
-}
-
-#p2ServerActions .mL {
-    margin-left: 40px;
-}
-
 .newMeshBtn  {
     background: url(../images/icon-addnew.png) no-repeat 0px 0px;
     height: 12px;
@@ -736,13 +627,9 @@ body {
     padding-left: 15px;
 }
 
-#p2noMeshFound, #serverStats {
+#p2noMeshFound, #p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors, #serverStats {
     margin-left:40px;
 }
-
-#p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors {
-    margin-left:0px;
-} 
 
 .pTable {
     width: 100%;
@@ -787,10 +674,6 @@ body {
     width: 230px;
 }
 
-#p5toolbar {
-    width: 100%;
-}
-
 #p5filehead {
     width: 100%;
     background-color: #d3d9d6;
@@ -823,9 +706,6 @@ body {
     -webkit-user-select: none;
     background-color: lightsteelblue;
 }
-    #p5PublicShare div {
-        padding: 4px;
-    }
 
 #bigok {
     width: 256px;
@@ -924,14 +804,6 @@ body {
     font-size: x-small;
 }
 
-#dp10devicevalue {
-    width: 230px;
-}
-
-.fulldesk #p11 {
-  height: 100%;
-}
-
 #MainComputerImage {
     border-width: 0px;
     height: 200px;
@@ -982,7 +854,6 @@ body {
 a {
     color: #036;
     text-decoration: underline;
-    cursor: pointer;
 }
 
 .i1 {
@@ -1280,18 +1151,9 @@ a {
     background-color: #D3D9D6;
 }
 
-/* .pTable .style14 {
-    float: left;
-} */
-
 .auto-style1 {
     text-align: right;
     background-color: #D3D9D6;
-}
-
-#pTable .auto-style1 {
-    height: 100%;
-    float: right;
 }
 
 .icon2 {
@@ -1433,7 +1295,7 @@ a {
 .h1 {
     background-position: 0% 0%;
     width: 14px;
-    height: 24px;
+    height: 100%;
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
@@ -1447,13 +1309,13 @@ a {
     height: 100%;
     width: 20px;
     float: right;
-    background-color: #ffffff;
+    background-color: #ffffff
 }
 
 .h2 {
     background-position: 0% 0%;
     width: 14px;
-    height: 24px;
+    height: 100%;
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
@@ -1655,7 +1517,6 @@ a {
     padding: 4px
 }
 
-
 .deskareaicon {
     cursor: pointer;
     border: none;
@@ -1775,13 +1636,7 @@ a {
 }
 
 #DeskParent {
-    margin: 0;
-    overflow:hidden;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    right: 0;
-    top: 0;
+    overflow:hidden
 }
 
 #Desk {
@@ -1796,6 +1651,7 @@ a {
     margin: auto;
 }
 
+
 #deskToolsBar {
     position: absolute;
     padding: 3px;
@@ -1805,27 +1661,6 @@ a {
     bottom: 26px;
     background-color:lightgray;
     cursor: pointer;
-}
-
-#deskToolsArea {
-    position: absolute;
-    top: 26px;
-    left: 4px;
-    right: 4px;
-    bottom: 4px;
-    background-color: lightgray;
-    text-align: left;
-}
-
-#deskToolsHeader {
-    border-bottom: 1px solid darkgray;
-    padding: 3px;
-}
-
-#deskToolsHeader .colmn1 {
-    width: 50px;
-    padding-right: 5px;
-    float: left;
 }
 
 #DeskToolsProcesses {
