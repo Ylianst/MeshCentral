@@ -21,13 +21,59 @@
     border-left: 1px solid #b7b7b7;
     padding: 0;
 }
-
+    .fullscreen.login #container {
+        -ms-grid-rows: 66px 24px 1fr 45px;
+        grid-template-rows: 66px 24px auto 45px;
+        -ms-grid-columns: 90px 1fr;
+        grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+        grid-template-areas: 
+        "header header" 
+        "nav nav" 
+        "content content" 
+        "footer footer";
+    }
+    .fullscreen.arg_hide #container {
+        -ms-grid-rows: 66px 24px 1fr 45px;
+        grid-template-rows: 66px 24px auto 45px;
+        -ms-grid-columns: 90px 1fr;
+        grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+        grid-template-areas: 
+        "header header" 
+        "nav nav" 
+        "content content" 
+        "footer footer";
+    }
+    .fullscreen.menu_stack #container {
+        -ms-grid-rows: 66px  minmax(24px, max-content) 1fr 45px;
+        grid-template-rows: 66px minmax(24px, max-content) auto 45px;
+        -ms-grid-columns: 90px 1fr;
+        grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+        grid-template-areas: 
+        "header header" 
+        "nav nav" 
+        "content content" 
+        "footer footer";
+    }
     .fullscreen #container {
         width: 100%;
         min-width: 700px;
         min-height: 0px;
         border-right: 0px none #b7b7b7;
         border-left: 0px none #b7b7b7;
+        height: calc(100% - 0px);
+        position: relative;
+        display: -ms-grid;
+        display: grid;
+        grid-gap: 0px;
+        grid-template-areas: 
+        "header header" 
+        "sidebar nav" 
+        "sidebar content" 
+        "sidebar footer";
+        -ms-grid-columns: 90px 1fr;
+        grid-template-columns: 90px auto;
+        -ms-grid-rows: 66px 24px 1fr 45px;
+        grid-template-rows: 66px 24px auto 45px;
     }
 
     .fulldesk #container {
@@ -37,6 +83,15 @@
         border-right: 0px none #b7b7b7;
         border-left: 0px none #b7b7b7;
         position: unset;
+        position: relative;
+        display: -ms-grid !important;
+        display: grid !important;
+        grid-gap: 0px;
+        grid-template-areas: "content"!important;
+        -ms-grid-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+        -ms-grid-rows: 1fr;
+        grid-template-rows: repeat(auto-fit, minmax(100px, 1fr))!important;
     }
 
 #masthead {
@@ -57,8 +112,11 @@
 
     .fullscreen #masthead {
         width: 100%;
+        grid-area: header;
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        -ms-grid-row: 1;
     }
-
     .fulldesk #masthead {
         display: none;
     }
@@ -91,29 +149,11 @@
     font-weight: bold;
 }
 
-#page_content {
-    /*max-height: calc(100vh - 108px);*/
-}
-    .fullscreen #page_content {
-        position: absolute;
-        top: 66px;
-        left: 90px;
-        right: 0px;
-        bottom: 0px;
-    }
-    .arg_hide #page_content {
-        left: 0px;
-    }
-    .fulldesk #page_content {
-        position: static;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-
 #page_leftbar {
-    height: calc(100vh - 66px);
+    -ms-grid-column: 1;
+    -ms-grid-row: 2;
+    -ms-grid-row-span: 3;
+    /* height: calc(100vh - 66px); */
     width: 90px;
     position: absolute;
     z-index: 1000;
@@ -132,12 +172,19 @@
     }
 
 #topbar {
-    /* height: 24px; */
     position: relative;
+    grid-area: nav;
+    -ms-grid-column: 2;
+    -ms-grid-row: 2;
 }
 
     .fulldesk #topbar {
         display: none;
+    }
+    .menu_stack #topbar, .login #topbar, .arg_hide #topbar {
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        -ms-grid-row: 2;
     }
 
 .topbar_td {
@@ -158,7 +205,8 @@
     right: 6px
 }
 
-#MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+    /* #UserDummyMenuSpan,  */
+#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
     width: 100%;
     height: 22px
 }
@@ -176,7 +224,8 @@
 #column_l {
     position: relative;
     float: left;
-    width: 930px;
+    width: 100%;
+    box-sizing: border-box;
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
@@ -187,22 +236,35 @@
     max-height: calc(100vh - 159px) !important;
 }
 
+    .menu_stack.fullscreen.fulldesk #column_l {
+        -ms-grid-column: 1;
+        -ms-grid-row: 1;
+        -ms-grid-column-span: 2;
+        -ms-grid-row-span: 4;
+    }
     .fullscreen #column_l {
-        height: calc(100vh - 135px);
-        width: calc(100% - 30px);
+        -ms-grid-column: 2;
+        -ms-grid-row: 3;
+        grid-area: content;
+        width: unset;
         overflow-y: auto;
     }
 
+    .menu_stack.fullscreen #column_l, .login #column_l, .arg_hide #column_l {
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        -ms-grid-row: 3;
+    }
     .fulldesk #column_l {
+        height: 100%;
         width: 100%;
-        /*height: unset;*/
-        /*max-height: unset;*/
-        /*overflow-y: unset;*/
+        height: unset;
         margin-left: unset;
+        overflow-y: unset;
         padding: 0;
-        max-height:100vh;
-        height:100vh;
-        overflow-y:hidden;
+        max-height: none;
+        -ms-grid-column: 1;
+        -ms-grid-row: 1;
     }
     .fulldesk #column_l_bottomgap {
         display: none;
@@ -257,6 +319,9 @@
 }
 
 #footer {
+    -ms-grid-column: 2;
+    -ms-grid-row: 4;
+    grid-area: footer;
     clear: both;
     overflow: auto;
     width: 100%;
@@ -267,6 +332,11 @@
 }
     .fulldesk #footer {
         display: none;
+    }
+    .menu_stack.fullscreen #footer, .login #footer, .arg_hide #footer {
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        -ms-grid-row: 4;
     }
 
 /* Support for footer made with table */
@@ -370,7 +440,9 @@
 
 #idx_dlgButtonBar {
     padding: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+    overflow: auto;
+    float: right;
 }
 
 #idx_dlgCancelButton {
@@ -583,7 +655,7 @@
 }
 
 #p3events {
-    height: calc(100vh - 243px);
+    height: calc(100vh - 245px);
     overflow-y: scroll
 }
 
@@ -621,7 +693,7 @@
 
 #p5filetable {
     width: 100%;
-    height: calc(100vh - 294px);
+    height: calc(100vh - 295px);
     overflow: auto;
     -webkit-user-select: none;
     position: relative;
@@ -670,6 +742,12 @@
 #serverCpuChart, #serverMemoryChart {
     width: 60px;
     height: 60px;
+}
+
+#serverMainStats {
+    height:calc(100vh - 251px);
+    max-height:calc(100vh - 251px);
+    width:100%
 }
 
 #p10BackButton, #p11BackButton {
@@ -1364,6 +1442,10 @@ a {
     /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
     filter: gray; /* IE6-9 */
     -webkit-filter: grayscale(100%) opacity(60%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    -moz-opacity: 0.60;
+    opacity:.60;
+    filter: alpha(opacity=60);
 }
 
 .unselectable {
@@ -1435,12 +1517,115 @@ a {
     padding: 4px
 }
 
+.deskareaicon {
+    cursor: pointer;
+    border: none;
+    float: right;
+    font-size: 130%;
+    margin-right: 4px;
+}
+
+.areaHead {
+    padding-left: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: #C0C0C0;
+}
+
+.areaProgress {
+    background-color: gray;
+}
+
+.areaProgress div {
+    height: 2px;
+    width: 0%;
+    background-color:red;
+}
+
+.areaFoot {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: #C0C0C0;
+}
+
+.toright2 {
+    float: right;
+    text-align: right;
+    padding-right: 4px;
+}
+
+#deskarea0 {
+  width: 100%;
+  padding: 0px;
+  padding: 0px;
+  margin-top: 0px;
+}
+
+  .fulldesk #deskarea0 {
+    min-width: 100%;
+    min-height: 0px;
+    height: 100%;
+    position: relative;
+    display: -ms-grid;
+    display: grid;
+    grid-gap: 0px;
+    grid-template-areas: 
+    "deskarea1" 
+    "deskarea2" 
+    "deskarea3" 
+    "deskarea4";
+    /* grid-template-columns: 90px auto; */
+    grid-template-rows: 24px max-content auto max-content;
+    -ms-grid-columns: 1fr;
+    -ms-grid-rows: 24px max-content 1fr max-content;
+  }
+
+    #deskarea0 .mR {
+        margin-right: 3px;
+    }
+
+#deskarea1 {
+  grid-area: deskarea1;
+  -ms-grid-column: 1;
+  -ms-grid-row: 1;
+}
+
+
+#deskarea2 {
+  grid-area: deskarea2;
+  background-color: gray;
+  -ms-grid-column: 1;
+  -ms-grid-row: 2;
+}
+
+#progressbar {
+    height:2px;
+    width:0%;
+    background-color:red;
+}
+
 #deskarea3x {
     background: black;
     text-align: center;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    max-height: calc(100vh - 296px); /*  + 24px hight of submenu */
+    height: calc(100vh - 296px);
 }
+
+  .room4submenu #deskarea3x {
+      max-height: calc(100vh - 296px);
+      height: calc(100vh - 296px);
+  }
+
+  .fulldesk #deskarea3x {
+    grid-area: deskarea3;
+    max-height: none;
+    height: calc(100vh - 56px);
+    -ms-grid-column: 1;
+    -ms-grid-row: 3;
+  }
 
 #DeskFocus {
     overflow: hidden;
@@ -1458,7 +1643,12 @@ a {
     overflow: hidden;
     width: 100%;
     -ms-touch-action: none;
-    margin-left: 0px;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin: auto;
 }
 
 
@@ -1488,11 +1678,180 @@ a {
     background-color: #EFE8B6;
 }
 
+#deskarea4 {
+  grid-area: deskarea4;
+  -ms-grid-column: 1;
+  -ms-grid-row: 4;
+}
+
+#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton {
+    float: right;
+    margin-top: 1px;
+    margin-right: 4px;
+    cursor: pointer;
+}
+
+#DeskClip, #DeskControlSpan, #specialkeylist {
+    margin-left:6px;
+}
 
 .userTableHeader {
     border-bottom: 1pt solid lightgray;
     padding-top: 4px;
     padding-bottom: 4px;
+}
+
+#deskkeys {
+    margin-left: 6px;
+}
+
+#p12BackButton {
+    float: left;
+}
+
+#termTable {
+    width: 100%;
+    padding: 0px;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+#termarea3x {
+    background: black;
+    text-align: center;
+    height: 500px;
+    position: relative;
+}
+
+#Term {
+    background: black;
+    margin: 0;
+    padding: 0;
+}
+
+#p13toolbar {
+    width: 100%
+}
+#p13toolbar .areaHead {
+    border-bottom: 2px solid black;
+}
+
+#p13toolbar .areaHead2 {
+    width: 100%;
+    background-color: #d3d9d6;
+    text-align: left;
+    padding: 4px;
+}
+
+#p13toolbar .areaHead3 {
+    background-color:#E4E9E7;
+    height:28px;
+}
+
+#p13filetable {
+    width: 100%;
+    height: calc(100vh - 349px);
+    overflow: auto;
+    -webkit-user-select: none;
+}
+
+#p13bigok {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 200px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+#p13bigfail {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 200px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+#p14iframe {
+    width: 100%;
+    height: calc(100vh - 242px);
+    border: 0;
+    overflow: hidden;
+}
+
+#p13toolbarBottom, #p13toolbar {
+    width: 100%;
+}
+
+#consoleTable {
+    width: 100%;
+    padding: 0px;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+#p15statetext {
+    padding: 4px;
+    height: 15px;
+}
+
+#p15agentConsole {
+    background: black;
+    margin: 0;
+    padding: 0;
+    color: lightgray;
+    width: 100%;
+    /*  */
+    height: calc(100vh - 299px);
+    max-height: calc(100vh - 299px);
+    position: relative;
+}
+
+    .menu_stack.fullscreen #p15agentConsole {
+        height: calc(100vh - 305px);
+        max-height: calc(100vh - 305px);
+    }
+
+#p15coreName {
+    padding: 4px;
+    display: inline-block;
+}
+
+#p15agentConsoleText {
+    /* position: absolute; */
+    margin: 0;
+    padding: 0;
+    top: 0;
+    bottom: 0;
+    /* left: 0;
+    right: 0; */
+    overflow-y: scroll;
+    overflow-x: auto;
+    height: calc(100vh - 299px);
+    max-height: calc(100vh - 299px);
+    width: 930px;
+}
+    .menu_stack.fullscreen #p15agentConsoleText {
+        width: calc(100vw - 30px);
+        height: calc(100vh - 305px);
+        max-height: calc(100vh - 305px);
+    }
+    .fullscreen #p15agentConsoleText {
+        width: calc(100vw - 120px);
+    }
+
+#p16events, #p31events {
+    max-height: calc(100vh - 269px);
+    overflow-y: auto;
+}
+
+#p40 {
+    height:calc(100vh - 191px)
 }
 
 .viewSelector {
