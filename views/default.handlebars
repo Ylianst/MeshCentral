@@ -3796,6 +3796,7 @@
                 Q('p14iframe').contentWindow.setConnectionState(online);
                 Q('p14iframe').contentWindow.setFrameHeight('650px');
                 Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
+                if (args['idertrace']) { Q('p14iframe').contentWindow.setUrlVar('idertrace', args['idertrace']); }
 
                 // Display "action" button on desktop/terminal/files
                 QV('deskActionsBtn', (meshrights & 72) != 0); // 72 = Wake-up + Remote Control permissions
