@@ -1,4 +1,10 @@
-﻿body {
+﻿
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
     margin: 0;
     padding: 0;
     border: 0;
@@ -6,7 +12,7 @@
     font-size: 13px;
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     background-color: #d3d9d6;
-    overflow-y: hidden;
+    /* overflow-y: hidden; */
 }
 
 #container {
@@ -22,22 +28,66 @@
     padding: 0;
 }
 
-    .fullscreen #container {
-        width: 100%;
-        min-width: 700px;
-        min-height: 0px;
-        border-right: 0px none #b7b7b7;
-        border-left: 0px none #b7b7b7;
-    }
+.fullscreen.login #container {
+    -ms-grid-rows: 66px 24px 1fr 45px;
+    grid-template-rows: 66px 24px auto 45px;
+    -ms-grid-columns: 90px 1fr;
+    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    grid-template-areas: "header header" "nav nav" "content content" "footer footer";
+}
 
-    .fulldesk #container {
-        width: 100%;
-        min-width: 700px;
-        min-height: 0px;
-        border-right: 0px none #b7b7b7;
-        border-left: 0px none #b7b7b7;
-        position: unset;
-    }
+.fullscreen.arg_hide #container {
+    -ms-grid-rows: 66px 24px 1fr 45px;
+    grid-template-rows: 66px 24px auto 45px;
+    -ms-grid-columns: 90px 1fr;
+    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    grid-template-areas: "header header" "nav nav" "content content" "footer footer";
+}
+
+.fullscreen.menu_stack #container {
+    -ms-grid-rows: 66px minmax(24px, max-content) 1fr 45px;
+    grid-template-rows: 66px minmax(24px, max-content) auto 45px;
+    -ms-grid-columns: 90px 1fr;
+    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    grid-template-areas: "header header" "nav nav" "content content" "footer footer";
+}
+
+.fullscreen #container {
+    width: 100%;
+    min-width: 100%;
+    min-height: 0px;
+    border-right: 0px none #b7b7b7;
+    border-left: 0px none #b7b7b7;
+    height: calc(100% - 0px);
+    position: relative;
+    display: -ms-grid;
+    display: grid;
+    grid-gap: 0px;
+    grid-template-areas: "header header" "sidebar nav" "sidebar content" "sidebar footer";
+    -ms-grid-columns: 90px 1fr;
+    grid-template-columns: 90px auto;
+    -ms-grid-rows: 66px 24px 1fr 45px;
+    grid-template-rows: 66px 24px auto 45px;
+}
+
+.fulldesk #container {
+    width: 100%;
+    height: 100%;
+    min-width: 700px;
+    min-height: 0px;
+    border-right: 0px none #b7b7b7;
+    border-left: 0px none #b7b7b7;
+    position: unset;
+    position: relative;
+    display: -ms-grid !important;
+    display: grid !important;
+    grid-gap: 0px;
+    grid-template-areas: "content" !important;
+    -ms-grid-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+    -ms-grid-rows: 1fr;
+    grid-template-rows: repeat(auto-fit, minmax(100px, 1fr)) !important;
+}
 
 #masthead {
     width: auto;
@@ -55,19 +105,25 @@
     height: 66px;
 }
 
-    .fullscreen #masthead {
-        width: 100%;
-    }
+.fullscreen #masthead {
+    width: 100%;
+    grid-area: header;
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 2;
+    -ms-grid-row: 1;
+}
 
-    .fulldesk #masthead {
-        display: none;
-    }
-    .fulldesk #mastheadx {
-        display: none;
-    }
-    .fulldesk #p11deviceNameHeader {
-        display: none;
-    }
+.fulldesk #masthead {
+    display: none;
+}
+
+.fulldesk #mastheadx {
+    display: none;
+}
+
+.fulldesk #p11deviceNameHeader {
+    display: none;
+}
 
 #masthead .title {
     float: left;
@@ -91,122 +147,168 @@
     font-weight: bold;
 }
 
-#page_content {
-    /*max-height: calc(100vh - 108px);*/
-}
-    .fullscreen #page_content {
-        position: absolute;
-        top: 66px;
-        left: 90px;
-        right: 0px;
-        bottom: 0px;
-    }
-    .arg_hide #page_content {
-        left: 0px;
-    }
-    .fulldesk #page_content {
-        position: static;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-
 #page_leftbar {
-    height: calc(100vh - 66px);
+    -ms-grid-column: 1;
+    -ms-grid-row: 2;
+    -ms-grid-row-span: 3;
+    /* height: calc(100vh - 66px); */
     width: 90px;
-    position: absolute;
     z-index: 1000;
     background: #113962;
     background: linear-gradient(to bottom, #104893 0%,#113962 100%);
     color: white;
+    overflow-y: hidden;
+    display: none;
 }
-    .fullscreen #page_leftbar {
-        display: block;
-    }
-    .arg_hide #page_leftbar {
-        display: none;
-    }
-    .fulldesk #page_leftbar {
-        display: none;
-    }
+
+.fullscreen #page_leftbar {
+    grid-area: sidebar;
+    display: block;
+}
+
+.menu_stack #page_leftbar {
+    display: none;
+}
+
+.arg_hide #page_leftbar {
+    display: none;
+}
+
+.fulldesk #page_leftbar {
+    display: none;
+}
+
 
 #topbar {
-    /* height: 24px; */
     position: relative;
+    grid-area: nav;
+    -ms-grid-column: 2;
+    -ms-grid-row: 2;
 }
 
-    .fulldesk #topbar {
-        display: none;
-    }
+.fulldesk #topbar {
+    display: none;
+}
+
+.menu_stack #topbar, .login #topbar, .arg_hide #topbar {
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 2;
+    -ms-grid-row: 2;
+}
 
 .topbar_td {
     width: 100px;
     height: 24px;
     cursor: pointer;
 }
+
 .topbar_td_end {
     text-align: right;
     height: 24px;
 }
 
-#toggle {
+#uiMenuButton {
     cursor: pointer;
     color: white;
     position: absolute;
     top: 3px;
-    right: 6px
+    right: 6px;
 }
 
-#MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+#uiMenu {
+    position: absolute;
+    top: 17px;
+    right: 0;
+    background-color: #eee;
+    z-index: 10;
+    border-radius: 5px;
+    box-shadow: 1px 0px 10px 5px #333;
+    padding: 5px;
+}
+
+/* #UserDummyMenuSpan,  */
+#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
     width: 100%;
-    height: 22px
+    height: 24px;
+    color: white;
+    background-color: #808080;
+}
+
+.menu_stack #UserDummyMenu {
+    display: none;
 }
 
 #MainMenuSpan {
     display: table;
 }
-    .fullscreen #MainMenuSpan {
-        display: none;
-    }
-    .fulldesk #MainMenuSpan {
-        display: none;
-    }
+
+.fullscreen #MainMenuSpan {
+    display: none;
+}
+
+.fulldesk #MainMenuSpan {
+    display: none;
+}
+
+.menu_stack #MainMenuSpan {
+    display: block;
+}
 
 #column_l {
     position: relative;
     float: left;
-    width: 930px;
+    width: 100%;
+    box-sizing: border-box;
     margin: 0;
     padding: 0 15px;
     background-color: #fff;
-    /*max-height: calc(100vh - 111px);*/
+    /* max-height: calc(100vh - 151px); */
     min-width: unset;
 }
-.room4submenu {
-    max-height: calc(100vh - 159px) !important;
+
+.menu_stack.fullscreen.fulldesk #column_l {
+    -ms-grid-column: 1;
+    -ms-grid-row: 1;
+    -ms-grid-column-span: 2;
+    -ms-grid-row-span: 4;
 }
 
-    .fullscreen #column_l {
-        height: calc(100vh - 135px);
-        width: calc(100% - 30px);
-        overflow-y: auto;
-    }
+.fullscreen #column_l {
+    -ms-grid-column: 2;
+    -ms-grid-row: 3;
+    grid-area: content;
+    width: unset;
+    /* height: calc(100vh - 111px);
+        width: calc(100% - 30px); */
+    overflow-y: auto;
+}
 
-    .fulldesk #column_l {
-        width: 100%;
-        /*height: unset;*/
-        /*max-height: unset;*/
-        /*overflow-y: unset;*/
-        margin-left: unset;
-        padding: 0;
-        max-height:100vh;
-        height:100vh;
-        overflow-y:hidden;
-    }
-    .fulldesk #column_l_bottomgap {
-        display: none;
-    }
+.menu_stack.fullscreen #column_l, .login #column_l, .arg_hide #column_l {
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 2;
+    -ms-grid-row: 3;
+}
+
+.fulldesk #column_l {
+    height: 100%;
+    width: 100%;
+    height: unset;
+    margin-left: unset;
+    overflow-y: hidden;
+    padding: 0;
+    max-height: none;
+    -ms-grid-column: 1;
+    -ms-grid-row: 1;
+    background-color: rgb(0, 51, 102);
+}
+
+.fulldesk #column_l_bottomgap {
+    display: none;
+}
+
+.room4submenu {
+    min-height: calc(100vh - 159px);
+}
 
 #centralTable {
     width: 100%;
@@ -253,10 +355,13 @@
 }
 
 #passWarning {
-    padding-top:6px;
+    padding-top: 6px;
 }
 
 #footer {
+    -ms-grid-column: 2;
+    -ms-grid-row: 4;
+    grid-area: footer;
     clear: both;
     overflow: auto;
     width: 100%;
@@ -265,20 +370,29 @@
     padding-top: 5px;
     padding-bottom: 5px;
 }
-    .fulldesk #footer {
-        display: none;
-    }
+
+.fulldesk #footer {
+    display: none;
+}
+
+.menu_stack.fullscreen #footer, .login #footer, .arg_hide #footer {
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 2;
+    -ms-grid-row: 4;
+}
 
 /* Support for footer made with table */
 #footer table {
-    width:100%;
+    width: 100%;
     border-spacing: 10px;
     border-collapse: separate;
 }
+
 #footer td:first-child {
     text-align: left;
-    color:white;
+    color: white;
 }
+
 #footer td {
     padding: 0px;
     text-align: right;
@@ -292,6 +406,7 @@
     padding: 10px;
     color: white;
 }
+
 .footer2 {
     padding: 10px;
     text-align: right;
@@ -318,6 +433,12 @@
         text-decoration: none;
     }
 
+#verifyEmailId2 {
+    color: yellow;
+    margin-left: 3px;
+    cursor: pointer;
+}
+
 #dialog {
     z-index: 1000;
     background-color: #EEE;
@@ -335,6 +456,18 @@
     background-color: #003366;
     color: #FFF;
     border-radius: 5px 5px 0 0;
+    margin-bottom: 6px;
+}
+
+#id_dialogclose {
+    float: right;
+    padding: 3px;
+    margin-right: 3px;
+    cursor: pointer;
+}
+
+#id_dialogtitle {
+    padding: 5px;
 }
 
 #dialogBody {
@@ -347,10 +480,11 @@
     max-height: 260px;
     overflow-x: hidden;
     overflow-y: auto;
-    line-height: 160%
+    line-height: 160%;
 }
+
 .dialogTextLog {
-    font-size:10px
+    font-size: 10px;
 }
 
 #dialog1 {
@@ -360,17 +494,66 @@
 }
 
 #id_dialogMessage {
-    padding:10px;
+    padding: 10px;
 }
 
-#dialog2, #dialog3 {
-    margin: auto;
+#dialog2, #dialog3, #dialog7 {
     margin: 3px;
+}
+
+#d3uploadMode, #d3localFile {
+    float: right;
+    width: 260px;
+}
+
+#d3serveraction {
+    width: 100%;
+    background-color: #d3d9d6;
+    text-align: left;
+    padding: 3px;
+}
+
+#d3serverfiles {
+    width: 100%;
+    height: 150px;
+    background-color: white;
+    padding: 2px;
+    border: 1px solid gray;
+    overflow-y: scroll;
+}
+
+
+#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode {
+    float: right;
+    width: 200px;
+    height: 20px;
+}
+
+#dialog7 h4 {
+    width: 100%;
+    border-bottom: 1px solid gray;
+}
+
+#d7meshkvm div, #d7amtkvm div, #d3upload, #d3localmode {
+    margin: 3px 0 3px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#d7otherset {
+    display: block;
+    border: 1px solid #666;
+    width: 200px;
+    height: 60px;
+    overflow-y: scroll;
+    background-color: white;
 }
 
 #idx_dlgButtonBar {
     padding: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+    overflow: auto;
+    float: right;
 }
 
 #idx_dlgCancelButton {
@@ -390,7 +573,7 @@
 
 #ua_fileaccessquota {
     width: 80px;
-    text-align: right
+    text-align: right;
 }
 
 #broadcastMessage {
@@ -401,16 +584,18 @@
 
 #idx_deskFullBtn2 {
     float: left;
-    font-size: large;
+    font-size: 16px;
     cursor: pointer;
     display: none;
 }
-    .fulldesk #idx_deskFullBtn2 {
-        display: block;
-    }
-    .fulldesk #deskFullBtn {
-        display: none;
-    }
+
+.fulldesk #idx_deskFullBtn2 {
+    display: block;
+}
+
+.fulldesk #deskFullBtn {
+    display: none;
+}
 
 #p0message {
     margin: 50px;
@@ -418,7 +603,7 @@
 }
 
 #devListToolbarViewIcons {
-    float:right;
+    float: right;
 }
 
 #devListToolbarSpan {
@@ -426,11 +611,11 @@
     height: 24px;
     background-color: #d3d9d6;
     vertical-align: middle;
-    border-spacing: 0
+    border-spacing: 0;
 }
 
 #SearchInput {
-    width:120px;
+    width: 120px;
 }
 
 #devListToolbarView, #devListToolbarSort, #devListToolbarSize {
@@ -438,7 +623,7 @@
 }
 
 #refreshmap {
-    margin-left:5px;
+    margin-left: 5px;
 }
 
 /* Example if <table> is relplaced with <div><p> then image can be defined in css 
@@ -457,17 +642,19 @@
         margin-left: 60px;
     } */
 
-    #NoMeshesPanel a {
-        cursor: pointer;
-    }
-    #NoMeshesPanel table {
-        width: 100%;
-        padding: 20px
-    }
-    NoMeshesPanel img {
-        height: 48px;
-        width: 47px;
-    }
+#NoMeshesPanel a {
+    cursor: pointer;
+}
+
+#NoMeshesPanel table {
+    width: 100%;
+    padding: 20px;
+}
+
+NoMeshesPanel img {
+    height: 48px;
+    width: 47px;
+}
 
 #xdevices {
     max-height: calc(100vh - 239px);
@@ -482,6 +669,7 @@
     overflow: hidden;
     position: relative;
 }
+
 #xmapSearchResultsDlg {
     position: absolute;
     max-height: 280px;
@@ -492,6 +680,7 @@
     background-color: #EEE;
     box-shadow: 0px 0px 15px #666;
 }
+
 #xmapSearchResultsBck {
     width: 100%;
     background-color: #003366;
@@ -508,13 +697,15 @@
 .xmapItem {
     overflow-y: auto;
     width: 100%;
-    max-height: 240px
+    max-height: 240px;
 }
+
 .xmapItemSel1 {
     cursor: pointer;
     padding: 5px;
     background-color: #F5F5F5;
 }
+
 .xmapItemSel1 {
     cursor: pointer;
     padding: 5px;
@@ -522,7 +713,7 @@
 }
 
 #xmap-info-window {
-    text-shadow: 0px 0px 15px #FFF
+    text-shadow: 0px 0px 15px #FFF;
 }
 
 #p2 a, #p6 a, #p10 a {
@@ -534,19 +725,28 @@
     height: 103px;
     margin-bottom: 10px;
     margin-right: 20px;
-    float:right;
+    float: right;
 }
 
 .p2AccountActions {
     width: 15px;
     display: inline-block;
 }
-.p2AccountActions span {
-    color: green;
-    font-size: 10px;
+
+    .p2AccountActions span {
+        color: green;
+        font-size: 10px;
+    }
+
+#p2AccountActions .mL {
+    margin-left: 40px;
 }
 
-.newMeshBtn  {
+#p2ServerActions .mL {
+    margin-left: 40px;
+}
+
+.newMeshBtn {
     background: url(../images/icon-addnew.png) no-repeat 0px 0px;
     height: 12px;
     width: 12px;
@@ -555,8 +755,12 @@
     padding-left: 15px;
 }
 
-#p2noMeshFound, #p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors, #serverStats {
-    margin-left:40px;
+#p2noMeshFound, #serverStats {
+    margin-left: 40px;
+}
+
+#p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors {
+    margin-left: 0px;
 }
 
 .pTable {
@@ -566,25 +770,26 @@
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
-
 }
 
 #p3users {
     max-height: calc(100vh - 243px);
     overflow-y: auto;
 }
+
 .p3usersTable {
     width: 100%;
     border-spacing: 0;
     padding: 0;
 }
-.p3usersTable th {
-    color: gray;
-}
+
+    .p3usersTable th {
+        color: gray;
+    }
 
 #p3events {
-    height: calc(100vh - 243px);
-    overflow-y: scroll
+    height: calc(100vh - 245px);
+    overflow-y: scroll;
 }
 
 .p3eventsTable {
@@ -592,6 +797,7 @@
     border-spacing: 0;
     padding: 0;
 }
+
 .p3eventsTable {
     width: 100%;
     border-spacing: 0;
@@ -600,6 +806,10 @@
 
 #p4name, #p4email, #p4pass1, #p4pass2 {
     width: 230px;
+}
+
+#p5toolbar {
+    width: 100%;
 }
 
 #p5filehead {
@@ -621,7 +831,7 @@
 
 #p5filetable {
     width: 100%;
-    height: calc(100vh - 294px);
+    height: calc(100vh - 295px);
     overflow: auto;
     -webkit-user-select: none;
     position: relative;
@@ -634,6 +844,10 @@
     -webkit-user-select: none;
     background-color: lightsteelblue;
 }
+
+    #p5PublicShare div {
+        padding: 4px;
+    }
 
 #bigok {
     width: 256px;
@@ -672,8 +886,14 @@
     height: 60px;
 }
 
+#serverMainStats {
+    height: calc(100vh - 251px);
+    max-height: calc(100vh - 251px);
+    width: 100%;
+}
+
 #p10BackButton, #p11BackButton {
-    float:left
+    float: left;
 }
 
 #p10html2 table {
@@ -685,37 +905,71 @@
     border-collapse: collapse;
     width: 100%;
 }
-    #p10html2 thead {
-        background-color:#AAAAAA;
-        font-weight:bold;
-    }
+
+#p10html2 thead {
+    background-color: #AAAAAA;
+    font-weight: bold;
+}
+
     #p10html2 thead tr {
-        background-color:#AAAAAA;
-        font-weight:bold;
+        background-color: #AAAAAA;
+        font-weight: bold;
     }
+
     #p10html2 thead img {
         float: right;
         cursor: pointer;
         padding: 3px;
     }
-    #p10html2 .altBack {
-        background-color: #DDD;
-    }
+
+#p10html2 .altBack {
+    background-color: #DDD;
+}
 
 .pwState {
     display: table-cell;
     height: 16px;
 }
-.pwsYellow          { background-color: yellow; }
-.pwsTransparent     { background-color: #00000000; }
-.pwsBlack           { background-color: black; }
-.pwsBlue            { background-color: blue; }
-.pwsBlue2           { background-color: blue; }
-.pwsLightblue       { background-color: lightblue; }
-.pwsBlueviolet      { background-color: blueviolet; }
-.pwsDarkgreen       { background-color: darkgreen; }
-.pwsLightseagreen   { background-color: lightseagreen; }
-.pwsLightseagreen2  { background-color: lightseagreen; }
+
+.pwsYellow {
+    background-color: yellow;
+}
+
+.pwsTransparent {
+    background-color: #00000000;
+}
+
+.pwsBlack {
+    background-color: black;
+}
+
+.pwsBlue {
+    background-color: blue;
+}
+
+.pwsBlue2 {
+    background-color: blue;
+}
+
+.pwsLightblue {
+    background-color: lightblue;
+}
+
+.pwsBlueviolet {
+    background-color: blueviolet;
+}
+
+.pwsDarkgreen {
+    background-color: darkgreen;
+}
+
+.pwsLightseagreen {
+    background-color: lightseagreen;
+}
+
+.pwsLightseagreen2 {
+    background-color: lightseagreen;
+}
 
 .p10html3right {
     float: right;
@@ -724,6 +978,14 @@
 
 .p10html3left {
     font-size: x-small;
+}
+
+#dp10devicevalue {
+    width: 230px;
+}
+
+.fulldesk #p11 {
+    height: 100%;
 }
 
 #MainComputerImage {
@@ -746,7 +1008,7 @@
 
 #p12warning, #p12warning2, #p14warning, #p14warning2 {
     max-width: 100%;
-    display:none;
+    display: none;
     cursor: pointer;
     margin-bottom: 5px;
 }
@@ -767,6 +1029,7 @@
     right: 0;
     border-left: 2px solid lightgray;
 }
+
 #DeskToolsRefreshButton {
     float: right;
     padding: 3px;
@@ -776,6 +1039,7 @@
 a {
     color: #036;
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .i1 {
@@ -875,29 +1139,29 @@ a {
 }
 
 .lbbutton {
-    width:74px;
-    height:74px;
-    border-radius:5px;
-    background-color:white;
-    margin-left:8px;
-    margin-top:8px;
-    position:relative;
-    cursor:pointer;
-    opacity:0.5;
+    width: 74px;
+    height: 74px;
+    border-radius: 5px;
+    background-color: white;
+    margin-left: 8px;
+    margin-top: 8px;
+    position: relative;
+    cursor: pointer;
+    opacity: 0.5;
 }
 
-.lbbutton:hover {
-    opacity:1;
-}
+    .lbbutton:hover {
+        opacity: 1;
+    }
 
 .lbbuttonsel {
-    opacity:0.9;
+    opacity: 0.9;
 }
 
 .lbbuttonsel2 {
-    width:82px;
-    border-radius:5px 0px 0px 5px;
-    opacity:1;
+    width: 82px;
+    border-radius: 5px 0px 0px 5px;
+    opacity: 1;
 }
 
 .lb1 {
@@ -906,9 +1170,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
 .lb2 {
@@ -917,9 +1181,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
 .lb3 {
@@ -928,9 +1192,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
 .lb4 {
@@ -939,9 +1203,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
 .lb5 {
@@ -950,9 +1214,9 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
 .lb6 {
@@ -961,22 +1225,90 @@ a {
     width: 62px;
     cursor: pointer;
     border: none;
-    position:absolute;
+    position: absolute;
     top: 6px;
-    left: 6px
+    left: 6px;
 }
 
-.m0  { background : url(../images/images16.png)  -32px 0px; height : 16px; width : 16px; border:none; float:left }
-.m1  { background : url(../images/images16.png)  -16px 0px; height : 16px; width : 16px; border:none; float:left }
-.m2  { background : url(../images/images16.png)  -96px 0px; height : 16px; width : 16px; border:none; float:left }
-.m3  { background : url(../images/images16.png) -112px 0px; height : 16px; width : 16px; border:none; float:left }
-.si0 { background : url(../images/icons16.png)     0px 0px; height : 16px; width : 16px; border:none; float:left }
-.si1 { background : url(../images/icons16.png)   -16px 0px; height : 16px; width : 16px; border:none; float:left }
-.si2 { background : url(../images/icons16.png)   -32px 0px; height : 16px; width : 16px; border:none; float:left }
-.si3 { background : url(../images/icons16.png)   -48px 0px; height : 16px; width : 16px; border:none; float:left }
-.si4 { background : url(../images/icons16.png)   -64px 0px; height : 16px; width : 16px; border:none; float:left }
+.m0 {
+    background: url(../images/images16.png) -32px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
 
-.mi { background : url(../images/meshicon50.png) 0px 0px; height: 50px; width: 50px; cursor:pointer; border:none }
+.m1 {
+    background: url(../images/images16.png) -16px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.m2 {
+    background: url(../images/images16.png) -96px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.m3 {
+    background: url(../images/images16.png) -112px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si0 {
+    background: url(../images/icons16.png) 0px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si1 {
+    background: url(../images/icons16.png) -16px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si2 {
+    background: url(../images/icons16.png) -32px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si3 {
+    background: url(../images/icons16.png) -48px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si4 {
+    background: url(../images/icons16.png) -64px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.mi {
+    background: url(../images/meshicon50.png) 0px 0px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    border: none;
+}
 
 #floatframe {
     position: fixed;
@@ -1017,7 +1349,7 @@ a {
     .style3x.fullselect {
         background-color: #003366;
     }
-    
+
     .style3x.semiselect {
         background-color: #606060;
     }
@@ -1044,7 +1376,7 @@ a {
 .style6 {
     text-align: left;
     background-color: #D3D9D6;
-    padding:3px;
+    padding: 3px;
 }
 
 .style7 {
@@ -1076,6 +1408,11 @@ a {
 .auto-style1 {
     text-align: right;
     background-color: #D3D9D6;
+}
+
+#pTable .auto-style1 {
+    height: 100%;
+    float: right;
 }
 
 .icon2 {
@@ -1169,13 +1506,15 @@ a {
     background-repeat: repeat;
     background-attachment: scroll;
 }
-    #p3events .g1 {
-        float: none;
-    }
-    #p3users .g1 {
-        height:24px;
-        float: left;
-    }
+
+#p3events .g1 {
+    float: none;
+}
+
+#p3users .g1 {
+    height: 24px;
+    float: left;
+}
 
 .g1s {
     background-image: linear-gradient(to right, #ffffff 0%, #b9b9b9 100%);
@@ -1194,13 +1533,15 @@ a {
     background-repeat: repeat;
     background-attachment: scroll;
 }
-    #p3events .g2 {
-        float: none;
-    }
-    #p3users .g2 {
-        height:24px;
-        float: right;
-    }
+
+#p3events .g2 {
+    float: none;
+}
+
+#p3users .g2 {
+    height: 24px;
+    float: right;
+}
 
 .g2s {
     background-image: linear-gradient(to right, #b9b9b9 0%, #ffffff 100%);
@@ -1217,7 +1558,7 @@ a {
 .h1 {
     background-position: 0% 0%;
     width: 14px;
-    height: 100%;
+    height: 24px;
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
@@ -1231,13 +1572,13 @@ a {
     height: 100%;
     width: 20px;
     float: right;
-    background-color: #ffffff
+    background-color: #ffffff;
 }
 
 .h2 {
     background-position: 0% 0%;
     width: 14px;
-    height: 100%;
+    height: 24px;
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
@@ -1274,10 +1615,11 @@ a {
     float: left;
     margin-bottom: 2px;
 }
-    #p3users .bar {
-        width: 100%;
-        font-size: medium;
-    }
+
+#p3users .bar {
+    width: 100%;
+    font-size: medium;
+}
 
 .baricon {
     float: left;
@@ -1285,11 +1627,12 @@ a {
     width: 24px;
     background-color: white;
 }
+
     .baricon div {
         width: 16px;
         margin-top: 4px;
         margin-left: 2px;
-        height: 16px
+        height: 16px;
     }
 
 .bar2 {
@@ -1364,6 +1707,10 @@ a {
     /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
     filter: gray; /* IE6-9 */
     -webkit-filter: grayscale(100%) opacity(60%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    -moz-opacity: 0.60;
+    opacity: .60;
+    filter: alpha(opacity=60);
 }
 
 .unselectable {
@@ -1377,7 +1724,7 @@ a {
 
 .notifiyBox {
     position: absolute;
-    z-index:1000;
+    z-index: 1000;
     top: 50px;
     right: 26px;
     width: 300px;
@@ -1390,39 +1737,39 @@ a {
     -webkit-box-shadow: 2px 2px 4px #888;
     -moz-box-shadow: 2px 2px 4px #888;
     box-shadow: 2px 2px 4px #888;
-    max-height:200px;
+    max-height: 200px;
 }
 
-.notifiyBox:before {
-  content: ' ';
-  position: absolute;
-  width: 0;
-  height: 0;
-  right: 5px;
-  top: -30px;
-  border: 15px solid;
-  border-color: transparent #666 #666 transparent;
-}
+    .notifiyBox:before {
+        content: ' ';
+        position: absolute;
+        width: 0;
+        height: 0;
+        right: 5px;
+        top: -30px;
+        border: 15px solid;
+        border-color: transparent #666 #666 transparent;
+    }
 
-.notifiyBox:after {
-  content: ' ';
-  position: absolute;
-  width: 0;
-  height: 0;
-  right: 7px;
-  top: -24px;
-  border: 12px solid;
-  border-color: transparent #F0ECCD #F0ECCD transparent;
-}
+    .notifiyBox:after {
+        content: ' ';
+        position: absolute;
+        width: 0;
+        height: 0;
+        right: 7px;
+        top: -24px;
+        border: 12px solid;
+        border-color: transparent #F0ECCD #F0ECCD transparent;
+    }
 
 .notification {
-    width:100%;
-    min-height:30px;
+    width: 100%;
+    min-height: 30px;
 }
 
-.notification:hover {
-    background-color: #EFE8B6;
-}
+    .notification:hover {
+        background-color: #EFE8B6;
+    }
 
 #notificationCount {
     min-width: 28px;
@@ -1432,7 +1779,91 @@ a {
     text-align: center;
     margin: 8px;
     cursor: pointer;
-    padding: 4px
+    padding: 4px;
+}
+
+
+.deskareaicon {
+    cursor: pointer;
+    border: none;
+    float: right;
+    font-size: 130%;
+    margin-right: 4px;
+}
+
+.areaHead {
+    padding-left: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: #C0C0C0;
+}
+
+.areaProgress {
+    background-color: gray;
+}
+
+    .areaProgress div {
+        height: 2px;
+        width: 0%;
+        background-color: red;
+    }
+
+.areaFoot {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: #C0C0C0;
+}
+
+.toright2 {
+    float: right;
+    text-align: right;
+    padding-right: 4px;
+}
+
+#deskarea0 {
+    width: 100%;
+    padding: 0px;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+.fulldesk #deskarea0 {
+    min-width: 100%;
+    min-height: 0px;
+    height: 100%;
+    position: relative;
+    display: -ms-grid;
+    display: grid;
+    grid-gap: 0px;
+    grid-template-areas: "deskarea1" "deskarea2" "deskarea3" "deskarea4";
+    /* grid-template-columns: 90px auto; */
+    grid-template-rows: 24px max-content auto max-content;
+    -ms-grid-columns: 1fr;
+    -ms-grid-rows: 24px max-content 1fr max-content;
+}
+
+#deskarea0 .mR {
+    margin-right: 3px;
+}
+
+#deskarea1 {
+    grid-area: deskarea1;
+    -ms-grid-column: 1;
+    -ms-grid-row: 1;
+}
+
+
+#deskarea2 {
+    grid-area: deskarea2;
+    background-color: gray;
+    -ms-grid-column: 1;
+    -ms-grid-row: 2;
+}
+
+#progressbar {
+    height: 2px;
+    width: 0%;
+    background-color: red;
 }
 
 #deskarea3x {
@@ -1440,27 +1871,53 @@ a {
     text-align: center;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    max-height: calc(100vh - 296px); /*  + 24px hight of submenu */
+    height: calc(100vh - 296px);
+}
+
+.room4submenu #deskarea3x {
+    max-height: calc(100vh - 296px);
+    height: calc(100vh - 296px);
+}
+
+.fulldesk #deskarea3x {
+    grid-area: deskarea3;
+    max-height: none;
+    height: calc(100vh - 52px);
+    -ms-grid-column: 1;
+    -ms-grid-row: 3;
 }
 
 #DeskFocus {
     overflow: hidden;
     color: transparent;
-    border:3px dotted rgba(255,0,0,.2);
+    border: 3px dotted rgba(255,0,0,.2);
     position: absolute;
     border-radius: 5px;
 }
 
 #DeskParent {
-    overflow:hidden
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 #Desk {
     overflow: hidden;
     width: 100%;
     -ms-touch-action: none;
-    margin-left: 0px;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin: auto;
 }
-
 
 #deskToolsBar {
     position: absolute;
@@ -1469,25 +1926,63 @@ a {
     top: 5px;
     left: 4px;
     bottom: 26px;
-    background-color:lightgray;
+    background-color: lightgray;
     cursor: pointer;
 }
+
+#deskToolsArea {
+    position: absolute;
+    top: 26px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    background-color: lightgray;
+    text-align: left;
+}
+
+#deskToolsHeader {
+    border-bottom: 1px solid darkgray;
+    padding: 3px;
+}
+
+    #deskToolsHeader .colmn1 {
+        width: 50px;
+        padding-right: 5px;
+        float: left;
+    }
 
 #DeskToolsProcesses {
     overflow-y: scroll;
     position: absolute;
     top: 24px;
     bottom: 0px;
-    width: 100%
+    width: 100%;
 }
 
 .deskToolsBar {
     padding: 3px;
 }
-.deskToolsBar:hover {
-    background-color: #EFE8B6;
+
+    .deskToolsBar:hover {
+        background-color: #EFE8B6;
+    }
+
+#deskarea4 {
+    grid-area: deskarea4;
+    -ms-grid-column: 1;
+    -ms-grid-row: 4;
 }
 
+#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton {
+    float: right;
+    margin-top: 1px;
+    margin-right: 4px;
+    cursor: pointer;
+}
+
+#DeskClip, #DeskControlSpan, #specialkeylist {
+    margin-left: 6px;
+}
 
 .userTableHeader {
     border-bottom: 1pt solid lightgray;
@@ -1495,89 +1990,302 @@ a {
     padding-bottom: 4px;
 }
 
+#deskkeys {
+    margin-left: 6px;
+}
+
+#p12BackButton {
+    float: left;
+}
+
+#termTable {
+    width: 100%;
+    padding: 0px;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+#termarea3x {
+    background: black;
+    text-align: center;
+    height: 500px;
+    position: relative;
+}
+
+#Term {
+    background: black;
+    margin: 0;
+    padding: 0;
+}
+
+#p13toolbar {
+    width: 100%;
+}
+
+    #p13toolbar .areaHead {
+        border-bottom: 2px solid black;
+    }
+
+    #p13toolbar .areaHead2 {
+        width: 100%;
+        background-color: #d3d9d6;
+        text-align: left;
+        padding: 4px;
+    }
+
+    #p13toolbar .areaHead3 {
+        background-color: #E4E9E7;
+        height: 28px;
+    }
+
+#p13filetable {
+    width: 100%;
+    height: calc(100vh - 349px);
+    overflow: auto;
+    -webkit-user-select: none;
+}
+
+#p13bigok {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 200px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+#p13bigfail {
+    width: 256px;
+    overflow: hidden;
+    position: absolute;
+    left: 337px;
+    top: 200px;
+    text-align: center;
+    font-size: 1600%;
+    color: #AAAAAA;
+}
+
+.fulldesk #p14title {
+    margin-left: 16px;
+    margin-right: 16px;
+    color: #CCCCCC;
+}
+
+#p14iframe {
+    width: 100%;
+    height: calc(100vh - 222px);
+    border: 0;
+    overflow: hidden;
+}
+
+.fulldesk #p14iframe {
+    height: calc(100vh - 65px);
+}
+
+#p13toolbarBottom, #p13toolbar {
+    width: 100%;
+}
+
+#consoleTable {
+    width: 100%;
+    padding: 0px;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+#p15statetext {
+    padding: 4px;
+    height: 15px;
+}
+
+#p15agentConsole {
+    background: black;
+    margin: 0;
+    padding: 0;
+    color: lightgray;
+    width: 100%;
+    /*  */
+    height: calc(100vh - 299px);
+    max-height: calc(100vh - 299px);
+    position: relative;
+}
+
+.menu_stack.fullscreen #p15agentConsole {
+    height: calc(100vh - 305px);
+    max-height: calc(100vh - 305px);
+}
+
+#p15coreName {
+    padding: 4px;
+    display: inline-block;
+}
+
+#p15agentConsoleText {
+    /* position: absolute; */
+    margin: 0;
+    padding: 0;
+    top: 0;
+    bottom: 0;
+    /* left: 0;
+    right: 0; */
+    overflow-y: scroll;
+    overflow-x: auto;
+    height: calc(100vh - 299px);
+    max-height: calc(100vh - 299px);
+    width: 930px;
+}
+
+.menu_stack.fullscreen #p15agentConsoleText {
+    width: calc(100vw - 30px);
+    height: calc(100vh - 305px);
+    max-height: calc(100vh - 305px);
+}
+
+.fullscreen #p15agentConsoleText {
+    width: calc(100vw - 120px);
+}
+
+#p16events, #p31events {
+    max-height: calc(100vh - 269px);
+    overflow-y: auto;
+}
+
+#p40 {
+    height: calc(100vh - 191px);
+}
+
 .viewSelector {
-    width:32px;
-    height:32px;
-    background-color:#DDD;
-    border-radius:3px;
-    float:left;
-    margin-left:5px;
+    width: 32px;
+    height: 32px;
+    background-color: #DDD;
+    border-radius: 3px;
+    float: left;
+    margin-left: 5px;
     cursor: pointer;
     opacity: 0.3;
 }
 
 .viewSelectorSel {
-    background-color:#BBB;
+    background-color: #BBB;
     opacity: 0.8;
 }
 
-    .viewSelector:hover {
-        opacity: 0.5;
-        background-color:#AAA;
-    }
+.viewSelector:hover {
+    opacity: 0.5;
+    background-color: #AAA;
+}
 
 
 .viewSelector1 {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -0px 0px;
     height: 28px;
     width: 28px;
 }
 
 .viewSelector2 {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -28px 0px;
     height: 28px;
     width: 28px;
 }
 
 .viewSelector3 {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -56px 0px;
     height: 28px;
     width: 28px;
 }
 
 .viewSelector4 {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -84px 0px;
     height: 28px;
     width: 28px;
 }
 
 .viewSelector5 {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -112px 0px;
     height: 28px;
     width: 28px;
 }
 
+    .fulldesk .viewSelector5 {
+        background: url(../images/views.png) -252px 0px;
+    }
+
 .backButtonEx {
-    margin-left:2px;
-    margin-top:2px;
+    margin-left: 2px;
+    margin-top: 2px;
     background: url(../images/views.png) -140px 0px;
     height: 28px;
     width: 28px;
 }
 
-.backButton {
-    width:32px;
-    height:32px;
-    background-color:#DDD;
-    border-radius:3px;
-    float:left;
-    margin-right:5px;
+.uiSelector {
+    width: 32px;
+    height: 32px;
+    background-color: #BBB;
+    border-radius: 3px;
+    float: left;
+    margin: 3px;
     cursor: pointer;
     opacity: 0.3;
 }
+
+    .uiSelector:hover {
+        opacity: 0.5;
+        background-color: #AAA;
+    }
+
+.uiSelectorSel {
+    background-color: #BBB;
+    opacity: 0.8;
+}
+
+.uiSelector1 {
+    margin: 2px;
+    background: url(../images/views.png) -168px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.uiSelector2 {
+    margin: 2px;
+    background: url(../images/views.png) -196px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.uiSelector3 {
+    margin: 2px;
+    background: url(../images/views.png) -224px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.backButton {
+    width: 32px;
+    height: 32px;
+    background-color: #DDD;
+    border-radius: 3px;
+    float: left;
+    margin-right: 5px;
+    cursor: pointer;
+    opacity: 0.3;
+}
+
     .backButton:hover {
         opacity: 0.5;
-        background-color:#AAA;
+        background-color: #AAA;
     }
 
 .hoverButton {
