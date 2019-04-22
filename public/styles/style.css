@@ -657,7 +657,7 @@ NoMeshesPanel img {
 }
 
 #xdevices {
-    max-height: calc(100vh - 239px);
+    max-height: calc(100vh - 242px);
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -2075,7 +2075,7 @@ a {
 
 #p14iframe {
     width: 100%;
-    height: calc(100vh - 222px);
+    height: calc(100vh - 232px);
     border: 0;
     overflow: hidden;
 }
