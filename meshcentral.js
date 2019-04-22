@@ -155,7 +155,7 @@ function CreateMeshCentralServer(config, args) {
                 var arg = process.argv[i];
                 if (arg.length > 0) {
                     if (startLine.length > 0) startLine += ' ';
-                    if (arg.indexOf(' ') >= 0) { startLine += '"' + arg + '"'; } else { startLine += arg; }
+                    if ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0)) { startLine += '"' + arg + '"'; } else { startLine += arg; }
                 }
             }
             obj.launchChildServer(startLine);

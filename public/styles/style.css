@@ -2075,9 +2075,13 @@ a {
 
 #p14iframe {
     width: 100%;
-    height: calc(100vh - 232px);
+    height: calc(100vh - 218px);
     border: 0;
     overflow: hidden;
+}
+
+.menu_stack #p14iframe {
+    height: calc(100vh - 246px);
 }
 
 .fulldesk #p14iframe {
