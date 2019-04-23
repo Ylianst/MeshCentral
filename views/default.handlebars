@@ -2294,8 +2294,13 @@
 
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
-                if ((view < 3) && (sort == 0) && (meshcount > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) { r += '<a onclick=account_createMesh() title="Create a new group of devices." style=cursor:pointer>Add Device Group</a>&nbsp'; }
-                if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a></div>'; }
+                if ((view < 3) && (sort == 0) && (meshcount > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
+                    r += '<a onclick=account_createMesh() title="Create a new group of devices." style=cursor:pointer>Add Device Group</a>&nbsp';
+                }
+                if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
+                    r += '<a onclick=p10showMeshCmdDialog(0) style=cursor:pointer title="Download MeshCmd, a command line tool that performs many functions.">MeshCmd</a>&nbsp';
+                    if (navigator.platform.toLowerCase() == 'win32') { r += '<a onclick=p10showMeshRouterDialog() style=cursor:pointer title="Download MeshCentral Router, a TCP port mapping tool.">Router</a>&nbsp'; }
+                }
                 r += '</div><br/>';
 
                 QH('xdevices', r);
@@ -4114,8 +4119,16 @@
             setDialogMode(2, "Network Interfaces", 1, null, "<div id=d2netinfo>Loading...</div>", 'if' + currentNode._id );
             meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
         }
+        
+        // Show MeshCentral Router dialog
+        function p10showMeshRouterDialog() {
+            if (xxdialogMode) return;
+            var x = "<div>MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.</div><br />";
+            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer onclick=fileDownload("meshagents?meshaction=winrouter","MeshCentralRouter.exe")>MeshCentralRouter.exe</a>');
+            setDialogMode(2, "MeshCentral Router", 1, null, x, "fileDownload");
+        }
 
-        // Show router dialog
+        // Show MeshCmd dialog
         function p10showMeshCmdDialog(mode, nodeid) {
             if (xxdialogMode) return;
             var y = "<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px>";

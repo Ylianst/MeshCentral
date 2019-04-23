@@ -2339,6 +2339,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
                 res.send(JSON.stringify(meshaction, null, ' '));
+            } else if (req.query.meshaction == 'winrouter') {
+                var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
+                if (obj.fs.existsSync(p)) {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=MeshCentralRouter.exe' });
+                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                } else { res.sendStatus(404); }
             } else {
                 res.sendStatus(401);
             }
