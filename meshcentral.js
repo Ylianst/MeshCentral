@@ -1696,7 +1696,9 @@ function mainStart(args) {
         var ldap = false;
         var allsspi = true;
         var yubikey = false;
-        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
+        var domainCount = 0;
+        if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
+        if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
