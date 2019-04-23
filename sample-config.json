@@ -45,7 +45,7 @@
       "_TitlePicture": "title-sample.png",
       "_UserQuota": 1048576,
       "_MeshQuota": 248576,
-      "NewAccounts": 1,
+      "_NewAccounts": true,
       "_NewAccountEmailDomains": [ "sample.com" ],
       "Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_CertUrl": "https://192.168.2.106:443/",

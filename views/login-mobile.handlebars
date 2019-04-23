@@ -279,7 +279,7 @@
             validateLogin();
             validateCreate();
             if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
-            QV('newAccountDiv', ('{{{newAccount}}}' != '0') && ('{{{newAccount}}}' != 'false')); // If new accounts are not allowed, don't display the new account link.
+            QV('newAccountDiv', ('{{{newAccount}}}' === '1') || ('{{{newAccount}}}' === 'true')); // If new accounts are not allowed, don't display the new account link.
             if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));
             QV("resetAccountDiv", (emailCheck == true));
