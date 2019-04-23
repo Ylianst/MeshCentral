@@ -288,6 +288,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify({ action: 'authcookie', cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
                     break;
                 }
+            case 'logincookie':
+                {
+                    // Return a login cookie
+                    try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    break;
+                }
             case 'servertimelinestats':
                 {
                     if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
