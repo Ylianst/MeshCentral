@@ -182,21 +182,27 @@ UninstallAgent() {
   if [ $starttype -eq 1 ]
   then
     # systemd
-    rm -f /sbin/meshcmd /lib/systemd/system/meshagent.service
     systemctl disable meshagent
     systemctl stop meshagent
+    rm -f /sbin/meshcmd /lib/systemd/system/meshagent.service
+    systemctl stop meshagentDiagnostic &> /dev/null
+	rm -f /lib/systemd/system/meshagentDiagnostic.service &> /dev/null
   else
     if [ $starttype -eq 3 ]; then
         # initd
         service meshagent stop
         update-rc.d -f meshagent remove
         rm -f /sbin/meshcmd /etc/init.d/meshagent
+		service meshagentDiagnostic stop &> /dev/null
+		rm -f /etc/init.d/meshagentDiagnostic &> /dev/null
     elif [ $starttype -eq 2 ]; then
         # upstart 
         initctl stop meshagent
         rm -f /sbin/meshcmd 
         rm -f /etc/init/meshagent.conf
         rm -f /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
+		initctl stop meshagentDiagnostic &> /dev/null
+		rm -f /etc/init/meshagentDiagnostic.conf &> /dev/null
     fi
   fi
 
@@ -205,6 +211,8 @@ UninstallAgent() {
     rm -rf $installpath/*
     rmdir $installpath
   fi
+  rm -rf /usr/local/mesh_services/meshagentDiagnostic &> /dev/null
+  rm -f /etc/cron.d/meshagentDiagnostic_periodicStart &> /dev/null
   echo "Agent uninstalled."
 }
 
