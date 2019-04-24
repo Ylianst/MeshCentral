@@ -15,21 +15,17 @@
 
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domain, user) {
-    const fs = require('fs');
     const path = require('path');
     const common = parent.common;
-    const amtMeshRedirModule = require('./amt/amt-redir-mesh.js');
-    const amtMeshIderModule = require('./amt/amt-ider-module.js');
+    const amtMeshRedirModule = require('./amt-redir-mesh.js');
+    const amtMeshIderModule = require('./amt-ider-module.js');
 
-    console.log('New Server IDER session from ' + user.name);
+    //console.log('New Server IDER session from ' + user.name);
 
     var obj = {};
     obj.user = user;
     obj.domain = domain;
     obj.ider = null;
-
-    // Send a message to the user
-    //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
 
     // Disconnect this user
     obj.close = function (arg) {
@@ -49,7 +45,11 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
         ws.on('error', function (err) { console.log(err); obj.close(0); });
 
         // If the web socket is closed
-        ws.on('close', function (req) { obj.close(0); });
+        ws.on('close', function (req) {
+            // Close the IDER session
+            obj.ider.Stop();
+            delete obj.ider;
+        });
 
         // We are all set, start receiving data
         ws._socket.resume();
@@ -71,26 +71,34 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
                 break;
             }
             case 'selectorResponse': {
-                console.log('selectorResponse', command.args, req.query);
-
-                // TODO: Start IDER Session
-                // req.query = { host: 'node//KV6AZh3KoEzr71IaM40KqpBXQCn0qysZrMYlCOcvivNkV2$zfP2MXBE4IizBn1Bw', port: '16994', tls: '0', serverauth: '1', tls1only: '1' }
+                //console.log('selectorResponse', command.args, req.query);
+                // Start IDER Session
 
                 command.args = {
-                    floppyPath: '',
-                    cdromPath: '',
+                    floppyPath: 'C:\\Users\\Default.DESKTOP-M9I88C9\\Desktop\\AmtWebApp\\meshcentral-files\\domain\\user-admin\\msdos.img',
+                    cdromPath: 'C:\\Users\\Default.DESKTOP-M9I88C9\\Desktop\\AmtWebApp\\meshcentral-files\\domain\\user-admin\\recovery.iso',
                     iderStart: 1,
                     tlsv1only: true
                 };
 
-                obj.ider = amtMeshRedirModule.CreateAmtRedirect(amtMeshIderModule.CreateAmtRemoteIder(), domain, user, parent, parent.parent);
+                // Setup the IDER session
+                obj.ider = amtMeshRedirModule.CreateAmtRedirect(amtMeshIderModule.CreateAmtRemoteIder(parent, parent.parent), domain, user, parent, parent.parent);
                 obj.ider.onStateChanged = onIderStateChange;
-                obj.ider.m.debug = true;
-                obj.ider.m.floppy = command.args.floppyPath;
-                obj.ider.m.cdrom = command.args.cdromPath;
                 obj.ider.m.iderStart = command.args.iderStart;
                 obj.ider.m.sectorStats = iderSectorStats;
                 obj.ider.tlsv1only = req.query.tlsv1only;
+
+                // Setup disk images
+                if (obj.ider.m.diskSetup(command.args.floppyPath, command.args.cdromPath) != 0) {
+                    // Error with the disk images, unable to start IDER
+                    obj.ider.onStateChanged = null;
+                    obj.ider.m.sectorStats = null;
+                    delete obj.ider;
+                    obj.close();
+                    break;
+                }
+
+                // Start the IDER session
                 obj.ider.Start(req.query.host, req.query.port, req.query.tls);
 
                 break;
@@ -104,11 +112,20 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
     }
 
     function onIderStateChange(sender, state) {
-        console.log('onIderStateChange', state);
+        try { ws.send(JSON.stringify({ action: 'state', state: state })); } catch (ex) { }
+        switch (state) {
+            case 0:
+                // Close the websocket connection and clean up.
+                obj.ider.onStateChanged = null;
+                obj.ider.m.sectorStats = null;
+                obj.ider = null;
+                obj.close();
+                break;
+        }
     }
 
     function iderSectorStats(mode, dev, total, start, len) {
-        console.log('iderSectorStats', mode, dev, total, start, len);
+        try { ws.send(JSON.stringify({ action: 'stats', mode: mode, dev: dev, total: total, start: start, len: len, toAmt: obj.ider.m.bytesToAmt, fromAmt: obj.ider.m.bytesFromAmt })); } catch (ex) { }
     }
 
     return obj;

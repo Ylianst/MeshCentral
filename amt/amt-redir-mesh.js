@@ -15,14 +15,12 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.crypto = require('crypto');
     obj.constants = require('constants');
     obj.socket = null;
-    obj.host = null;
-    obj.port = 0;
     obj.amtuser = null;
     obj.amtpass = null;
     obj.connectstate = 0;
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
     obj.xtlsoptions = null;
-    obj.redirTrace = true;
+    obj.redirTrace = false;
 
     obj.amtaccumulator = "";
     obj.amtsequence = 1;
@@ -51,47 +49,38 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     const SITERIGHT_LOCKED = 32;
 
     function Debug(lvl) {
-        //if ((arguments.length < 2) && (lvl > meshcentral.debugLevel)) return;
+        if ((arguments.length < 2) || (lvl > meshcentral.debugLevel)) return;
         var a = []; for (var i = 1; i < arguments.length; i++) { a.push(arguments[i]); } console.log(...a);
     }
 
-    obj.Start = function (host, port, tls, tlsFingerprint, tlsoptions) {
-        console.log('Amt-Redir-Start', host, port, tls, tlsFingerprint, tlsoptions);
-
-        obj.host = host;
-        obj.port = port;
-        obj.xtls = tls;
-        obj.xtlsoptions = tlsoptions;
-        obj.xtlsFingerprint = tlsFingerprint;
+    obj.Start = function (nodeid) {
+        //console.log('Amt-Redir-Start', nodeid);
         obj.connectstate = 0;
-
-        Debug(1, 'AMT redir for ' + user.name + ' to ' + host + '.');
-
+        Debug(1, 'AMT redir for ' + user.name + ' to ' + nodeid + '.');
         obj.xxStateChange(1);
 
         // Fetch information about the target
-        meshcentral.db.Get(host, function (err, docs) {
-            if (docs.length == 0) { console.log('ERR: Node not found'); obj.xxStateChange(0); return; }
+        meshcentral.db.Get(nodeid, function (err, docs) {
+            if (docs.length == 0) { console.log('ERR: Node not found'); obj.Stop(); return; }
             var node = docs[0];
-            if (!node.intelamt) { console.log('ERR: Not AMT node'); obj.xxStateChange(0); return; }
+            if (!node.intelamt) { console.log('ERR: Not AMT node'); obj.Stop(); return; }
 
             obj.amtuser = node.intelamt.user;
             obj.amtpass = node.intelamt.pass;
-            console.log('amtuser', obj.amtuser, obj.amtpass);
 
             // Check if this user has permission to manage this computer
             var meshlinks = user.links[node.meshid];
-            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); obj.xxStateChange(0); return; }
+            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); obj.Stop(); return; }
 
             // Check what connectivity is available for this node
-            var state = meshcentral.GetConnectivityState(host);
+            var state = meshcentral.GetConnectivityState(nodeid);
             var conn = 0;
-            if (!state || state.connectivity == 0) { Debug(1, 'ERR: No routing possible (1)'); obj.xxStateChange(0); return; } else { conn = state.connectivity; }
+            if (!state || state.connectivity == 0) { Debug(1, 'ERR: No routing possible (1)'); obj.Stop(); return; } else { conn = state.connectivity; }
 
             /*
             // Check what server needs to handle this connection
             if ((meshcentral.multiServer != null) && (cookie == null)) { // If a cookie is provided, don't allow the connection to jump again to a different server
-                var server = obj.parent.GetRoutingServerId(req.query.host, 2); // Check for Intel CIRA connection
+                var server = obj.parent.GetRoutingServerId(nodeid, 2); // Check for Intel CIRA connection
                 if (server != null) {
                     if (server.serverid != obj.parent.serverId) {
                         // Do local Intel CIRA routing using a different server
@@ -100,7 +89,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                         return;
                     }
                 } else {
-                    server = obj.parent.GetRoutingServerId(req.query.host, 4); // Check for local Intel AMT connection
+                    server = obj.parent.GetRoutingServerId(nodeid, 4); // Check for local Intel AMT connection
                     if ((server != null) && (server.serverid != obj.parent.serverId)) {
                         // Do local Intel AMT routing using a different server
                         Debug(1, 'Route Intel AMT direct connection to peer server: ' + server.serverid);
@@ -112,10 +101,10 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
             */
 
             // If Intel AMT CIRA connection is available, use it
-            if (((conn & 2) != 0) && (meshcentral.mpsserver.ciraConnections[host] != null)) {
-                Debug(1, 'Opening Intel AMT CIRA transport connection to ' + host + '.');
+            if (((conn & 2) != 0) && (meshcentral.mpsserver.ciraConnections[nodeid] != null)) {
+                Debug(1, 'Opening Intel AMT CIRA transport connection to ' + nodeid + '.');
 
-                var ciraconn = meshcentral.mpsserver.ciraConnections[host];
+                var ciraconn = meshcentral.mpsserver.ciraConnections[nodeid];
 
                 /*
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
@@ -234,7 +223,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
             // If Intel AMT direct connection is possible, option a direct socket
             if ((conn & 4) != 0) {   // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
-                Debug(1, 'Opening Intel AMT transport connection to ' + host + '.');
+                Debug(1, 'Opening Intel AMT transport connection to ' + nodeid + '.');
 
                 /*
                 // When data is received from the web socket, forward the data into the associated TCP connection.
@@ -257,30 +246,28 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function () {
-                    Debug(1, 'Closing relay web socket connection to ' + req.query.host + '.');
+                    Debug(1, 'Closing relay web socket connection to ' + nodeid + '.');
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
                 });
                 */
 
-                if (tls != 1) {
+                // Compute target port
+                var port = 16994;
+                if (node.intelamt.tls > 0) port = 16995; // This is a direct connection, use TLS when possible
+
+                if (node.intelamt.tls != 1) {
                     // If this is TCP (without TLS) set a normal TCP socket
                     obj.forwardclient = new obj.net.Socket();
                     obj.forwardclient.setEncoding('binary');
-                    //obj.forwardclient.xstate = 0;
-                    //obj.forwardclient.forwardwsocket = ws;
                 } else {
                     // If TLS is going to be used, setup a TLS socket
                     var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     obj.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS Intel AMT transport connected to ' + node.host + ':' + port + '.');
-                        //ws.forwardclient.xstate = 1;
-                        //ws._socket.resume();
                         obj.xxOnSocketConnected();
                     });
                     obj.forwardclient.setEncoding('binary');
-                    //obj.forwardclient.xstate = 0;
-                    //obj.forwardclient.forwardwsocket = ws;
                 }
 
                 // When we receive data on the TCP connection, forward it back into the web socket connection.
@@ -295,21 +282,19 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                 // If the TCP connection closes, disconnect the associated web socket.
                 obj.forwardclient.on('close', function () {
                     Debug(1, 'Intel AMT transport relay disconnected from ' + node.host + '.');
-                    obj.xxStateChange(0);
+                    obj.Stop();
                 });
 
                 // If the TCP connection causes an error, disconnect the associated web socket.
                 obj.forwardclient.on('error', function (err) {
                     Debug(1, 'Intel AMT transport relay error from ' + node.host + ': ' + err.errno);
-                    obj.xxStateChange(0);
+                    obj.Stop();
                 });
 
                 if (node.intelamt.tls == 0) {
                     // A TCP connection to Intel AMT just connected, start forwarding.
                     obj.forwardclient.connect(port, node.host, function () {
                         Debug(1, 'Intel AMT transport connected to ' + node.host + ':' + port + '.');
-                        //obj.forwardclient.xstate = 1;
-                        //ws._socket.resume();
                         obj.xxOnSocketConnected();
                     });
                 }
@@ -324,7 +309,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.getPeerCertificate = function () { if (obj.xtls == true) { return obj.socket.getPeerCertificate(); } return null; }
 
     obj.xxOnSocketConnected = function () {
-        console.log('xxOnSocketConnected');
+        //console.log('xxOnSocketConnected');
         if (!obj.xtlsoptions || !obj.xtlsoptions.meshServerConnect) {
             if (obj.xtls == true) {
                 obj.xtlsCertificate = obj.socket.getPeerCertificate();
@@ -344,7 +329,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
         if (!data || obj.connectstate == -1) return;
         if (obj.redirTrace) { console.log("REDIR-RECV(" + data.length + "): " + webserver.common.rstr2hex(data)); }
         //obj.Debug("Recv(" + data.length + "): " + webserver.common.rstr2hex(data));
-        if (obj.protocol == 2 && obj.connectstate == 1) { return obj.m.ProcessData(data); } // KVM traffic, forward it directly.
+        if ((obj.protocol > 1) && (obj.connectstate == 1)) { return obj.m.ProcessData(data); } // KVM traffic, forward it directly.
         obj.amtaccumulator += data;
         //obj.Debug("Recv(" + obj.amtaccumulator.length + "): " + webserver.common.rstr2hex(obj.amtaccumulator));
         while (obj.amtaccumulator.length >= 1) {
@@ -377,7 +362,8 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                     var authDataBuf = obj.amtaccumulator.substring(9, 9 + authDataLen);
                     cmdsize = 9 + authDataLen;
                     if (authType == 0) {
-                        // ###BEGIN###{Mode-NodeWebkit}
+                        /*
+                        // This is Kerberos code, not supported in MeshCentral.
                         if (obj.amtuser == '*') {
                             if (authData.indexOf(2) >= 0) {
                                 // Kerberos Auth
@@ -402,7 +388,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                             }
                             else obj.Stop();
                         } else {
-                        // ###END###{Mode-NodeWebkit}
+                        */
                             // Query
                             if (authData.indexOf(4) >= 0) {
                                 // Good Digest Auth (With cnonce and all)
@@ -417,9 +403,9 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                                 obj.xxSend(String.fromCharCode(0x13, 0x00, 0x00, 0x00, 0x01) + webserver.common.IntToStrX(obj.amtuser.length + obj.amtpass.length + 2) + String.fromCharCode(obj.amtuser.length) + obj.amtuser + String.fromCharCode(obj.amtpass.length) + obj.amtpass);
                             }
                             else obj.Stop();
-                        // ###BEGIN###{Mode-NodeWebkit}
+                        /*
                         }
-                        // ###END###{Mode-NodeWebkit}
+                        */
                     }
                     else if ((authType == 3 || authType == 4) && status == 1) {
                         var curptr = 0;
@@ -455,6 +441,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                         obj.xxSend(buf);
                     }
                     else if (status == 0) { // Success
+                        /*
                         if (obj.protocol == 1) {
                             // Serial-over-LAN: Send Intel AMT serial settings...
                             var MaxTxBuffer = 10000;
@@ -468,6 +455,13 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                         if (obj.protocol == 2) {
                             // Remote Desktop: Send traffic directly...
                             obj.xxSend(String.fromCharCode(0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00));
+                        }
+                        */
+                        if (obj.protocol == 3) { // IDE-R
+                            obj.connectstate = 1;
+                            obj.m.Start();
+                            if (obj.amtaccumulator.length > cmdsize) { obj.m.ProcessData(obj.amtaccumulator.substring(cmdsize)); }
+                            cmdsize = obj.amtaccumulator.length;
                         }
                     } else obj.Stop();
                     break;
@@ -513,7 +507,6 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     }
     
     obj.xxSend = function (x) {
-        console.log("REDIR-SEND(" + x.length + ")");
         if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + webserver.common.rstr2hex(x)); }
         //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
         obj.forwardclient.write(new Buffer(x, "binary"));
