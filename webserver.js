@@ -57,6 +57,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.express = require('express');
     obj.meshAgentHandler = require('./meshagent.js');
     obj.meshRelayHandler = require('./meshrelay.js');
+    obj.meshIderHandler = require('./amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
@@ -1963,7 +1964,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
                     if (obj.parent.debugLevel >= 1) { // DEBUG
-                        Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
+                        Debug(2, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
                         if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + msg.toString('hex')); }
                     }
                     msg = msg.toString('binary');
@@ -2013,7 +2014,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // When we receive data on the TCP connection, forward it back into the web socket connection.
                 ws.forwardclient.on('data', function (data) {
                     if (obj.parent.debugLevel >= 1) { // DEBUG
-                        Debug(1, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
+                        Debug(2, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
                         if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
@@ -2631,6 +2632,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
             obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
+            obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
