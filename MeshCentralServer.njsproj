@@ -91,6 +91,9 @@
     <Compile Include="agents\recoverycore.js" />
     <Compile Include="agents\testsuite.js" />
     <Compile Include="agents\tinycore.js" />
+    <Compile Include="amt-ider-module.js" />
+    <Compile Include="amt-ider.js" />
+    <Compile Include="amt-redir-mesh.js" />
     <Compile Include="amtevents.js" />
     <Compile Include="amtscanner.js" />
     <Compile Include="amtscript.js" />
