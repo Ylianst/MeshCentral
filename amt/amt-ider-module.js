@@ -5,7 +5,9 @@
 */
 
 // Construct a Intel AMT IDER object
-module.exports.CreateAmtRemoteIder = function () {
+module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
+    const fs = require('fs');
+
     var obj = {};
     obj.debug = false;
     obj.protocol = 3; // IDER
@@ -23,17 +25,14 @@ module.exports.CreateAmtRemoteIder = function () {
     obj.iderStart = 0; // OnReboot = 0, Graceful = 1, Now = 2
     obj.floppy = null;
     obj.cdrom = null;
+    obj.floppySize = null;
+    obj.cdromSize = null;
     obj.floppyReady = false;
     obj.cdromReady = false;
-    //obj.pingTimer = null;
-    // ###BEGIN###{IDERStats}
     obj.sectorStats = null;
-    // ###END###{IDERStats}
 
     // Private method
-    // ###BEGIN###{IDERDebug}
     function debug() { if (obj.debug) { console.log(...arguments); } }
-    // ###END###{IDERDebug}
 
     // Mode Sense
     var IDE_ModeSence_LS120Disk_Page_Array = String.fromCharCode(0x00, 0x26, 0x31, 0x80, 0x00, 0x00, 0x00, 0x00, 0x05, 0x1E, 0x10, 0xA9, 0x08, 0x20, 0x02, 0x00, 0x03, 0xC3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xD0, 0x00, 0x00);
@@ -66,43 +65,74 @@ module.exports.CreateAmtRemoteIder = function () {
 
     // Private method, called by parent when it change state
     obj.xxStateChange = function (newstate) {
-        // ###BEGIN###{IDERDebug}
         debug("IDER-StateChange", newstate);
-        // ###END###{IDERDebug}
         if (newstate == 0) { obj.Stop(); }
         if (newstate == 3) { obj.Start(); }
     }
 
+    obj.diskSetup = function (floppyPath, cdromPath) {
+        debug(floppyPath, cdromPath);
+
+        // Setup floppy
+        if (floppyPath != null) {
+            try {
+                if (fs.existsSync(floppyPath) == false) { return 1; } // Floppy disk image does not exist
+                var stats = fs.statSync(floppyPath);
+                if ((stats.size % 512) != 0) { return 2; } // Invalid floppy disk image
+                obj.floppySize = stats.size;
+                obj.floppy = fs.openSync(floppyPath, 'r');
+            } catch (ex) { return 3; } // Unable to open floppy disk image
+        }
+
+        // Setup CDROM
+        if (cdromPath != null) {
+            try {
+                if (fs.existsSync(cdromPath) == false) { return 4; } // CDROM disk image does not exist
+                var stats = fs.statSync(cdromPath);
+                if ((stats.size % 512) != 0) { return 5; } // Invalid CDROM disk image
+                obj.cdromSize = stats.size;
+                obj.cdrom = fs.openSync(cdromPath, 'r');
+            } catch (ex) { return 6; } // Unable to open CDROM disk image
+        }
+
+        if ((obj.cdrom == null) && (obj.floppy == null)) { return 7; } // Can't do IDER with no disk images
+
+        return 0;
+    }
+
     obj.Start = function () {
-        // ###BEGIN###{IDERDebug}
         debug("IDER-Start");
-        debug(obj.floppy, obj.cdrom);
-        // ###END###{IDERDebug}
+
+        // Get ready
         obj.bytesToAmt = 0;
         obj.bytesFromAmt = 0;
         obj.inSequence = 0;
         obj.outSequence = 0;
 
         // Send first command, OPEN_SESSION
-        obj.SendCommand(0x40, ShortToStrX(obj.rx_timeout) + ShortToStrX(obj.tx_timeout) + ShortToStrX(obj.heartbeat) + IntToStrX(obj.version));
+        obj.SendCommand(0x40, webserver.common.ShortToStrX(obj.rx_timeout) + webserver.common.ShortToStrX(obj.tx_timeout) + webserver.common.ShortToStrX(obj.heartbeat) + webserver.common.IntToStrX(obj.version));
 
         // Send sector stats
-        // ###BEGIN###{IDERStats}
         if (obj.sectorStats) {
-            obj.sectorStats(0, 0, obj.floppy?(obj.floppy.size >> 9):0);
-            obj.sectorStats(0, 1, obj.cdrom ? (obj.cdrom.size >> 11) : 0);
+            obj.sectorStats(0, 0, obj.floppy ? (obj.floppySize >> 9) : 0);
+            obj.sectorStats(0, 1, obj.cdrom ? (obj.cdromSize >> 11) : 0);
         }
-        // ###END###{IDERStats}
-
-        // Setup the ping timer
-        //obj.pingTimer = setInterval(function () { obj.SendCommand(0x44); }, 5000);
     }
 
     obj.Stop = function () {
-        // ###BEGIN###{IDERDebug}
         debug("IDER-Stop");
-        // ###END###{IDERDebug}
-        //if (obj.pingTimer) { clearInterval(obj.pingTimer); obj.pingTimer = null; }
+
+        // Close the files
+        if (obj.floppy) { fs.close(obj.floppy); delete obj.floppy; }
+        if (obj.cdrom) { fs.close(obj.cdrom); delete obj.cdrom; }
+
+        // Clean up
+        obj.floppySize = 0;
+        obj.cdromSize = 0;
+        obj.floppyReady = false;
+        obj.cdromReady = false;
+
+        // Stop the redirection connection
         obj.parent.Stop();
     }
 
@@ -110,18 +140,14 @@ module.exports.CreateAmtRemoteIder = function () {
     obj.ProcessData = function (data) {
         obj.bytesFromAmt += data.length;
         obj.acc += data;
-        // ###BEGIN###{IDERDebug}
-        debug('IDER-ProcessData', obj.acc.length, rstr2hex(obj.acc));
-        // ###END###{IDERDebug}
+        debug('IDER-ProcessData', obj.acc.length, webserver.common.rstr2hex(obj.acc));
 
         // Process as many commands as possible
         while (true) {
             var len = obj.ProcessDataEx();
             if (len == 0) return;
-            if (obj.inSequence != ReadIntX(obj.acc, 4)) {
-                // ###BEGIN###{IDERDebug}
-                debug('ERROR: Out of sequence', obj.inSequence, ReadIntX(obj.acc, 4));
-                // ###END###{IDERDebug}
+            if (obj.inSequence != webserver.common.ReadIntX(obj.acc, 4)) {
+                debug('ERROR: Out of sequence', obj.inSequence, webserver.common.ReadIntX(obj.acc, 4));
                 obj.Stop();
                 return;
             }
@@ -135,12 +161,10 @@ module.exports.CreateAmtRemoteIder = function () {
         if (data == null) { data = ''; }
         var attributes = ((cmdid > 50) && (completed == true)) ? 2 : 0;
         if (dma) { attributes += 1; }
-        var x = String.fromCharCode(cmdid, 0, 0, attributes) + IntToStrX(obj.outSequence++) + data;
+        var x = String.fromCharCode(cmdid, 0, 0, attributes) + webserver.common.IntToStrX(obj.outSequence++) + data;
         obj.parent.xxSend(x);
         obj.bytesToAmt += x.length;
-        // ###BEGIN###{IDERDebug}
-        if (cmdid != 0x4B) { debug('IDER-SendData', x.length, rstr2hex(x)); }
-        // ###END###{IDERDebug}
+        if (cmdid != 0x4B) { debug('IDER-SendData', x.length, webserver.common.rstr2hex(x)); }
     }
 
     // CommandEndResponse (SCSI_SENSE)
@@ -185,51 +209,39 @@ module.exports.CreateAmtRemoteIder = function () {
                 obj.iderinfo.minor = obj.acc.charCodeAt(9);
                 obj.iderinfo.fwmajor = obj.acc.charCodeAt(10);
                 obj.iderinfo.fwminor = obj.acc.charCodeAt(11);
-                obj.iderinfo.readbfr = ReadShortX(obj.acc, 16);
-                obj.iderinfo.writebfr = ReadShortX(obj.acc, 18);
+                obj.iderinfo.readbfr = webserver.common.ReadShortX(obj.acc, 16);
+                obj.iderinfo.writebfr = webserver.common.ReadShortX(obj.acc, 18);
                 obj.iderinfo.proto = obj.acc.charCodeAt(21);
-                obj.iderinfo.iana = ReadIntX(obj.acc, 25);
-                // ###BEGIN###{IDERDebug}
+                obj.iderinfo.iana = webserver.common.ReadIntX(obj.acc, 25);
                 debug(obj.iderinfo);
-                // ###END###{IDERDebug}
 
                 if (obj.iderinfo.proto != 0) {
-                    // ###BEGIN###{IDERDebug}
                     debug("Unknown proto", obj.iderinfo.proto);
-                    // ###END###{IDERDebug}
                     obj.Stop();
                 }
                 if (obj.iderinfo.readbfr > 8192) {
-                    // ###BEGIN###{IDERDebug}
                     debug("Illegal read buffer size", obj.iderinfo.readbfr);
-                    // ###END###{IDERDebug}
                     obj.Stop();
                 }
                 if (obj.iderinfo.writebfr > 8192) {
-                    // ###BEGIN###{IDERDebug}
                     debug("Illegal write buffer size", obj.iderinfo.writebfr);
-                    // ###END###{IDERDebug}
                     obj.Stop();
                 }
 
-                if (obj.iderStart == 0) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x08)); } // OnReboot
-                else if (obj.iderStart == 1) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x10)); } // Graceful
-                else if (obj.iderStart == 2) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x18)); } // Now
+                if (obj.iderStart == 0) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x08)); } // OnReboot
+                else if (obj.iderStart == 1) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x10)); } // Graceful
+                else if (obj.iderStart == 2) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x18)); } // Now
                 //obj.SendDisableEnableFeatures(1); // GetSupportedFeatures
                 return 30 + len;
             case 0x43: // CLOSE
-                // ###BEGIN###{IDERDebug}
                 debug('CLOSE');
-                // ###END###{IDERDebug}
                 obj.Stop();
                 return 8;
             case 0x44: // KEEPALIVEPING
                 obj.SendCommand(0x45); // Send PONG back
                 return 8;
             case 0x45: // KEEPALIVEPONG
-                // ###BEGIN###{IDERDebug}
                 debug('PONG');
-                // ###END###{IDERDebug}
                 return 8;
             case 0x46: // RESETOCCURED
                 if (obj.acc.length < 9) return 0;
@@ -237,59 +249,45 @@ module.exports.CreateAmtRemoteIder = function () {
                 if (g_media === null) {
                     // No operations are pending
                     obj.SendCommand(0x47); // Send ResetOccuredResponse
-                    // ###BEGIN###{IDERDebug}
                     debug('RESETOCCURED1', resetMask);
-                    // ###END###{IDERDebug}
                 } else {
                     // Operations are being done, sent the reset once completed.
                     g_reset = true;
-                    // ###BEGIN###{IDERDebug}
                     debug('RESETOCCURED2', resetMask);
-                    // ###END###{IDERDebug}
                 }
                 return 9;
             case 0x49: // STATUS_DATA - DisableEnableFeaturesReply
                 if (obj.acc.length < 13) return 0;
                 var type = obj.acc.charCodeAt(8);
-                var value = ReadIntX(obj.acc, 9);
-                // ###BEGIN###{IDERDebug}
+                var value = webserver.common.ReadIntX(obj.acc, 9);
                 debug('STATUS_DATA', type, value);
-                // ###END###{IDERDebug}
                 switch (type)
                 {
                     case 1: // REGS_AVAIL
                         if (value & 1) {
-                            if (obj.iderStart == 0) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x08)); } // OnReboot
-                            else if (obj.iderStart == 1) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x10)); } // Graceful
-                            else if (obj.iderStart == 2) { obj.SendDisableEnableFeatures(3, IntToStrX(0x01 + 0x18)); } // Now
+                            if (obj.iderStart == 0) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x08)); } // OnReboot
+                            else if (obj.iderStart == 1) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x10)); } // Graceful
+                            else if (obj.iderStart == 2) { obj.SendDisableEnableFeatures(3, webserver.common.IntToStrX(0x01 + 0x18)); } // Now
                         }
                         break;
                     case 2: // REGS_STATUS
                         obj.enabled = (value & 2) ? true : false;
-                        // ###BEGIN###{IDERDebug}
                         debug("IDER Status: " + obj.enabled);
-                        // ###END###{IDERDebug}
                         break;
                     case 3: // REGS_TOGGLE
                         if (value != 1) {
-                            // ###BEGIN###{IDERDebug}
                             debug("Register toggle failure");
-                            // ###END###{IDERDebug}
                         } //else { obj.SendDisableEnableFeatures(2); }
                         break;
                 }
                 return 13;
             case 0x4A: // ERROR OCCURED
                 if (obj.acc.length < 11) return 0;
-                // ###BEGIN###{IDERDebug}
                 debug('IDER: ABORT', obj.acc.charCodeAt(8));
-                // ###END###{IDERDebug}
                 //obj.Stop();
                 return 11;
             case 0x4B: // HEARTBEAT
-                // ###BEGIN###{IDERDebug}
                 //debug('HEARTBEAT');
-                // ###END###{IDERDebug}
                 return 8;
             case 0x50: // COMMAND WRITTEN
                 if (obj.acc.length < 28) return 0;
@@ -297,24 +295,18 @@ module.exports.CreateAmtRemoteIder = function () {
                 var deviceFlags = obj.acc.charCodeAt(14);
                 var cdb = obj.acc.substring(16, 28);
                 var featureRegister = obj.acc.charCodeAt(9);
-                // ###BEGIN###{IDERDebug}
-                debug('SCSI_CMD', device, rstr2hex(cdb), featureRegister, deviceFlags);
-                // ###END###{IDERDebug}
+                debug('SCSI_CMD', device, webserver.common.rstr2hex(cdb), featureRegister, deviceFlags);
                 handleSCSI(device, cdb, featureRegister, deviceFlags);
                 return 28;
             case 0x53: // DATA FROM HOST
                 if (obj.acc.length < 14) return 0;
-                var len = ReadShortX(obj.acc, 9);
+                var len = webserver.common.ReadShortX(obj.acc, 9);
                 if (obj.acc.length < (14 + len)) return 0;
-                // ###BEGIN###{IDERDebug}
                 debug('SCSI_WRITE, len = ' + (14 + len));
-                // ###END###{IDERDebug}
                 obj.SendCommand(0x51, String.fromCharCode(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x87, 0x70, 0x03, 0x00, 0x00, 0x00, 0xa0, 0x51, 0x07, 0x27, 0x00), true);
                 return 14 + len;
             default:
-                // ###BEGIN###{IDERDebug}
                 debug('Unknown IDER command', obj.acc[0]);
-                // ###END###{IDERDebug}
                 obj.Stop();
                 break;
         }
@@ -329,9 +321,7 @@ module.exports.CreateAmtRemoteIder = function () {
         switch(cdb.charCodeAt(0))
         {
             case 0x00: // TEST_UNIT_READY:
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: TEST_UNIT_READY", dev);
-                // ###END###{IDERDebug}
                 switch (dev) {
                     case 0xA0: // DEV_FLOPPY
                         if (obj.floppy == null) { obj.SendCommandEndResponse(1, 0x02, dev, 0x3a, 0x00); return -1; }
@@ -342,9 +332,7 @@ module.exports.CreateAmtRemoteIder = function () {
                         if (obj.cdromReady == false) { obj.cdromReady = true; obj.SendCommandEndResponse(1, 0x06, dev, 0x28, 0x00); return -1; } // Switch to ready
                         break;
                     default:
-                        // ###BEGIN###{IDERDebug}
                         debug("SCSI Internal error 3", dev);
-                        // ###END###{IDERDebug}
                         return -1;
                 }
                 obj.SendCommandEndResponse(1, 0x00, dev, 0x00, 0x00); // Indicate ready
@@ -353,32 +341,24 @@ module.exports.CreateAmtRemoteIder = function () {
                 lba = ((cdb.charCodeAt(1) & 0x1f) << 16) + (cdb.charCodeAt(2) << 8) + cdb.charCodeAt(3);
                 len = cdb.charCodeAt(4);
                 if (len == 0) { len = 256; }
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: READ_6", dev, lba, len);
-                // ###END###{IDERDebug}
                 sendDiskData(dev, lba, len, featureRegister);
                 break;
             case 0x0a: // WRITE_6
                 lba = ((cdb.charCodeAt(1) & 0x1f) << 16) + (cdb.charCodeAt(2) << 8) + cdb.charCodeAt(3);
                 len = cdb.charCodeAt(4);
                 if (len == 0) { len = 256; }
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: WRITE_6", dev, lba, len);
-                // ###END###{IDERDebug}
                 obj.SendCommandEndResponse(1, 0x02, dev, 0x3a, 0x00); // Write is not supported, remote no medium.
                 return -1;
                 /*
             case 0x15: // MODE_SELECT_6:
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI ERROR: MODE_SELECT_6", dev);
-                // ###END###{IDERDebug}
                 obj.SendCommandEndResponse(1, 0x05, dev, 0x20, 0x00);
                 return -1;
                 */
             case 0x1a: // MODE_SENSE_6
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: MODE_SENSE_6", dev);
-                // ###END###{IDERDebug}
                 if ((cdb.charCodeAt(2) == 0x3f) && (cdb.charCodeAt(3) == 0x00)) {
                     var a = 0, b = 0;
                     switch (dev) {
@@ -393,9 +373,7 @@ module.exports.CreateAmtRemoteIder = function () {
                             b = 0x80;
                             break;
                         default:
-                            // ###BEGIN###{IDERDebug}
                             debug("SCSI Internal error 6", dev);
-                            // ###END###{IDERDebug}
                             return -1;
                     }
                     obj.SendDataToHost(dev, true, String.fromCharCode(0, a, b, 0), featureRegister & 1);
@@ -410,97 +388,75 @@ module.exports.CreateAmtRemoteIder = function () {
                 obj.SendCommandEndResponse(1, 0, dev);
                 break;
             case 0x1e: // LOCK_UNLOCK - ALLOW_MEDIUM_REMOVAL
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: ALLOW_MEDIUM_REMOVAL", dev);
-                // ###END###{IDERDebug}
                 if ((dev == 0xA0) && (obj.floppy == null)) { obj.SendCommandEndResponse(1, 0x02, dev, 0x3a, 0x00); return -1; }
                 if ((dev == 0xB0) && (obj.cdrom == null)) { obj.SendCommandEndResponse(1, 0x02, dev, 0x3a, 0x00); return -1; }
                 obj.SendCommandEndResponse(1, 0x00, dev, 0x00, 0x00);
                 break;
             case 0x23: // READ_FORMAT_CAPACITIES (Floppy only)
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: READ_FORMAT_CAPACITIES", dev);
-                // ###END###{IDERDebug}
-                var buflen = ReadShort(cdb, 7);
+                var buflen = webserver.common.ReadShort(cdb, 7);
                 var mediaStatus = 0, sectors;
                 var mcSize = buflen / 8; // Capacity descriptor size is 8
 
                 switch (dev) {
                     case 0xA0: // DEV_FLOPPY
-                        if ((obj.floppy == null) || (obj.floppy.size == 0)) { obj.SendCommandEndResponse(0, 0x05, dev, 0x24, 0x00); return -1; }
-                        sectors = (obj.floppy.size >> 9) - 1;
+                        if ((obj.floppy == null) || (obj.floppySize == 0)) { obj.SendCommandEndResponse(0, 0x05, dev, 0x24, 0x00); return -1; }
+                        sectors = (obj.floppySize >> 9) - 1;
                         break;
                     case 0xB0: // DEV_CDDVD
-                        if ((obj.cdrom == null) || (obj.cdrom.size == 0)) { obj.SendCommandEndResponse(0, 0x05, dev, 0x24, 0x00); return -1; }
-                        sectors = (obj.cdrom.size >> 11) - 1; // Number 2048 byte blocks
+                        if ((obj.cdrom == null) || (obj.cdromSize == 0)) { obj.SendCommandEndResponse(0, 0x05, dev, 0x24, 0x00); return -1; }
+                        sectors = (obj.cdromSize >> 11) - 1; // Number 2048 byte blocks
                         break;
                     default:
-                        // ###BEGIN###{IDERDebug}
                         debug("SCSI Internal error 4", dev);
-                        // ###END###{IDERDebug}
                         return -1;
                 }
 
-                obj.SendDataToHost(dev, true, IntToStr(8) + String.fromCharCode(0x00, 0x00, 0x0b, 0x40, 0x02, 0x00, 0x02, 0x00), featureRegister & 1);
+                obj.SendDataToHost(dev, true, webserver.common.IntToStr(8) + String.fromCharCode(0x00, 0x00, 0x0b, 0x40, 0x02, 0x00, 0x02, 0x00), featureRegister & 1);
                 break;
             case 0x25: // READ_CAPACITY
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: READ_CAPACITY", dev);
-                // ###END###{IDERDebug}
                 var len = 0;
                 switch(dev)
                 {
                     case 0xA0: // DEV_FLOPPY
-                        if ((obj.floppy == null) || (obj.floppy.size == 0)) { obj.SendCommandEndResponse(0, 0x02, dev, 0x3a, 0x00); return -1; }
-                        if (obj.floppy != null) { len = (obj.floppy.size >> 9) - 1; }
-                        // ###BEGIN###{IDERDebug}
+                        if ((obj.floppy == null) || (obj.floppySize == 0)) { obj.SendCommandEndResponse(0, 0x02, dev, 0x3a, 0x00); return -1; }
+                        if (obj.floppy != null) { len = (obj.floppySize >> 9) - 1; }
                         debug('DEV_FLOPPY', len); // Number 512 byte blocks
-                        // ###END###{IDERDebug}
                         break;
                     case 0xB0: // DEV_CDDVD
-                        if ((obj.floppy == null) || (obj.floppy.size == 0)) { obj.SendCommandEndResponse(0, 0x02, dev, 0x3a, 0x00); return -1; }
-                        if (obj.cdrom != null) { len = (obj.cdrom.size >> 11) - 1; } // Number 2048 byte blocks
-                        // ###BEGIN###{IDERDebug}
+                        if ((obj.floppy == null) || (obj.floppySize == 0)) { obj.SendCommandEndResponse(0, 0x02, dev, 0x3a, 0x00); return -1; }
+                        if (obj.cdrom != null) { len = (obj.cdromSize >> 11) - 1; } // Number 2048 byte blocks
                         debug('DEV_CDDVD', len);
-                        // ###END###{IDERDebug}
                         break;
                     default:
-                        // ###BEGIN###{IDERDebug}
                         debug("SCSI Internal error 4", dev);
-                        // ###END###{IDERDebug}
                         return -1;
                 }
                 //if (dev == 0xA0) { dev = 0x00; } else { dev = 0x10; } // Weird but seems to work.
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: READ_CAPACITY2", dev, deviceFlags);
-                // ###END###{IDERDebug}
-                obj.SendDataToHost(deviceFlags, true, IntToStr(len) + String.fromCharCode(0, 0, ((dev == 0xB0) ? 0x08 : 0x02), 0), featureRegister & 1);
+                obj.SendDataToHost(deviceFlags, true, webserver.common.IntToStr(len) + String.fromCharCode(0, 0, ((dev == 0xB0) ? 0x08 : 0x02), 0), featureRegister & 1);
                 break;
             case 0x28: // READ_10
-                lba = ReadInt(cdb, 2);
-                len = ReadShort(cdb, 7);
-                // ###BEGIN###{IDERDebug}
+                lba = webserver.common.ReadInt(cdb, 2);
+                len = webserver.common.ReadShort(cdb, 7);
                 debug("SCSI: READ_10", dev, lba, len);
-                // ###END###{IDERDebug}
                 sendDiskData(dev, lba, len, featureRegister);
                 break;
             case 0x2a: // WRITE_10 (Floppy only)
             case 0x2e: // WRITE_AND_VERIFY (Floppy only)
-                lba = ReadInt(cdb, 2);
-                len = ReadShort(cdb, 7);
-                // ###BEGIN###{IDERDebug}
+                lba = webserver.common.ReadInt(cdb, 2);
+                len = webserver.common.ReadShort(cdb, 7);
                 debug("SCSI: WRITE_10", dev, lba, len);
-                // ###END###{IDERDebug}
                 obj.SendGetDataFromHost(dev, 512 * len); // Floppy writes only, accept sectors of 512 bytes
                 break;
             case 0x43: // READ_TOC (CD Audio only)
-                var buflen = ReadShort(cdb, 7);
+                var buflen = webserver.common.ReadShort(cdb, 7);
                 var msf = cdb.charCodeAt(1) & 0x02; 
                 var format = cdb.charCodeAt(2) & 0x07;
                 if (format == 0) { format = cdb.charCodeAt(9) >> 6; }
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: READ_TOC, dev=" + dev + ", buflen=" + buflen + ", msf=" + msf + ", format=" + format);
-                // ###END###{IDERDebug}
 
                 switch (dev) {
                     case 0xA0: // DEV_FLOPPY
@@ -510,9 +466,7 @@ module.exports.CreateAmtRemoteIder = function () {
                         // NOP
                         break;
                     default:
-                        // ###BEGIN###{IDERDebug}
                         debug("SCSI Internal error 9", dev);
-                        // ###END###{IDERDebug}
                         return -1;
                 }
 
@@ -527,17 +481,15 @@ module.exports.CreateAmtRemoteIder = function () {
                 break;
             case 0x46: // GET_CONFIGURATION
                 var sendall = (cdb.charCodeAt(1) != 2);
-                var firstcode = ReadShort(cdb, 2);
-                var buflen = ReadShort(cdb, 7);
+                var firstcode = webserver.common.ReadShort(cdb, 2);
+                var buflen = webserver.common.ReadShort(cdb, 7);
 
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: GET_CONFIGURATION", dev, sendall, firstcode, buflen);
-                // ###END###{IDERDebug}
 
-                if (buflen == 0) { obj.SendDataToHost(dev, true, IntToStr(0x003c) + IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
+                if (buflen == 0) { obj.SendDataToHost(dev, true, webserver.common.IntToStr(0x003c) + webserver.common.IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
 
                 // Set the header
-                var r = IntToStr(0x0008);
+                var r = webserver.common.IntToStr(0x0008);
 
                 // Add the data
                 if (firstcode == 0) { r += IDE_CD_ConfigArrayProfileList; }
@@ -550,7 +502,7 @@ module.exports.CreateAmtRemoteIder = function () {
                 if ((firstcode == 0x105) || (sendall && (firstcode < 0x105))) { r += IDE_CD_Timeout; }
 
                 // Set the length
-                r = IntToStr(r.length) + r;
+                r = webserver.common.IntToStr(r.length) + r;
 
                 // Cut the length to buflen if needed
                 if (r.length > buflen) { r = r.substring(0, buflen); }
@@ -559,14 +511,10 @@ module.exports.CreateAmtRemoteIder = function () {
                 return -1;
             case 0x4a: // GET_EV_STATUS - GET_EVENT_STATUS_NOTIFICATION
                 //var buflen = (cdb.charCodeAt(7) << 8) + cdb.charCodeAt(8);
-                //if (buflen == 0) { obj.SendDataToHost(dev, true, IntToStr(0x003c) + IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
-                // ###BEGIN###{IDERDebug}
+                //if (buflen == 0) { obj.SendDataToHost(dev, true, webserver.common.IntToStr(0x003c) + webserver.common.IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
                 debug("SCSI: GET_EVENT_STATUS_NOTIFICATION", dev, cdb.charCodeAt(1), cdb.charCodeAt(4), cdb.charCodeAt(9));
-                // ###END###{IDERDebug}
                 if ((cdb.charCodeAt(1) != 0x01) && (cdb.charCodeAt(4) != 0x10)) {
-                    // ###BEGIN###{IDERDebug}
                     debug('SCSI ERROR');
-                    // ###END###{IDERDebug}
                     obj.SendCommandEndResponse(1, 0x05, dev, 0x26, 0x01);
                     break;
                 }
@@ -576,36 +524,30 @@ module.exports.CreateAmtRemoteIder = function () {
                 obj.SendDataToHost(dev, true, String.fromCharCode(0x00, present, 0x80, 0x00), featureRegister & 1); // This is the original version, 4 bytes long
                 break;
             case 0x4c:
-                obj.SendCommand(0x51, IntToStrX(0) + IntToStrX(0) + IntToStrX(0) + String.fromCharCode(0x87, 0x50, 0x03, 0x00, 0x00, 0x00, 0xb0, 0x51, 0x05, 0x20, 0x00), true);
+                obj.SendCommand(0x51, webserver.common.IntToStrX(0) + webserver.common.IntToStrX(0) + webserver.common.IntToStrX(0) + String.fromCharCode(0x87, 0x50, 0x03, 0x00, 0x00, 0x00, 0xb0, 0x51, 0x05, 0x20, 0x00), true);
                 break;
             case 0x51: // READ_DISC_INFO
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI READ_DISC_INFO", dev);
-                // ###END###{IDERDebug}
                 obj.SendCommandEndResponse(0, 0x05, dev, 0x20, 0x00); // Correct
                 return -1;
             case 0x55: // MODE_SELECT_10:
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI ERROR: MODE_SELECT_10", dev);
-                // ###END###{IDERDebug}
                 obj.SendCommandEndResponse(1, 0x05, dev, 0x20, 0x00);
                 return -1;
             case 0x5a: // MODE_SENSE_10
-                // ###BEGIN###{IDERDebug}
                 debug("SCSI: MODE_SENSE_10", dev, cdb.charCodeAt(2) & 0x3f);
-                // ###END###{IDERDebug}
-                var buflen = ReadShort(cdb, 7);
+                var buflen = webserver.common.ReadShort(cdb, 7);
                 //var pc = cdb.charCodeAt(2) & 0xc0;
                 var r = null;
                 
-                if (buflen == 0) { obj.SendDataToHost(dev, true, IntToStr(0x003c) + IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
+                if (buflen == 0) { obj.SendDataToHost(dev, true, webserver.common.IntToStr(0x003c) + webserver.common.IntToStr(0x0008), featureRegister & 1); return -1; } // TODO: Fixed this return, it's not correct.
 
                 // 1.44 mb floppy or LS120 (sectorCount == 0x3c300)
                 var sectorCount = 0;
                 if (dev == 0xA0) {
-                    if (obj.floppy != null) { sectorCount = (obj.floppy.size >> 9); }
+                    if (obj.floppy != null) { sectorCount = (obj.floppySize >> 9); }
                 } else {
-                    if (obj.cdrom != null) { sectorCount = (obj.cdrom.size >> 11); }
+                    if (obj.cdrom != null) { sectorCount = (obj.cdromSize >> 11); }
                 }
 
                 switch (cdb.charCodeAt(2) & 0x3f) {
@@ -626,9 +568,7 @@ module.exports.CreateAmtRemoteIder = function () {
                 }
                 break;
             default: // UNKNOWN COMMAND
-                // ###BEGIN###{IDERDebug}
                 debug("IDER: Unknown SCSI command", cdb.charCodeAt(0));
-                // ###END###{IDERDebug}
                 obj.SendCommandEndResponse(0, 0x05, dev, 0x20, 0x00);
                 return -1;
         }
@@ -638,15 +578,13 @@ module.exports.CreateAmtRemoteIder = function () {
     function sendDiskData(dev, lba, len, featureRegister) {
         var media = null;
         var mediaBlocks = 0;
-        if (dev == 0xA0) { media = obj.floppy; if (obj.floppy != null) { mediaBlocks = (obj.floppy.size >> 9); } }
-        if (dev == 0xB0) { media = obj.cdrom; if (obj.cdrom != null) { mediaBlocks = (obj.cdrom.size >> 11); } }
+        if (dev == 0xA0) { media = obj.floppy; if (obj.floppy != null) { mediaBlocks = (obj.floppySize >> 9); } }
+        if (dev == 0xB0) { media = obj.cdrom; if (obj.cdrom != null) { mediaBlocks = (obj.cdromSize >> 11); } }
         if ((len < 0) || (lba + len > mediaBlocks)) { obj.SendCommandEndResponse(1, 0x05, dev, 0x21, 0x00); return 0; }
         if (len == 0) { obj.SendCommandEndResponse(1, 0x00, dev, 0x00, 0x00); return 0; }
         if (media != null) {
             // Send sector stats
-            // ###BEGIN###{IDERStats}
             if (obj.sectorStats) { obj.sectorStats(1, (dev == 0xA0) ? 0 : 1, mediaBlocks, lba, len); }
-            // ###END###{IDERStats}
             if (dev == 0xA0) { lba <<= 9; len <<= 9; } else { lba <<= 11; len <<= 11; }
             if (g_media !== null) {
                 console.log('IDERERROR: Read while performing read');
@@ -662,28 +600,22 @@ module.exports.CreateAmtRemoteIder = function () {
         }
     }
 
-    var g_reset = false;
-    var g_media = null;
-    var g_dev;
-    var g_lba;
-    var g_len;
+    var g_dev, g_lba, g_len, g_media = null, g_reset = false;
     function sendDiskDataEx(featureRegister) {
         var len = g_len, lba = g_lba;
         if (g_len > obj.iderinfo.readbfr) { len = obj.iderinfo.readbfr; }
         g_len -= len;
         g_lba += len;
-        var fr = new FileReader();
-        fr.onload = function () {
-            obj.SendDataToHost(g_dev, (g_len == 0), this.result, featureRegister & 1);
+        var buffer = new Buffer(len);
+        fs.read(g_media, buffer, 0, len, lba, function (error, bytesRead, buffer) {
+            obj.SendDataToHost(g_dev, (g_len == 0), buffer.toString('binary'), featureRegister & 1);
             if ((g_len > 0) && (g_reset == false)) {
                 sendDiskDataEx(featureRegister);
             } else {
                 g_media = null;
                 if (g_reset) { obj.SendCommand(0x47); g_reset = false; } // Send ResetOccuredResponse
             }
-        };
-        //console.log('Read from ' + lba + ' to ' + (lba + len) + ', total of ' + len);
-        fr.readAsBinaryString(g_media.slice(lba, lba + len));
+        });
     }
 
     return obj;
