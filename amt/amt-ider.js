@@ -79,8 +79,6 @@ module.exports.CreateAmtIderSession = function (parent, db, ws, req, args, domai
                             if (results[i].toLowerCase().endsWith('.img')) { floppyImages.push(results[i].substring(userPath.length + 1)); }
                             else if (results[i].toLowerCase().endsWith('.iso')) { cdromImages.push(results[i].substring(userPath.length + 1)); }
                         }
-                        //console.log(floppyImages, cdromImages);
-
                         var xx, sel = true, html = "<div style='margin:10px 5px 10px 5px'>Select disk images & start type.</div>";
 
                         // Floppy image selection

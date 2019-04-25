@@ -4156,6 +4156,7 @@
             y += "<option value=4>Windows (64bit)</option>";
             y += "<option value=5>Linux x86 (32bit)</option>";
             y += "<option value=6>Linux x86 (64bit)</option>";
+            y += "<option value=16>MacOS (64bit)</option>";
             y += "<option value=25>Linux ARM, Raspberry Pi (32bit)</option>";
             y += "</select>";
 
@@ -4181,6 +4182,7 @@
             if (os == 4) { osn = 'MeshCmd (Win64 executable)'; }
             if (os == 5) { osn = 'MeshCmd (Linux x86, 32bit)'; }
             if (os == 6) { osn = 'MeshCmd (Linux x86, 64bit)'; }
+            if (os == 16) { osn = 'MeshCmd (MacOS, 64bit)'; }
             if (os == 25) { osn = 'MeshCmd (Linux ARM, 32bit)'; }
             QH('meshcmddownloadid', osn);
         }

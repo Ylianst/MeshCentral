@@ -108,6 +108,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
         obj.bytesFromAmt = 0;
         obj.inSequence = 0;
         obj.outSequence = 0;
+        g_readQueue = [];
 
         // Send first command, OPEN_SESSION
         obj.SendCommand(0x40, webserver.common.ShortToStrX(obj.rx_timeout) + webserver.common.ShortToStrX(obj.tx_timeout) + webserver.common.ShortToStrX(obj.heartbeat) + webserver.common.IntToStrX(obj.version));
@@ -587,8 +588,8 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
             if (obj.sectorStats) { obj.sectorStats(1, (dev == 0xA0) ? 0 : 1, mediaBlocks, lba, len); }
             if (dev == 0xA0) { lba <<= 9; len <<= 9; } else { lba <<= 11; len <<= 11; }
             if (g_media !== null) {
-                console.log('IDERERROR: Read while performing read');
-                obj.Stop();
+                // Queue read operation
+                g_readQueue.push({ media: media, dev: dev, lba: lba, len: len, fr: featureRegister });
             } else {
                 // obj.iderinfo.readbfr // TODO: MaxRead
                 g_media = media;
@@ -600,7 +601,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
         }
     }
 
-    var g_dev, g_lba, g_len, g_media = null, g_reset = false;
+    var g_readQueue = [], g_dev, g_lba, g_len, g_media = null, g_reset = false;
     function sendDiskDataEx(featureRegister) {
         var len = g_len, lba = g_lba;
         if (g_len > obj.iderinfo.readbfr) { len = obj.iderinfo.readbfr; }
@@ -613,7 +614,8 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
                 sendDiskDataEx(featureRegister);
             } else {
                 g_media = null;
-                if (g_reset) { obj.SendCommand(0x47); g_reset = false; } // Send ResetOccuredResponse
+                if (g_reset) { obj.SendCommand(0x47); g_readQueue = []; g_reset = false; } // Send ResetOccuredResponse
+                else if (g_readQueue.length > 0) { var op = g_readQueue.shift(); g_media = op.media; g_dev = op.dev; g_lba = op.lba; g_len = op.len; sendDiskDataEx(op.fr); } // Un-queue read operation
             }
         });
     }
