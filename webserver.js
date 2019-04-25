@@ -1910,6 +1910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // WS ---> AMT/TLS
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
+                    //console.log('WS --> AMT', Buffer.from(msg, 'binary').toString('hex'));
                     if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
                 });
 
@@ -1934,6 +1935,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.forwardclient.onData = function (ciraconn, data) {
                     Debug(4, 'Relay CIRA data', data.length);
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
+                    //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
                     if (data.length > 0) { try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
                 };
 

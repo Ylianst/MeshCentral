@@ -13,7 +13,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.net = require('net');
     obj.tls = require('tls');
     obj.crypto = require('crypto');
-    obj.constants = require('constants');
+    const constants = require('constants');
     obj.socket = null;
     obj.amtuser = null;
     obj.amtpass = null;
@@ -21,6 +21,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
     obj.xtlsoptions = null;
     obj.redirTrace = false;
+    obj.tls1only = 0; // TODO
 
     obj.amtaccumulator = "";
     obj.amtsequence = 1;
@@ -51,6 +52,17 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     function Debug(lvl) {
         if ((arguments.length < 2) || (lvl > meshcentral.debugLevel)) return;
         var a = []; for (var i = 1; i < arguments.length; i++) { a.push(arguments[i]); } console.log(...a);
+    }
+
+    // Older NodeJS does not support the keyword "class", so we do without using this syntax
+    // TODO: Validate that it's the same as above and that it works.
+    function SerialTunnel(options) {
+        var obj = new require('stream').Duplex(options);
+        obj.forwardwrite = null;
+        obj.updateBuffer = function (chunk) { this.push(chunk); };
+        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
+        obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
+        return obj;
     }
 
     obj.Start = function (nodeid) {
@@ -106,18 +118,15 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
                 var ciraconn = meshcentral.mpsserver.ciraConnections[nodeid];
 
-                /*
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
-                var port = 16993;
-                //if (node.intelamt.tls == 0) port = 16992; // DEBUG: Allow TLS flag to set TLS mode within CIRA
-                if (ciraconn.tag.boundPorts.indexOf(16992) >= 0) port = 16992; // RELEASE: Always use non-TLS mode if available within CIRA
-                if (req.query.p == 2) port += 2;
+                var port = 16995;
+                if (ciraconn.tag.boundPorts.indexOf(16994) >= 0) port = 16994; // RELEASE: Always use non-TLS mode if available within CIRA
 
                 // Setup a new CIRA channel
                 if ((port == 16993) || (port == 16995)) {
                     // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why. Well, could be broken TLS 1.0 in firmware )
                     var ser = new SerialTunnel();
-                    var chnl = parent.mpsserver.SetupCiraChannel(ciraconn, port);
+                    var chnl = meshcentral.mpsserver.SetupCiraChannel(ciraconn, port);
 
                     // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
@@ -141,7 +150,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                     const TLSSocket = require('tls').TLSSocket;
-                    const tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                    const tlsoptions = { secureProtocol: ((obj.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     const tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
@@ -151,72 +160,35 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                         // AMT/TLS ---> WS
                         try {
                             data = data.toString('binary');
-                            if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
                             //ws.send(Buffer.from(data, 'binary'));
                             ws.send(data);
                         } catch (e) { }
                     });
 
                     // If TLS is on, forward it through TLSSocket
-                    ws.forwardclient = tlsock;
-                    ws.forwardclient.xtls = 1;
+                    obj.forwardclient = tlsock;
+                    obj.forwardclient.xtls = 1;
                 } else {
                     // Without TLS
-                    ws.forwardclient = parent.mpsserver.SetupCiraChannel(ciraconn, port);
-                    ws.forwardclient.xtls = 0;
-                    ws._socket.resume();
+                    obj.forwardclient = meshcentral.mpsserver.SetupCiraChannel(ciraconn, port);
+                    obj.forwardclient.xtls = 0;
                 }
 
-                // When data is received from the web socket, forward the data into the associated CIRA cahnnel.
-                // If the CIRA connection is pending, the CIRA channel has built-in buffering, so we are ok sending anyway.
-                ws.on('message', function (msg) {
-                    // WS ---> AMT/TLS
-                    msg = msg.toString('binary');
-                    if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
-                    if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
-                });
-
-                // If error, close the associated TCP connection.
-                ws.on('error', function (err) {
-                    console.log('CIRA server websocket error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
-                    Debug(1, 'Websocket relay closed on error.');
-                    if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
-                });
-
-                // If the web socket is closed, close the associated TCP connection.
-                ws.on('close', function (req) {
-                    Debug(1, 'Websocket relay closed.');
-                    if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
-                });
-
-                ws.forwardclient.onStateChange = function (ciraconn, state) {
-                    Debug(2, 'Relay CIRA state change', state);
-                    if (state == 0) { try { ws.close(); } catch (e) { } }
+                obj.forwardclient.onStateChange = function (ciraconn, state) {
+                    Debug(2, 'Intel AMT CIRA relay state change', state);
+                    if (state == 0) { try { obj.Stop(); } catch (e) { } }
+                    else if (state == 2) { obj.xxOnSocketConnected(); }
                 };
 
-                ws.forwardclient.onData = function (ciraconn, data) {
-                    Debug(4, 'Relay CIRA data', data.length);
-                    if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    if (data.length > 0) { try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
+                obj.forwardclient.onData = function (ciraconn, data) {
+                    Debug(4, 'Intel AMT CIRA data', data.length);
+                    if (data.length > 0) { obj.xxOnSocketData(data); } // TODO: Add TLS support
                 };
 
-                ws.forwardclient.onSendOk = function (ciraconn) {
+                obj.forwardclient.onSendOk = function (ciraconn) {
                     // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
-                    //console.log('onSendOk');
+                    Debug(4, 'Intel AMT CIRA sendok');
                 };
-
-                // Fetch Intel AMT credentials & Setup interceptor
-                if (req.query.p == 1) {
-                    Debug(3, 'INTERCEPTOR1', { host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
-                    ws.interceptor = obj.interceptor.CreateHttpInterceptor({ host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
-                    ws.interceptor.blockAmtStorage = true;
-                }
-                else if (req.query.p == 2) {
-                    Debug(3, 'INTERCEPTOR2', { user: node.intelamt.user, pass: node.intelamt.pass });
-                    ws.interceptor = obj.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass });
-                    ws.interceptor.blockAmtStorage = true;
-                }
-                */
 
                 return;
             }
@@ -224,32 +196,6 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
             // If Intel AMT direct connection is possible, option a direct socket
             if ((conn & 4) != 0) {   // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
                 Debug(1, 'Opening Intel AMT transport connection to ' + nodeid + '.');
-
-                /*
-                // When data is received from the web socket, forward the data into the associated TCP connection.
-                ws.on('message', function (msg) {
-                    if (obj.parent.debugLevel >= 1) { // DEBUG
-                        Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
-                        if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + msg.toString('hex')); }
-                    }
-                    msg = msg.toString('binary');
-                    if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
-                    ws.forwardclient.write(Buffer.from(msg, 'binary')); // Forward data to the associated TCP connection.
-                });
-
-                // If error, close the associated TCP connection.
-                ws.on('error', function (err) {
-                    console.log('Error with relay web socket connection from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
-                    Debug(1, 'Error with relay web socket connection from ' + ws._socket.remoteAddress + '.');
-                    if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
-                });
-
-                // If the web socket is closed, close the associated TCP connection.
-                ws.on('close', function () {
-                    Debug(1, 'Closing relay web socket connection to ' + nodeid + '.');
-                    if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
-                });
-                */
 
                 // Compute target port
                 var port = 16994;
@@ -261,7 +207,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                     obj.forwardclient.setEncoding('binary');
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { secureProtocol: ((req.query.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                    var tlsoptions = { secureProtocol: ((obj.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                     obj.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS Intel AMT transport connected to ' + node.host + ':' + port + '.');
@@ -507,9 +453,9 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     }
     
     obj.xxSend = function (x) {
-        if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + webserver.common.rstr2hex(x)); }
+        if (obj.redirTrace) { console.log("REDIR-SEND2(" + x.length + "): " + new Buffer(x, "binary").toString('hex')); }
         //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
-        obj.forwardclient.write(new Buffer(x, "binary"));
+        obj.forwardclient.write(x);
     }
 
     obj.Send = function (x) {
@@ -543,8 +489,8 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
         obj.xxStateChange(0);
         obj.connectstate = -1;
         obj.amtaccumulator = "";
-        if (obj.forwardclient != null) { obj.forwardclient.destroy(); obj.forwardclient = null; }
-        if (obj.amtkeepalivetimer != null) { clearInterval(obj.amtkeepalivetimer); obj.amtkeepalivetimer = null; }
+        if (obj.forwardclient != null) { try { obj.forwardclient.close(); } catch (ex) { } delete obj.forwardclient; }
+        if (obj.amtkeepalivetimer != null) { clearInterval(obj.amtkeepalivetimer); delete obj.amtkeepalivetimer; }
     }
 
     obj.RedirectStartSol = String.fromCharCode(0x10, 0x00, 0x00, 0x00, 0x53, 0x4F, 0x4C, 0x20);
