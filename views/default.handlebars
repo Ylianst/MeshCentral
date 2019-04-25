@@ -849,10 +849,10 @@
                         </div>
                         <div>
                             <div>Other Settings</div>
-                            <div id="d7otherset">
-                                <label><input type="checkbox" id='d7showfocus'>Show Focus Tool<br></label>
-                                <label><input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br></label>
-                                <label><input type="checkbox" id='d7localKeyMap'>Local Keyboard Map<br></label>
+                            <div id="d7otherset" style="display:block">
+                                <label style="display:block"><input type="checkbox" id="d7showfocus">Show Focus Tool</label>
+                                <label style="display:block"><input type="checkbox" id="d7showcursor">Show Local Mouse Cursor</label>
+                                <label style="display:block"><input type="checkbox" id="d7localKeyMap">Local Keyboard Map</label>
                             </div>
                         </div>
                     </div>
@@ -861,7 +861,7 @@
             <div id="idx_dlgButtonBar">
                 <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
                 <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
-                <div><input id=idx_dlgDeleteButton type=button value=Delete style="display:none" onclick="dialogclose(2)"></div>
+                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)"></div>
             </div>
         </div>
         <iframe name="fileUploadFrame" style="display:none"></iframe>

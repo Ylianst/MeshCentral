@@ -220,6 +220,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                 obj.forwardclient.on('data', function (data) {
                     //if (obj.parent.debugLevel >= 1) { // DEBUG
                         Debug(1, 'Intel AMT transport data from ' + node.host + ', ' + data.length + ' bytes.');
+                        Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex'));
                         //if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     //}
                     obj.xxOnSocketData(data);
@@ -453,9 +454,10 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     }
     
     obj.xxSend = function (x) {
-        if (obj.redirTrace) { console.log("REDIR-SEND2(" + x.length + "): " + new Buffer(x, "binary").toString('hex')); }
+        if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + new Buffer(x, "binary").toString('hex'), typeof x); }
         //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
-        obj.forwardclient.write(x);
+        obj.forwardclient.write(x); // FIXES CIRA
+        //obj.forwardclient.write(new Buffer(x, "binary"));
     }
 
     obj.Send = function (x) {
