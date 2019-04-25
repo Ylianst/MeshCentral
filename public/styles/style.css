@@ -541,7 +541,6 @@ body {
 }
 
 #d7otherset {
-    display: block;
     border: 1px solid #666;
     width: 200px;
     height: 60px;
@@ -552,8 +551,8 @@ body {
 #idx_dlgButtonBar {
     padding: 10px;
     margin-bottom: 5px;
+    margin-right: 10px;
     overflow: auto;
-    float: right;
 }
 
 #idx_dlgCancelButton {
@@ -565,10 +564,13 @@ body {
 #idx_dlgOkButton {
     float: right;
     width: 80px;
+    margin-left: 5px;
 }
 
 #idx_dlgDeleteButton {
+    float: left;
     width: 80px;
+    margin-left: 5px;
 }
 
 #ua_fileaccessquota {
