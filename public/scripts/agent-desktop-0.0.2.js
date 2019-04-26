@@ -450,11 +450,14 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.State != 3) return;
         if (Action != null && obj.Canvas != null) {
             if (!event) { var event = window.event; }
+
             var ScaleFactorHeight = (obj.Canvas.canvas.height / obj.CanvasId.clientHeight);
             var ScaleFactorWidth = (obj.Canvas.canvas.width / obj.CanvasId.clientWidth);
             var Offsets = obj.GetPositionOfControl(obj.Canvas.canvas);
             var X = ((event.pageX - Offsets[0]) * ScaleFactorWidth);
             var Y = ((event.pageY - Offsets[1]) * ScaleFactorHeight);
+            if (event.addx) { X += event.addx; }
+            if (event.addy) { Y += event.addy; }
 
             if (X >= 0 && X <= obj.Canvas.canvas.width && Y >= 0 && Y <= obj.Canvas.canvas.height) {
                 var Button = 0;

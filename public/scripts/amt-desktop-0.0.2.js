@@ -779,9 +779,13 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e); }
     obj.mousemove = function (e) {
         if (obj.state != 4) return true;
-        var pos = obj.getPositionOfControl(Q(obj.canvasid));
-        obj.mx = (e.pageX - pos[0]) * (obj.canvas.canvas.height / Q(obj.canvasid).offsetHeight);
-        obj.my = ((e.pageY - pos[1] + (scrolldiv ? scrolldiv.scrollTop : 0)) * (obj.canvas.canvas.width / Q(obj.canvasid).offsetWidth));
+        var ScaleFactorHeight = (obj.canvas.canvas.height / Q(obj.canvasid).offsetHeight);
+        var ScaleFactorWidth = (obj.canvas.canvas.width / Q(obj.canvasid).offsetWidth);
+        var Offsets = obj.getPositionOfControl(Q(obj.canvasid));
+        obj.mx = ((event.pageX - Offsets[0]) * ScaleFactorWidth);
+        obj.my = ((event.pageY - Offsets[1]) * ScaleFactorHeight);
+        if (event.addx) { obj.mx += event.addx; }
+        if (event.addy) { obj.my += event.addy; }
 
         // ###BEGIN###{DesktopRotation}
         if (obj.noMouseRotate != true) {
