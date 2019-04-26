@@ -456,8 +456,8 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     obj.xxSend = function (x) {
         if (obj.redirTrace) { console.log("REDIR-SEND(" + x.length + "): " + new Buffer(x, "binary").toString('hex'), typeof x); }
         //obj.Debug("Send(" + x.length + "): " + webserver.common.rstr2hex(x));
-        obj.forwardclient.write(x); // FIXES CIRA
-        //obj.forwardclient.write(new Buffer(x, "binary"));
+        //obj.forwardclient.write(x); // FIXES CIRA
+        obj.forwardclient.write(new Buffer(x, "binary"));
     }
 
     obj.Send = function (x) {
