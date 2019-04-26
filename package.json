@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.3.2-y",
+  "version": "0.3.3-b",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -20,6 +20,7 @@
     "sample-config.json",
     "license.txt",
     "readme.txt",
+    "amt",
     "agents",
     "public",
     "views",

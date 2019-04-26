@@ -428,7 +428,7 @@
                     <div id=deskarea1 class="areaHead">
                         <div class="toright2">
                             <span id="p14power"></span>&nbsp;
-                            <div class='deskareaicon' title="Toggle Aspect Ratio" onclick="toggleAspectRatio(1)">&#8690;</div>
+                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
                             <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
                             <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
                             <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
@@ -913,7 +913,8 @@
         var attemptWebRTC = ((features & 128) != 0);
         var passRequirements = "{{{passRequirements}}}";
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
-        var deskAspectRatio = (getstore('deskAspectRatio', 'false') == 'true');
+        var deskAspectRatio = 0;
+        try { deskAspectRatio = parseInt(getstore('deskAspectRatio', '0')); } catch (ex) { }
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
@@ -1035,8 +1036,8 @@
 
         // Toggle the web page to full screen
         function toggleAspectRatio(toggle) {
-            if (toggle === 1) { deskAspectRatio = !deskAspectRatio; putstore('deskAspectRatio', deskAspectRatio); }
-            deskAdjust()
+            if (toggle === 1) { deskAspectRatio = ((deskAspectRatio + 1) % 3); putstore('deskAspectRatio', deskAspectRatio); }
+            deskAdjust();
         }
         
         // If FullScreen, toggle menu to be horisontal or vertical
@@ -4584,15 +4585,23 @@
         }
 
         function deskAdjust() {
-            if (deskAspectRatio) {
+            var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
+            var deskH = Q('Desk').height, deskW = Q('Desk').width;
+
+            if (deskAspectRatio == 2) {
+                // Scale mode
                 QS('Desk').width = '100%';
                 QS('Desk').height = '100%';
                 QS('deskarea3x').height = null;
+                QS('DeskParent').overflow = 'hidden';
+            } else if (deskAspectRatio == 1) {
+                // Zoomed mode
+                QS('Desk')['margin-top'] = '0px';
+                QS('Desk').height = deskH + 'px';
+                QS('Desk').width = deskW + 'px';
+                QS('DeskParent').overflow = 'scroll';
             } else {
-                var parentH = Q('DeskParent').clientHeight;
-                var parentW = Q('DeskParent').clientWidth;
-                var deskH = Q('Desk').height;
-                var deskW = Q('Desk').width;
+                // Fixed aspect ratio
                 if (parentH / parentW > deskH / deskW) {
                     var hNew = (deskH * parentW / deskW) + 'px';
                     if (webPageFullScreen || fullscreen) {
@@ -4612,6 +4621,7 @@
                     }
                     QS('Desk').width = wNew;
                 }
+                QS('DeskParent').overflow = 'hidden';
             }
         }
 
@@ -4771,7 +4781,7 @@
         function deskDisplayInfo(sender, info, selDisplay, selItem) {
             var txt = Q('termdisplays').value;
             if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x])?' selected':'') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
-            QV('termdisplays', info.length > 0);
+            QV('termdisplays', info.length > 1);
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
@@ -4795,10 +4805,10 @@
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
-        function dmouseup(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
-        function dmousewheel(e) { if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
+        function dmousedown(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
+        function dmouseup(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
+        function dmousemove(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
+        function dmousewheel(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
