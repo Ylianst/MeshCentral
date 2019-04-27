@@ -189,7 +189,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ProcessDataEx = function (str) {
         if (obj.accumulator != null) {
             str = obj.accumulator + str;
-            console.log('KVM using accumulated data, total size is now ' + str.length + ' bytes.');
+            //console.log('KVM using accumulated data, total size is now ' + str.length + ' bytes.');
             obj.accumulator = null;
         }
         if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
@@ -202,7 +202,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             cmdsize = ReadInt(str, 4);
             //console.log('JUMBO cmd=' + command + ', cmdsize=' + cmdsize + ', data received=' + str.length);
             if ((cmdsize + 8) > str.length) {
-                console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
+                //console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
                 obj.accumulator = str;
                 return;
             }
@@ -212,7 +212,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
         if ((command >= 18) && (command != 65)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...'); return; }
         if (cmdsize > str.length) {
-            console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
+            //console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
             obj.accumulator = str;
             return;
         }
@@ -249,17 +249,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
                 break;
             case 11: // GetDisplays
-                var myOptions = [], dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
+                var selectedDisplay = 0, displays = { }, dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
                 if (dcount > 0) {
                     // Many displays present
-                    var selitem = 0, seldisp = ((str.charCodeAt(6 + (dcount * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (dcount * 2)) & 0xFF);
+                    selectedDisplay = ((str.charCodeAt(6 + (dcount * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (dcount * 2)) & 0xFF);
                     for (var i = 0; i < dcount; i++) {
                         var disp = ((str.charCodeAt(6 + (i * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (i * 2)) & 0xFF);
-                        if (disp == 65535) { myOptions.push('All Displays'); } else { myOptions.push('Display ' + disp); }
-                        if (disp == seldisp) selitem = i;
+                        if (disp == 65535) { displays[disp] = 'All Displays'; } else { displays[disp] = 'Display ' + disp; }
                     }
                 }
-                if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, myOptions, selitem); }
+                if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, displays, selectedDisplay); }
                 break;
             case 12: // SetDisplay
                 //console.log('SetDisplayConfirmed');
