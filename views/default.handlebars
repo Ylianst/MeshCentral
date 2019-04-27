@@ -4566,7 +4566,7 @@
             fullscreen = !fullscreen;
             if (fullscreen) {
                 QC('body').add("fulldesk");
-                QS('deskarea3x').height = null;
+                //QS('deskarea3x').height = null;
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
             } else {
@@ -4591,9 +4591,10 @@
 
             if (deskAspectRatio == 2) {
                 // Scale mode
-                QS('Desk').width = '100%';
+                QS('Desk')['margin-top'] = null;
                 QS('Desk').height = '100%';
-                QS('deskarea3x').height = null;
+                QS('Desk').width = '100%';
+                //QS('deskarea3x').height = null;
                 QS('DeskParent').overflow = 'hidden';
             } else if (deskAspectRatio == 1) {
                 // Zoomed mode
@@ -4603,18 +4604,18 @@
                 QS('DeskParent').overflow = 'scroll';
             } else {
                 // Fixed aspect ratio
-                if (parentH / parentW > deskH / deskW) {
-                    var hNew = (deskH * parentW / deskW) + 'px';
-                    if (webPageFullScreen || fullscreen) {
-                        QS('deskarea3x').height = null;
-                    } else {
+                if ((parentH / parentW) > (deskH / deskW)) {
+                    var hNew = ((deskH * parentW) / deskW) + 'px';
+                    //if (webPageFullScreen || fullscreen) {
+                        //QS('deskarea3x').height = null;
+                    //} else {
                         // QS('deskarea3x').height = hNew;
-                        QS('deskarea3x').height = null;
-                    }
+                        //QS('deskarea3x').height = null;
+                    //}
                     QS('Desk').height = hNew;
                     QS('Desk').width = '100%';
                 } else {
-                    var wNew = (deskW * parentH / deskH) + 'px';
+                    var wNew = ((deskW * parentH) / deskH) + 'px';
                     if (webPageFullScreen || fullscreen) {
                         QS('Desk').height = null;
                     } else {
@@ -4622,6 +4623,7 @@
                     }
                     QS('Desk').width = wNew;
                 }
+                QS('Desk')['margin-top'] = null;
                 QS('DeskParent').overflow = 'hidden';
             }
         }

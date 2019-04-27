@@ -290,8 +290,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'logincookie':
                 {
-                    // Return a login cookie
-                    try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    // If allowed, return a login cookie
+                    if (parent.parent.config.settings.allowlogintoken === true) {
+                        try { ws.send(JSON.stringify({ action: 'logincookie', cookie: parent.parent.encodeCookie({ u: user._id, a: 3 }, parent.parent.loginCookieEncryptionKey) })); } catch (ex) { }
+                    }
                     break;
                 }
             case 'servertimelinestats':
