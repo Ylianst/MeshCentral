@@ -4481,6 +4481,7 @@
                     deskFocusBtn.value = 'All Focus';
                     if (fullscreen == true) { deskToggleFull(); }
                     webRtcDesktopReset();
+                    deskPreferedStickyDisplay = 0;
                     break;
                 case 2:
                     break;
@@ -4778,17 +4779,20 @@
             Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
         }
 
-        function deskDisplayInfo(sender, info, selDisplay, selItem) {
+        function deskDisplayInfo(sender, info, selDisplay) {
             var txt = Q('termdisplays').value;
-            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x])?' selected':'') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
+            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((selDisplay == x) ? ' selected' : '') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
             QV('termdisplays', info.length > 1);
+            if ((deskPreferedStickyDisplay != selDisplay) && (info.length > deskPreferedStickyDisplay)) { desktop.m.SetDisplay(deskPreferedStickyDisplay); }
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
 
+        var deskPreferedStickyDisplay = 0;
         function deskSetDisplay(e) {
             var display = 0, txt = Q('termdisplays').value;
             if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
+            deskPreferedStickyDisplay = display;
             desktop.m.SetDisplay(display);
         }
 
