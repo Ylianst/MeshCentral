@@ -467,7 +467,7 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
-                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
+                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event)></select>&nbsp;
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
@@ -4781,22 +4781,20 @@
             Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
         }
 
-        function deskDisplayInfo(sender, info, selDisplay) {
-            var txt = Q('termdisplays').value;
-            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((selDisplay == x) ? ' selected' : '') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
-            QV('termdisplays', info.length > 1);
-            if ((deskPreferedStickyDisplay != selDisplay) && (info.length > deskPreferedStickyDisplay)) { desktop.m.SetDisplay(deskPreferedStickyDisplay); }
+        function deskDisplayInfo(sender, displays, selDisplay) {
+            var displayCount = 0, displaySelector = '';
+            for (var i in displays) {
+                displayCount++;
+                displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + displays[i] + '</option>';
+                if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
+            }
+            QH('termdisplays', displaySelector);
+            QV('termdisplays', displayCount > 1);
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
-
         var deskPreferedStickyDisplay = 0;
-        function deskSetDisplay(e) {
-            var display = 0, txt = Q('termdisplays').value;
-            if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
-            deskPreferedStickyDisplay = display;
-            desktop.m.SetDisplay(display);
-        }
+        function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); }
 
         // Double click detection. This is important for MacOS.
         var dblClickDetectArgs = { t:0, x:0, y:0 };
