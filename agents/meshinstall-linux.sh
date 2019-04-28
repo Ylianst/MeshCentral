@@ -65,6 +65,11 @@ CheckInstallAgent() {
           # RaspberryPi 1 (armv6l) or RaspberryPi 2/3 (armv7l)
           machineid=25
         fi
+        if [ $machinetype == 'aarch64' ]
+        then
+          # RaspberryPi 3B+ running Ubuntu 64 (aarch64)
+          machineid=26
+        fi
         # Add more machine types, detect KVM support... here.
       fi
 
