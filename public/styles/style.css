@@ -1008,7 +1008,7 @@ NoMeshesPanel img {
     width: 250px;
 }
 
-#p12warning, #p12warning2, #p14warning, #p14warning2 {
+#p12warning, #p12warning2, #p11warning, #p11warning2 {
     max-width: 100%;
     display: none;
     cursor: pointer;
