@@ -753,7 +753,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                             if (docs.length > 0) {
                                 // Notify the duplicate email error
-                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', tag: 'ServerNotify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
                             } else {
                                 // Update the user's email
                                 var oldemail = user.email;
@@ -857,8 +857,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
-                    // Remove notes for this user
-                    db.Remove('nt' + deluser._id);
+                    db.Remove('ws' + deluser._id); // Remove user web state
+                    db.Remove('nt' + deluser._id); // Remove notes for this user
 
                     // Delete all files on the server for this account
                     try {
@@ -883,7 +883,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
 
                     // Create the notification message
-                    var notification = { action: "msg", type: "notify", domain: domain.id, "value": command.msg };
+                    var notification = { action: "msg", type: "notify", domain: domain.id, "value": command.msg, "title": user.name, icon: 0, tag: "broadcast" };
 
                     // Send the notification on all user sessions for this server
                     for (var i in parent.wssessions2) {
@@ -925,7 +925,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Account count exceed, do notification
 
                             // Create the notification message
-                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", userid: user._id, username: user.name, domain: domain.id };
+                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
 
                             // Get the list of sessions for this user
                             var sessions = parent.wssessions[user._id];
@@ -1025,7 +1025,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             require('./pass').hash(command.newpass, function (err, salt, hash) {
                                 if (err) {
                                     // Send user notification of error
-                                    displayNotificationMessage('Error, password not changed.');
+                                    displayNotificationMessage('Error, password not changed.', 'Account Settings', 'ServerNotify');
                                 } else {
                                     // Change the password
                                     if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (command.hint != null)) {
@@ -1044,12 +1044,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
 
                                     // Send user notification of password change
-                                    displayNotificationMessage('Password changed.');
+                                    displayNotificationMessage('Password changed.', 'Account Settings', 'ServerNotify');
                                 }
                             });
                         } else {
                             // Send user notification of error
-                            displayNotificationMessage('Current password not correct.');
+                            displayNotificationMessage('Current password not correct.', 'Account Settings', 'ServerNotify');
                         }
                     });
                     break;
@@ -1112,7 +1112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
-                    var notification = { "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: " + EscapeHtml(command.msg), "userid": user._id, "username": user.name };
+                    var notification = { "action": "msg", "type": "notify", "value": command.msg, "title": user.name, "icon": 9, "userid": user._id, "username": user.name };
 
                     // Get the list of sessions for this user
                     var sessions = parent.wssessions[command.userid];
@@ -1138,7 +1138,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Create the notification message
                         var notification = {
-                            "action": "msg", "type": "notify", "value": "<b>" + user.name + "</b>: Chat Request, Click here to accept.", "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
+                            "action": "msg", "type": "notify", "value": "Chat Request, Click here to accept.", "title": user.name, "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
                         };
 
                         // Get the list of sessions for this user
@@ -2297,6 +2297,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
+            case 'userWebState': {
+                if (common.validateString(command.state, 1, 10000) == false) break; // Check state size, no more than 10k
+                db.Set({ _id: 'ws' + user._id, state: command.state });
+                parent.parent.DispatchEvent([user._id], obj, { action: 'userWebState', nolog: 1, domain: domain.id, state: command.state });
+                break;
+            }
             case 'getNotes':
                 {
                     // Argument validation
@@ -2363,7 +2369,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Display a notification message for this session only.
-    function displayNotificationMessage(msg, tag) { ws.send(JSON.stringify({ "action": "msg", "type": "notify", "value": msg, "userid": user._id, "username": user.name, "tag": tag })); }
+    function displayNotificationMessage(msg, title, tag) { ws.send(JSON.stringify({ "action": "msg", "type": "notify", "value": msg, "title": title, "userid": user._id, "username": user.name, "tag": tag })); }
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {

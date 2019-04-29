@@ -257,6 +257,7 @@
                     <p><strong>Account actions</strong></p>
                     <p class="mL">
                         <span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()">Verify email</a><br /></span>
+                        <span id="accountEnableNotificationsSpan" style="display:none"><a onclick="account_enableNotifications()">Enable web notifications</a><br /></span>
                         <a onclick="account_showChangeEmail()">Change email address</a><br />
                         <a onclick="account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
                         <a onclick="account_showDeleteAccount()">Delete account</a><br />
@@ -415,19 +416,18 @@
                         <h1>Desktop - <span id=p11deviceName></span></h1>
                     </div>
                 </div>
-                <div id="p14warning" onclick="showFeaturesDlg()">
+                <div id="p11warning" onclick="showFeaturesDlg()">
                     <div class="icon2"></div>
-                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p11warninga">, click here to enable it.</span></div>
                 </div>
-                <div id="p14warning2" onclick="showPowerActionDlg()">
+                <div id="p11warning2" onclick="showPowerActionDlg()">
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                 </div>
-                
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead">
                         <div class="toright2">
-                            <span id="p14power"></span>&nbsp;
+                            <span id="p11power"></span>&nbsp;
                             <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
                             <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
                             <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
@@ -498,7 +498,7 @@
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
                     <div class="icon2"></div>
-                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p14warninga">, click here to enable it.</span></div>
+                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
                 </div>
                 <div id="p12warning2" onclick=showPowerActionDlg()>
                     <div class="icon2"></div>
@@ -871,6 +871,13 @@
     </div>
     <script type="text/javascript">
         'use strict';
+
+        // Process server-side web state
+        var webState = "{{{webstate}}}";
+        if (webState != "") { webState = JSON.parse(decodeURIComponent(webState)); }
+        for (var i in webState) { localStorage.setItem(i, webState[i]); }
+        //localStorage.clear();
+
         var args;
         var autoReconnect = true;
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
@@ -985,11 +992,11 @@
 
             // Setup page controls
             Q('sortselect').selectedIndex = sort = getstore("sort", 0);
-            Q('sizeselect').selectedIndex = getstore("viewsize", 1);
-            Q('SearchInput').value = getstore("search", "");
+            Q('sizeselect').selectedIndex = getstore("_viewsize", 1);
+            Q('SearchInput').value = getstore("_search", "");
             showRealNames = (getstore("showRealNames", 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
-            Q('viewselect').value = getstore("deviceView", 1);
+            Q('viewselect').value = getstore("_deviceView", 1);
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
 
             // Display the page devices
@@ -1198,7 +1205,7 @@
                 updateNaggleTimer = setTimeout(function () {
                     if (updateNaggleFlags & 512) { center(); }
                     if (updateNaggleFlags & 1) { onSearchInputChanged(); }
-                    if (updateNaggleFlags & 2) { onSortSelectChange(true); }
+                    if (updateNaggleFlags & 2) { onSortSelectChange(false); }
                     if (updateNaggleFlags & 128) { updateMeshes(); }
                     if (updateNaggleFlags & 4) { updateDevices(); }
                     if (updateNaggleFlags & 8) { drawNotifications(); }
@@ -1345,7 +1352,7 @@
                             // Node was found, dispatch the message
                             if (message.type == 'console') { p15consoleReceive(nodes[index], message.value); } // This is a console message.
                             else if (message.type == 'notify') { // This is a notification message.
-                                var n = { text:message.value };
+                                var n = { text: message.value, title: message.title, icon: message.icon };
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
                                 if (message.username != null) { n.username = message.username; }
@@ -1362,7 +1369,7 @@
                         }
                     } else {
                         if (message.type == 'notify') { // This is a notification message.
-                            var n = { text:message.value };
+                            var n = { text: message.value, title: message.title, icon: message.icon };
                             if (message.tag != null) { n.tag = message.tag; }
                             if (message.username != null) { n.username = message.username; }
                             addNotification(n);
@@ -1606,6 +1613,24 @@
                         masterUpdate(32);
                     }
                     switch (message.event.action) {
+                        case 'userWebState': {
+                            // New user web state, update the web page as needed
+                            if (localStorage != null) {
+                                var oldShowRealNames = localStorage.getItem('showRealNames');
+                                var oldUiMode = localStorage.getItem('uiMode');
+                                var oldSort = localStorage.getItem('sort');
+
+                                var webstate = JSON.parse(message.event.state);
+                                for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
+
+                                // Update the web page
+                                if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
+                                if ((webstate.showRealNames != null) && (webstate.showRealNames != oldShowRealNames)) { showRealNames = Q('RealNameCheckBox').checked = (webstate.showRealNames == "1"); masterUpdate(6); }
+                                if ((webstate.uiMode != null) && (webstate.uiMode != oldUiMode)) { userInterfaceSelectMenu(parseInt(webstate.uiMode)); }
+                                if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById("sortselect").selectedIndex = sort = parseInt(webstate.sort); masterUpdate(6); }
+                            }
+                            break;
+                        }
                         case 'servertimelinestats': { addServerTimelineStats(message.event.data); break; }
                         case 'accountcreate':
                         case 'accountchange': {
@@ -1904,7 +1929,7 @@
                             break;
                         }
                         case 'notify': {
-                            var n = { text: message.event.value };
+                            var n = { text: message.event.value, title: message.event.title, icon: message.event.icon };
                             if (message.event.tag != null) { n.tag = message.event.tag; }
                             addNotification(n);
                             break;
@@ -1939,7 +1964,7 @@
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore("showRealNames", showRealNames ? 1 : 0);
-            masterUpdate(6)
+            masterUpdate(6);
             return;
         }
 
@@ -1947,8 +1972,8 @@
             if (i != null) { Q('viewselect').value = i; }
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
-            putstore("deviceView", Q('viewselect').value);
-            putstore("viewsize", Q('sizeselect').value);
+            putstore("_deviceView", Q('viewselect').value);
+            putstore("_viewsize", Q('sizeselect').value);
             masterUpdate(4);
             setTimeout("masterUpdate(512)", 200);
         }
@@ -2873,7 +2898,7 @@
         function onConsoleFocus(x) { consoleFocus = x; }
 
         function onSearchInputChanged() {
-            var x = Q('SearchInput').value.toLowerCase().trim(); putstore("search", x);
+            var x = Q('SearchInput').value.toLowerCase().trim(); putstore("_search", x);
             var userSearch = null, ipSearch = null, groupSearch = null;
             if (x.startsWith('user:')) { userSearch = x.substring(5); }
             else if (x.startsWith('u:')) { userSearch = x.substring(2); }
@@ -3617,7 +3642,6 @@
         var powerTimeline = null;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
-
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
@@ -5760,6 +5784,10 @@
             meshserver.send({ action: 'otp-hkey-get' });
         }
 
+        function account_enableNotifications() {
+            if (Notification) { Notification.requestPermission().then(function (permission) { QV('accountEnableNotificationsSpan', permission != "granted"); }); }
+        }
+
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
             var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
@@ -7328,20 +7356,21 @@
         function notificationSelected(id) {
             var j = -1;
             for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
-            if (j != -1) {
-                var n = notifications[j];
-                if (n.nodeid != null) {
-                    if (n.tag == 'desktop') gotoDevice(n.nodeid, 12); // Desktop
-                    else if (n.tag == 'terminal') gotoDevice(n.nodeid, 11); // Terminal
-                    else if (n.tag == 'files') gotoDevice(n.nodeid, 13); // Files
-                    else if (n.tag == 'intelamt') gotoDevice(n.nodeid, 14); // Intel AMT
-                    else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
-                    else gotoDevice(n.nodeid, 10); // General
-                } else {
-                    if (n.tag.startsWith('meshmessenger/')) {
-                        window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
-                        notificationDelete(id);
-                    }
+            if (j != -1) { notificationSelectedEx(notifications[j], id); }
+        }
+
+        function notificationSelectedEx(n, id) {
+            if (n.nodeid != null) {
+                if (n.tag == 'desktop') gotoDevice(n.nodeid, 12); // Desktop
+                else if (n.tag == 'terminal') gotoDevice(n.nodeid, 11); // Terminal
+                else if (n.tag == 'files') gotoDevice(n.nodeid, 13); // Files
+                else if (n.tag == 'intelamt') gotoDevice(n.nodeid, 14); // Intel AMT
+                else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
+                else gotoDevice(n.nodeid, 10); // General
+            } else {
+                if (n.tag.startsWith('meshmessenger/')) {
+                    window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
+                    notificationDelete(id);
                 }
             }
         }
@@ -7367,12 +7396,29 @@
 
         // Add a new notification and play the notification sound
         function addNotification(n) {
-            if (n.time == null) { n.time = Date.now(); }
-            if (n.id == null) { n.id = Math.random(); }
-            notifications.unshift(n);
-            setNotificationCount(notifications.length);
-            Q('chimes').play();
-            clickNotificationIcon(true);
+            // If web notifications are granted, use it.
+            if (Notification && (Notification.permission == "granted")) {
+                var notification;
+                if (n.nodeid) {
+                    var node = getNodeFromId(n.nodeid);
+                    if (node) { notification = new Notification("{{{title}}} - " + node.name, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
+                } else {
+                    if (n.icon == null) { n.icon = 0; }
+                    notification = new Notification("{{{title}}} - " + n.title, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + n.icon + '.png' });
+                }
+                notification.xtag = n.tag;
+                notification.nodeid = n.nodeid;
+                notification.username = n.username;
+                notification.onclick = function (e) { notificationSelectedEx(e.target); }
+                Q('chimes').play();
+            } else {
+                if (n.time == null) { n.time = Date.now(); }
+                if (n.id == null) { n.id = Math.random(); }
+                notifications.unshift(n);
+                setNotificationCount(notifications.length);
+                Q('chimes').play();
+                clickNotificationIcon(true);
+            }
         }
 
         // Remove all notifications
@@ -7688,6 +7734,9 @@
                 QC(panels[i]).add((x == i) ? 'style3sel' : 'style3x');
             }
 
+            // If going to the remote desktop tab, adjust the tab.
+            if (x == 11) { deskAdjust(); }
+
             // Panel 115 is weird, it's panel 15 for device console but used as a server console.
             if (x == 115) { QV('p15', true); }
             QV('p15uploadCore', x != 115);
@@ -7695,6 +7744,9 @@
             if ((x == 15) || (x == 115)) { setupConsole(); }
 
             if (x == 1) masterUpdate(4);
+
+            // Setup web notifications
+            if ((x == 2) && Notification) { QV('accountEnableNotificationsSpan', Notification.permission != 'granted'); }
 
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
@@ -7705,7 +7757,7 @@
 
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
+        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; localStorage.setItem(name, val); } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton src=images/link5.png></span>"; }
