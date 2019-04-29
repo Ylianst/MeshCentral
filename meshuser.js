@@ -238,6 +238,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     "Connected Users": Object.keys(parent.wssessions).length,
                     "Users Sessions": Object.keys(parent.wssessions2).length,
                     "Relay Sessions": parent.relaySessionCount,
+                    "Relay Count": Object.keys(parent.wsrelays).length
                 };
                 if (parent.relaySessionErrorCount != 0) { serverStats['Relay Errors'] = parent.relaySessionErrorCount; }
                 if (parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(parent.parent.mpsserver.ciraConnections).length; }
@@ -519,7 +520,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     switch (cmd) {
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
-                            r += 'migrationagents, swarmstats, nodeconfig, heapdump.';
+                            r += 'migrationagents, swarmstats, nodeconfig, heapdump, relays.';
                             break;
                         }
                         case 'info': {
@@ -643,6 +644,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                 });
                             }
+                            break;
+                        }
+                        case 'relays': {
+                            for (var i in parent.wsrelays) {
+                                r += 'id: ' + i + ', state: ' + parent.wsrelays[i].state;
+                                if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.ws._socket.remoteAddress); }
+                                if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.ws._socket.remoteAddress); }
+                                r += '<br />';
+                            }
+                            if (r == '') { r = 'No relays.'; }
                             break;
                         }
                         default: { // This is an unknown command, return an error message
@@ -2468,6 +2479,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Return true if at least one element of arr2 is in arr1
     function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
+
+    // Clean a IPv6 address that encodes a IPv4 address
+    function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
 
     return obj;
 };
