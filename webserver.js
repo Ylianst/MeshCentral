@@ -2420,7 +2420,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
         archive.on('error', function (err) { throw err; });
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent-' + mesh.name + '.zip"' });
+        try {
+            // Set the agent download including the mesh name.
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent-' + mesh.name + '.zip"' });
+        } catch (ex) {
+            // If the mesh name contains invalid characters, just use a generic name.
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent.zip"' });
+        }
         archive.pipe(res);
 
         // Opens the "MeshAgentOSXPackager.zip"
