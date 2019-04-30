@@ -3831,6 +3831,7 @@
                 if (terminalAccess) { setupTerminal(); }
                 if (fileAccess) { setupFiles(); }
                 var consoleRights = ((meshrights & 16) != 0);
+                console.log('consoleRights', consoleRights);
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
 
                 // Show or hide the tabs
@@ -7332,16 +7333,12 @@
             } else {
                 for (var i in notifications) {
                     var n = notifications[i];
-                    var t = '';
+                    var t = '<b>' + n.title + '</b>: '
                     var d = new Date(n.time);
                     var icon = 0;
                     if (n.nodeid != null) {
                         var node = getNodeFromId(n.nodeid);
-                        if (node != null) {
-                            //console.log(node);
-                            icon = node.icon;
-                            t = '<b>' + node.name + '</b>: '
-                        }
+                        if (node != null) { icon = node.icon; t = '<b>' + node.name + '</b>: ' }
                     }
 
                     r += '<div title="Occured at ' + d.toLocaleString() + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '')?'transparent':'orange') + '"><div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div><div onclick="notificationDelete(' + n.id + ')" class=unselectable title="Clear this notification" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + n.text + '</div></div>';
@@ -7353,10 +7350,16 @@
         }
 
         // A notification was selected
-        function notificationSelected(id) {
+        function notificationSelected(id, del) {
             var j = -1;
             for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
-            if (j != -1) { notificationSelectedEx(notifications[j], id); }
+            if (j != -1) {
+                notificationSelectedEx(notifications[j], id);
+                if (del && notifications[j]) {
+                    if (notifications[j].notification) { notifications[j].notification.close(); delete notifications[j].notification; }
+                    notificationDelete(id);
+                }
+            }
         }
 
         function notificationSelectedEx(n, id) {
@@ -7368,7 +7371,7 @@
                 else if (n.tag == 'console') gotoDevice(n.nodeid, 15); // Files
                 else gotoDevice(n.nodeid, 10); // General
             } else {
-                if (n.tag.startsWith('meshmessenger/')) {
+                if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
                     window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
                 }
@@ -7381,6 +7384,7 @@
             if (e != null) {
                 for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
                 if (j != -1) {
+                    if (notifications[j].notification) { notifications[j].notification.close(); delete notifications[j].notification; }
                     notifications.splice(j, 1);
                     e.parentNode.removeChild(e);
                     setNotificationCount(notifications.length);
@@ -7396,9 +7400,17 @@
 
         // Add a new notification and play the notification sound
         function addNotification(n) {
+            // Show notification within the web page.
+            if (n.time == null) { n.time = Date.now(); }
+            if (n.id == null) { n.id = Math.random(); }
+            notifications.unshift(n);
+            setNotificationCount(notifications.length);
+            clickNotificationIcon(true);
+            Q('chimes').play();
+
             // If web notifications are granted, use it.
+            var notification = null;
             if (Notification && (Notification.permission == "granted")) {
-                var notification;
                 if (n.nodeid) {
                     var node = getNodeFromId(n.nodeid);
                     if (node) { notification = new Notification("{{{title}}} - " + node.name, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
@@ -7406,18 +7418,12 @@
                     if (n.icon == null) { n.icon = 0; }
                     notification = new Notification("{{{title}}} - " + n.title, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + n.icon + '.png' });
                 }
+                notification.id = n.id;
                 notification.xtag = n.tag;
                 notification.nodeid = n.nodeid;
                 notification.username = n.username;
-                notification.onclick = function (e) { notificationSelectedEx(e.target); }
-                Q('chimes').play();
-            } else {
-                if (n.time == null) { n.time = Date.now(); }
-                if (n.id == null) { n.id = Math.random(); }
-                notifications.unshift(n);
-                setNotificationCount(notifications.length);
-                Q('chimes').play();
-                clickNotificationIcon(true);
+                notification.onclick = function (e) { notificationSelected(e.target.id, true); }
+                n.notification = notification;
             }
         }
 

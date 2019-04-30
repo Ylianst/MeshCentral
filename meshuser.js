@@ -1112,7 +1112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
-                    var notification = { "action": "msg", "type": "notify", "value": command.msg, "title": user.name, "icon": 9, "userid": user._id, "username": user.name };
+                    var notification = { action: "msg", type: "notify", value: command.msg, title: user.name, icon: 8, userid: user._id, username: user.name };
 
                     // Get the list of sessions for this user
                     var sessions = parent.wssessions[command.userid];
