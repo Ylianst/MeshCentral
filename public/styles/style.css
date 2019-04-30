@@ -32,7 +32,7 @@ body {
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
     -ms-grid-columns: 90px 1fr;
-    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    /*grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));*/
     grid-template-areas: "header header" "nav nav" "content content" "footer footer";
 }
 
@@ -40,7 +40,7 @@ body {
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
     -ms-grid-columns: 90px 1fr;
-    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    /*grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));*/
     grid-template-areas: "header header" "nav nav" "content content" "footer footer";
 }
 
@@ -48,7 +48,7 @@ body {
     -ms-grid-rows: 66px minmax(24px, max-content) 1fr 45px;
     grid-template-rows: 66px minmax(24px, max-content) auto 45px;
     -ms-grid-columns: 90px 1fr;
-    grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));
+    /*grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));*/
     grid-template-areas: "header header" "nav nav" "content content" "footer footer";
 }
 
@@ -101,7 +101,7 @@ body {
     background-position-y: 0px;
     background-attachment: initial;
     background-repeat: no-repeat;
-    width: 960px;
+    /*width: 960px;*/
     height: 66px;
 }
 
