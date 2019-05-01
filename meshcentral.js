@@ -216,7 +216,7 @@ function CreateMeshCentralServer(config, args) {
                 if (code == 0) { try { latestVer = xprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
                 callback(obj.currentVer, latestVer);
             });
-        } catch (ex) { callback(obj.currentVer, null); } // If the system is running out of memory, an exception here can easily happen.
+        } catch (ex) { callback(obj.currentVer, null, ex); } // If the system is running out of memory, an exception here can easily happen.
     };
 
     // Initiate server self-update

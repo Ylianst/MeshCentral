@@ -106,7 +106,58 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         ResourceShortage: 4,
     };
 
+    // Stat counters
+    var connectionCount = 0;
+    var userAuthRequestCount = 0;
+    var incorrectPasswordCount = 0;
+    var meshNotFoundCount = 0;
+    var unknownTlsNodeCount = 0;
+    var unknownTlsMeshIdCount = 0;
+    var addedTlsDeviceCount = 0;
+    var unknownNodeCount = 0;
+    var unknownMeshIdCount = 0;
+    var addedDeviceCount = 0;
+    var ciraTimeoutCount = 0;
+    var protocolVersionCount = 0;
+    var badUserNameLengthCount = 0;
+    var channelOpenCount = 0;
+    var channelOpenConfirmCount = 0;
+    var channelOpenFailCount = 0;
+    var channelCloseCount = 0;
+    var disconnectCommandCount = 0;
+    var socketClosedCount = 0;
+    var socketErrorCount = 0;
+
+    // Return statistics about this MPS server
+    obj.getStats = function () {
+        return {
+            ciraConnections: Object.keys(obj.ciraConnections).length,
+            tlsSessionStore: Object.keys(tlsSessionStore).length,
+            connectionCount: connectionCount,
+            userAuthRequestCount: userAuthRequestCount,
+            incorrectPasswordCount: incorrectPasswordCount,
+            meshNotFoundCount: meshNotFoundCount,
+            unknownTlsNodeCount: unknownTlsNodeCount,
+            unknownTlsMeshIdCount: unknownTlsMeshIdCount,
+            addedTlsDeviceCount: addedTlsDeviceCount,
+            unknownNodeCount: unknownNodeCount,
+            unknownMeshIdCount: unknownMeshIdCount,
+            addedDeviceCount: addedDeviceCount,
+            ciraTimeoutCount: ciraTimeoutCount,
+            protocolVersionCount: protocolVersionCount,
+            badUserNameLengthCount: badUserNameLengthCount,
+            channelOpenCount: channelOpenCount,
+            channelOpenConfirmCount: channelOpenConfirmCount,
+            channelOpenFailCount: channelOpenFailCount,
+            channelCloseCount: channelCloseCount,
+            disconnectCommandCount: disconnectCommandCount,
+            socketClosedCount: socketClosedCount,
+            socketErrorCount: socketErrorCount
+        };
+    }
+
     function onConnection(socket) {
+        connectionCount++;
         if (obj.args.mpstlsoffload) {
             socket.tag = { first: true, clientCert: null, accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         } else {
@@ -117,7 +168,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         // Setup the CIRA keep alive timer
         socket.setTimeout(MAX_IDLE);
-        socket.on("timeout", () => { Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
+        socket.on("timeout", () => { ciraTimeoutCount++; Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
         socket.addListener("data", function (data) {
             if (args.mpsdebug) { var buf = Buffer.from(data, "binary"); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
@@ -156,12 +207,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                         obj.db.Set(device);
 
                                         // Event the new node
+                                        addedTlsDeviceCount++;
                                         var device2 = common.Clone(device);
                                         if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                         var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
                                         obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
                                     } else {
                                         // New CIRA connection for unknown node, disconnect.
+                                        unknownTlsNodeCount++;
                                         console.log('CIRA connection for unknown node with incorrect group type. meshid: ' + socket.tag.meshid);
                                         socket.end();
                                         return;
@@ -177,6 +230,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
                             });
                         } else {
+                            unknownTlsMeshIdCount++;
                             console.log('ERROR: Intel AMT CIRA connected with unknown groupid: ' + socket.tag.meshid);
                             socket.end();
                             return;
@@ -219,6 +273,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 }
                 case APFProtocol.PROTOCOLVERSION: {
                     if (len < 93) return 0;
+                    protocolVersionCount++;
                     socket.tag.MajorVersion = common.ReadInt(data, 1);
                     socket.tag.MinorVersion = common.ReadInt(data, 5);
                     socket.tag.SystemId = guidToStr(common.rstr2hex(data.substring(13, 29))).toLowerCase();
@@ -227,6 +282,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 }
                 case APFProtocol.USERAUTH_REQUEST: {
                     if (len < 13) return 0;
+                    userAuthRequestCount++;
                     var usernameLen = common.ReadInt(data, 1);
                     var username = data.substring(5, 5 + usernameLen);
                     var serviceNameLen = common.ReadInt(data, 5 + usernameLen);
@@ -242,13 +298,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     Debug(3, 'MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
                     // Check the CIRA password
-                    if ((args.mpspass != null) && (password != args.mpspass)) { Debug(1, 'MPS:Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; Debug(1, 'MPS:Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
 
                     // Check the CIRA username, which should be the start of the MeshID.
-                    if (usernameLen != 16) { Debug(1, 'MPS:Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                    if (usernameLen != 16) { badUserNameLengthCount++; Debug(1, 'MPS:Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
                     var meshIdStart = '/' + username, mesh = null;
                     if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { Debug(1, 'MPS:Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if (mesh == null) { meshNotFoundCount++; Debug(1, 'MPS:Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
 
                     // If this is a agent-less mesh, use the device guid 3 times as ID.
                     if (mesh.mtype == 1) {
@@ -267,6 +323,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 obj.db.Set(device);
 
                                 // Event the new node
+                                addedDeviceCount++;
                                 var device2 = common.Clone(device);
                                 if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                 var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
@@ -287,6 +344,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
                             if (nodes.length !== 1) {
                                 // New CIRA connection for unknown node, disconnect.
+                                unknownNodeCount++;
                                 console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
                                 socket.end();
                                 return;
@@ -306,6 +364,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         });
                     } else { // Unknown mesh type
                         // New CIRA connection for unknown node, disconnect.
+                        unknownMeshIdCount++;
                         console.log('CIRA connection to a unknown group type. groupid: ' + socket.tag.meshid);
                         socket.end();
                         return;
@@ -393,6 +452,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var Source = data.substring(29 + ChannelTypeLength + TargetLen, 29 + ChannelTypeLength + TargetLen + SourceLen);
                     var SourcePort = common.ReadInt(data, 29 + ChannelTypeLength + TargetLen + SourceLen);
 
+                    channelOpenCount++;
                     Debug(3, 'MPS:CHANNEL_OPEN', ChannelType, SenderChannel, WindowSize, Target + ':' + TargetPort, Source + ':' + SourcePort);
 
                     // Check if we understand this channel type
@@ -423,6 +483,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (cirachannel == null) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return 17; }
                         cirachannel.amtchannelid = SenderChannel;
                         cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
+                        channelOpenConfirmCount++;
                         Debug(3, 'MPS:CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
                         if (cirachannel.closing == 1) {
                             // Close this channel
@@ -454,6 +515,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 17) return 0;
                         var RecipientChannel = common.ReadInt(data, 1);
                         var ReasonCode = common.ReadInt(data, 5);
+                        channelOpenFailCount++;
                         Debug(3, 'MPS:CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return 17; }
@@ -468,6 +530,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     {
                         if (len < 5) return 0;
                         var RecipientChannel = common.ReadInt(data, 1);
+                        channelCloseCount++;
                         Debug(3, 'MPS:CHANNEL_CLOSE', RecipientChannel);
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return 5; }
@@ -526,6 +589,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     {
                         if (len < 7) return 0;
                         var ReasonCode = common.ReadInt(data, 1);
+                        disconnectCommandCount++;
                         Debug(3, 'MPS:DISCONNECT', ReasonCode);
                         try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
                         obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
@@ -540,12 +604,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         }
 
         socket.addListener("close", function () {
+            socketClosedCount++;
             Debug(1, 'MPS:CIRA connection closed');
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
         });
 
         socket.addListener("error", function () {
+            socketErrorCount++;
             //console.log("MPS Error: " + socket.remoteAddress);
         });
 

@@ -520,7 +520,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     switch (cmd) {
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
-                            r += 'migrationagents, swarmstats, nodeconfig, heapdump, relays.';
+                            r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig, heapdump, relays.';
+                            break;
+                        }
+                        case 'agentstats': {
+                            var stats = parent.getAgentStats();
+                            for (var i in stats) {
+                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'webstats': {
+                            var stats = parent.getStats();
+                            for (var i in stats) {
+                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'acceleratorsstats': {
+                            var stats = parent.parent.certificateOperations.getAcceleratorStats();
+                            for (var i in stats) {
+                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'mpsstats': {
+                            var stats = parent.parent.mpsserver.getStats();
+                            for (var i in stats) {
+                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'serverupdate': {
+                            r = 'Performing server update...';
+                            parent.parent.performServerUpdate();
+                            break;
+                        }
+                        case 'updatecheck': {
+                            parent.parent.getLatestServerVersion(function (currentVer, newVer, error) {
+                                var r2 = 'Current Version: ' + currentVer + '\r\n';
+                                if (newVer != null) { r2 += 'Available Version: ' + newVer + '\r\n'; }
+                                if (error != null) { r2 += 'Exception: ' + ex + '\r\n'; }
+                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
+                            });
+                            r = 'Checking server update...';
                             break;
                         }
                         case 'info': {
@@ -622,9 +665,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 for (var i in parent.parent.swarmserver.stats) {
                                     if (typeof parent.parent.swarmserver.stats[i] == 'object') {
-                                        r += i + ' ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '<br />';
+                                        r += i + ': ' + JSON.stringify(parent.parent.swarmserver.stats[i]) + '\r\n';
                                     } else {
-                                        r += i + ' ' + parent.parent.swarmserver.stats[i] + '<br />';
+                                        r += i + ': ' + parent.parent.swarmserver.stats[i] + '\r\n';
                                     }
                                 }
                             }
