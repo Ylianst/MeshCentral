@@ -214,6 +214,54 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     });
 
+    // Return statistics about this web server
+    obj.getStats = function () {
+        return {
+            users: Object.keys(obj.users).length,
+            meshes: Object.keys(obj.meshes).length,
+            dnsDomains: Object.keys(obj.dnsDomains).length,
+            relaySessionCount: obj.relaySessionCount,
+            relaySessionErrorCount: obj.relaySessionErrorCount,
+            wsagents: Object.keys(obj.wsagents).length,
+            wsagentsDisconnections: Object.keys(obj.wsagentsDisconnections).length,
+            wsagentsDisconnectionsTimer: Object.keys(obj.wsagentsDisconnectionsTimer).length,
+            wssessions: Object.keys(obj.wssessions).length,
+            wssessions2: Object.keys(obj.wssessions2).length,
+            wsPeerSessions: Object.keys(obj.wsPeerSessions).length,
+            wsPeerSessions2: Object.keys(obj.wsPeerSessions2).length,
+            wsPeerSessions3: Object.keys(obj.wsPeerSessions3).length,
+            sessionsCount: Object.keys(obj.sessionsCount).length,
+            wsrelays: Object.keys(obj.wsrelays).length,
+            wsPeerRelays: Object.keys(obj.wsPeerRelays).length,
+            tlsSessionStore: Object.keys(tlsSessionStore).length
+        };
+    }
+
+    // Agent counters
+    obj.agentStats = {
+        createMeshAgentCount: 0,
+        coreIsStableCount: 0,
+        verifiedAgentConnectionCount: 0,
+        clearingCoreCount: 0,
+        updatingCoreCount: 0,
+        recoveryCoreIsStableCount: 0,
+        meshDoesNotExistCount: 0,
+        invalidPkcsSignatureCount: 0,
+        invalidRsaSignatureCount: 0,
+        invalidJsonCount: 0,
+        unknownAgentActionCount: 0,
+        agentBadWebCertHashCount: 0,
+        agentBadSignature1Count: 0,
+        agentBadSignature2Count: 0,
+        agentMaxSessionHoldCount: 0,
+        invalidDomainMeshCount: 0,
+        invalidMeshTypeCount: 0,
+        invalidDomainMesh2Count: 0,
+        invalidMeshType2Count: 0,
+        duplicateAgentCount: 0
+    }
+    obj.getAgentStats = function () { return obj.agentStats; }
+
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }

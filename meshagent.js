@@ -19,6 +19,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
     const agentUpdateBlockSize = 65531;
+    parent.agentStats.createMeshAgentCount++;
 
     var obj = {};
     obj.domain = domain;
@@ -155,6 +156,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (meshcorehash == null) {
                                 // Clear the core
                                 obj.send(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
+                                parent.agentStats.clearingCoreCount++;
                                 parent.parent.debug(1, 'Clearing core');
                             } else {
                                 // Update new core
@@ -168,7 +170,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         // Send the updated code.
                                         delete obj.agentCoreUpdatePending;
                                         obj.send(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
-                                        parent.parent.debug(1, 'Updating code ' + argument.name);
+                                        parent.agentStats.updatingCoreCount++;
+                                        parent.parent.debug(1, 'Updating core ' + argument.name);
                                         agentCoreIsStable();
                                     } else {
                                         // This agent is probably disconnected, nothing to do.
@@ -359,6 +362,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
                     if ((getWebCertHash(domain) != msg.substring(2, 50)) && (getWebCertFullHash(domain) != msg.substring(2, 50))) {
+                        parent.agentStats.agentBadWebCertHashCount++;
                         console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
                         console.log('Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');
                         return;
@@ -388,7 +392,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check the agent signature if we can
                 if (obj.unauthsign != null) {
-                    if (processAgentSignature(obj.unauthsign) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return; } else { completeAgentConnection(); }
+                    if (processAgentSignature(obj.unauthsign) == false) {
+                        parent.agentStats.agentBadSignature1Count++;
+                        console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return;
+                    } else { completeAgentConnection(); }
                 }
             }
             else if (cmd == 2) {
@@ -403,7 +410,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.unauth.nodeCertPem = '-----BEGIN CERTIFICATE-----\r\n' + Buffer.from(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
 
                 // Check the agent signature if we can
-                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else { if (processAgentSignature(msg.substring(4 + certlen)) == false) { console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return; } }
+                if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else {
+                    if (processAgentSignature(msg.substring(4 + certlen)) == false) {
+                        parent.agentStats.agentBadSignature2Count++;
+                        console.log('Agent connected with bad signature, holding connection (' + obj.remoteaddrport + ').'); return;
+                    }
+                }
                 completeAgentConnection();
             }
             else if (cmd == 3) {
@@ -541,7 +553,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             for (var i in parent.wsagents) { if (parent.wsagents[i].domain.id == domain.id) { domainAgentSessionCount++; } }
 
             // Check if we have too many user sessions
-            if (domainAgentSessionCount >= domain.limits.maxagentsessions) { return; } // Too many, hold the connection.
+            if (domainAgentSessionCount >= domain.limits.maxagentsessions) {
+                // Too many, hold the connection.
+                parent.agentStats.agentMaxSessionHoldCount++;
+                return;
+            }
         }
 
         /*
@@ -593,6 +609,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Check if the mesh exists
                 if (mesh == null) {
                     // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    parent.agentStats.invalidDomainMeshCount++;
                     console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
                     return;
                 }
@@ -600,6 +617,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Check if the mesh is the right type
                 if (mesh.mtype != 2) {
                     // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    parent.agentStats.invalidMeshTypeCount++;
                     console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
                     return;
                 }
@@ -634,6 +652,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Check if the mesh exists
                 if (mesh == null) {
                     // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    parent.agentStats.invalidDomainMesh2Count++;
                     console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
                     return;
                 }
@@ -641,6 +660,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Check if the mesh is the right type
                 if (mesh.mtype != 2) {
                     // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+                    parent.agentStats.invalidMeshType2Count++;
                     console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
                     return;
                 } 
@@ -686,6 +706,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.wsagents[obj.dbNodeKey] = obj;
             if (dupAgent) {
                 // Close the duplicate agent
+                parent.agentStats.duplicateAgentCount++;
                 if (obj.nodeid != null) { parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
                 dupAgent.close(3);
             } else {
@@ -769,6 +790,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     function recoveryAgentCoreIsStable(mesh) {
+        parent.agentStats.recoveryCoreIsStableCount++;
+
         // Recovery agent is doing ok, lets perform main agent checking.
         //console.log('recoveryAgentCoreIsStable()');
 
@@ -793,9 +816,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     function agentCoreIsStable() {
+        parent.agentStats.coreIsStableCount++;
+
         // Check that the mesh exists
         const mesh = parent.meshes[obj.dbMeshKey];
         if (mesh == null) {
+            parent.agentStats.meshDoesNotExistCount++;
             // TODO: Mark this agent as part of a mesh that does not exists.
             return; // Probably not worth doing anything else. Hold this agent.
         }
@@ -806,7 +832,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             return;
         }
 
-        // Fetch the the real agent nodeid
+        // Fetch the the diagnostic agent nodeid
         db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
             if (nodes.length == 1) {
                 obj.diagnosticNodeKey = nodes[0].daid;
@@ -902,7 +928,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             verifier.update(buf);
                             verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
                         }
-                        if (verified == false) { return false; } // Not a valid signature
+                        if (verified == false) {
+                            // Not a valid signature
+                            parent.agentStats.invalidPkcsSignatureCount++;
+                            return false;
+                        } 
                     } catch (ex) { };
                 }
             }
@@ -914,7 +944,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
                     const verify2 = parent.crypto.createVerify('SHA384');
                     verify2.end(Buffer.from(getWebCertFullHash(domain) + obj.nonce + obj.agentnonce, 'binary'));  // Test using the full cert hash
-                    if (verify2.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) { return false; }
+                    if (verify2.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
+                        parent.agentStats.invalidRsaSignatureCount++;
+                        return false;
+                    }
                 }
             }
         }
@@ -927,6 +960,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.unauth;
         delete obj.receivedCommands;
         if (obj.unauthsign) delete obj.unauthsign;
+        parent.agentStats.verifiedAgentConnectionCount++;
         parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddrport + ').');
         obj.authenticated = 1;
         return true;
@@ -936,7 +970,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function processAgentData(msg) {
         var i, str = msg.toString('utf8'), command = null;
         if (str[0] == '{') {
-            try { command = JSON.parse(str); } catch (ex) { console.log('Unable to parse agent JSON (' + obj.remoteaddrport + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
+            try { command = JSON.parse(str); } catch (ex) { parent.agentStats.invalidJsonCount++; console.log('Unable to parse agent JSON (' + obj.remoteaddrport + '): ' + str, ex); return; } // If the command can't be parsed, ignore it.
             if (typeof command != 'object') { return; }
             switch (command.action) {
                 case 'msg':
@@ -1159,6 +1193,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                 default: {
+                    parent.agentStats.unknownAgentActionCount++; 
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
                     break;
                 }
