@@ -560,7 +560,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.parent.getLatestServerVersion(function (currentVer, newVer, error) {
                                 var r2 = 'Current Version: ' + currentVer + '\r\n';
                                 if (newVer != null) { r2 += 'Available Version: ' + newVer + '\r\n'; }
-                                if (error != null) { r2 += 'Exception: ' + ex + '\r\n'; }
+                                if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
                                 try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
                             });
                             r = 'Checking server update...';
