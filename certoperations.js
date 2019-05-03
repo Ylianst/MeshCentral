@@ -549,7 +549,7 @@ module.exports.CertificateOperations = function (parent) {
     // Accelerators, used to dispatch work to other processes
     const fork = require("child_process").fork;
     const program = require("path").join(__dirname, "meshaccelerator.js");
-    const acceleratorTotalCount = 1; //require("os").cpus().length; // TODO: Check if this accelerator can scale.
+    const acceleratorTotalCount = require("os").cpus().length; // TODO: Check if this accelerator can scale.
     var acceleratorCreateCount = acceleratorTotalCount;
     var freeAccelerators = [];
     var pendingAccelerator = [];
