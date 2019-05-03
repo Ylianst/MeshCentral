@@ -598,16 +598,16 @@ module.exports.CertificateOperations = function (parent) {
             accelerator.accid = acceleratorCreateCount;
             accelerator.on("message", function (message) {
                 acceleratorMessage++;
-                try { this.func(this.tag, message); } catch (ex) { acceleratorMessageException++; acceleratorMessageLastException = ex; }
-                try {
-                    delete this.tag;
-                    if (pendingAccelerator.length > 0) {
-                        var x = pendingAccelerator.shift();
-                        if (x.tag) { this.tag = x.tag; delete x.tag; }
-                        accelerator.send(x);
-                    } else { freeAccelerators.push(this); }
-                } catch (ex) { acceleratorException++; acceleratorLastException = ex; }
+                this.x.func(this.x.tag, message);
+                delete this.x;
+                if (pendingAccelerator.length > 0) { this.send(this.x = pendingAccelerator.shift()); } else { freeAccelerators.push(this); }
             });
+            accelerator.on("exit", function (code) {
+                if (this.x) { pendingAccelerator.push(this.x); delete this.x; }
+                acceleratorCreateCount++;
+                if (pendingAccelerator.length > 0) { var acc = obj.getAccelerator(); acc.send(acc.x = pendingAccelerator.shift()); }
+            });
+            accelerator.on("error", function (code) { }); // Not sure if somethign should be done here to help kill the process.
             accelerator.send({ action: "setState", certs: obj.acceleratorCertStore });
             return accelerator;
         }
@@ -636,13 +636,11 @@ module.exports.CertificateOperations = function (parent) {
             if (acc == null) {
                 // Add to pending accelerator workload
                 acceleratorPerformSignaturePushFuncCall++;
-                pendingAccelerator.push({ action: "sign", key: privatekey, data: data, tag: tag });
+                pendingAccelerator.push({ action: "sign", key: privatekey, data: data, tag: tag, func: func });
             } else {
                 // Send to accelerator now
                 acceleratorPerformSignatureRunFuncCall++;
-                acc.func = func;
-                acc.tag = tag;
-                acc.send({ action: "sign", key: privatekey, data: data });
+                acc.send(acc.x = { action: "sign", key: privatekey, data: data, tag: tag, func: func });
             }
         }
     };
