@@ -1643,7 +1643,7 @@ function InstallModules(modules, func) {
             try {
                 var xxmodule = require(modules[i]);
             } catch (e) {
-                if (previouslyInstalledModules[modules[i]] !== true) { previouslyInstalledModules[modules[i]] = true; missingModules.push(modules[i]); }
+                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
             }
         }
         if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
@@ -1668,6 +1668,7 @@ function InstallModule(modulename, func, tag1, tag2) {
             process.exit();
             return;
         }
+        previouslyInstalledModules[modulename] = true;
         func(tag1, tag2);
         return;
     });
