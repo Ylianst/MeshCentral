@@ -727,7 +727,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Save login time
         user.login = Math.floor(Date.now() / 1000);
         obj.db.SetUser(user);
-        obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
+
+        // Notify account login
+        var targets = ['*', 'server-users'];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        obj.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
 
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
@@ -3027,7 +3031,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (oldcount == null) { oldcount = 0; } else { delete obj.sessionsCount[userid]; }
                 if (newcount != oldcount) {
                     x = userid.split('/');
-                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    var u = users[userid];
+                    if (u) {
+                        var targets = ['*', 'server-users'];
+                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                        obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    }
                 }
             }
 
@@ -3036,7 +3045,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 oldcount = obj.sessionsCount[userid];
                 if ((oldcount != null) && (oldcount != 0)) {
                     x = userid.split('/');
-                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 });
+                    var u = users[userid];
+                    if (u) {
+                        var targets = ['*', 'server-users'];
+                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                        obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
+                    }
                 }
             }
 
@@ -3056,8 +3070,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If the count changed, update and event
             if (newcount != oldcount) {
                 x = userid.split('/');
-                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
-                obj.sessionsCount[userid] = newcount;
+                var u = users[userid];
+                if (u) {
+                    var targets = ['*', 'server-users'];
+                    if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                    obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    obj.sessionsCount[userid] = newcount;
+                }
             }
         }
     };

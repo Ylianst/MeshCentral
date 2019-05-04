@@ -61,7 +61,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var user = parent.users[obj.user._id];
                 if (user) {
                     if (parent.parent.multiServer == null) {
-                        parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: obj.user.name, count: parent.wssessions[obj.user._id].length, nolog: 1, domain: domain.id });
+                        var targets = ['*', 'server-users'];
+                        if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
+                        parent.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: obj.user.name, count: parent.wssessions[obj.user._id].length, nolog: 1, domain: domain.id });
                     } else {
                         parent.recountSessions(ws.sessionId); // Recount sessions
                     }
@@ -203,7 +205,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             parent.wssessions2[ws.sessionId] = ws;
             if (!parent.wssessions[user._id]) { parent.wssessions[user._id] = [ws]; } else { parent.wssessions[user._id].push(ws); }
             if (parent.parent.multiServer == null) {
-                parent.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: user.name, count: parent.wssessions[user._id].length, nolog: 1, domain: domain.id });
+                var targets = ['*', 'server-users'];
+                if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
+                parent.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: user.name, count: parent.wssessions[user._id].length, nolog: 1, domain: domain.id });
             } else {
                 parent.recountSessions(ws.sessionId); // Recount sessions
             }
@@ -1004,15 +1008,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var chguser = parent.users[command.id];
                         change = 0;
                         if (chguser) {
+                            // If the target user is admin and we are not admin, no changes can be made.
+                            if ((chguser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) return;
+
+                            // Can only perform this operation on other users of our group.
+                            if (user.siteadmin != 0xFFFFFFFF) {
+                                if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) return;
+                            }
+
+                            // Validate input
                             if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+
+                            // Make changes
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
-                            if ((user.siteadmin == 0xFFFFFFFF) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
-                            if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break; // Can only perform this operation on other users of our group.
+
+                            // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
+                            var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
+                            if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
 
                             // Went sending a notification about a group change, we need to send to all the previous and new groups.
                             var allTargetGroups = chguser.groups;
-                            if ((Array.isArray(command.groups)) && (user._id != command.id)) {
+                            if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin == 0xFFFFFFFF))) {
                                 if (command.groups.length == 0) {
                                     // Remove the user groups
                                     if (chguser.groups != null) { delete chguser.groups; change = 1; }

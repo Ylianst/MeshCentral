@@ -300,6 +300,7 @@
                         <td class="style14">
                             <div style="float:right">
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
+                                <img onclick=p4downloadUserInfo() style="cursor:pointer" title="Download user information" src="images/link4.png" />
                             </div>
                             <div>
                                 <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
@@ -1252,6 +1253,7 @@
         function addLetterS(x) { return (x > 1) ? 's' : ''; }
 
         function onMessage(server, message) {
+            console.log(message);
             switch (message.action) {
                 case 'serverstats': {
                     updateGeneralServerStats(message);
@@ -6820,6 +6822,35 @@
             return false;
         }
 
+        function p4downloadUserInfo() {
+            if (xxdialogMode) return;
+            var x = 'Download the list of users with one of the file formats below.<br /><br />';
+            x += addHtmlValue('CSV Format', '<a style=cursor:pointer onclick=p4downloadUserInfoCSV()>userlist.csv</a>');
+            x += addHtmlValue('JSON Format', '<a style=cursor:pointer onclick=p4downloadUserInfoJSON()>userlist.json</a>');
+            setDialogMode(2, "User List Export", 1, null, x);
+        }
+
+        function p4downloadUserInfoCSV() {
+            var csv = "id, name, email, creation, lastlogin, groups, authfactors\r\n";
+            for (var i in users) {
+                var multiFactor = false, factors = [];
+                if ((users[i].otpsecret > 0) || (users[i].otphkeys > 0)) {
+                    multiFactor = true;
+                    if (users[i].otpsecret > 0) { factors.push('AuthApp'); }
+                    if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
+                    if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
+                }
+                csv += '\"' + users[i]._id + '\",\"' + users[i].name + '\",\"' + (users[i].email ? users[i].email : '') + '\",\"' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '\",\"' + (users[i].login ? new Date(users[i].login * 1000) : '') + '\",\"' + (users[i].groups ? users[i].groups.join(',') : '') + '\",\"' + (multiFactor ? factors.join(',') : '') + '\"\r\n';
+            }
+            saveAs(new Blob([csv], { type: "application/octet-stream" }), "userlist.csv");
+        }
+
+        function p4downloadUserInfoJSON() {
+            var r = []
+            for (var i in users) { r.push(users[i]); }
+            saveAs(new Blob([JSON.stringify(r)], { type: "application/octet-stream" }), "userlist.json");
+        }
+
         function showUserBroadcastDialog() {
             if (xxdialogMode) return;
             var x = 'Broadcast a message to all connected users.<textarea id=broadcastMessage value="" maxlength="256"/></textarea>';
@@ -6923,10 +6954,11 @@
             QE('ua_manageusers', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverrestore', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_fileaccess', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_fileaccessquota', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverupdate', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_lockedaccount', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_nonewgroups', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_nomeshcmd', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_lockedaccount', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_nonewgroups', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_nomeshcmd', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
             return false;
@@ -6994,7 +7026,11 @@
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
             if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute('User Identifier', user._id.split('/')[2]); }
-            x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
+            if ((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF)) { // If we are not site admin, we can't change a admin email.
+                x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
+            } else {
+                x += addDeviceAttribute('Email', everify + email + ' <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
+            }
             x += addDeviceAttribute('Server Rights', premsg + "<a style=cursor:pointer onclick=showUserAdminDialog(event,\"" + userid + "\")>" + msg.join(', ') + "</a>");
             if (user.quota) x += addDeviceAttribute('Server Quota', EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute('Creation', new Date(user.creation * 1000).toLocaleString());
@@ -7013,7 +7049,7 @@
             // User Groups
             var userGroups = '<i>None</i>';
             if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
-            x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id))));
+            x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id) && (user._id != 0xFFFFFFFF))));
 
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
@@ -7070,7 +7106,7 @@
             if (serverinfo.emailcheck) { x += addHtmlValue('Status', '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>Not verified</option><option value=1>Verified</option></select>'); }
             setDialogMode(2, "Change Email for " + EscapeHtml(currentUser.name), 3, p30showUserEmailChangeDialogEx, x);
             Q('dp30email').focus();
-            Q('dp30email').value = currentUser.email;
+            Q('dp30email').value = (currentUser.email?currentUser.email:'');
             if (serverinfo.emailcheck) { Q('dp30verified').value = currentUser.emailVerified?1:0; }
             p30validateEmail();
         }
