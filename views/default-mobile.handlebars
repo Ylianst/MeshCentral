@@ -1153,17 +1153,18 @@
 
         function account_showChangePassword() {
             if (xxdialogMode) return;
-            var x = "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:10px><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td>";
-            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td>";
-            if (features & 0x00010000) { x += "</tr><tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td>"; }
-            x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
+            var x = "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:10px>";
+            x += "<tr><td align=right>Old Password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
+            x += "<tr><td align=right>New Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
+            x += "<tr><td align=right>New Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
+            if (features & 0x00010000) { x += "<tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td></tr>"; }
+            x += '</table><div style=padding:10px;margin-bottom:4px>';
             x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Change Password", 0, null, x);
             account_validateNewPassword();
-            Q('apassword1').focus();
+            Q('apassword0').focus();
         }
 
         function account_createMesh() {
@@ -1200,7 +1201,8 @@
         }
 
         function account_validateNewPassword() {
-            var r = '', ok = (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value);
+            var r = '', ok = (Q('apassword0').value.length > 0) && (Q('apassword1').value.length > 0) && (Q('apassword1').value == Q('apassword2').value) && (Q('apassword0').value != Q('apassword1').value);
+            if ((features & 0x00010000) && (Q('apasswordhint').value == Q('apassword1').value)) { ok = false; }
             if (Q('apassword1').value != '') {
                 if (passRequirements == null || passRequirements == '') {
                     // No password requirements, display password strength
