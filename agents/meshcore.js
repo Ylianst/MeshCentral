@@ -418,6 +418,7 @@ function createMeshCore(agent) {
                                     var woptions = http.parseUri(xurl);
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
+                                    sendConsoleText('TUNNELX: ', JSON.stringify(data));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
                                     tunnel.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
@@ -430,6 +431,8 @@ function createMeshCore(agent) {
                                     tunnel.protocol = 0;
                                     tunnel.tcpaddr = data.tcpaddr;
                                     tunnel.tcpport = data.tcpport;
+                                    tunnel.udpaddr = data.udpaddr;
+                                    tunnel.udpport = data.udpport;
                                     tunnel.end();
                                     // Put the tunnel in the tunnels list
                                     var index = nextTunnelIndex++;
@@ -616,12 +619,33 @@ function createMeshCore(agent) {
             if (this.tcpaddr != null) { connectionOptions.host = this.tcpaddr; } else { connectionOptions.host = '127.0.0.1'; }
             s.tcprelay = net.createConnection(connectionOptions, onTcpRelayTargetTunnelConnect);
             s.tcprelay.peerindex = this.index;
+        } if (this.udpport != null) {
+            // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
+            s.data = onUdpRelayServerTunnelData;
+            s.udprelay = dgram.createSocket({ type: 'udp4' });
+            s.udprelay.bind({ port: 0 });
+            s.udprelay.peerindex = this.index;
+            s.udprelay.on('message', onUdpRelayTargetTunnelConnect);
         } else {
             // This is a normal connect for KVM/Terminal/Files
             s.data = onTunnelData;
         }
     }
-    
+
+    // Called when UDP relay data is received // TODO****
+    function onUdpRelayTargetTunnelConnect(data) {
+        sendConsoleText('UDP1: ', data);
+        var peerTunnel = tunnels[this.peerindex];
+        peerTunnel.send(data);
+    }
+
+    // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
+    function onUdpRelayServerTunnelData(data) {
+        sendConsoleText('UDP2: ', data, this.udpport, this.udpaddr);
+        this.udprelay.send(data, this.udpport, this.udpaddr ? this.udpaddr : '127.0.0.1');
+        //if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
+    }
+
     // Called when the TCP relay target is connected
     function onTcpRelayTargetTunnelConnect() {
         var peerTunnel = tunnels[this.peerindex];
@@ -634,7 +658,7 @@ function createMeshCore(agent) {
     function onTcpRelayServerTunnelData(data) {
         if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
     }
-    
+
     function onTunnelClosed() {
         if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
         //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
