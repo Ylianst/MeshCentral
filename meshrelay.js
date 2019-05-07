@@ -274,7 +274,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 performRelay();
             });
             return obj;
-        } else if ((req.query.nodeid != null) && (req.query.tcpport != null)) {
+        } else if ((req.query.nodeid != null) && ((req.query.tcpport != null) || (req.query.udpport != null))) {
             // We have routing instructions in the URL arguments, but first, check user access for this node.
             parent.db.Get(req.query.nodeid, function (err, docs) {
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
@@ -286,9 +286,16 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
-                parent.parent.debug(1, 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
-                if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+
+                if (req.query.tcpport != null) {
+                    var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
+                    parent.parent.debug(1, 'Relay: Sending agent TCP tunnel command: ' + JSON.stringify(command));
+                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+                } else if (req.query.udpport != null) {
+                    var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, udpport: req.query.udpport, udpaddr: ((req.query.udpaddr == null) ? '127.0.0.1' : req.query.udpaddr) };
+                    parent.parent.debug(1, 'Relay: Sending agent UDP tunnel command: ' + JSON.stringify(command));
+                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+                }
                 performRelay();
             });
             return obj;
