@@ -418,7 +418,7 @@ function createMeshCore(agent) {
                                     var woptions = http.parseUri(xurl);
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
-                                    sendConsoleText('TUNNEL: ' + JSON.stringify(data));
+                                    //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
                                     tunnel.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
@@ -621,7 +621,6 @@ function createMeshCore(agent) {
             s.tcprelay.peerindex = this.index;
         } if (this.udpport != null) {
             // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
-            sendConsoleText('UDP relay connection');
             s.data = onUdpRelayServerTunnelData;
             s.udprelay = require('dgram').createSocket({ type: 'udp4' });
             s.udprelay.bind({ port: 0 });
@@ -638,10 +637,8 @@ function createMeshCore(agent) {
 
     // Called when UDP relay data is received // TODO****
     function onUdpRelayTargetTunnelConnect(data) {
-        // TODO!!!
-        sendConsoleText('onUdpRelayTargetTunnelConnect: ' + data);
         var peerTunnel = tunnels[this.peerindex];
-        peerTunnel.send(data);
+        peerTunnel.s.write(data);
     }
 
     // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
