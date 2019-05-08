@@ -525,7 +525,9 @@ function createMeshCore(agent) {
                 }
                 case 'toast': {
                     // Display a toast message
-                    if (data.title && data.msg) { require('toaster').Toast(data.title, data.msg); }
+                    if (data.title && data.msg) {
+                        try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
+                    }
                     break;
                 }
                 case 'openUrl': {
@@ -736,9 +738,9 @@ function createMeshCore(agent) {
                         return;
                     }
 
-                    // Perform notification if needed
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 2)) {
-                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.');
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
                     }
 
                     // Remote terminal using native pipes
@@ -794,9 +796,9 @@ function createMeshCore(agent) {
                         return;
                     }
 
-                    // Perform notification if needed
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 1)) {
-                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.');
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
                     }
 
                     // Remote desktop using native pipes
@@ -818,8 +820,9 @@ function createMeshCore(agent) {
                         }
 
                         if (this.desktop.kvm.connectionCount == 0) {
-                            // Display a toast message
-                            //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.');
+                            // Display a toast message. This may not be supported on all platforms.
+                            // try { require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.'); } catch (ex) { }
+                            
                             this.httprequest.desktop.kvm.end();
                         }
                     };
@@ -850,7 +853,7 @@ function createMeshCore(agent) {
 
                     // Perform notification if needed
                     if (this.httprequest.consent && (this.httprequest.consent & 4)) {
-                        require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file access.');
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file access.'); } catch (ex) { }
                     }
 
                     // Setup files
@@ -1277,8 +1280,7 @@ function createMeshCore(agent) {
                 case 'toast': {
                     if (process.platform == 'win32') {
                         if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
-                            require('toaster').Toast('MeshCentral', args['_'][0]);
-                            response = 'ok';
+                            try { require('toaster').Toast('MeshCentral', args['_'][0]); response = 'ok'; } catch (ex) { response = ex; }
                         }
                     } else {
                         response = 'Only supported on Windows.';
@@ -1718,9 +1720,11 @@ function createMeshCore(agent) {
         
         // Update the network interfaces information data
         var netInfo = mesh.NetInfo;
-        netInfo.action = 'netinfo';
-        var netInfoStr = JSON.stringify(netInfo);
-        if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        if (netInfo) {
+            netInfo.action = 'netinfo';
+            var netInfoStr = JSON.stringify(netInfo);
+            if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        }
     }
     
     // Called periodically to check if we need to send updates to the server

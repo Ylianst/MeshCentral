@@ -3832,7 +3832,6 @@
                 if (terminalAccess) { setupTerminal(); }
                 if (fileAccess) { setupFiles(); }
                 var consoleRights = ((meshrights & 16) != 0);
-                console.log('consoleRights', consoleRights);
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
 
                 // Show or hide the tabs
