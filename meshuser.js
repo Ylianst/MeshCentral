@@ -1361,7 +1361,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check if the user exists
                     var newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase(), newuser = parent.users[newuserid];
                     if (newuser == null) {
-                        // TODO: Send error back, user not found.
+                        // Send error back, user not found.
+                        displayNotificationMessage('User "' + EscapeHtml(command.username) + '" not found.', 'Device Group', 'ServerNotify');
                         break;
                     }
 
