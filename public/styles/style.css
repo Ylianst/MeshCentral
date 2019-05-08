@@ -315,7 +315,8 @@ body {
 }
 
 #welcomeimage {
-    text-align: right;
+    text-align: center;
+    width:50%;
 }
 
 @media (max-width: 800px) {
@@ -331,6 +332,7 @@ body {
 
 #logincell {
     text-align: center;
+    width:50%;
 }
 
 #loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel {

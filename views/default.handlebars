@@ -6270,7 +6270,9 @@
 
         function p20showAddMeshUserDialog() {
             if (xxdialogMode) return;
-            var x = "Allow a user to manage this device group and devices in this group<br /><br />";
+            var x = "Allow a user to manage this device group and devices in this group.";
+            if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
+            x += "<br /><br />";
             x += addHtmlValue('User Name', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<br><div style="height:120px;overflow-y:scroll;border:1px solid gray">';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
@@ -7379,7 +7381,9 @@
                         if (node != null) { icon = node.icon; t = '<b>' + node.name + '</b>: ' }
                     }
 
-                    r += '<div title="Occured at ' + d.toLocaleString() + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '')?'transparent':'orange') + '"><div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div><div onclick="notificationDelete(' + n.id + ')" class=unselectable title="Clear this notification" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + n.text + '</div></div>';
+                    r += '<div title="Occured at ' + d.toLocaleString() + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
+                    if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
+                    r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="Clear this notification" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + n.text + '</div></div>';
                 }
             }
             var deleteall = '';
