@@ -144,6 +144,7 @@
     <Content Include="agents\meshagent_x86-64" />
     <Content Include="agents\meshagent_x86-64_nokvm" />
     <Content Include="agents\meshagent_x86_nokvm" />
+    <Content Include="agents\MeshCentralRouter.exe" />
     <Content Include="agents\MeshCmd-signed.exe" />
     <Content Include="agents\MeshCmd64-signed.exe" />
     <Content Include="agents\MeshCommander-Small.gz" />
