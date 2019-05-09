@@ -157,7 +157,7 @@ DownloadAgent() {
           then
           # upstart
           echo -e "start on runlevel [2345]\nstop on runlevel [016]\n\nrespawn\n\nchdir /usr/local/mesh\nexec /usr/local/mesh/meshagent\n\n" > /etc/init/meshagent.conf
-		  initctl start meshagent
+          initctl start meshagent
           echo 'meshagent installed as upstart/init.d service.'
           echo 'To start service: sudo initctl start meshagent'
           echo 'To stop service: sudo initctl stop meshagent'
@@ -191,23 +191,23 @@ UninstallAgent() {
     systemctl stop meshagent
     rm -f /sbin/meshcmd /lib/systemd/system/meshagent.service
     systemctl stop meshagentDiagnostic &> /dev/null
-	rm -f /lib/systemd/system/meshagentDiagnostic.service &> /dev/null
+    rm -f /lib/systemd/system/meshagentDiagnostic.service &> /dev/null
   else
     if [ $starttype -eq 3 ]; then
         # initd
         service meshagent stop
         update-rc.d -f meshagent remove
         rm -f /sbin/meshcmd /etc/init.d/meshagent
-		service meshagentDiagnostic stop &> /dev/null
-		rm -f /etc/init.d/meshagentDiagnostic &> /dev/null
+        service meshagentDiagnostic stop &> /dev/null
+        rm -f /etc/init.d/meshagentDiagnostic &> /dev/null
     elif [ $starttype -eq 2 ]; then
         # upstart 
         initctl stop meshagent
         rm -f /sbin/meshcmd 
         rm -f /etc/init/meshagent.conf
         rm -f /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
-		initctl stop meshagentDiagnostic &> /dev/null
-		rm -f /etc/init/meshagentDiagnostic.conf &> /dev/null
+        initctl stop meshagentDiagnostic &> /dev/null
+        rm -f /etc/init/meshagentDiagnostic.conf &> /dev/null
     fi
   fi
 
@@ -240,6 +240,7 @@ then
         UninstallAgent
       fi
     else
+      UninstallAgent
       CheckInstallAgent $1 $2 $3
     fi
   fi
