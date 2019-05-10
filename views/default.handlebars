@@ -90,6 +90,7 @@
                             <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
                             <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
                             <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
+                            <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
                         </div>
                     </div>
                     <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
@@ -926,6 +927,7 @@
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
+        var nightMode = (getstore('uiMode', 1) == 1);
 
         function startup() {
             if ((features & 32) == 0) {
@@ -944,6 +946,7 @@
             QV('autoconnectbutton1', debugmode); // Desktop
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
+            if (nightMode) { QC('body').add('night'); }
             toggleFullScreen();
 
             // Setup page visuals
@@ -1070,8 +1073,10 @@
             Q('uiViewButton1').classList.remove('uiSelectorSel');
             Q('uiViewButton2').classList.remove('uiSelectorSel');
             Q('uiViewButton3').classList.remove('uiSelectorSel');
-            try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) {}
+            Q('uiViewButton4').classList.remove('uiSelectorSel');
+            try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
             QV('uiMenu', (QS('uiMenu').display == 'none'));
+            if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
         }
 
         function userInterfaceSelectMenu(s) {
@@ -1080,6 +1085,12 @@
             webPageStackMenu = (uiMode > 1);
             toggleFullScreen(0);
             toggleStackMenu(0);
+        }
+
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            putstore('nightMode', nightMode?1:0);
         }
 
         // Toggle the web page to full screen
