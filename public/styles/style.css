@@ -28,6 +28,11 @@ body {
     padding: 0;
 }
 
+.night #container {
+    color: #bbb;
+    background-color: #000;
+}
+
 .fullscreen.login #container {
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
@@ -264,6 +269,10 @@ body {
     background-color: #fff;
     /* max-height: calc(100vh - 151px); */
     min-width: unset;
+}
+
+.night #column_l {
+    background-color: #000;
 }
 
 .menu_stack.fullscreen.fulldesk #column_l {
@@ -618,6 +627,11 @@ body {
     border-spacing: 0;
 }
 
+.night #devListToolbarSpan {
+    color: black;
+    background-color: #d3d9d6;
+}
+
 #SearchInput {
     width: 120px;
 }
@@ -911,12 +925,12 @@ NoMeshesPanel img {
 }
 
 #p10html2 thead {
-    background-color: #AAAAAA;
+    background-color: #AAA;
     font-weight: bold;
 }
 
     #p10html2 thead tr {
-        background-color: #AAAAAA;
+        background-color: #AAA;
         font-weight: bold;
     }
 
@@ -1044,6 +1058,10 @@ a {
     color: #036;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.night a {
+    color: #369;
 }
 
 .i1 {
@@ -1385,7 +1403,6 @@ a {
 
 .style7 {
     font-size: large;
-    background-color: #FFFFFF;
     width: 180px;
 }
 
@@ -1396,6 +1413,10 @@ a {
 
 .style10 {
     background-color: #C9C9C9;
+}
+
+.night .style10 {
+    color: #333;
 }
 
 .style11 {
@@ -1411,12 +1432,19 @@ a {
 
 .auto-style1 {
     text-align: right;
-    background-color: #D3D9D6;
 }
 
 #pTable .auto-style1 {
     height: 100%;
     float: right;
+}
+
+.night .auto-style1 {
+    color: black;
+}
+
+.night #pTable {
+    color: black;
 }
 
 .icon2 {
@@ -1478,7 +1506,6 @@ a {
     -o-user-select: none;
     cursor: default;
     -khtml-user-drag: element;
-    background-color: white;
     clear: both;
 }
 
@@ -1505,10 +1532,14 @@ a {
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
-    background-image: linear-gradient(to right, #ffffff 0%, #c9c9c9 100%);
+    background-image: linear-gradient(to right, #fff 0%, #c9c9c9 100%);
     background-color: #c9c9c9;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.night .g1 {
+    background-image: linear-gradient(to right, #000 0%, #c9c9c9 100%);
 }
 
 #p3events .g1 {
@@ -1521,7 +1552,11 @@ a {
 }
 
 .g1s {
-    background-image: linear-gradient(to right, #ffffff 0%, #b9b9b9 100%);
+    background-image: linear-gradient(to right, #fff 0%, #b9b9b9 100%);
+}
+
+.night .g1s {
+    background-image: linear-gradient(to right, #000 0%, #b9b9b9 100%);
 }
 
 .g2 {
@@ -1532,10 +1567,14 @@ a {
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
-    background-image: linear-gradient(to right, #c9c9c9 0%, #ffffff 100%);
+    background-image: linear-gradient(to right, #c9c9c9 0%, #fff 100%);
     background-color: #c9c9c9;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.night .g2 {
+    background-image: linear-gradient(to right, #c9c9c9 0%, #000 100%);
 }
 
 #p3events .g2 {
@@ -1548,7 +1587,11 @@ a {
 }
 
 .g2s {
-    background-image: linear-gradient(to right, #b9b9b9 0%, #ffffff 100%);
+    background-image: linear-gradient(to right, #b9b9b9 0%, #fff 100%);
+}
+
+.night .g2s {
+    background-image: linear-gradient(to right, #b9b9b9 0%, #000 100%);
 }
 
 .h1pre {
@@ -1566,10 +1609,14 @@ a {
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
-    background-image: linear-gradient(to right, #ffffff 0%, #d3d9d6 100%);
+    background-image: linear-gradient(to right, #fff 0%, #d3d9d6 100%);
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.night .h1 {
+    background-image: linear-gradient(to right, #000 0%, #d3d9d6 100%);
 }
 
 .h2end {
@@ -1586,10 +1633,14 @@ a {
     /* fallback (Opera) */
     /* Mozilla: */
     /* Chrome, Safari:*/
-    background-image: linear-gradient(to right, #d3d9d6 0%, #ffffff 100%);
+    background-image: linear-gradient(to right, #d3d9d6 0%, #fff 100%);
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+}
+
+.night .h2 {
+    background-image: linear-gradient(to right, #d3d9d6 0%, #000 100%);
 }
 
 .e1 {
@@ -1606,6 +1657,10 @@ a {
     float: left;
     height: 100%;
     background-color: #c9c9c9;
+}
+
+.night .e2 {
+    color: black;
 }
 
 .e2s {
@@ -1669,6 +1724,10 @@ a {
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: #DDDDDD;
+}
+
+.night .DevSt {
+    color: white;
 }
 
 .contextMenu {
@@ -2057,7 +2116,7 @@ a {
     top: 200px;
     text-align: center;
     font-size: 1600%;
-    color: #AAAAAA;
+    color: #AAA;
 }
 
 #p13bigfail {
@@ -2068,13 +2127,13 @@ a {
     top: 200px;
     text-align: center;
     font-size: 1600%;
-    color: #AAAAAA;
+    color: #AAA;
 }
 
 .fulldesk #p14title {
     margin-left: 16px;
     margin-right: 16px;
-    color: #CCCCCC;
+    color: #CCC;
 }
 
 #p14iframe {
@@ -2158,6 +2217,10 @@ a {
 #p16events, #p31events {
     max-height: calc(100vh - 269px);
     overflow-y: auto;
+}
+
+.night #p16events, #p31events {
+    color: #222;
 }
 
 #p40 {
@@ -2276,6 +2339,13 @@ a {
 .uiSelector3 {
     margin: 2px;
     background: url(../images/views.png) -224px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.uiSelector4 {
+    margin: 2px;
+    background: url(../images/views.png) -280px 0px;
     height: 28px;
     width: 28px;
 }
