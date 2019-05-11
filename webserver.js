@@ -2705,18 +2705,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
                 // Check if we have "server.jpg" in the data folder, if so, use that.
-                if ((parent.configurationFiles != null) && (parent.configurationFiles['server.jpg'] != null)) {
-                    res.set({ 'Content-Type': 'image/jpeg' });
-                    res.send(parent.configurationFiles['server.jpg']);
+                if ((parent.configurationFiles != null) && (parent.configurationFiles['server.png'] != null)) {
+                    res.set({ 'Content-Type': 'image/png' });
+                    res.send(parent.configurationFiles['server.png']);
                 } else {
                     // Check if we have "server.jpg" in the data folder, if so, use that.
-                    var p = obj.path.join(obj.parent.datapath, 'server.jpg');
+                    var p = obj.path.join(obj.parent.datapath, 'server.png');
                     if (obj.fs.existsSync(p)) {
                         // Use the data folder server picture
                         try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                     } else {
                         // Use the default server picture
-                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-256.png')); } catch (e) { res.sendStatus(404); }
                     }
                 }
             });

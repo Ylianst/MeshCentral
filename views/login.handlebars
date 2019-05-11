@@ -24,6 +24,7 @@
                         <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
                         <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
                         <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
+                        <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
                     </div>
                 </div>
             </div>
@@ -34,7 +35,7 @@
                     <tr>
                         <td id="welcomeimage">
                             <picture>
-                                <img alt="" src=welcome.jpg />
+                                <img alt="" src=welcome.jpg style="border-radius:20px" />
                             </picture>
                         </td>
                         <td id="logincell">
@@ -254,8 +255,10 @@
         var features = parseInt('{{{features}}}');
         var welcomeText = decodeURIComponent("{{{welcometext}}}");
         var currentpanel = 0;
-        var uiMode = parseInt(getstore('uiMode', 1));
+        var uiMode = parseInt(getstore('uiMode', '1'));
         var webPageFullScreen = true;
+        var nightMode = (getstore('_nightMode', '0') == '1');
+
         //var webPageFullScreen = getstore('webPageFullScreen', true);
         //if (webPageFullScreen == 'false') { webPageFullScreen = false; }
         //if (webPageFullScreen == 'true') { webPageFullScreen = true; }
@@ -268,6 +271,8 @@
                 try { loc = top.location.toString().toLowerCase(); } catch (e) { }
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
+
+            if (nightMode) { QC('body').add('night'); }
 
             QV('createPanelHint', passRequirements.hint === true);
             QV('resetpasswordpanelHint', passRequirements.hint === true);
@@ -645,6 +650,7 @@
             Q('uiViewButton3').classList.remove('uiSelectorSel');
             try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
             QV('uiMenu', (QS('uiMenu').display == 'none'));
+            if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
         }
 
         function userInterfaceSelectMenu(s) {
@@ -653,6 +659,12 @@
             //webPageStackMenu = (uiMode > 1);
             toggleFullScreen(0);
             //toggleStackMenu(0);
+        }
+
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            putstore('_nightMode', (nightMode ? '1' : '0'));
         }
 
         function center() {

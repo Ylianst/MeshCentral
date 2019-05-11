@@ -245,7 +245,7 @@
             </div>
             <div id=p2 style="display:none">
                 <h1>My Account</h1>
-                <img id="p2AccountImage" alt="" src="images/mainaccount.jpg"/>
+                <img id="p2AccountImage" alt="" src="images/clipboard-128.png"/>
                 <div id="p2AccountSecurity" style="display:none">
                     <p><strong>Account security</strong></p>
                     <div style="margin-left:25px">
@@ -688,8 +688,8 @@
             </div>
             <div id=p20 style="display:none">
                 <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                    <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-200.webp">
-                    <img alt="" width=200 height=200 src=images/mesh-200.jpg />
+                    <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp">
+                    <img alt="" width=200 height=200 src=images/mesh-256.png />
                 </picture>
                 <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
                 <h1>General - <span id=p20meshName></span></h1>
@@ -708,8 +708,8 @@
                         <td style=width:20px></td>
                         <td style=width:200px>
                             <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
-                                <source type="image/webp" width=200 height=200 srcset="images/webp/user-200.webp">
-                                <img alt="" width=200 height=200 src=images/user-200.jpg />
+                                <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp">
+                                <img alt="" width=200 height=200 src=images/user-256.jpg />
                             </picture>
                             <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
                         </td>
@@ -927,7 +927,7 @@
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
-        var nightMode = (getstore('uiMode', 1) == 1);
+        var nightMode = (getstore('_nightMode', '0') == '1');
 
         function startup() {
             if ((features & 32) == 0) {
@@ -1090,7 +1090,7 @@
         function toggleNightMode() {
             nightMode = !nightMode;
             if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
-            putstore('nightMode', nightMode?1:0);
+            putstore('_nightMode', nightMode?'1':'0');
         }
 
         // Toggle the web page to full screen
@@ -2245,8 +2245,8 @@
                             if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
                         }
                         r += '<tr><td><div id=devs class=bar18 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium>';
-                        r += '<div style=width:22px;float:left;background-color:white><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
-                        r += '<div style=float:left;height:18px;width:18px;background-color:white onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=j' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                        r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
+                        r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=\"j' + icon + '\" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                         r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
                         r += '<td style=text-align:center>' + getUserShortStr(node);
@@ -3832,7 +3832,7 @@
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
-                Q('MainComputerImage').setAttribute("src", "images/icons200-" + node.icon + "-1.jpg");
+                Q('MainComputerImage').setAttribute("src", "images/icons256-" + node.icon + "-1.png");
                 Q('MainComputerImage').className = ((!node.conn) || (node.conn == 0)?'gray':'');
 
                 // Check if we have terminal and file access
@@ -7531,7 +7531,7 @@
                 for (var i in message.values) {
                     x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + i + '</div>';
                     for (var j in message.values[i]) {
-                        x += '<div style=display:inline-block><table style=width:300px;height:24px;background-color:#d3d9d6;margin-bottom:4px;vertical-align:middle;border-spacing:0><tr><td class=h1></td><td><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
+                        x += '<div style=display:inline-block><table class=serverStateTableCell><tr><td class=h1></td><td><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
                     }
                 }
             }
