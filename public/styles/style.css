@@ -352,6 +352,7 @@ body {
     width: 300px;
     padding: 16px;
     text-align: center;
+    color: black;
 }
 
 #passwordPolicyCallout, #rpasswordPolicyCallout {
@@ -460,6 +461,7 @@ body {
     top: 180px;
     left: calc((100% / 2) - 200px);
     width: 400px;
+    color:black;
 }
 
 #dialogHeader {
@@ -615,6 +617,31 @@ body {
     text-align: center;
 }
 
+.deviceBarCheckbox {
+    width:22px;
+    float:left;
+    background-color:white;
+}
+
+.night .deviceBarCheckbox {
+    background-color:black;
+}
+
+#devs {
+    color:black;
+}
+
+.deviceBarIcon {
+    float:left;
+    height:18px;
+    width:18px;
+    background-color:white
+}
+
+.night .deviceBarIcon {
+    background-color:black;
+}
+
 #devListToolbarViewIcons {
     float: right;
 }
@@ -739,8 +766,8 @@ NoMeshesPanel img {
 }
 
 #p2AccountImage {
-    width: 150px;
-    height: 103px;
+    width: 128px;
+    height: 128px;
     margin-bottom: 10px;
     margin-right: 20px;
     float: right;
@@ -1172,6 +1199,10 @@ a {
     opacity: 0.5;
 }
 
+    .night .lbbutton {
+        background-color: black;
+    }
+
     .lbbutton:hover {
         opacity: 1;
     }
@@ -1187,7 +1218,7 @@ a {
 }
 
 .lb1 {
-    background: url(../images/leftbar-62.jpg) -0px 0px;
+    background: url(../images/leftbar-64.png) -1px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1198,7 +1229,7 @@ a {
 }
 
 .lb2 {
-    background: url(../images/leftbar-62.jpg) -75px 0px;
+    background: url(../images/leftbar-64.png) -66px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1209,7 +1240,7 @@ a {
 }
 
 .lb3 {
-    background: url(../images/leftbar-62.jpg) -150px 0px;
+    background: url(../images/leftbar-64.png) -130px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1220,7 +1251,7 @@ a {
 }
 
 .lb4 {
-    background: url(../images/leftbar-62.jpg) -225px 0px;
+    background: url(../images/leftbar-64.png) -194px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1231,7 +1262,7 @@ a {
 }
 
 .lb5 {
-    background: url(../images/leftbar-62.jpg) -294px 0px;
+    background: url(../images/leftbar-64.png) -257px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1242,7 +1273,7 @@ a {
 }
 
 .lb6 {
-    background: url(../images/leftbar-62.jpg) -360px 0px;
+    background: url(../images/leftbar-64.png) -318px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1675,6 +1706,11 @@ a {
     margin-bottom: 2px;
 }
 
+.night .bar {
+    color: black;
+}
+
+
 #p3users .bar {
     width: 100%;
     font-size: medium;
@@ -1686,6 +1722,10 @@ a {
     width: 24px;
     background-color: white;
 }
+
+    .night .baricon {
+        background-color: black;
+    }
 
     .baricon div {
         width: 16px;
@@ -1707,6 +1747,7 @@ a {
     height: 18px;
     float: left;
     margin-bottom: 2px;
+    color: black;
 }
 
 .bar182 {
@@ -2020,6 +2061,7 @@ a {
     top: 24px;
     bottom: 0px;
     width: 100%;
+    color:black;
 }
 
 .deskToolsBar {
@@ -2045,6 +2087,19 @@ a {
 
 #DeskClip, #DeskControlSpan, #specialkeylist {
     margin-left: 6px;
+}
+
+.serverStateTableCell {
+    width: 300px;
+    height: 24px;
+    background-color: #d3d9d6;
+    margin-bottom: 4px;
+    vertical-align: middle;
+    border-spacing: 0;
+}
+
+.night .serverStateTableCell {
+    color: black;
 }
 
 .userTableHeader {
