@@ -3,7 +3,7 @@ MeshCentral
 
 For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
 
-Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu and the Raspberry Pi.
+Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the (installation guide)[http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf] can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu or Raspberry Pi.
 
 This is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
@@ -35,14 +35,14 @@ To run MeshCentral you may need to use "nodejs" instead of "node" on Linux.
 	node meshcentral [arguments]
 ```
 
-You can launch MeshCentral with no arguments to start it in LAN mode. In LAN mode only devices on the local network can be managed. To setup a more seciour server, use --cert to specify an IP address or name that resolves to your server. This name will be used by mesh agents to connect back to the server. So, make sure you set **a name that will resolve back to your server**. MeshCentral will not register this name for you. You must make sure to setup the DNS name yourself first, or use the right IP address. If you are just taking a quick look at MeshCentral, you can skip this step and do it at later time.
+You can launch MeshCentral with no arguments to start it in LAN mode. In LAN mode only devices on the local network can be managed. To setup a more secure server, use --cert to specify an IP address or name that resolves to your server. This name will be used by mesh agents to connect back to the server. So, make sure you set **a name that will resolve back to your server**. MeshCentral will not register this name for you. You must make sure to setup the DNS name yourself first, or use the right IP address. If you are just taking a quick look at MeshCentral, you can skip this step and do it at later time.
 
 ```
 	node meshcentral --cert servername.domain.com
 	node meshcentral --cert 1.2.3.4
 ```
 
-On Windows, you can install MeshCentral to run as a background service, just run it using "--install". Once running, open a browser and enter the server url. By default, a TLS self-signed certificate is created so you will need to ignore the security warning given by your browser. A link to the root certificate you need to load in your browser is provided on the web site if you want to make warnings go away. You can run without TLS security using --notls, but this is not recommended.
+On Windows, you can install MeshCentral to run as a background service, just run it using "--install". Once running, open a browser and enter the server url. By default, a TLS self-signed certificate is created so you will need to ignore the security warning given by your browser. A link to the root certificate that can be loaded into your browser is provided on the website so you can make the warnings go away. You can run without TLS security using --notls, but this is not recommended.
 
 
 Update and uninstall
@@ -130,14 +130,14 @@ For the configuration above, the root domain and two other domains will be acces
 	https://servername:8080/customer2
 ```
 
-When you setup many domains, the server considers each domain seperatly. Each domain has seperate user accounts, administrators, etc. Within each domain, you can put a "title" and "title2" as strings that will show up at the top of the web site. "userQuota" indicates the default maximum amount of data a user can have in it's "My Files" folder. "meshQuota" is the maximum total size of files in each mesh folder. "newAccounts" indicates if new accounts can be created from the login page, 0 if not allowed, 1 if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
+When you setup many domains, the server considers each domain separately. Each domain has separate user accounts, administrators, etc. Within each domain, you can put a "title" and "title2" as strings that will show up at the top of the web site. "userQuota" indicates the default maximum amount of data a user can have in it's "My Files" folder. "meshQuota" is the maximum total size of files in each mesh folder. "newAccounts" indicates if new accounts can be created from the login page, 0 if not allowed, 1 if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
 
 MeshCentral also supports server peering, add the "peers" section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the "serverId" value is optional. If it's not specified, the computer hostname is used instead.
 
 Other Notes
 -----------
 
-For Windows users, if you install MeshCentral globally using "npm install meshcentral -g", it will not be able to run correctly as a Windows Service. It will immidiatly stop each time you start it.
+For Windows users, if you install MeshCentral globally using "npm install meshcentral -g", it will not be able to run correctly as a Windows Service. It will immediately stop each time you start it.
 
 For more information on MeshCentral or other tools, visit [MeshCommander.com](http://meshcommander.com).
 
