@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.3.1-x",
+  "version": "0.3.4-c",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -20,6 +20,7 @@
     "sample-config.json",
     "license.txt",
     "readme.txt",
+    "amt",
     "agents",
     "public",
     "views",
@@ -37,6 +38,7 @@
     "ipcheck": "^0.1.0",
     "meshcentral": "*",
     "minimist": "^1.2.0",
+    "mongojs": "^2.6.0",
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.7.6",

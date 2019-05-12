@@ -128,10 +128,11 @@ module.exports.escapeHtml = function (string) { return String(string).replace(/[
 module.exports.escapeHtmlBreaks = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
 
 // Lowercase all the names in a object recursively
-module.exports.objKeysToLower = function (obj) {
+// Allow for exception keys, child of exceptions will not get lower-cased.
+module.exports.objKeysToLower = function (obj, exceptions) {
     for (var i in obj) {
         if (i.toLowerCase() !== i) { obj[i.toLowerCase()] = obj[i]; delete obj[i]; } // LowerCase all key names
-        if (typeof obj[i] == 'object') { module.exports.objKeysToLower(obj[i]); } // LowerCase all key names in the child object
+        if ((typeof obj[i] == 'object') && ((exceptions == null) || (exceptions.indexOf(i.toLowerCase()) == -1))) { module.exports.objKeysToLower(obj[i], exceptions); } // LowerCase all key names in the child object
     }
     return obj;
 };

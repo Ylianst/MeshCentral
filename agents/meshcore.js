@@ -418,16 +418,21 @@ function createMeshCore(agent) {
                                     var woptions = http.parseUri(xurl);
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
+                                    //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
                                     tunnel.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
                                     tunnel.sessionid = data.sessionid;
                                     tunnel.rights = data.rights;
+                                    tunnel.consent = data.consent;
+                                    tunnel.username = data.username;
                                     tunnel.state = 0;
                                     tunnel.url = xurl;
                                     tunnel.protocol = 0;
                                     tunnel.tcpaddr = data.tcpaddr;
                                     tunnel.tcpport = data.tcpport;
+                                    tunnel.udpaddr = data.udpaddr;
+                                    tunnel.udpport = data.udpport;
                                     tunnel.end();
                                     // Put the tunnel in the tunnels list
                                     var index = nextTunnelIndex++;
@@ -520,7 +525,9 @@ function createMeshCore(agent) {
                 }
                 case 'toast': {
                     // Display a toast message
-                    if (data.title && data.msg) { require('toaster').Toast(data.title, data.msg); }
+                    if (data.title && data.msg) {
+                        try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
+                    }
                     break;
                 }
                 case 'openUrl': {
@@ -604,7 +611,7 @@ function createMeshCore(agent) {
         s.end = onTunnelClosed;
         s.tunnel = this;
 
-        //sendConsoleText('onTunnelUpgrade');
+        //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
 
         if (this.tcpport != null) {
             // This is a TCP relay connection, pause now and try to connect to the target.
@@ -614,12 +621,37 @@ function createMeshCore(agent) {
             if (this.tcpaddr != null) { connectionOptions.host = this.tcpaddr; } else { connectionOptions.host = '127.0.0.1'; }
             s.tcprelay = net.createConnection(connectionOptions, onTcpRelayTargetTunnelConnect);
             s.tcprelay.peerindex = this.index;
+        } if (this.udpport != null) {
+            // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
+            s.data = onUdpRelayServerTunnelData;
+            s.udprelay = require('dgram').createSocket({ type: 'udp4' });
+            s.udprelay.bind({ port: 0 });
+            s.udprelay.peerindex = this.index;
+            s.udprelay.on('message', onUdpRelayTargetTunnelConnect);
+            s.udprelay.udpport = this.udpport;
+            s.udprelay.udpaddr = this.udpaddr;
+            s.udprelay.first = true;
         } else {
             // This is a normal connect for KVM/Terminal/Files
             s.data = onTunnelData;
         }
     }
-    
+
+    // Called when UDP relay data is received // TODO****
+    function onUdpRelayTargetTunnelConnect(data) {
+        var peerTunnel = tunnels[this.peerindex];
+        peerTunnel.s.write(data);
+    }
+
+    // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
+    function onUdpRelayServerTunnelData(data) {
+        if (this.udprelay.first === true) {
+            delete this.udprelay.first; // Skip the first 'c' that is received.
+        } else {
+            this.udprelay.send(data, parseInt(this.udprelay.udpport), this.udprelay.udpaddr ? this.udprelay.udpaddr : '127.0.0.1');
+        }
+    }
+
     // Called when the TCP relay target is connected
     function onTcpRelayTargetTunnelConnect() {
         var peerTunnel = tunnels[this.peerindex];
@@ -632,7 +664,7 @@ function createMeshCore(agent) {
     function onTcpRelayServerTunnelData(data) {
         if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
     }
-    
+
     function onTunnelClosed() {
         if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
         //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
@@ -706,6 +738,11 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
+                    if (this.httprequest.consent && (this.httprequest.consent & 2)) {
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
+                    }
+
                     // Remote terminal using native pipes
                     if (process.platform == "win32")
                     {
@@ -759,13 +796,15 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
+                    if (this.httprequest.consent && (this.httprequest.consent & 1)) {
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
+                    }
+
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
-
-                    // Display a toast message
-                    //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Started.');
 
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
@@ -781,8 +820,9 @@ function createMeshCore(agent) {
                         }
 
                         if (this.desktop.kvm.connectionCount == 0) {
-                            // Display a toast message
-                            //require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.');
+                            // Display a toast message. This may not be supported on all platforms.
+                            // try { require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.'); } catch (ex) { }
+                            
                             this.httprequest.desktop.kvm.end();
                         }
                     };
@@ -809,6 +849,11 @@ function createMeshCore(agent) {
                         this.httprequest.s.end();
                         sendConsoleText('Error: No Files Control Rights.');
                         return;
+                    }
+
+                    // Perform notification if needed
+                    if (this.httprequest.consent && (this.httprequest.consent & 4)) {
+                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file access.'); } catch (ex) { }
                     }
 
                     // Setup files
@@ -1235,8 +1280,7 @@ function createMeshCore(agent) {
                 case 'toast': {
                     if (process.platform == 'win32') {
                         if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
-                            require('toaster').Toast('MeshCentral', args['_'][0]);
-                            response = 'ok';
+                            try { require('toaster').Toast('MeshCentral', args['_'][0]); response = 'ok'; } catch (ex) { response = ex; }
                         }
                     } else {
                         response = 'Only supported on Windows.';
@@ -1676,9 +1720,11 @@ function createMeshCore(agent) {
         
         // Update the network interfaces information data
         var netInfo = mesh.NetInfo;
-        netInfo.action = 'netinfo';
-        var netInfoStr = JSON.stringify(netInfo);
-        if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        if (netInfo) {
+            netInfo.action = 'netinfo';
+            var netInfoStr = JSON.stringify(netInfo);
+            if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
+        }
     }
     
     // Called periodically to check if we need to send updates to the server

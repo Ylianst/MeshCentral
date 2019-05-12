@@ -94,6 +94,9 @@
     <Compile Include="amtevents.js" />
     <Compile Include="amtscanner.js" />
     <Compile Include="amtscript.js" />
+    <Compile Include="amt\amt-ider-module.js" />
+    <Compile Include="amt\amt-ider.js" />
+    <Compile Include="amt\amt-redir-mesh.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="letsencrypt.js" />
     <Compile Include="meshaccelerator.js" />
@@ -141,6 +144,7 @@
     <Content Include="agents\meshagent_x86-64" />
     <Content Include="agents\meshagent_x86-64_nokvm" />
     <Content Include="agents\meshagent_x86_nokvm" />
+    <Content Include="agents\MeshCentralRouter.exe" />
     <Content Include="agents\MeshCmd-signed.exe" />
     <Content Include="agents\MeshCmd64-signed.exe" />
     <Content Include="agents\MeshCommander-Small.gz" />
@@ -275,6 +279,7 @@
     <Folder Include="agents\modules_meshcmd_min\" />
     <Folder Include="agents\modules_meshcore\" />
     <Folder Include="agents\modules_meshcore_min\" />
+    <Folder Include="amt\" />
     <Folder Include="public" />
     <Folder Include="public\clickonce\" />
     <Folder Include="public\clickonce\minirouter\" />

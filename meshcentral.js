@@ -155,7 +155,7 @@ function CreateMeshCentralServer(config, args) {
                 var arg = process.argv[i];
                 if (arg.length > 0) {
                     if (startLine.length > 0) startLine += ' ';
-                    if (arg.indexOf(' ') >= 0) { startLine += '"' + arg + '"'; } else { startLine += arg; }
+                    if ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0)) { startLine += '"' + arg + '"'; } else { startLine += arg; }
                 }
             }
             obj.launchChildServer(startLine);
@@ -216,7 +216,7 @@ function CreateMeshCentralServer(config, args) {
                 if (code == 0) { try { latestVer = xprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
                 callback(obj.currentVer, latestVer);
             });
-        } catch (ex) { callback(obj.currentVer, null); } // If the system is running out of memory, an exception here can easily happen.
+        } catch (ex) { callback(obj.currentVer, null, ex); } // If the system is running out of memory, an exception here can easily happen.
     };
 
     // Initiate server self-update
@@ -238,268 +238,272 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(','); } }
         if (typeof obj.args.debug == 'number') obj.debugLevel = obj.args.debug;
         if (obj.args.debug == true) obj.debugLevel = 1;
-        obj.db = require('./db.js').CreateDB(obj);
-        obj.db.SetupDatabase(function (dbversion) {
-            // See if any database operations needs to be completed
-            if (obj.args.deletedomain) { obj.db.DeleteDomain(obj.args.deletedomain, function () { console.log('Deleted domain ' + obj.args.deletedomain + '.'); process.exit(); }); return; }
-            if (obj.args.deletedefaultdomain) { obj.db.DeleteDomain('', function () { console.log('Deleted default domain.'); process.exit(); }); return; }
-            if (obj.args.showall) { obj.db.GetAll(function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.clearpower) { obj.db.removeAllPowerEvents(function () { process.exit(); }); return; }
-            if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
-            if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
-            if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
+        require('./db.js').CreateDB(obj,
+            function (db) {
+                obj.db = db;
+                obj.db.SetupDatabase(function (dbversion) {
+                    // See if any database operations needs to be completed
+                    if (obj.args.deletedomain) { obj.db.DeleteDomain(obj.args.deletedomain, function () { console.log('Deleted domain ' + obj.args.deletedomain + '.'); process.exit(); }); return; }
+                    if (obj.args.deletedefaultdomain) { obj.db.DeleteDomain('', function () { console.log('Deleted default domain.'); process.exit(); }); return; }
+                    if (obj.args.showall) { obj.db.GetAll(function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.clearpower) { obj.db.removeAllPowerEvents(function () { process.exit(); }); return; }
+                    if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
+                    if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
 
-            // Show a list of all configuration files in the database
-            if (obj.args.dblistconfigfiles) {
-                obj.db.GetAllType('cfile', function (err, docs) { if (err == null) { if (docs.length == 0) { console.log('No files found.'); } else { for (var i in docs) { console.log(docs[i]._id.split('/')[1] + ', ' + Buffer.from(docs[i].data, 'base64').length + ' bytes.'); } } } else { console.log('Unable to read from database.'); } process.exit(); }); return;
-            }
+                    // Show a list of all configuration files in the database
+                    if (obj.args.dblistconfigfiles) {
+                        obj.db.GetAllType('cfile', function (err, docs) { if (err == null) { if (docs.length == 0) { console.log('No files found.'); } else { for (var i in docs) { console.log(docs[i]._id.split('/')[1] + ', ' + Buffer.from(docs[i].data, 'base64').length + ' bytes.'); } } } else { console.log('Unable to read from database.'); } process.exit(); }); return;
+                    }
 
-            // Display the content of a configuration file in the database
-            if (obj.args.dbshowconfigfile) {
-                if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
-                obj.db.getConfigFile(obj.args.dbshowconfigfile, function (err, docs) {
-                    if (err == null) {
-                        if (docs.length == 0) { console.log('File not found.'); } else {
-                            var data = obj.db.decryptData(obj.args.configkey, docs[0].data);
-                            if (data == null) { console.log('Invalid config key.'); } else { console.log(data); }
-                        }
-                    } else { console.log('Unable to read from database.'); }
-                    process.exit();
-                }); return;
-            }
-
-            // Delete all configuration files from database
-            if (obj.args.dbdeleteconfigfiles) {
-                console.log('Deleting all configuration files from the database...'); obj.db.RemoveAllOfType('cfile', function () { console.log('Done.'); process.exit(); });
-            }
-
-            // Push all relevent files from meshcentral-data into the database
-            if (obj.args.dbpushconfigfiles) {
-                if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
-                if ((obj.args.dbpushconfigfiles !== true) && (typeof obj.args.dbpushconfigfiles != 'string')) {
-                    console.log('Usage: --dbpulldatafiles (path)     This will import files from folder into the database');
-                    console.log('       --dbpulldatafiles            This will import files from meshcentral-data into the db.');
-                    process.exit();
-                } else {
-                    if ((obj.args.dbpushconfigfiles == '*') || (obj.args.dbpushconfigfiles === true)) { obj.args.dbpushconfigfiles = obj.datapath; }
-                    obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
-                        if (err != null) { console.log('ERROR: Unable to read from folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
-                        var configFound = false;
-                        for (var i in files) { if (files[i] == 'config.json') { configFound = true; } }
-                        if (configFound == false) { console.log('ERROR: No config.json in folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
-                        obj.db.RemoveAllOfType('cfile', function () {
-                            obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
-                                var lockCount = 1
-                                for (var i in files) {
-                                    const file = files[i];
-                                    if ((file == 'config.json') || file.endsWith('.key') || file.endsWith('.crt') || (file == 'terms.txt') || file.endsWith('.jpg') || file.endsWith('.png')) {
-                                        const path = obj.path.join(obj.args.dbpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
-                                        console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
-                                        lockCount++;
-                                        obj.db.setConfigFile(file, obj.db.encryptData(obj.args.configkey, binary), function () { if ((--lockCount) == 0) { console.log('Done.'); process.exit(); } });
-                                    }
+                    // Display the content of a configuration file in the database
+                    if (obj.args.dbshowconfigfile) {
+                        if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
+                        obj.db.getConfigFile(obj.args.dbshowconfigfile, function (err, docs) {
+                            if (err == null) {
+                                if (docs.length == 0) { console.log('File not found.'); } else {
+                                    var data = obj.db.decryptData(obj.args.configkey, docs[0].data);
+                                    if (data == null) { console.log('Invalid config key.'); } else { console.log(data); }
                                 }
-                                if (--lockCount == 0) { process.exit(); }
-                            });
-                        });
-                    });
-                }
-                return;
-            }
+                            } else { console.log('Unable to read from database.'); }
+                            process.exit();
+                        }); return;
+                    }
 
-            // Pull all database files into meshcentral-data
-            if (obj.args.dbpullconfigfiles) {
-                if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
-                if (typeof obj.args.dbpullconfigfiles != 'string') {
-                    console.log('Usage: --dbpulldatafiles (path)');
-                    process.exit();
-                } else {
-                    obj.db.GetAllType('cfile', function (err, docs) {
-                        if (err == null) {
-                            if (docs.length == 0) {
-                                console.log('File not found.');
-                            } else {
-                                for (var i in docs) {
-                                    const file = docs[i]._id.split('/')[1], binary = obj.db.decryptData(obj.args.configkey, docs[i].data);
-                                    if (binary == null) {
-                                        console.log('Invalid config key.');
-                                    } else {
-                                        var fullFileName = obj.path.join(obj.args.dbpullconfigfiles, file);
-                                        try { obj.fs.writeFileSync(fullFileName, binary); } catch (ex) { console.log('Unable to write to ' + fullFileName); process.exit(); return; }
-                                        console.log('Pulling ' + file + ', ' + binary.length + ' bytes.');
-                                    }
-                                }
-                            }
+                    // Delete all configuration files from database
+                    if (obj.args.dbdeleteconfigfiles) {
+                        console.log('Deleting all configuration files from the database...'); obj.db.RemoveAllOfType('cfile', function () { console.log('Done.'); process.exit(); });
+                    }
+
+                    // Push all relevent files from meshcentral-data into the database
+                    if (obj.args.dbpushconfigfiles) {
+                        if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
+                        if ((obj.args.dbpushconfigfiles !== true) && (typeof obj.args.dbpushconfigfiles != 'string')) {
+                            console.log('Usage: --dbpulldatafiles (path)     This will import files from folder into the database');
+                            console.log('       --dbpulldatafiles            This will import files from meshcentral-data into the db.');
+                            process.exit();
                         } else {
-                            console.log('Unable to read from database.');
-                        }
-                        process.exit();
-                    });
-                }
-                return;
-            }
-
-            if (obj.args.dbexport) {
-                // Export the entire database to a JSON file
-                if (obj.args.dbexport == true) { obj.args.dbexport = obj.getConfigFilePath('meshcentral.db.json'); }
-                obj.db.GetAll(function (err, docs) {
-                    obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs));
-                    console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexport + '.'); process.exit();
-                });
-                return;
-            }
-            if (obj.args.dbexportmin) {
-                // Export a minimal database to a JSON file. Export only users, meshes and nodes.
-                // This is a useful command to look at the database.
-                if (obj.args.dbexportmin == true) { obj.args.dbexportmin = obj.getConfigFilePath('meshcentral.db.json'); }
-                obj.db.GetAllType({ $in: ['user', 'node', 'mesh'] }, function (err, docs) {
-                    obj.fs.writeFileSync(obj.args.dbexportmin, JSON.stringify(docs));
-                    console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexportmin + '.'); process.exit();
-                });
-                return;
-            }
-            if (obj.args.dbimport) {
-                // Import the entire database from a JSON file
-                if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
-                var json = null, json2 = "", badCharCount = 0;
-                try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + ': ' + e); process.exit(); }
-                for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
-                if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
-                try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
-                if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
-                for (i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
-                //for (i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
-                setTimeout(function () { // If the Mongo database is being created for the first time, there is a race condition here. This will get around it.
-                    obj.db.RemoveAll(function () {
-                        obj.db.InsertMany(json, function (err) {
-                            if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit();
-                        });
-                    });
-                }, 100);
-                return;
-            }
-            /*
-            if (obj.args.dbimport) {
-                // Import the entire database from a very large JSON file
-                obj.db.RemoveAll(function () {
-                    if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
-                    var json = null, json2 = "", badCharCount = 0;
-                    const StreamArray = require('stream-json/streamers/StreamArray');
-                    const jsonStream = StreamArray.withParser();
-                    jsonStream.on('data', function (data) { obj.db.Set(data.value); });
-                    jsonStream.on('end', () => { console.log('Done.'); process.exit(); });
-                    obj.fs.createReadStream(obj.args.dbimport).pipe(jsonStream.input);
-                });
-                return;
-            }
-            */
-            if (obj.args.dbmerge) {
-                // Import the entire database from a JSON file
-                if (obj.args.dbmerge == true) { obj.args.dbmerge = obj.getConfigFilePath('meshcentral.db.json'); }
-                var json = null, json2 = "", badCharCount = 0;
-                try { json = obj.fs.readFileSync(obj.args.dbmerge, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
-                for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
-                if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
-                try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
-                if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
-
-                // Get all users from current database
-                obj.db.GetAllType('user', function (err, docs) {
-                    var users = {}, usersCount = 0;
-                    for (var i in docs) { users[docs[i]._id] = docs[i]; usersCount++; }
-
-                    // Fetch all meshes from the database
-                    obj.db.GetAllType('mesh', function (err, docs) {
-                        obj.common.unEscapeAllLinksFieldName(docs);
-                        var meshes = {}, meshesCount = 0;
-                        for (var i in docs) { meshes[docs[i]._id] = docs[i]; meshesCount++; }
-                        console.log('Loaded ' + usersCount + ' users and ' + meshesCount + ' meshes.');
-                        // Look at each object in the import file
-                        var objectToAdd = [];
-                        for (var i in json) {
-                            var newobj = json[i];
-                            if (newobj.type == 'user') {
-                                // Check if the user already exists
-                                var existingUser = users[newobj._id];
-                                if (existingUser) {
-                                    // Merge the links
-                                    if (typeof newobj.links == 'object') {
-                                        for (var j in newobj.links) {
-                                            if ((existingUser.links == null) || (existingUser.links[j] == null)) {
-                                                if (existingUser.links == null) { existingUser.links = {}; }
-                                                existingUser.links[j] = newobj.links[j];
+                            if ((obj.args.dbpushconfigfiles == '*') || (obj.args.dbpushconfigfiles === true)) { obj.args.dbpushconfigfiles = obj.datapath; }
+                            obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
+                                if (err != null) { console.log('ERROR: Unable to read from folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                                var configFound = false;
+                                for (var i in files) { if (files[i] == 'config.json') { configFound = true; } }
+                                if (configFound == false) { console.log('ERROR: No config.json in folder ' + obj.args.dbpushconfigfiles); process.exit(); return; }
+                                obj.db.RemoveAllOfType('cfile', function () {
+                                    obj.fs.readdir(obj.args.dbpushconfigfiles, function (err, files) {
+                                        var lockCount = 1
+                                        for (var i in files) {
+                                            const file = files[i];
+                                            if ((file == 'config.json') || file.endsWith('.key') || file.endsWith('.crt') || (file == 'terms.txt') || file.endsWith('.jpg') || file.endsWith('.png')) {
+                                                const path = obj.path.join(obj.args.dbpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
+                                                console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
+                                                lockCount++;
+                                                obj.db.setConfigFile(file, obj.db.encryptData(obj.args.configkey, binary), function () { if ((--lockCount) == 0) { console.log('Done.'); process.exit(); } });
                                             }
                                         }
-                                    }
-                                    if (existingUser.name == 'admin') { existingUser.links = {}; }
-                                    objectToAdd.push(existingUser); // Add this user
-                                } else {
-                                    objectToAdd.push(newobj); // Add this user
-                                }
-                            } else if (newobj.type == 'mesh') {
-                                // Add this object after escaping
-                                objectToAdd.push(obj.common.escapeLinksFieldName(newobj));
-                            } // Don't add nodes.
+                                        if (--lockCount == 0) { process.exit(); }
+                                    });
+                                });
+                            });
                         }
-                        console.log('Importing ' + objectToAdd.length + ' object(s)...');
-                        var pendingCalls = 1;
-                        for (var i in objectToAdd) {
-                            pendingCalls++;
-                            obj.db.Set(objectToAdd[i], function (err) { if (err != null) { console.log(err); } else { if (--pendingCalls == 0) { process.exit(); } } });
-                        }
-                        if (--pendingCalls == 0) { process.exit(); }
-                    });
-                });
-                return;
-            }
-
-            // Load configuration for database if needed
-            if (obj.args.loadconfigfromdb) {
-                var key = null;
-                if (typeof obj.args.configkey == 'string') { key = obj.args.configkey; }
-                else if (typeof obj.args.loadconfigfromdb == 'string') { key = obj.args.loadconfigfromdb; }
-                if (key == null) { console.log('Error, --configkey is required.'); process.exit(); return; }
-                obj.db.getAllConfigFiles(key, function (configFiles) {
-                    if (configFiles == null) { console.log('Error, no configuration files found or invalid configkey.'); process.exit(); return; }
-                    if (!configFiles['config.json']) { console.log('Error, could not file config.json from database.'); process.exit(); return; }
-                    obj.configurationFiles = configFiles;
-
-                    // Parse the new configuration file
-                    var config2 = null;
-                    try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.'); process.exit(); return; }
-
-                    // Set the command line arguments to the config file if they are not present
-                    if (!config2.settings) { config2.settings = {}; }
-                    for (i in args) { config2.settings[i] = args[i]; }
-
-                    // Lower case all keys in the config file
-                    try {
-                        require('./common.js').objKeysToLower(config2);
-                    } catch (ex) {
-                        console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
-                        process.exit();
                         return;
                     }
 
-                    // Grad some of the values from the original config.json file if present.
-                    config2['mongodb'] = config['mongodb'];
-                    config2['mongodbcol'] = config['mongodbcol'];
-                    config2['dbencryptkey'] = config['dbencryptkey'];
+                    // Pull all database files into meshcentral-data
+                    if (obj.args.dbpullconfigfiles) {
+                        if (typeof obj.args.configkey != 'string') { console.log('Error, --configkey is required.'); process.exit(); return; }
+                        if (typeof obj.args.dbpullconfigfiles != 'string') {
+                            console.log('Usage: --dbpulldatafiles (path)');
+                            process.exit();
+                        } else {
+                            obj.db.GetAllType('cfile', function (err, docs) {
+                                if (err == null) {
+                                    if (docs.length == 0) {
+                                        console.log('File not found.');
+                                    } else {
+                                        for (var i in docs) {
+                                            const file = docs[i]._id.split('/')[1], binary = obj.db.decryptData(obj.args.configkey, docs[i].data);
+                                            if (binary == null) {
+                                                console.log('Invalid config key.');
+                                            } else {
+                                                var fullFileName = obj.path.join(obj.args.dbpullconfigfiles, file);
+                                                try { obj.fs.writeFileSync(fullFileName, binary); } catch (ex) { console.log('Unable to write to ' + fullFileName); process.exit(); return; }
+                                                console.log('Pulling ' + file + ', ' + binary.length + ' bytes.');
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    console.log('Unable to read from database.');
+                                }
+                                process.exit();
+                            });
+                        }
+                        return;
+                    }
 
-                    // We got a new config.json from the database, let's use it.
-                    config = obj.config = config2;
-                    obj.StartEx1b();
+                    if (obj.args.dbexport) {
+                        // Export the entire database to a JSON file
+                        if (obj.args.dbexport == true) { obj.args.dbexport = obj.getConfigFilePath('meshcentral.db.json'); }
+                        obj.db.GetAll(function (err, docs) {
+                            obj.fs.writeFileSync(obj.args.dbexport, JSON.stringify(docs));
+                            console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexport + '.'); process.exit();
+                        });
+                        return;
+                    }
+                    if (obj.args.dbexportmin) {
+                        // Export a minimal database to a JSON file. Export only users, meshes and nodes.
+                        // This is a useful command to look at the database.
+                        if (obj.args.dbexportmin == true) { obj.args.dbexportmin = obj.getConfigFilePath('meshcentral.db.json'); }
+                        obj.db.GetAllType({ $in: ['user', 'node', 'mesh'] }, function (err, docs) {
+                            obj.fs.writeFileSync(obj.args.dbexportmin, JSON.stringify(docs));
+                            console.log('Exported ' + docs.length + ' objects(s) to ' + obj.args.dbexportmin + '.'); process.exit();
+                        });
+                        return;
+                    }
+                    if (obj.args.dbimport) {
+                        // Import the entire database from a JSON file
+                        if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
+                        var json = null, json2 = "", badCharCount = 0;
+                        try { json = obj.fs.readFileSync(obj.args.dbimport, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbimport + ': ' + e); process.exit(); }
+                        for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
+                        if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
+                        try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbimport + ': ' + e); process.exit(); }
+                        if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
+                        for (i in json) { if ((json[i].type == "mesh") && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } } } // Escape MongoDB invalid field chars
+                        //for (i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
+                        setTimeout(function () { // If the Mongo database is being created for the first time, there is a race condition here. This will get around it.
+                            obj.db.RemoveAll(function () {
+                                obj.db.InsertMany(json, function (err) {
+                                    if (err != null) { console.log(err); } else { console.log('Imported ' + json.length + ' objects(s) from ' + obj.args.dbimport + '.'); } process.exit();
+                                });
+                            });
+                        }, 100);
+                        return;
+                    }
+                    /*
+                    if (obj.args.dbimport) {
+                        // Import the entire database from a very large JSON file
+                        obj.db.RemoveAll(function () {
+                            if (obj.args.dbimport == true) { obj.args.dbimport = obj.getConfigFilePath('meshcentral.db.json'); }
+                            var json = null, json2 = "", badCharCount = 0;
+                            const StreamArray = require('stream-json/streamers/StreamArray');
+                            const jsonStream = StreamArray.withParser();
+                            jsonStream.on('data', function (data) { obj.db.Set(data.value); });
+                            jsonStream.on('end', () => { console.log('Done.'); process.exit(); });
+                            obj.fs.createReadStream(obj.args.dbimport).pipe(jsonStream.input);
+                        });
+                        return;
+                    }
+                    */
+                    if (obj.args.dbmerge) {
+                        // Import the entire database from a JSON file
+                        if (obj.args.dbmerge == true) { obj.args.dbmerge = obj.getConfigFilePath('meshcentral.db.json'); }
+                        var json = null, json2 = "", badCharCount = 0;
+                        try { json = obj.fs.readFileSync(obj.args.dbmerge, { encoding: 'utf8' }); } catch (e) { console.log('Invalid JSON file: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                        for (i = 0; i < json.length; i++) { if (json.charCodeAt(i) >= 32) { json2 += json[i]; } else { var tt = json.charCodeAt(i); if (tt != 10 && tt != 13) { badCharCount++; } } } // Remove all bad chars
+                        if (badCharCount > 0) { console.log(badCharCount + ' invalid character(s) where removed.'); }
+                        try { json = JSON.parse(json2); } catch (e) { console.log('Invalid JSON format: ' + obj.args.dbmerge + ': ' + e); process.exit(); }
+                        if ((json == null) || (typeof json.length != 'number') || (json.length < 1)) { console.log('Invalid JSON format: ' + obj.args.dbimport + '.'); }
+
+                        // Get all users from current database
+                        obj.db.GetAllType('user', function (err, docs) {
+                            var users = {}, usersCount = 0;
+                            for (var i in docs) { users[docs[i]._id] = docs[i]; usersCount++; }
+
+                            // Fetch all meshes from the database
+                            obj.db.GetAllType('mesh', function (err, docs) {
+                                obj.common.unEscapeAllLinksFieldName(docs);
+                                var meshes = {}, meshesCount = 0;
+                                for (var i in docs) { meshes[docs[i]._id] = docs[i]; meshesCount++; }
+                                console.log('Loaded ' + usersCount + ' users and ' + meshesCount + ' meshes.');
+                                // Look at each object in the import file
+                                var objectToAdd = [];
+                                for (var i in json) {
+                                    var newobj = json[i];
+                                    if (newobj.type == 'user') {
+                                        // Check if the user already exists
+                                        var existingUser = users[newobj._id];
+                                        if (existingUser) {
+                                            // Merge the links
+                                            if (typeof newobj.links == 'object') {
+                                                for (var j in newobj.links) {
+                                                    if ((existingUser.links == null) || (existingUser.links[j] == null)) {
+                                                        if (existingUser.links == null) { existingUser.links = {}; }
+                                                        existingUser.links[j] = newobj.links[j];
+                                                    }
+                                                }
+                                            }
+                                            if (existingUser.name == 'admin') { existingUser.links = {}; }
+                                            objectToAdd.push(existingUser); // Add this user
+                                        } else {
+                                            objectToAdd.push(newobj); // Add this user
+                                        }
+                                    } else if (newobj.type == 'mesh') {
+                                        // Add this object after escaping
+                                        objectToAdd.push(obj.common.escapeLinksFieldName(newobj));
+                                    } // Don't add nodes.
+                                }
+                                console.log('Importing ' + objectToAdd.length + ' object(s)...');
+                                var pendingCalls = 1;
+                                for (var i in objectToAdd) {
+                                    pendingCalls++;
+                                    obj.db.Set(objectToAdd[i], function (err) { if (err != null) { console.log(err); } else { if (--pendingCalls == 0) { process.exit(); } } });
+                                }
+                                if (--pendingCalls == 0) { process.exit(); }
+                            });
+                        });
+                        return;
+                    }
+
+                    // Load configuration for database if needed
+                    if (obj.args.loadconfigfromdb) {
+                        var key = null;
+                        if (typeof obj.args.configkey == 'string') { key = obj.args.configkey; }
+                        else if (typeof obj.args.loadconfigfromdb == 'string') { key = obj.args.loadconfigfromdb; }
+                        if (key == null) { console.log('Error, --configkey is required.'); process.exit(); return; }
+                        obj.db.getAllConfigFiles(key, function (configFiles) {
+                            if (configFiles == null) { console.log('Error, no configuration files found or invalid configkey.'); process.exit(); return; }
+                            if (!configFiles['config.json']) { console.log('Error, could not file config.json from database.'); process.exit(); return; }
+                            obj.configurationFiles = configFiles;
+
+                            // Parse the new configuration file
+                            var config2 = null;
+                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.'); process.exit(); return; }
+
+                            // Set the command line arguments to the config file if they are not present
+                            if (!config2.settings) { config2.settings = {}; }
+                            for (i in args) { config2.settings[i] = args[i]; }
+
+                            // Lower case all keys in the config file
+                            try {
+                                require('./common.js').objKeysToLower(config2, ["ldapoptions"]);
+                            } catch (ex) {
+                                console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
+                                process.exit();
+                                return;
+                            }
+
+                            // Grad some of the values from the original config.json file if present.
+                            config2['mongodb'] = config['mongodb'];
+                            config2['mongodbcol'] = config['mongodbcol'];
+                            config2['dbencryptkey'] = config['dbencryptkey'];
+
+                            // We got a new config.json from the database, let's use it.
+                            config = obj.config = config2;
+                            obj.StartEx1b();
+                        });
+                    } else {
+                        config = obj.config = getConfig(true);
+                        obj.StartEx1b();
+                    }
                 });
-            } else {
-                config = obj.config = getConfig(true);
-                obj.StartEx1b();
             }
-        });
+        );
     };
 
     // Time to start the serverf or real.
@@ -543,8 +547,9 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.domains[''].dns != null) { console.log("ERROR: Default domain can't have a DNS name."); return; }
         var xdomains = {}; for (i in obj.config.domains) { if (obj.config.domains[i].title == null) { obj.config.domains[i].title = 'MeshCentral'; } if (obj.config.domains[i].title2 == null) { obj.config.domains[i].title2 = '2.0 Beta 2'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
-        for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in ./data/config.json."); return; } } }
+        for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {
+            if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
@@ -552,6 +557,12 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { obj.config.domains[i].userblockedip = null; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userallowedip.split(','); } }
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { obj.config.domains[i].agentallowedip = null; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { obj.config.domains[i].agentblockedip = null; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(','); } }
+            if ((obj.config.domains[i].auth == 'ldap') && (typeof obj.config.domains[i].ldapoptions != 'object')) {
+                if (i == '') { console.log("ERROR: Default domain is LDAP, but is missing LDAPOptions."); } else { console.log("ERROR: Domain '" + i + "' is LDAP, but is missing LDAPOptions."); }
+                process.exit();
+                return;
+            }
+            if ((obj.config.domains[i].auth == 'ldap') || (obj.config.domains[i].auth == 'sspi')) { obj.config.domains[i].newaccounts = 0; } // No new accounts allowed in SSPI/LDAP authentication modes.
         }
 
         // Log passed arguments into Windows Service Log
@@ -1197,8 +1208,8 @@ function CreateMeshCentralServer(config, args) {
 
         // Read the agent recovery core if present
         var meshAgentRecoveryCore = null;
-        if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')) == true) {
-            try { meshAgentRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agentrecoverycore.js')).toString(); } catch (ex) { }
+        if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcore_diagnostic.js')) == true) {
+            try { meshAgentRecoveryCore = obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'meshcore_diagnostic.js')).toString(); } catch (ex) { }
             if (meshAgentRecoveryCore != null) {
                 modulesAdd['windows-agentrecovery'] = ['var addedModules = [];\r\n'];
                 modulesAdd['linux-agentrecovery'] = ['var addedModules = [];\r\n'];
@@ -1390,6 +1401,7 @@ function CreateMeshCentralServer(config, args) {
         23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' }, // Get this one from NPM
         24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' },
         25: { id: 25, localname: 'meshagent_armhf', rname: 'meshagent', desc: 'Linux ARM - HardFloat', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' }, // "armv6l" and "armv7l"
+        26: { id: 26, localname: 'meshagent_arm64', rname: 'meshagent', desc: 'Linux ARMv8-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' }, // "aarch64"
         10003: { id: 3, localname: 'MeshService.exe', rname: 'meshagent.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' }, // Unsigned version of the Windows MeshAgent x86
         10004: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery' } // Unsigned version of the Windows MeshAgent x64
     };
@@ -1618,11 +1630,12 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config);
+        require('./common.js').objKeysToLower(config, ["ldapoptions"]);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();
     }
+
     return config;
 }
 
@@ -1634,7 +1647,7 @@ function InstallModules(modules, func) {
             try {
                 var xxmodule = require(modules[i]);
             } catch (e) {
-                if (previouslyInstalledModules[modules[i]] !== true) { previouslyInstalledModules[modules[i]] = true; missingModules.push(modules[i]); }
+                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
             }
         }
         if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
@@ -1659,6 +1672,7 @@ function InstallModule(modulename, func, tag1, tag2) {
             process.exit();
             return;
         }
+        previouslyInstalledModules[modulename] = true;
         func(tag1, tag2);
         return;
     });
@@ -1680,18 +1694,29 @@ function mainStart(args) {
         var config = getConfig(false);
         if (config == null) { process.exit(); }
 
+        // Lowercase the auth value is present
+        for (var i in config.domains) { if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); } }
+
         // Check is Windows SSPI and YubiKey OTP will be used
         var sspi = false;
+        var ldap = false;
         var allsspi = true;
         var yubikey = false;
-        if (require('os').platform() == 'win32') { for (var i in config.domains) { if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
-        for (var i in config.domains) { if (config.domains[i].yubikey != null) { yubikey = true; } }
+        var domainCount = 0;
+        if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
+        if (domainCount == 0) { allsspi = false; }
+        for (var i in config.domains) {
+            if (config.domains[i].yubikey != null) { yubikey = true; }
+            if (config.domains[i].auth == 'ldap') { ldap = true; }
+        }
 
         // Build the list of required modules
         var modules = ['ws', 'nedb', 'https', 'yauzl', 'xmldom', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
+        if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
-        if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoDB
+        if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoJS
+        else if (config.settings.mongo != null) { modules.push('mongodb'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
         // Get the current node version

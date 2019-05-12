@@ -43,7 +43,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
         //obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: url2 });
-        obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: "*/meshrelay.ashx?id=" + obj.tunnelid });
+        obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: "*/meshrelay.ashx?id=" + obj.tunnelid, usage: obj.protocol });
         //obj.debug("Agent Redir Start: " + url);
     }
 

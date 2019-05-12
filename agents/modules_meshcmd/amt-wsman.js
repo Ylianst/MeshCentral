@@ -177,7 +177,7 @@ function WsmanStackCreateService(/*CreateWsmanComm, host, port, user, pass, tls,
 	}
 
     function _PutObjToSelectorsXml(selectorSet) {
-        if (!selectorSet) return '';
+        if ((selectorSet == null) || (selectorSet == 'null')) return '';
         if (typeof selectorSet == 'string') return selectorSet;
         if (selectorSet['InstanceID']) return "<w:SelectorSet><w:Selector Name=\"InstanceID\">" + selectorSet['InstanceID'] + "</w:Selector></w:SelectorSet>";
 		var result = '<w:SelectorSet>';

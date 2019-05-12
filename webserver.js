@@ -57,6 +57,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.express = require('express');
     obj.meshAgentHandler = require('./meshagent.js');
     obj.meshRelayHandler = require('./meshrelay.js');
+    obj.meshIderHandler = require('./amt/amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
@@ -198,7 +199,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         for (i in parent.config.domains) {
             if (domainUserCount[i] == 0) {
                 // If newaccounts is set to no new accounts, but no accounts exists, temporarly allow account creation.
-                if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
+                //if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
                 console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
             }
         }
@@ -213,39 +214,195 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     });
 
+    // Return statistics about this web server
+    obj.getStats = function () {
+        return {
+            users: Object.keys(obj.users).length,
+            meshes: Object.keys(obj.meshes).length,
+            dnsDomains: Object.keys(obj.dnsDomains).length,
+            relaySessionCount: obj.relaySessionCount,
+            relaySessionErrorCount: obj.relaySessionErrorCount,
+            wsagents: Object.keys(obj.wsagents).length,
+            wsagentsDisconnections: Object.keys(obj.wsagentsDisconnections).length,
+            wsagentsDisconnectionsTimer: Object.keys(obj.wsagentsDisconnectionsTimer).length,
+            wssessions: Object.keys(obj.wssessions).length,
+            wssessions2: Object.keys(obj.wssessions2).length,
+            wsPeerSessions: Object.keys(obj.wsPeerSessions).length,
+            wsPeerSessions2: Object.keys(obj.wsPeerSessions2).length,
+            wsPeerSessions3: Object.keys(obj.wsPeerSessions3).length,
+            sessionsCount: Object.keys(obj.sessionsCount).length,
+            wsrelays: Object.keys(obj.wsrelays).length,
+            wsPeerRelays: Object.keys(obj.wsPeerRelays).length,
+            tlsSessionStore: Object.keys(tlsSessionStore).length
+        };
+    }
+
+    // Agent counters
+    obj.agentStats = {
+        createMeshAgentCount: 0,
+        coreIsStableCount: 0,
+        verifiedAgentConnectionCount: 0,
+        clearingCoreCount: 0,
+        updatingCoreCount: 0,
+        recoveryCoreIsStableCount: 0,
+        meshDoesNotExistCount: 0,
+        invalidPkcsSignatureCount: 0,
+        invalidRsaSignatureCount: 0,
+        invalidJsonCount: 0,
+        unknownAgentActionCount: 0,
+        agentBadWebCertHashCount: 0,
+        agentBadSignature1Count: 0,
+        agentBadSignature2Count: 0,
+        agentMaxSessionHoldCount: 0,
+        invalidDomainMeshCount: 0,
+        invalidMeshTypeCount: 0,
+        invalidDomainMesh2Count: 0,
+        invalidMeshType2Count: 0,
+        duplicateAgentCount: 0
+    }
+    obj.getAgentStats = function () { return obj.agentStats; }
+
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
         if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
-        var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
-        // Query the db for the given username
-        if (!user) { fn(new Error('cannot find user')); return; }
-        // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
-        if (user.salt == null) {
-            fn(new Error('invalid password'));
-        } else {
-            if (user.passtype != null) {
-                // IIS default clear or weak password hashing (SHA-1)
-                require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
-                        // Update the password to the stronger format.
-                        require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+
+        if (domain.auth == 'ldap') {
+            if (domain.ldapoptions.url == 'test') {
+                // Fake LDAP login
+                var xxuser = domain.ldapoptions[name.toLowerCase()];
+                if (xxuser == null) {
+                    fn(new Error('invalid password'));
+                    return;
+                } else {
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                    var shortname = null;
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex'); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+
+                    if (user == null) {
+                        // Create a new user
+                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: userid, username: username, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
-                    fn(new Error('invalid password'), null, user.passhint);
-                });
+                }
             } else {
-                // Default strong password hashing (pbkdf2 SHA384)
-                require('./pass').hash(pass, user.salt, function (err, hash) {
-                    if (err) return fn(err);
-                    if (hash == user.hash) {
+                // LDAP login
+                var LdapAuth = require('ldapauth-fork');
+                var ldap = new LdapAuth(domain.ldapoptions);
+                ldap.authenticate(name, pass, function (err, xxuser) {
+                    try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
+                    if (err) { fn(new Error('invalid password')); return; }
+                    var shortname = null;
+                    var username = xxuser['displayName'];
+                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                    if (domain.ldapuserbinarykey) {
+                        // Use a binary key as the userid
+                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                    } else if (domain.ldapuserkey) {
+                        // Use a string key as the userid
+                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
+                    } else {
+                        // Use the default key as the userid
+                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                        else if (xxuser.name) { shortname = xxuser.name; }
+                        else if (xxuser.cn) { shortname = xxuser.cn; }
+                    }
+                    if (username == null) { fn(new Error('no user name')); return; }
+                    if (shortname == null) { fn(new Error('no user identifier')); return; }
+                    var userid = 'user/' + domain.id + '/' + shortname;
+                    var user = obj.users[userid];
+
+                    if (user == null) {
+                        // This user does not exist, create a new account.
+                        var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        var usercount = 0;
+                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                        if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+                        obj.users[user._id] = user;
+                        obj.db.SetUser(user);
+                        obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id });
+                        return fn(null, user._id);
+                    } else {
+                        // This is an existing user
+                        // If the display username has changes, update it.
+                        if (user.name != username) {
+                            user.name = username;
+                            db.SetUser(user);
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                        }
+                        // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
                     }
-                    fn(new Error('invalid password'), null, user.passhint);
                 });
+            }
+        } else {
+            // Regular login
+            var user = obj.users['user/' + domain.id + '/' + name.toLowerCase()];
+            // Query the db for the given username
+            if (!user) { fn(new Error('cannot find user')); return; }
+            // Apply the same algorithm to the POSTed password, applying the hash against the pass / salt, if there is a match we found the user
+            if (user.salt == null) {
+                fn(new Error('invalid password'));
+            } else {
+                if (user.passtype != null) {
+                    // IIS default clear or weak password hashing (SHA-1)
+                    require('./pass').iishash(user.passtype, pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            // Update the password to the stronger format.
+                            require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                } else {
+                    // Default strong password hashing (pbkdf2 SHA384)
+                    require('./pass').hash(pass, user.salt, function (err, hash) {
+                        if (err) return fn(err);
+                        if (hash == user.hash) {
+                            if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                            return fn(null, user._id);
+                        }
+                        fn(new Error('invalid password'), null, user.passhint);
+                    });
+                }
             }
         }
     };
@@ -570,7 +727,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Save login time
         user.login = Math.floor(Date.now() / 1000);
         obj.db.SetUser(user);
-        obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
+
+        // Notify account login
+        var targets = ['*', 'server-users'];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        obj.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
 
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
@@ -611,9 +772,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
-        if ((domain.newaccounts === 0) || (domain.newaccounts === false)) { res.sendStatus(401); return; }
+        // Check if we are allowed to create new users using the login screen
+        var domainUserCount = -1;
+        if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) {
+            domainUserCount = 0;
+            for (var i in obj.users) { if (obj.users[i].domain == domain.id) { domainUserCount++; } }
+            if (domainUserCount > 0) { res.sendStatus(401); return; }
+        }
 
         // Check if this request is for an allows email domain
         if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains)) {
@@ -669,9 +836,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             } else {
                                 var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
-                                var usercount = 0;
-                                for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                                if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; if (domain.newaccounts === 2) { domain.newaccounts = 0; } } // If this is the first user, give the account site admin.
+                                if (domainUserCount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
@@ -684,8 +849,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
-
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                                 });
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                             }
@@ -702,7 +866,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
 
         // Check everything is ok
-        if ((domain == null) || (domain.auth == 'sspi') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             delete req.session.loginmode;
             delete req.session.tokenusername;
             delete req.session.tokenpassword;
@@ -776,7 +940,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Get the email from the body or session.
         var email = req.body.email;
@@ -840,7 +1004,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -927,7 +1091,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -998,7 +1162,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -1038,15 +1202,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } });
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
-            var userid = 'user/' + domain.id + '/' + req.query.user.toLowerCase();
-            if (obj.users[userid] != null) {
-                obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                    req.session.userid = userid;
-                    req.session.domainid = domain.id;
-                    req.session.currentNode = '';
-                    handleRootRequestEx(req, res, domain);
-                });
-            }
+            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                req.session.userid = userid;
+                req.session.domainid = domain.id;
+                req.session.currentNode = '';
+                handleRootRequestEx(req, res, domain);
+            });
         } else {
             // Login using a different system
             handleRootRequestEx(req, res, domain);
@@ -1174,6 +1335,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
             if ((parent.config.settings.no2factorauth !== true) && (obj.f2l != null)) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+            if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
+            if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -1182,18 +1345,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
-            if (obj.args.minify && !req.query.nominify) {
-                // Try to server the minified version if we can.
-                try {
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile-min' : 'default-min'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
-                } catch (ex) {
-                    // In case of an exception, serve the non-minified version.
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
+            // Fetch the web state
+            obj.db.Get('ws' + user._id, function (err, states) {
+                var webstate = (states.length == 1) ? states[0].state : '';
+                if (obj.args.minify && !req.query.nominify) {
+                    // Try to server the minified version if we can.
+                    try {
+                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile-min' : 'default-min'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate) });
+                    } catch (ex) {
+                        // In case of an exception, serve the non-minified version.
+                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate) });
+                    }
+                } else {
+                    // Serve non-minified version of web pages.
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate) });
                 }
-            } else {
-                // Serve non-minified version of web pages.
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'default-mobile' : 'default'), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer });
-            }
+            });
         } else {
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
@@ -1249,21 +1416,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (msg != null) message = '<p class="msg success">' + msg + '</p>';
         var emailcheck = ((obj.parent.mailserver != null) && (domain.auth != 'sspi'));
 
+        // Check if we are allowed to create new users using the login screen
+        var newAccountsAllowed = true;
+        if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) { for (var i in obj.users) { if (obj.users[i].domain == domain.id) { newAccountsAllowed = false; break; } } }
+
         if (obj.args.minify && !req.query.nominify) {
             // Try to server the minified version if we can.
             try {
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext?encodeURIComponent(domain.welcometext):null });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile-min' : 'login-min'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext?encodeURIComponent(domain.welcometext):null });
             } catch (ex) {
                 // In case of an exception, serve the non-minified version.
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
             }
         } else {
             // Serve non-minified version of web pages.
-            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
+            res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login'), { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
         }
 
         /*
-        var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: domain.newaccounts, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
+        var xoptions = { loginmode: loginmode, rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: obj.parent.mailserver != null, features: features, footer: (domain.footer == null) ? '' : domain.footer };
         var xpath = obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'login-mobile' : 'login');
         console.log('Render...');
         res.render(xpath, xoptions, function (err, html) {
@@ -1357,7 +1528,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + certificates.RootName + '.cer' });
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + certificates.RootName + '.cer"' });
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
@@ -1436,14 +1607,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.query.type == 1) {
             obj.getCiraConfigurationScript(req.query.meshid, function (script) {
                 if (script == null) { res.sendStatus(404); } else {
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_setup.mescript' });
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup.mescript"' });
                     res.send(script);
                 }
             });
         } else if (req.query.type == 2) {
             obj.getCiraCleanupScript(function (script) {
                 if (script == null) { res.sendStatus(404); } else {
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=cira_cleanup.mescript' });
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_cleanup.mescript"' });
                     res.send(script);
                 }
             });
@@ -1665,7 +1836,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const subscriptions = [userid, 'server-global'];
         if (user.siteadmin != null) {
             if (user.siteadmin == 0xFFFFFFFF) subscriptions.push('*');
-            if ((user.siteadmin & 2) != 0) subscriptions.push('server-users');
+            if ((user.siteadmin & 2) != 0) {
+                if ((user.groups == null) || (user.groups.length == 0)) {
+                    // Subscribe to all user changes
+                    subscriptions.push('server-users');
+                } else {
+                    // Subscribe to user changes for some groups
+                    for (var i in user.groups) { subscriptions.push('server-users:' + i); }
+                }
+            }
         }
         if (user.links != null) { for (var i in user.links) { subscriptions.push(i); } }
         obj.parent.RemoveAllEventDispatch(target);
@@ -1788,6 +1967,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // WS ---> AMT/TLS
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
+                    //console.log('WS --> AMT', Buffer.from(msg, 'binary').toString('hex'));
                     if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
                 });
 
@@ -1812,6 +1992,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.forwardclient.onData = function (ciraconn, data) {
                     Debug(4, 'Relay CIRA data', data.length);
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
+                    //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
                     if (data.length > 0) { try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
                 };
 
@@ -1842,7 +2023,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
                     if (obj.parent.debugLevel >= 1) { // DEBUG
-                        Debug(1, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
+                        Debug(2, 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
                         if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + msg.toString('hex')); }
                     }
                     msg = msg.toString('binary');
@@ -1892,7 +2073,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // When we receive data on the TCP connection, forward it back into the web socket connection.
                 ws.forwardclient.on('data', function (data) {
                     if (obj.parent.debugLevel >= 1) { // DEBUG
-                        Debug(1, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
+                        Debug(2, 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
                         if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
@@ -2110,7 +2291,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
             if (argentInfo == null) { res.sendStatus(404); return; }
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
                 res.sendFile(argentInfo.path);
             } else {
                 // We are going to embed the .msh file into the Windows executable (signed or not).
@@ -2141,14 +2322,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=' + argentInfo.rname });
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
         } else if (req.query.script != null) {
             // Send a specific mesh install script back
             var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
             if (scriptInfo == null) { res.sendStatus(404); return; }
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=' + scriptInfo.rname });
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="' + scriptInfo.rname + '"' });
             res.send(scriptInfo.data.split('{{{noproxy}}}').join((domain.agentnoproxy === true)?'--no-proxy ':''));
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
@@ -2157,17 +2338,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((agentid == 3)) { // Signed Windows MeshCmd.exe x86
                 var stats = null, meshCmdPath = obj.path.join(__dirname, 'agents', 'MeshCmd-signed.exe');
                 try { stats = obj.fs.statSync(meshCmdPath); } catch (e) { }
-                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : '') }); res.sendFile(meshCmdPath); return; }
+                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : '') + '"' }); res.sendFile(meshCmdPath); return; }
             } else if ((agentid == 4)) { // Signed Windows MeshCmd64.exe x64
                 var stats = null, meshCmd64Path = obj.path.join(__dirname, 'agents', 'MeshCmd64-signed.exe');
                 try { stats = obj.fs.statSync(meshCmd64Path); } catch (e) { }
-                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') }); res.sendFile(meshCmd64Path); return; }
+                if ((stats != null)) { res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') + '"' }); res.sendFile(meshCmd64Path); return; }
             }
             // No signed agents, we are going to merge a new MeshCmd.
             if ((agentid < 10000) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
-            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') });
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') + '"' });
             res.statusCode = 200;
             if (argentInfo.signedMeshCmdPath != null) {
                 // If we hav a pre-signed MeshCmd, send that.
@@ -2184,6 +2365,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (nodes.length != 1) { res.sendStatus(401); return; }
                     var node = nodes[0];
+
                     // Create the meshaction.txt file for meshcmd.exe
                     var meshaction = {
                         action: req.query.meshaction,
@@ -2194,13 +2376,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         username: '',
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                        serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                        serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                         debugLevel: 0
                     };
                     if (user != null) { meshaction.username = user.name; }
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                     if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="meshaction.txt"' });
                     res.send(JSON.stringify(meshaction, null, ' '));
                 });
             }
@@ -2209,14 +2391,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     username: '',
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                    serverHttpsHash: Buffer.from(obj.webCertificateHash, 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
+                    serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
                     debugLevel: 0
                 };
                 if (user != null) { meshaction.username = user.name; }
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=meshaction.txt' });
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="meshaction.txt"' });
                 res.send(JSON.stringify(meshaction, null, ' '));
+            } else if (req.query.meshaction == 'winrouter') {
+                var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
+                if (obj.fs.existsSync(p)) {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="MeshCentralRouter.exe"' });
+                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                } else { res.sendStatus(404); }
             } else {
                 res.sendStatus(401);
             }
@@ -2285,7 +2473,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
         archive.on('error', function (err) { throw err; });
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename=MeshAgent-' + mesh.name + '.zip' });
+        try {
+            // Set the agent download including the mesh name.
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent-' + mesh.name + '.zip"' });
+        } catch (ex) {
+            // If the mesh name contains invalid characters, just use a generic name.
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent.zip"' });
+        }
         archive.pipe(res);
 
         // Opens the "MeshAgentOSXPackager.zip"
@@ -2366,7 +2560,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
         if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=meshagent.msh' });
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent.msh"' });
         res.send(meshsettings);
     };
 
@@ -2391,7 +2585,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (rights == 0) { res.sendStatus(401); return; }
 
                 // Get the list of power events and send them
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename=powerevents.csv' });
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="powerevents.csv"' });
                 obj.db.getPowerTimeline(node._id, function (err, docs) {
                     var xevents = [ 'Time, State, Previous State' ], prevState = 0;
                     for (var i in docs) {
@@ -2503,6 +2697,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
             obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
+            obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
@@ -2510,18 +2705,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
                 // Check if we have "server.jpg" in the data folder, if so, use that.
-                if ((parent.configurationFiles != null) && (parent.configurationFiles['server.jpg'] != null)) {
-                    res.set({ 'Content-Type': 'image/jpeg' });
-                    res.send(parent.configurationFiles['server.jpg']);
+                if ((parent.configurationFiles != null) && (parent.configurationFiles['server.png'] != null)) {
+                    res.set({ 'Content-Type': 'image/png' });
+                    res.send(parent.configurationFiles['server.png']);
                 } else {
                     // Check if we have "server.jpg" in the data folder, if so, use that.
-                    var p = obj.path.join(obj.parent.datapath, 'server.jpg');
+                    var p = obj.path.join(obj.parent.datapath, 'server.png');
                     if (obj.fs.existsSync(p)) {
                         // Use the data folder server picture
                         try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                     } else {
                         // Use the default server picture
-                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-200.jpg')); } catch (e) { res.sendStatus(404); }
+                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-256.png')); } catch (e) { res.sendStatus(404); }
                     }
                 }
             });
@@ -2837,7 +3032,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (oldcount == null) { oldcount = 0; } else { delete obj.sessionsCount[userid]; }
                 if (newcount != oldcount) {
                     x = userid.split('/');
-                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    var u = users[userid];
+                    if (u) {
+                        var targets = ['*', 'server-users'];
+                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                        obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    }
                 }
             }
 
@@ -2846,7 +3046,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 oldcount = obj.sessionsCount[userid];
                 if ((oldcount != null) && (oldcount != 0)) {
                     x = userid.split('/');
-                    obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 });
+                    var u = users[userid];
+                    if (u) {
+                        var targets = ['*', 'server-users'];
+                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                        obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
+                    }
                 }
             }
 
@@ -2866,8 +3071,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If the count changed, update and event
             if (newcount != oldcount) {
                 x = userid.split('/');
-                obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
-                obj.sessionsCount[userid] = newcount;
+                var u = users[userid];
+                if (u) {
+                    var targets = ['*', 'server-users'];
+                    if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
+                    obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    obj.sessionsCount[userid] = newcount;
+                }
             }
         }
     };
