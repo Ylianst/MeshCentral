@@ -1085,6 +1085,7 @@
             webPageStackMenu = (uiMode > 1);
             toggleFullScreen(0);
             toggleStackMenu(0);
+            if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
         }
 
         function toggleNightMode() {
@@ -3010,6 +3011,14 @@
                 } else {
                     // Go to the right panel
                     gotoDevice(nodeid, panel);
+
+                    // If possible, connect...
+                    var mesh = meshes[currentNode.meshid];
+                    if ((currentNode.conn & 1) && (mesh.mtype == 2)) {
+                        if ((panel == 11) && (desktop == null) && (currentNode.agent.caps & 1)) { connectDesktop(null, 1); } // Desktop
+                        if ((panel == 12) && (terminal == null) && (currentNode.agent.caps & 2)) { connectTerminal(null, 1); } // Terminal
+                        if ((panel == 13) && (files == null)) { connectFiles(null); } // files
+                    }
                 }
             }
         }
@@ -5678,7 +5687,7 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Change Mesh Agent Core", 3, p15uploadCoreEx, '<select id=d3coreMode style=float:right;width:260px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=6>Upload recovery core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select><div>Change Core</div>'); }
+            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue('Action', '<select id=d3coreMode style=width:230px><option value=1>Upload default server core</option><option value=2>Clear the core</option><option value=6>Upload recovery core</option><option value=3>Upload a core file</option><option value=4>Soft disconnect agent</option><option value=5>Hard disconnect agent</option></select>')); }
         }
 
         function p15uploadCoreEx() {
@@ -7769,11 +7778,7 @@
             if ((x == 6) || (x == 115) || (x == 40)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
 
             // column_l max-height
-            if (!webPageFullScreen && x >= 10) {
-                QC('column_l').add('room4submenu');
-            } else {
-                QC('column_l').remove('room4submenu');
-            }
+            if (webPageStackMenu && (x >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
             
             // If we are going to panel 0 in "full screen mode", hide the left bar.
             QV('topbar', x != 0);

@@ -818,7 +818,7 @@ NoMeshesPanel img {
 }
 
 #p3users {
-    max-height: calc(100vh - 243px);
+    max-height: calc(100vh - 244px);
     overflow-y: auto;
 }
 
@@ -1088,7 +1088,7 @@ a {
 }
 
 .night a {
-    color: #369;
+    color: #69B;
 }
 
 .i1 {
@@ -1927,8 +1927,11 @@ a {
 #deskarea0 {
     width: 100%;
     padding: 0px;
-    padding: 0px;
     margin-top: 0px;
+}
+
+.night #deskarea0 {
+    color: black;
 }
 
 .fulldesk #deskarea0 {
@@ -1976,8 +1979,8 @@ a {
     position: relative;
     overflow: hidden;
     width: 100%;
-    max-height: calc(100vh - 296px); /*  + 24px hight of submenu */
-    height: calc(100vh - 296px);
+    max-height: calc(100vh - 270px); /*  + 24px hight of submenu */
+    height: calc(100vh - 270px);
 }
 
 .room4submenu #deskarea3x {
@@ -2158,9 +2161,13 @@ a {
 
 #p13filetable {
     width: 100%;
-    height: calc(100vh - 349px);
+    height: calc(100vh - 323px);
     overflow: auto;
     -webkit-user-select: none;
+}
+
+.room4submenu #p13filetable {
+    height: calc(100vh - 349px);
 }
 
 #p13bigok {
@@ -2217,6 +2224,10 @@ a {
     margin-top: 0px;
 }
 
+.night #consoleTable {
+    color: black;
+}
+
 #p15statetext {
     padding: 4px;
     height: 15px;
@@ -2228,9 +2239,8 @@ a {
     padding: 0;
     color: lightgray;
     width: 100%;
-    /*  */
-    height: calc(100vh - 299px);
-    max-height: calc(100vh - 299px);
+    height: calc(100vh - 276px);
+    max-height: calc(100vh - 276px);
     position: relative;
 }
 
@@ -2245,17 +2255,14 @@ a {
 }
 
 #p15agentConsoleText {
-    /* position: absolute; */
     margin: 0;
     padding: 0;
     top: 0;
     bottom: 0;
-    /* left: 0;
-    right: 0; */
     overflow-y: scroll;
     overflow-x: auto;
-    height: calc(100vh - 299px);
-    max-height: calc(100vh - 299px);
+    height: calc(100vh - 279px);
+    max-height: calc(100vh - 279px);
     width: 930px;
 }
 
@@ -2270,8 +2277,12 @@ a {
 }
 
 #p16events, #p31events {
-    max-height: calc(100vh - 269px);
+    max-height: calc(100vh - 245px);
     overflow-y: auto;
+}
+
+.room4submenu #p16events, #p31events {
+    max-height: calc(100vh - 269px);
 }
 
 .night #p16events, #p31events {
