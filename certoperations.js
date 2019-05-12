@@ -549,14 +549,47 @@ module.exports.CertificateOperations = function (parent) {
     // Accelerators, used to dispatch work to other processes
     const fork = require("child_process").fork;
     const program = require("path").join(__dirname, "meshaccelerator.js");
-    const acceleratorTotalCount = require("os").cpus().length;
+    const acceleratorTotalCount = require("os").cpus().length; // TODO: Check if this accelerator can scale.
     var acceleratorCreateCount = acceleratorTotalCount;
     var freeAccelerators = [];
     var pendingAccelerator = [];
     obj.acceleratorCertStore = null;
 
+    // Accelerator Stats
+    var getAcceleratorFuncCalls = 0;
+    var acceleratorStartFuncCall = 0;
+    var acceleratorPerformSignatureFuncCall = 0;
+    var acceleratorPerformSignaturePushFuncCall = 0;
+    var acceleratorPerformSignatureRunFuncCall = 0;
+    var acceleratorMessage = 0;
+    var acceleratorMessageException = 0;
+    var acceleratorMessageLastException = null;
+    var acceleratorException = 0;
+    var acceleratorLastException = null;
+
+    // Get stats about the accelerators
+    obj.getAcceleratorStats = function () {
+        return {
+            acceleratorTotalCount: acceleratorTotalCount,
+            acceleratorCreateCount: acceleratorCreateCount,
+            freeAccelerators: freeAccelerators.length,
+            pendingAccelerator: pendingAccelerator.length,
+            getAcceleratorFuncCalls: getAcceleratorFuncCalls,
+            startFuncCall: acceleratorStartFuncCall,
+            performSignatureFuncCall: acceleratorPerformSignatureFuncCall,
+            performSignaturePushFuncCall: acceleratorPerformSignaturePushFuncCall,
+            performSignatureRunFuncCall: acceleratorPerformSignatureRunFuncCall,
+            message: acceleratorMessage,
+            messageException: acceleratorMessageException,
+            messageLastException: acceleratorMessageLastException,
+            exception: acceleratorException,
+            lastException: acceleratorLastException
+        };
+    }
+
     // Create a new accelerator module
     obj.getAccelerator = function () {
+        getAcceleratorFuncCalls++;
         if (obj.acceleratorCertStore == null) { return null; }
         if (freeAccelerators.length > 0) { return freeAccelerators.pop(); }
         if (acceleratorCreateCount > 0) {
@@ -564,23 +597,26 @@ module.exports.CertificateOperations = function (parent) {
             var accelerator = fork(program, [], { stdio: ["pipe", "pipe", "pipe", "ipc"] });
             accelerator.accid = acceleratorCreateCount;
             accelerator.on("message", function (message) {
-                this.func(this.tag, message);
-                delete this.tag;
-                if (pendingAccelerator.length > 0) {
-                    var x = pendingAccelerator.shift();
-                    if (x.tag) { this.tag = x.tag; delete x.tag; }
-                    accelerator.send(x);
-                } else { freeAccelerators.push(this); }
+                acceleratorMessage++;
+                this.x.func(this.x.tag, message);
+                delete this.x;
+                if (pendingAccelerator.length > 0) { this.send(this.x = pendingAccelerator.shift()); } else { freeAccelerators.push(this); }
             });
+            accelerator.on("exit", function (code) {
+                if (this.x) { pendingAccelerator.push(this.x); delete this.x; }
+                acceleratorCreateCount++;
+                if (pendingAccelerator.length > 0) { var acc = obj.getAccelerator(); acc.send(acc.x = pendingAccelerator.shift()); }
+            });
+            accelerator.on("error", function (code) { }); // Not sure if somethign should be done here to help kill the process.
             accelerator.send({ action: "setState", certs: obj.acceleratorCertStore });
             return accelerator;
-
         }
         return null;
     };
 
     // Set the state of the accelerators. This way, we don"t have to send certificate & keys to them each time.
     obj.acceleratorStart = function (certificates) {
+        acceleratorStartFuncCall++;
         if (obj.acceleratorCertStore != null) { console.error("ERROR: Accelerators can only be started once."); return; }
         obj.acceleratorCertStore = [{ cert: certificates.agent.cert, key: certificates.agent.key }];
         if (certificates.swarmserver != null) { obj.acceleratorCertStore.push({ cert: certificates.swarmserver.cert, key: certificates.swarmserver.key }); }
@@ -588,22 +624,23 @@ module.exports.CertificateOperations = function (parent) {
 
     // Perform any RSA signature, just pass in the private key and data.
     obj.acceleratorPerformSignature = function (privatekey, data, tag, func) {
+        acceleratorPerformSignatureFuncCall++;
         if (acceleratorTotalCount <= 1) {
             // No accelerators available
             if (typeof privatekey == "number") { privatekey = obj.acceleratorCertStore[privatekey].key; }
             const sign = obj.crypto.createSign("SHA384");
             sign.end(Buffer.from(data, "binary"));
-            func(tag, sign.sign(privatekey).toString("binary"));
+            try { func(tag, sign.sign(privatekey).toString("binary")); } catch (ex) { acceleratorMessageException++; acceleratorMessageLastException = ex; }
         } else {
             var acc = obj.getAccelerator();
             if (acc == null) {
                 // Add to pending accelerator workload
-                pendingAccelerator.push({ action: "sign", key: privatekey, data: data, tag: tag });
+                acceleratorPerformSignaturePushFuncCall++;
+                pendingAccelerator.push({ action: "sign", key: privatekey, data: data, tag: tag, func: func });
             } else {
                 // Send to accelerator now
-                acc.func = func;
-                acc.tag = tag;
-                acc.send({ action: "sign", key: privatekey, data: data });
+                acceleratorPerformSignatureRunFuncCall++;
+                acc.send(acc.x = { action: "sign", key: privatekey, data: data, tag: tag, func: func });
             }
         }
     };

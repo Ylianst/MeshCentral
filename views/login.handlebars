@@ -11,16 +11,22 @@
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
     <title>{{{title}}} - Login</title>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide login">
     <div id=container>
-        <div id=mastheadx></div>
         <div id=masthead>
             <div class="title">{{{title}}}</div>
             <div class="title2">{{{title2}}}</div>
         </div>
-        <div id=page_content>
-            <div id=topbar class="noselect style3">
-                <div id=toggle title="Toggle full width" onclick="toggleFullScreen(1)">&harr;</div>
+            <div id=topbar class="noselect style3" style="height:24px">
+                <div id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()">
+                    &diams;
+                    <div id=uiMenu style="display:none">
+                        <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
+                        <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
+                        <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
+                        <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
+                    </div>
+                </div>
             </div>
             <div id=column_l>
                 <h1>Welcome</h1>
@@ -29,7 +35,7 @@
                     <tr>
                         <td id="welcomeimage">
                             <picture>
-                                <img alt="" src=welcome.jpg />
+                                <img alt="" src=welcome.jpg style="border-radius:20px" />
                             </picture>
                         </td>
                         <td id="logincell">
@@ -216,7 +222,7 @@
                     &nbsp;<a href=terms>Terms &amp; Privacy</a>
                 </div>
             </div>
-        </div>
+        
     </div>
     <div id=dialog style="display:none">
         <div id=dialogHeader>
@@ -247,12 +253,16 @@
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var features = parseInt('{{{features}}}');
-        var webPageFullScreen = getstore('webPageFullScreen', true);
-        if (webPageFullScreen == 'false') { webPageFullScreen = false; }
-        if (webPageFullScreen == 'true') { webPageFullScreen = true; }
         var welcomeText = decodeURIComponent("{{{welcometext}}}");
         var currentpanel = 0;
-        toggleFullScreen();
+        var uiMode = parseInt(getstore('uiMode', '1'));
+        var webPageFullScreen = true;
+        var nightMode = (getstore('_nightMode', '0') == '1');
+
+        //var webPageFullScreen = getstore('webPageFullScreen', true);
+        //if (webPageFullScreen == 'false') { webPageFullScreen = false; }
+        //if (webPageFullScreen == 'true') { webPageFullScreen = true; }
+        //toggleFullScreen();
 
         function startup() {
             if ((features & 32) == 0) {
@@ -261,6 +271,8 @@
                 try { loc = top.location.toString().toLowerCase(); } catch (e) { }
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
+
+            if (nightMode) { QC('body').add('night'); }
 
             QV('createPanelHint', passRequirements.hint === true);
             QV('resetpasswordpanelHint', passRequirements.hint === true);
@@ -275,7 +287,7 @@
             validateLogin();
             validateCreate();
             if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
-            QV('newAccountDiv', ('{{{newAccount}}}' != '0') && ('{{{newAccount}}}' != 'false')); // If new accounts are not allowed, don't display the new account link.
+            QV('newAccountDiv', ('{{{newAccount}}}' === '1') || ('{{{newAccount}}}' === 'true')); // If new accounts are not allowed, don't display the new account link.
             if ((passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
             QV("newAccountPass", (newAccountPass == 1));
             QV("resetAccountDiv", (emailCheck == true));
@@ -360,6 +372,9 @@
                     }, hardwareKeyChallenge.timeoutSeconds);
                 }
             }
+
+            // Setup the user interface in the right mode
+            userInterfaceSelectMenu();
         }
 
         function showPassHint() {
@@ -616,7 +631,7 @@
 
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
-            if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            //if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             if (webPageFullScreen == false) {
                 // By adding body class, it will change a style of all ellements using CSS selector
                 // No need for JS anymore and it will be consistent style for all the templates.
@@ -626,6 +641,30 @@
             }
             QV('body', true);
             center();
+        }
+
+        // Toggle user interface menu
+        function showUserInterfaceSelectMenu() {
+            Q('uiViewButton1').classList.remove('uiSelectorSel');
+            Q('uiViewButton2').classList.remove('uiSelectorSel');
+            Q('uiViewButton3').classList.remove('uiSelectorSel');
+            try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
+            QV('uiMenu', (QS('uiMenu').display == 'none'));
+            if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
+        }
+
+        function userInterfaceSelectMenu(s) {
+            if (s) { uiMode = s; putstore('uiMode', uiMode); }
+            webPageFullScreen = (uiMode < 3);
+            //webPageStackMenu = (uiMode > 1);
+            toggleFullScreen(0);
+            //toggleStackMenu(0);
+        }
+
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            putstore('_nightMode', (nightMode ? '1' : '0'));
         }
 
         function center() {

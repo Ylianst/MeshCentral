@@ -72,7 +72,7 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
     obj.PerformAjaxEx = function (postdata, callback, tag, url, action) {
         if (obj.FailAllError != 0) { if (obj.FailAllError != 999) { obj.gotNextMessagesError({ status: obj.FailAllError }, 'error', null, [postdata, callback, tag]); } return; }
         if (!postdata) postdata = "";
-        //console.log("SEND: " + postdata); // DEBUG
+        if (globalDebugFlags & 1) { console.log("SEND: " + postdata + "\r\n\r\n"); } // DEBUG
 
         // We are in a DukTape environement
         if (obj.digest == null)
@@ -92,9 +92,9 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
         //console.log('Request ' + (obj.RequestCount++));
         req.on('error', function (e) { obj.gotNextMessagesError({ status: 600 }, 'error', null, [postdata, callback, tag]); });
         req.on('response', function (response) {
-            //console.log('Response: ' + response.statusCode);
+            if (globalDebugFlags & 1) { console.log('Response: ' + response.statusCode); }
             if (response.statusCode != 200) {
-                //console.log('ERR:' + JSON.stringify(response));
+                if (globalDebugFlags & 1) { console.log('ERR:' + JSON.stringify(response)); }
                 obj.gotNextMessagesError({ status: response.statusCode }, 'error', null, [postdata, callback, tag]);
             } else {
                 response.acc = '';
@@ -116,7 +116,7 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
     obj.gotNextMessages = function (data, status, request, callArgs) {
         obj.ActiveAjaxCount--;
         if (obj.FailAllError == 999) return;
-        //console.log("RECV: " + data); // DEBUG
+        if (globalDebugFlags & 1) { console.log("RECV: " + data + "\r\n\r\n"); } // DEBUG
         if (obj.FailAllError != 0) { callArgs[1](null, obj.FailAllError, callArgs[2]); return; }
         if (request.status != 200) { callArgs[1](null, request.status, callArgs[2]); return; }
         callArgs[1](data, 200, callArgs[2]);
