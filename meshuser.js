@@ -981,6 +981,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             // Check if this is an existing user
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                            if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
                             if (command.email != null) { newuser.email = command.email; } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if ((user.groups != null) && (user.groups.length > 0)) { newuser.groups = user.groups; } // New account are automatically part of our groups.

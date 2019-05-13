@@ -299,6 +299,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (user == null) {
                         // Create a new user
                         var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
@@ -350,6 +351,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (user == null) {
                         // This user does not exist, create a new account.
                         var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
@@ -835,6 +837,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
                             } else {
                                 var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                                if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
                                 if (domainUserCount == 0) { user.siteadmin = 0xFFFFFFFF; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
                                 obj.users[user._id] = user;
@@ -1265,6 +1268,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((user == null) || (user.sid != req.session.usersid)) {
                     // Create the domain user
                     var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000) };
+                    if (domain.newaccountsrights) { user2.siteadmin = domain.newaccountsrights; }
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                     if (usercount == 0) { user2.siteadmin = 0xFFFFFFFF; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
