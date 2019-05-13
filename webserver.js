@@ -1476,7 +1476,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.session && req.session.userid) {
                 if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                 var user = obj.users[req.session.userid];
-                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                var logoutcontrol = 'Welcome ' + user.name + '.';
+                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: logoutcontrol });
             } else {
                 res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
             }
@@ -1492,7 +1494,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (req.session && req.session.userid) {
                         if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                         var user = obj.users[req.session.userid];
-                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                        var logoutcontrol = 'Welcome ' + user.name + '.';
+                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                        res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data), logoutControl: logoutcontrol });
                     } else {
                         res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, terms: encodeURIComponent(data) });
                     }
@@ -1503,7 +1507,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.session && req.session.userid) {
                     if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url); return; } // Check is the session is for the correct domain
                     var user = obj.users[req.session.userid];
-                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, logoutControl: 'Welcome ' + user.name + '. <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>' });
+                    var logoutcontrol = 'Welcome ' + user.name + '.';
+                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                    res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2, logoutControl: logoutcontrol });
                 } else {
                     res.render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'terms-mobile' : 'terms'), { title: domain.title, title2: domain.title2 });
                 }
