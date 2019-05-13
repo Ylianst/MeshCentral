@@ -77,7 +77,7 @@ function createMeshCore(agent) {
                     fix += ("    child.stdin.write('launchctl unload /Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist\\n');\n");
                     fix += ("    child.stdin.write('launchctl load /Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist\\n');\n");
                     fix += ("    child.stdin.write('rm /Library/LaunchDaemons/meshagentRepair.plist\\n');\n");
-                    fix += ("    child.stdin.write('rm " + process.cwd() + "/macosRepair.js/\\n');\n");
+                    fix += ("    child.stdin.write('rm " + process.cwd() + "/macosRepair.js\\n');\n");
                     fix += ("    child.stdin.write('launchctl stop meshagentRepair\\nexit\\n');\n");
                     fix += ("    child.waitExit();\n");
                     fix += ("}\n");
