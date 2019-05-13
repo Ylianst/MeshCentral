@@ -39,6 +39,81 @@ var MESHRIGHT_LIMITEDINPUT = 4096;
 function createMeshCore(agent) {
     var obj = {};
 
+    if (process.platform == 'darwin' && !process.versions) {
+        // This is an older MacOS Agent, so we'll need to check the service definition so that Auto-Update will function correctly
+        var child = require('child_process').execFile('/bin/sh', ['sh']);
+        child.stdout.str = '';
+        child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+        child.stdin.write("cat /Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist | tr '\n' '\.' | awk '{split($0, a, \"<key>KeepAlive</key>\"); split(a[2], b, \"<\"); split(b[2], c, \">\"); ");
+        child.stdin.write(" if(c[1]==\"dict\"){ split(a[2], d, \"</dict>\"); if(split(d[1], truval, \"<true/>\")>1) { split(truval[1], kn1, \"<key>\"); split(kn1[2], kn2, \"</key>\"); print kn2[1]; } }");
+        child.stdin.write(" else { split(c[1], ka, \"/\"); if(ka[1]==\"true\") {print \"ALWAYS\";} } }'\nexit\n");
+        child.waitExit();
+        if (child.stdout.str.trim() == 'Crashed') {
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write("launchctl list | grep 'meshagent' | awk '{ if($3==\"meshagent\"){print $1;}}'\nexit\n");
+            child.waitExit();
+
+            if (parseInt(child.stdout.str.trim()) == process.pid) {
+                // The currently running MeshAgent is us, so we can continue with the update
+                var plist = require('fs').readFileSync('/Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist').toString();
+                var tokens = plist.split('<key>KeepAlive</key>');
+                if (tokens[1].split('>')[0].split('<')[1] == 'dict') {
+                    var tmp = tokens[1].split('</dict>');
+                    tmp.shift();
+                    tokens[1] = '\n    <true/>' + tmp.join('</dict>');
+                    tokens = tokens.join('<key>KeepAlive</key>');
+
+                    require('fs').writeFileSync('/Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist', tokens);
+
+                    var fix = '';
+                    fix += ("function macosRepair()\n");
+                    fix += ("{\n");
+                    fix += ("    var child = require('child_process').execFile('/bin/sh', ['sh']);\n");
+                    fix += ("    child.stdout.str = '';\n");
+                    fix += ("    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });\n");
+                    fix += ("    child.stderr.on('data', function (chunk) { });\n");
+                    fix += ("    child.stdin.write('launchctl unload /Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist\\n');\n");
+                    fix += ("    child.stdin.write('launchctl load /Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist\\n');\n");
+                    fix += ("    child.stdin.write('rm /Library/LaunchDaemons/meshagentRepair.plist\\n');\n");
+                    fix += ("    child.stdin.write('rm " + process.cwd() + "/macosRepair.js/\\n');\n");
+                    fix += ("    child.stdin.write('launchctl stop meshagentRepair\\nexit\\n');\n");
+                    fix += ("    child.waitExit();\n");
+                    fix += ("}\n");
+                    fix += ("macosRepair();\n");
+                    fix += ("process.exit();\n");
+                    require('fs').writeFileSync(process.cwd() + '/macosRepair.js', fix);
+
+                    var plist = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                    plist += '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n';
+                    plist += '<plist version="1.0">\n';
+                    plist += '  <dict>\n';
+                    plist += '      <key>Label</key>\n';
+                    plist += ('     <string>meshagentRepair</string>\n');
+                    plist += '      <key>ProgramArguments</key>\n';
+                    plist += '      <array>\n';
+                    plist += ('        <string>' + process.execPath + '</string>\n');
+                    plist += '        <string>macosRepair.js</string>\n';
+                    plist += '      </array>\n';
+                    plist += '      <key>WorkingDirectory</key>\n';
+                    plist += ('     <string>' + process.cwd() + '</string>\n');
+                    plist += '      <key>RunAtLoad</key>\n';
+                    plist += '      <true/>\n';
+                    plist += '  </dict>\n';
+                    plist += '</plist>';
+                    require('fs').writeFileSync('/Library/LaunchDaemons/meshagentRepair.plist', plist);
+
+                    child = require('child_process').execFile('/bin/sh', ['sh']);
+                    child.stdout.str = '';
+                    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+                    child.stdin.write("launchctl load /Library/LaunchDaemons/meshagentRepair.plist\nexit\n");
+                    child.waitExit();
+                }
+            }
+        }
+    }
+
     /*
     function borderController() {
         this.container = null;
