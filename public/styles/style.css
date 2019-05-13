@@ -344,6 +344,10 @@ body {
     width:50%;
 }
 
+.night #logincell a {
+    color: blue;
+}
+
 #loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel {
     display: inline-block;
     margin: 0;
@@ -1844,6 +1848,10 @@ a {
     max-height: 200px;
 }
 
+.night .notifiyBox {
+    color: black;
+}
+
     .notifiyBox:before {
         content: ' ';
         position: absolute;
@@ -1886,6 +1894,9 @@ a {
     padding: 4px;
 }
 
+.night #notificationCount {
+    color: black;
+}
 
 .deskareaicon {
     cursor: pointer;

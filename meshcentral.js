@@ -563,6 +563,25 @@ function CreateMeshCentralServer(config, args) {
                 return;
             }
             if ((obj.config.domains[i].auth == 'ldap') || (obj.config.domains[i].auth == 'sspi')) { obj.config.domains[i].newaccounts = 0; } // No new accounts allowed in SSPI/LDAP authentication modes.
+
+            // Convert newAccountsRights from a array of strings to flags number.
+            if (obj.config.domains[i].newaccountsrights && Array.isArray(obj.config.domains[i].newaccountsrights)) {
+                var newAccRights = 0;
+                for (var j in obj.config.domains[i].newaccountsrights) {
+                    var r = obj.config.domains[i].newaccountsrights[j].toLowerCase();
+                    if (r == 'fulladmin') { newAccRights = 0xFFFFFFFF; }
+                    if (r == 'serverbackup') { newAccRights |= 1; }
+                    if (r == 'manageusers') { newAccRights |= 2; }
+                    if (r == 'serverrestore') { newAccRights |= 4; }
+                    if (r == 'fileaccess') { newAccRights |= 8; }
+                    if (r == 'serverupdate') { newAccRights |= 16; }
+                    if (r == 'locked') { newAccRights |= 32; }
+                    if (r == 'nonewgroups') { newAccRights |= 64; }
+                    if (r == 'notools') { newAccRights |= 128; }
+                }
+                obj.config.domains[i].newaccountsrights = newAccRights;
+            }
+            if (obj.config.domains[i].newaccountsrights && (typeof (obj.config.domains[i].newaccountsrights) != 'number')) { delete obj.config.domains[i].newaccountsrights; }
         }
 
         // Log passed arguments into Windows Service Log

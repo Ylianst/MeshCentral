@@ -6958,7 +6958,7 @@
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>Manage Users<br>';
             x += '<hr/><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>Lock Account<br>';
             x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>No New Device Groups<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>No MeshCmd<br>';
+            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>No Tools (MeshCmd/Router)<br>';
             x += '</div>';
             var user = users[userid.toLowerCase()];
             setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
@@ -6971,7 +6971,7 @@
                 Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));    // Server Update
                 Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));   // Account locked
                 Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));     // No New Groups
-                Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));      // No MeshCmd
+                Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));      // No Tools (MeshCMD / Router)
             }
             QE('ua_fulladmin', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverbackup', userinfo.siteadmin == 0xFFFFFFFF);
@@ -7473,12 +7473,13 @@
             // If web notifications are granted, use it.
             var notification = null;
             if (Notification && (Notification.permission == "granted")) {
+                var text = n.text.split('&reg;').join(''); // Clean up any HTML codes
                 if (n.nodeid) {
                     var node = getNodeFromId(n.nodeid);
-                    if (node) { notification = new Notification("{{{title}}} - " + node.name, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
+                    if (node) { notification = new Notification("{{{title}}} - " + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
                 } else {
                     if (n.icon == null) { n.icon = 0; }
-                    notification = new Notification("{{{title}}} - " + n.title, { tag: n.tag, body: n.text, icon: '/images/notify/icons128-' + n.icon + '.png' });
+                    notification = new Notification("{{{title}}} - " + n.title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
                 }
                 notification.id = n.id;
                 notification.xtag = n.tag;

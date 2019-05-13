@@ -669,11 +669,10 @@
 
         function center() {
             /* Now we use CSS media to achive the same effect as deleted JS  */
-
             if (webPageFullScreen == false) {
                 QS('centralTable')['margin-top'] = '';
             } else {
-                var h = (Q('column_l').clientHeight / 2) - 250;
+                var h = ((Q('column_l').clientHeight) / 2) - 220;
                 if (h < 0) h = 0;
                 QS('centralTable')['margin-top'] = h + 'px';
             }
