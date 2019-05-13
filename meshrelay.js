@@ -161,6 +161,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
                     relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
 
+                    // Remove the timeout
+                    if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
+
                     parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
@@ -174,7 +177,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             } else {
                 // Wait for other relay connection
                 ws._socket.pause(); // Hold traffic until the other connection
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1 };
+                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
                 parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
@@ -241,6 +244,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 } else {
                     parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
                 }
+                try { ws.close(); } catch (ex) { }
                 delete parent.wsrelays[obj.id];
             }
         }
