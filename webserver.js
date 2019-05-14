@@ -388,7 +388,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (err) return fn(err);
                         if (hash == user.hash) {
                             // Update the password to the stronger format.
-                            require('./pass').hash(pass, function (err, salt, hash) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); });
+                            require('./pass').hash(pass, function (err, salt, hash, tag) { if (err) throw err; user.salt = salt; user.hash = hash; delete user.passtype; obj.db.SetUser(user); }, 0);
                             if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                             return fn(null, user._id);
                         }
@@ -396,14 +396,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     });
                 } else {
                     // Default strong password hashing (pbkdf2 SHA384)
-                    require('./pass').hash(pass, user.salt, function (err, hash) {
+                    require('./pass').hash(pass, user.salt, function (err, hash, tag) {
                         if (err) return fn(err);
                         if (hash == user.hash) {
                             if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                             return fn(null, user._id);
                         }
                         fn(new Error('invalid password'), null, user.passhint);
-                    });
+                    }, 0);
                 }
             }
         }
@@ -844,7 +844,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
                                 // Create a user, generate a salt and hash the password
-                                require('./pass').hash(req.body.password1, function (err, salt, hash) {
+                                require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
                                     user.salt = salt;
                                     user.hash = hash;
@@ -853,7 +853,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                                     // Send the verification email
                                     if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
-                                });
+                                }, 0);
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id });
                             }
                             res.redirect(domain.url);
@@ -898,7 +898,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Check if the password is the same as the previous one
-                require('./pass').hash(req.body.rpassword1, user.salt, function (err, hash) {
+                require('./pass').hash(req.body.rpassword1, user.salt, function (err, hash, tag) {
                     if (user.hash == hash) {
                         // This is the same password, request a password change again
                         req.session.loginmode = '6';
@@ -906,7 +906,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         res.redirect(domain.url);
                     } else {
                         // Update the password, use a different salt.
-                        require('./pass').hash(req.body.rpassword1, function (err, salt, hash) {
+                        require('./pass').hash(req.body.rpassword1, function (err, salt, hash, tag) {
                             if (err) throw err;
                             user.salt = salt;
                             user.hash = hash;
@@ -920,9 +920,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword);
-                        });
+                        }, 0);
                     }
-                });
+                }, 0);
             } else {
                 // Failed, error out.
                 delete req.session.loginmode;
@@ -1057,7 +1057,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         // Set a temporary password
                                         obj.crypto.randomBytes(16, function (err, buf) {
                                             var newpass = buf.toString('base64').split('=').join('').split('/').join('');
-                                            require('./pass').hash(newpass, function (err, salt, hash) {
+                                            require('./pass').hash(newpass, function (err, salt, hash, tag) {
                                                 var userinfo = null;
                                                 if (err) throw err;
 
@@ -1076,7 +1076,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                                                 // Send the new password
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
-                                            });
+                                            }, 0);
                                         });
                                     }
                                 } else {
@@ -1151,14 +1151,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
         } else {
             // Default strong password hashing (pbkdf2 SHA384)
-            require('./pass').hash(password, user.salt, function (err, hash) {
+            require('./pass').hash(password, user.salt, function (err, hash, tag) {
                 if (err) return func(false);
                 if (hash == user.hash) {
                     if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { return func(false); } // Account is locked
                     return func(true); // Allow password change
                 }
                 func(false);
-            });
+            }, 0);
         }
     }
 
@@ -1178,7 +1178,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.checkUserPassword(domain, user, req.body.apassword0, function (result) {
             if (result == true) {
                 // Update the password
-                require('./pass').hash(req.body.apassword1, function (err, salt, hash) {
+                require('./pass').hash(req.body.apassword1, function (err, salt, hash, tag) {
                     if (err) throw err;
                     user.salt = salt;
                     user.hash = hash;
@@ -1189,7 +1189,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     req.session.viewmode = 2;
                     res.redirect(domain.url);
                     obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
-                });
+                }, 0);
             }
         });
     }

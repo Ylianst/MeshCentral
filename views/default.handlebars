@@ -302,6 +302,7 @@
                             <div style="float:right">
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 <img onclick=p4downloadUserInfo() style="cursor:pointer" title="Download user information" src="images/link4.png" />
+                                <img onclick=p4batchAccountCreate() style="cursor:pointer" title="batch create many user accounts" src="images/link6.png" />
                             </div>
                             <div>
                                 <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
@@ -6844,6 +6845,36 @@
             haltEvent(e);
             window.open("mailto:" + addr);
             return false;
+        }
+
+        function p4batchAccountCreate() {
+            if (xxdialogMode) return;
+            var x = 'Create many accounts at once by importing a JSON file with the following format:<br /><pre>[\r\n {"user":"x1","pass":"x","email":"x1@x"},\r\n {"user":"x2","pass":"x","resetNextLogin":true}\r\n]</pre><input style=width:370px type=file id=d4importFile accept=".json" onchange=p4batchAccountCreateValidate() />';
+            setDialogMode(2, "User Account Import", 3, p4batchAccountCreateEx, x);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function p4batchAccountCreateValidate() {
+            QE('idx_dlgOkButton', Q('d4importFile').value != null);
+        }
+
+        function p4batchAccountCreateEx() {
+            var fr = new FileReader();
+            fr.onload = function (r) {
+                var j = null;
+                try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file: " + ex + "."); return; }
+                if ((j != null) && (Array.isArray(j))) {
+                    var ok = true;
+                    for (var i in j) {
+                        if ((typeof j[i].user != 'string') || (j[i].user.length < 1) || (j[i].user.length > 64)) { ok = false; }
+                        if ((typeof j[i].pass != 'string') || (j[i].pass.length < 1) || (j[i].pass.length > 256)) { ok = false; }
+                        if (checkPasswordRequirements(j[i].pass, passRequirements) == false) { ok = false; }
+                        if ((j[i].email != null) && ((typeof j[i].email != 'string') || (j[i].email.length < 1) || (j[i].email.length > 128))) { ok = false; }
+                    }
+                    if (ok == false) { setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format."); } else { meshserver.send({ action: 'adduserbatch', users: j }); }
+                } else { setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format."); }
+            };
+            fr.readAsText(Q('d4importFile').files[0]);
         }
 
         function p4downloadUserInfo() {
