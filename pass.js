@@ -25,24 +25,25 @@ const iterations = 12000;
  * @param {Function} callback
  * @api public
  */
-exports.hash = function (pwd, salt, fn) {
-    if (3 == arguments.length) {
+exports.hash = function (pwd, salt, fn, tag) {
+    if (4 == arguments.length) {
         try {
-            crypto.pbkdf2(pwd, salt, iterations, len, 'sha384', function (err, hash) { fn(err, hash.toString('base64')); });
+            crypto.pbkdf2(pwd, salt, iterations, len, 'sha384', function (err, hash) { fn(err, hash.toString('base64'), tag); });
         } catch (e) {
             // If this previous call fails, it's probably because older pbkdf2 did not specify the hashing function, just use the default.
-            crypto.pbkdf2(pwd, salt, iterations, len, function (err, hash) { fn(err, hash.toString('base64')); });
+            crypto.pbkdf2(pwd, salt, iterations, len, function (err, hash) { fn(err, hash.toString('base64'), tag); });
         }
     } else {
+        tag = fn;
         fn = salt;
         crypto.randomBytes(len, function (err, salt) {
             if (err) return fn(err);
             salt = salt.toString('base64');
             try {
-                crypto.pbkdf2(pwd, salt, iterations, len, 'sha384', function (err, hash) { if (err) { return fn(err); } fn(null, salt, hash.toString('base64')); });
+                crypto.pbkdf2(pwd, salt, iterations, len, 'sha384', function (err, hash) { if (err) { return fn(err); } fn(null, salt, hash.toString('base64'), tag); });
             } catch (e) {
                 // If this previous call fails, it's probably because older pbkdf2 did not specify the hashing function, just use the default.
-                crypto.pbkdf2(pwd, salt, iterations, len, function (err, hash) { if (err) { return fn(err); } fn(null, salt, hash.toString('base64')); });
+                crypto.pbkdf2(pwd, salt, iterations, len, function (err, hash) { if (err) { return fn(err); } fn(null, salt, hash.toString('base64'), tag); });
             }
         });
     }

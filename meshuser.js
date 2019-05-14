@@ -954,12 +954,75 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'adduserbatch':
+                {
+                    // Add many new user accounts
+                    if ((user.siteadmin & 2) == 0) break;
+                    if (!Array.isArray(command.users)) break;
+                    var userCount = 0;
+                    for (var i in command.users) {
+                        if (common.validateUsername(command.users[i].user, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
+                        if ((command.users[i].user == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name
+                        if (common.validateString(command.users[i].pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                        if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+                        if ((command.email != null) && (common.validateEmail(command.users[i].email, 1, 256) == false)) break; // Check if this is a valid email address
+                        userCount++;
+                    }
+
+                    // Check if we exceed the maximum number of user accounts
+                    db.isMaxType(domain.limits.maxuseraccounts + userCount, 'user', domain.id, function (maxExceed) {
+                        if (maxExceed) {
+                            // Account count exceed, do notification
+
+                            // Create the notification message
+                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
+
+                            // Get the list of sessions for this user
+                            var sessions = parent.wssessions[user._id];
+                            if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == domain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
+                            // TODO: Notify all sessions on other peers.
+                        } else {
+                            for (var i in command.users) {
+                                // Check if this is an existing user
+                                var newuserid = 'user/' + domain.id + '/' + command.users[i].user.toLowerCase();
+                                var newuser = { type: 'user', _id: newuserid, name: command.users[i].user, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                                if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
+                                if (command.users[i].email != null) { newuser.email = command.users[i].email; } // Email
+                                if (command.users[i].resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
+                                if ((command.users[i].groups != null) && (common.validateStrArray(command.users[i].groups, 1, 32))) { newuser.groups = command.users[i].groups; } // New account are automatically part of our groups.
+
+                                if (parent.users[newuserid] == null) {
+                                    parent.users[newuserid] = newuser;
+
+                                    // Create a user, generate a salt and hash the password
+                                    require('./pass').hash(command.users[i].pass, function (err, salt, hash, newuser) {
+                                        if (err) throw err;
+                                        newuser.salt = salt;
+                                        newuser.hash = hash;
+                                        db.SetUser(newuser);
+
+                                        var targets = ['*', 'server-users'];
+                                        if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
+                                        if (newuser.email == null) {
+                                            parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + newuser.name, domain: domain.id });
+                                        } else {
+                                            parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + newuser.email, domain: domain.id });
+                                        }
+                                    }, newuser);
+                                }
+                            }
+                        }
+                    });
+
+                    break;
+                }
             case 'adduser':
                 {
                     // Add a new user account
                     if ((user.siteadmin & 2) == 0) break;
                     if (common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
                     if (common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
+                    if (command.username.indexOf('/') >= 0) break; // Usernames can't have '/'
                     if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
                     if ((command.email != null) && (common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
                     var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
@@ -988,7 +1051,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.users[newuserid] = newuser;
 
                             // Create a user, generate a salt and hash the password
-                            require('./pass').hash(command.pass, function (err, salt, hash) {
+                            require('./pass').hash(command.pass, function (err, salt, hash, tag) {
                                 if (err) throw err;
                                 newuser.salt = salt;
                                 newuser.hash = hash;
@@ -996,8 +1059,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 var targets = ['*', 'server-users'];
                                 if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
-                                parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
-                            });
+                                if (command.email == null) {
+                                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.user, domain: domain.id });
+                                } else {
+                                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id });
+                                }
+                            }, 0);
                         }
                     });
                     break;
@@ -1083,7 +1150,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.checkUserPassword(domain, user, command.oldpass, function (result) {
                         if (result == true) {
                             // Update the password
-                            require('./pass').hash(command.newpass, function (err, salt, hash) {
+                            require('./pass').hash(command.newpass, function (err, salt, hash, tag) {
                                 if (err) {
                                     // Send user notification of error
                                     displayNotificationMessage('Error, password not changed.', 'Account Settings', 'ServerNotify');
@@ -1107,7 +1174,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Send user notification of password change
                                     displayNotificationMessage('Password changed.', 'Account Settings', 'ServerNotify');
                                 }
-                            });
+                            }, 0);
                         } else {
                             // Send user notification of error
                             displayNotificationMessage('Current password not correct.', 'Account Settings', 'ServerNotify');
@@ -1131,7 +1198,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                         // Compute the password hash & save it
-                        require('./pass').hash(command.pass, function (err, salt, hash) {
+                        require('./pass').hash(command.pass, function (err, salt, hash, tag) {
                             if (!err) {
                                 chguser.salt = salt;
                                 chguser.hash = hash;
@@ -1156,7 +1223,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Report that the password change failed
                                 // TODO
                             }
-                        });
+                        }, 0);
                     }
                     break;
                 }
