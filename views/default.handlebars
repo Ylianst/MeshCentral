@@ -302,7 +302,7 @@
                             <div style="float:right">
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 <img onclick=p4downloadUserInfo() style="cursor:pointer" title="Download user information" src="images/link4.png" />
-                                <img onclick=p4batchAccountCreate() style="cursor:pointer" title="batch create many user accounts" src="images/link6.png" />
+                                <img id=p4UserBatchCreate onclick=p4batchAccountCreate() style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" />
                             </div>
                             <div>
                                 <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
@@ -1044,6 +1044,9 @@
 
             // Setup the user interface in the right mode
             userInterfaceSelectMenu();
+
+            // If SSPI or LDAP authentication not used, allow batch account creation.
+            QV('p4UserBatchCreate', (features & 0x00080000) == 0);
         }
 
         // Toggle the web page to full screen

@@ -2633,7 +2633,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Setup middleware
-        obj.app.engine('handlebars', obj.exphbs({})); // defaultLayout: 'main'
+        obj.app.engine('handlebars', obj.exphbs({ defaultLayout: null })); // defaultLayout: 'main'
         obj.app.set('view engine', 'handlebars');
         if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
         obj.app.use(obj.bodyParser.urlencoded({ extended: false }));

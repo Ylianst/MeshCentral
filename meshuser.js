@@ -958,6 +958,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Add many new user accounts
                     if ((user.siteadmin & 2) == 0) break;
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) break;
                     if (!Array.isArray(command.users)) break;
                     var userCount = 0;
                     for (var i in command.users) {
