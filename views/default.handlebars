@@ -286,7 +286,8 @@
                                 <option value=250>Last 250</option>
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
-                            </select>
+                            </select>&nbsp;
+                            <img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer onclick=p3showDownloadEventsDialog()>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -6694,6 +6695,26 @@
 
         function refreshEvents() {
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+        }
+
+        function p3showDownloadEventsDialog() {
+            if (xxdialogMode) return;
+            var x = 'Download the list of events with one of the file formats below.<br /><br />';
+            x += addHtmlValue('CSV Format', '<a style=cursor:pointer onclick=p3downloadEventsDialogCSV()>eventslist.csv</a>');
+            x += addHtmlValue('JSON Format', '<a style=cursor:pointer onclick=p3downloadEventsDialogJSON()>eventslist.json</a>');
+            setDialogMode(2, "Event List Export", 1, null, x);
+        }
+
+        function p3downloadEventsDialogCSV() {
+            var csv = "time, type, action, user, message\r\n";
+            for (var i in events) { csv += '\"' + events[i].time + '\",\"' + events[i].etype + '\",\"' + ((events[i].action != null)?events[i].action:'') + '\",\"' + ((events[i].username != null)?events[i].username:'') + '\",\"' + ((events[i].msg != null)?events[i].msg:'') + '\"\r\n'; }
+            saveAs(new Blob([csv], { type: "application/octet-stream" }), "eventslist.csv");
+        }
+
+        function p3downloadEventsDialogJSON() {
+            var r = []
+            for (var i in events) { r.push(events[i]); }
+            saveAs(new Blob([JSON.stringify(r)], { type: "application/octet-stream" }), "eventslist.json");
         }
 
         //
