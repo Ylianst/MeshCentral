@@ -1553,7 +1553,7 @@
                     x += "<div style='max-height:150px;overflow-y:auto;overflow-x:hidden;margin-top:6px;margin-bottom:6px'>";
                     if (message.keys && message.keys.length > 0) {
                         for (var i in message.keys) {
-                            var key = message.keys[i], type = ((key.type == 1)?'U2F':(key.type == 2)?'OTP':'WebAuthn');
+                            var key = message.keys[i], type = (key.type == 2)?'OTP':'WebAuthn';
                             x += start + '<tr style=margin:5px><td style=width:30px><img width=24 height=18 src="images/hardware-key-' + type + '-24.png" style=margin-top:4px><td style=width:250px>' + key.name + "<td><input type=button value='Remove' onclick=account_removehkey(" + key.i + ")></input>" + end;
                         }
                     } else {

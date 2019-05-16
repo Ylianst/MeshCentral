@@ -3,12 +3,12 @@
 * @version v0.0.1
 */
 
-//
+// This code is based on a portion of the webauthn module at: https://www.npmjs.com/package/webauthn
 
 'use strict'
 
-const crypto = require('crypto')
-const cbor = require('cbor')
+const crypto = require('crypto');
+const cbor = require('cbor');
 //const iso_3166_1 = require('iso-3166-1')
 //const Certificate = null; //require('@fidm/x509')
 
@@ -23,7 +23,7 @@ module.exports.CreateWebAuthnModule = function () {
             pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
             timeout: 60000,
             attestation: 'none'
-        }
+        };
     }
 
     obj.verifyAuthenticatorAttestationResponse = function (webauthnResponse) {
@@ -38,7 +38,7 @@ module.exports.CreateWebAuthnModule = function () {
         if (ctapMakeCredResp.fmt === 'none') {
             if (!(authrDataStruct.flags & 0x01)) { throw new Error('User was NOT presented during authentication!'); } // U2F_USER_PRESENTED
 
-            const publicKey = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey)
+            const publicKey = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey);
             response.verified = true;
 
             if (response.verified) {
@@ -47,7 +47,7 @@ module.exports.CreateWebAuthnModule = function () {
                     publicKey: ASN1toPEM(publicKey),
                     counter: authrDataStruct.counter,
                     keyId: authrDataStruct.credID.toString('base64')
-                }
+                };
             }
         }
         /*
@@ -194,14 +194,14 @@ module.exports.CreateWebAuthnModule = function () {
             throw new Error(`Unsupported attestation format: ${ctapMakeCredResp.fmt}`);
         }
 
-        return response
+        return response;
     }
 
     obj.verifyAuthenticatorAssertionResponse = function (webauthnResponse, authr) {
         const response = { 'verified': false }
         if (['fido-u2f'].includes(authr.fmt)) {
-            const authrDataStruct = parseGetAssertAuthData(webauthnResponse.authenticatorData)
-            if (!(authrDataStruct.flags & 0x01)) { throw new Error('User was not presented durring authentication!') } // U2F_USER_PRESENTED
+            const authrDataStruct = parseGetAssertAuthData(webauthnResponse.authenticatorData);
+            if (!(authrDataStruct.flags & 0x01)) { throw new Error('User was not presented durring authentication!'); } // U2F_USER_PRESENTED
             response.counter = authrDataStruct.counter;
             response.verified = verifySignature(webauthnResponse.signature, Buffer.concat([authrDataStruct.rpIdHash, authrDataStruct.flagsBuf, authrDataStruct.counterBuf, hash(webauthnResponse.clientDataJSON)]), authr.publicKey);
         }
@@ -212,51 +212,51 @@ module.exports.CreateWebAuthnModule = function () {
     function verifySignature(signature, data, publicKey) { return crypto.createVerify('SHA256').update(data).verify(publicKey, signature); }
 
     function parseGetAssertAuthData(buffer) {
-        const rpIdHash = buffer.slice(0, 32)
-        buffer = buffer.slice(32)
-        const flagsBuf = buffer.slice(0, 1)
-        buffer = buffer.slice(1)
-        const flags = flagsBuf[0]
-        const counterBuf = buffer.slice(0, 4)
-        buffer = buffer.slice(4)
-        const counter = counterBuf.readUInt32BE(0)
-        return { rpIdHash, flagsBuf, flags, counter, counterBuf }
+        const rpIdHash = buffer.slice(0, 32);
+        buffer = buffer.slice(32);
+        const flagsBuf = buffer.slice(0, 1);
+        buffer = buffer.slice(1);
+        const flags = flagsBuf[0];
+        const counterBuf = buffer.slice(0, 4);
+        buffer = buffer.slice(4);
+        const counter = counterBuf.readUInt32BE(0);
+        return { rpIdHash, flagsBuf, flags, counter, counterBuf };
     }
 
     function parseMakeCredAuthData(buffer) {
-        const rpIdHash = buffer.slice(0, 32)
-        buffer = buffer.slice(32)
-        const flagsBuf = buffer.slice(0, 1)
-        buffer = buffer.slice(1)
-        const flags = flagsBuf[0]
-        const counterBuf = buffer.slice(0, 4)
-        buffer = buffer.slice(4)
-        const counter = counterBuf.readUInt32BE(0)
-        const aaguid = buffer.slice(0, 16)
-        buffer = buffer.slice(16)
-        const credIDLenBuf = buffer.slice(0, 2)
-        buffer = buffer.slice(2)
-        const credIDLen = credIDLenBuf.readUInt16BE(0)
-        const credID = buffer.slice(0, credIDLen)
-        buffer = buffer.slice(credIDLen)
-        const COSEPublicKey = buffer
-        return { rpIdHash, flagsBuf, flags, counter, counterBuf, aaguid, credID, COSEPublicKey }
+        const rpIdHash = buffer.slice(0, 32);
+        buffer = buffer.slice(32);
+        const flagsBuf = buffer.slice(0, 1);
+        buffer = buffer.slice(1);
+        const flags = flagsBuf[0];
+        const counterBuf = buffer.slice(0, 4);
+        buffer = buffer.slice(4);
+        const counter = counterBuf.readUInt32BE(0);
+        const aaguid = buffer.slice(0, 16);
+        buffer = buffer.slice(16);
+        const credIDLenBuf = buffer.slice(0, 2);
+        buffer = buffer.slice(2);
+        const credIDLen = credIDLenBuf.readUInt16BE(0);
+        const credID = buffer.slice(0, credIDLen);
+        buffer = buffer.slice(credIDLen);
+        const COSEPublicKey = buffer;
+        return { rpIdHash, flagsBuf, flags, counter, counterBuf, aaguid, credID, COSEPublicKey };
     }
 
     function COSEECDHAtoPKCS(COSEPublicKey) {
         const coseStruct = cbor.decodeAllSync(COSEPublicKey)[0];
-        return Buffer.concat([Buffer.from([0x04]), coseStruct.get(-2), coseStruct.get(-3)])
+        return Buffer.concat([Buffer.from([0x04]), coseStruct.get(-2), coseStruct.get(-3)]);
     }
 
     function ASN1toPEM(pkBuffer) {
         if (!Buffer.isBuffer(pkBuffer)) { throw new Error("ASN1toPEM: pkBuffer must be Buffer."); }
-        let type
-        if (pkBuffer.length == 65 && pkBuffer[0] == 0x04) { pkBuffer = Buffer.concat([ new Buffer.from("3059301306072a8648ce3d020106082a8648ce3d030107034200", "hex"), pkBuffer ]); type = 'PUBLIC KEY' } else { type = 'CERTIFICATE' }
-        const b64cert = pkBuffer.toString('base64')
-        let PEMKey = ''
+        let type;
+        if (pkBuffer.length == 65 && pkBuffer[0] == 0x04) { pkBuffer = Buffer.concat([new Buffer.from("3059301306072a8648ce3d020106082a8648ce3d030107034200", "hex"), pkBuffer]); type = 'PUBLIC KEY'; } else { type = 'CERTIFICATE'; }
+        const b64cert = pkBuffer.toString('base64');
+        let PEMKey = '';
         for (let i = 0; i < Math.ceil(b64cert.length / 64); i++) { const start = 64 * i; PEMKey += b64cert.substr(start, 64) + '\n'; }
-        PEMKey = `-----BEGIN ${type}-----\n` + PEMKey + `-----END ${type}-----\n`
-        return PEMKey
+        PEMKey = `-----BEGIN ${type}-----\n` + PEMKey + `-----END ${type}-----\n`;
+        return PEMKey;
     }
 
     return obj;

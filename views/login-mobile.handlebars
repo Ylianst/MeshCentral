@@ -313,15 +313,6 @@
                         },
                         function (error) { console.log('credentials-get error', error); }
                     );
-                } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
-                    // Old U2F hardware keys
-                    window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if ((currentpanel == 4) && authResponse.signatureData) {
-                            Q('hwtokenInput').value = JSON.stringify(authResponse);
-                            QE('tokenOkButton', true);
-                            Q('tokenOkButton').click();
-                        }
-                    }, hardwareKeyChallenge.timeoutSeconds);
                 }
             }
 
@@ -353,15 +344,6 @@
                         },
                         function (error) { console.log('credentials-get error', error); }
                     );
-                } else if ((hardwareKeyChallenge != null) && u2fSupported()) {
-                    // Old U2F hardware keys
-                    window.u2f.sign(hardwareKeyChallenge.appId, hardwareKeyChallenge.challenge, hardwareKeyChallenge.registeredKeys, function (authResponse) {
-                        if ((currentpanel == 5) && authResponse.signatureData) {
-                            Q('resetHwtokenInput').value = JSON.stringify(authResponse);
-                            QE('resetTokenOkButton', true);
-                            Q('resetTokenOkButton').click();
-                        }
-                    }, hardwareKeyChallenge.timeoutSeconds);
                 }
             }
         }
@@ -613,7 +595,6 @@
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
-        function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
 
     </script>
 </body>
