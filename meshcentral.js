@@ -1748,8 +1748,7 @@ function mainStart(args) {
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
-            // if not all SSPI, WebAuthn/FIDO2 or U2F support depending on the NodeJS version. FIDO2 does not work below NodeJS 8.x
-            if (allsspi == false) { modules.push('otplib'); if (nodeVersion >= 8) { modules.push('@davedoesdev/fido2-lib'); } else { modules.push('authdog'); } }
+            if (allsspi == false) { modules.push('otplib'); } // Google Authenticator support
         }
         
         // Install any missing modules and launch the server

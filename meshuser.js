@@ -2255,111 +2255,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
-            case 'otp-hkey-setup-request':
-                {
-                    if (parent.parent.config.settings.no2factorauth === true) return;
-
-                    var authdoglib = null;
-                    try { authdoglib = require('authdog'); } catch (ex) { }
-
-                    // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if ((authdoglib == null) || (twoStepLoginSupported == false)) break;
-
-                    // Build list of known keys
-                    var knownKeys = [];
-                    if (user.otphkeys != null) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { knownKeys.push(user.otphkeys[i]); } } }
-
-                    // Build a key registration request and send it over
-                    authdoglib.startRegistration('https://' + parent.parent.certificates.CommonName, knownKeys, { requestId: 556, timeoutSeconds: 100 }).then(function (registrationRequest) {
-                        // Save registration request to session for later use
-                        obj.hardwareKeyRegistrationRequest = registrationRequest;
-
-                        // Send registration request to client
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: registrationRequest, name: command.name }));
-                    }, function (error) {
-                        // Handle registration request error
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-request', request: null, error: error, name: command.name }));
-                    });
-                    break;
-                }
-            case 'otp-hkey-setup-response':
-                {
-                    if (parent.parent.config.settings.no2factorauth === true) return;
-
-                    var authdoglib = null;
-                    try { authdoglib = require('authdog'); } catch (ex) { }
-
-                    // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if ((authdoglib == null) || (twoStepLoginSupported == false) || (command.response == null) || (command.name == null) || (obj.hardwareKeyRegistrationRequest == null)) break;
-
-                    // Check the key registration request
-                    authdoglib.finishRegistration(obj.hardwareKeyRegistrationRequest, command.response).then(function (registrationStatus) {
-                        var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
-                        if (user.otphkeys == null) { user.otphkeys = []; }
-                        user.otphkeys.push({ name: command.name, type: 1, publicKey: registrationStatus.publicKey, keyHandle: registrationStatus.keyHandle, certificate: registrationStatus.certificate, keyIndex: keyIndex });
-                        parent.db.SetUser(user);
-                        delete obj.hardwareKeyRegistrationRequest;
-
-                        // Notify change
-                        var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                        parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
-                    }, function (error) {
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
-                        delete obj.hardwareKeyRegistrationRequest;
-                    });
-                    break;
-                }
             case 'webauthn-startregister':
                 {
                     if (parent.parent.config.settings.no2factorauth === true) return;
 
                     // Check is 2-step login is supported
                     const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
-                    if ((twoStepLoginSupported == false) || (command.name == null) || (parent.f2l == null)) break;
+                    if ((twoStepLoginSupported == false) || (command.name == null)) break;
 
-                    parent.f2l.attestationOptions().then(function (registrationOptions) {
-                        // Convert the challenge to base64 and add user information
-                        registrationOptions.challenge = Buffer(registrationOptions.challenge).toString('base64');
-                        registrationOptions.user.id = Buffer(user._id, 'binary').toString('base64');
-                        registrationOptions.user.name = user._id;
-                        registrationOptions.user.displayName = user._id.split('/')[2];
-
-                        // Send the registration request
-                        obj.webAuthnReqistrationRequest = { action: 'webauthn-startregister', keyname: command.name, request: registrationOptions };
-                        ws.send(JSON.stringify(obj.webAuthnReqistrationRequest));
-                        //console.log(obj.webAuthnReqistrationRequest);
-                    }, function (error) {
-                        console.log('webauthn-startregister-error', error);
-                    });
+                    // Send the registration request
+                    var registrationOptions = parent.webauthn.generateRegistrationChallenge("Anonymous Service", { id: Buffer(user._id, 'binary').toString('base64'), name: user._id, displayName: user._id.split('/')[2] });
+                    obj.webAuthnReqistrationRequest = { action: 'webauthn-startregister', keyname: command.name, request: registrationOptions };
+                    ws.send(JSON.stringify(obj.webAuthnReqistrationRequest));
                     break;
                 }
             case 'webauthn-endregister':
                 {
                     if (parent.parent.config.settings.no2factorauth === true) return;
-                    if ((obj.webAuthnReqistrationRequest == null) || (parent.f2l == null)) return;
+                    if (obj.webAuthnReqistrationRequest == null) return;
 
                     // Figure out the origin
                     var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
                     var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
                     if (httpport != 443) { origin += ':' + httpport; }
 
-                    var attestationExpectations = {
-                        challenge: obj.webAuthnReqistrationRequest.request.challenge.split('+').join('-').split('/').join('_').split('=').join(''), // Convert to Base64URL
-                        origin: origin,
-                        factor: "either"
-                    };
-
-                    var clientAttestationResponse = command.response;
-                    clientAttestationResponse.id = clientAttestationResponse.rawId;
-                    clientAttestationResponse.rawId = new Uint8Array(Buffer.from(clientAttestationResponse.rawId, 'base64')).buffer;
-                    clientAttestationResponse.response.attestationObject = new Uint8Array(Buffer.from(clientAttestationResponse.response.attestationObject, 'base64')).buffer;
-                    clientAttestationResponse.response.clientDataJSON = new Uint8Array(Buffer.from(clientAttestationResponse.response.clientDataJSON, 'base64')).buffer;
-
-                    parent.f2l.attestationResult(clientAttestationResponse, attestationExpectations).then(function (regResult) {
+                    // Use internal WebAuthn module to check the response
+                    var regResult = null;
+                    try { regResult = parent.webauthn.verifyAuthenticatorAttestationResponse(command.response.response); } catch (ex) { regResult = { verified: false, error: ex }; }
+                    if (regResult.verified === true) {
                         // Since we are registering a WebAuthn/FIDO2 key, remove all U2F keys (Type 1).
                         var otphkeys2 = [];
                         if (user.otphkeys && Array.isArray(user.otphkeys)) { for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type != 1) { otphkeys2.push(user.otphkeys[i]); } } }
@@ -2368,7 +2291,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add the new WebAuthn/FIDO2 keys
                         var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                         if (user.otphkeys == null) { user.otphkeys = []; }
-                        user.otphkeys.push({ name: obj.webAuthnReqistrationRequest.keyname, type: 3, publicKey: regResult.authnrData.get('credentialPublicKeyPem'), counter: regResult.authnrData.get('counter'), keyIndex: keyIndex, keyId: clientAttestationResponse.id });
+                        user.otphkeys.push({ name: obj.webAuthnReqistrationRequest.keyname, type: 3, publicKey: regResult.authrInfo.publicKey, counter: regResult.authrInfo.counter, keyIndex: keyIndex, keyId: regResult.authrInfo.keyId });
                         parent.db.SetUser(user);
                         ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: true, name: command.name, index: keyIndex }));
 
@@ -2376,10 +2299,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id });
-                    }, function (error) {
-                        console.log('webauthn-endregister-error', error);
-                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: error, name: command.name, index: keyIndex }));
-                    });
+                    } else {
+                        //console.log('webauthn-endregister-error', regResult.error);
+                        ws.send(JSON.stringify({ action: 'otp-hkey-setup-response', result: false, error: regResult.error, name: command.name, index: keyIndex }));
+                    }
 
                     delete obj.hardwareKeyRegistrationRequest;
                     break;

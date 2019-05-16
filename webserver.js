@@ -63,7 +63,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
-    try { const { Fido2Lib } = require("@davedoesdev/fido2-lib"); obj.f2l = new Fido2Lib({ attestation: "none" }); } catch (ex) { }
+    obj.webauthn = require("./webauthn.js").CreateWebAuthnModule();
 
     // Variables
     obj.parent = parent;
@@ -503,66 +503,50 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
             var authResponse = null;
             try { authResponse = JSON.parse(hwtoken); } catch (ex) { }
-            if (authResponse != null) {
-                if ((obj.f2l != null) && (authResponse.clientDataJSON)) {
-                    // Get all WebAuthn keys
-                    var webAuthnKeys = [];
-                    for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
-                    if (webAuthnKeys.length > 0) {
-                        // Decode authentication response
-                        var clientAssertionResponse = { response: {} };
-                        clientAssertionResponse.id = authResponse.id;
-                        clientAssertionResponse.rawId = new Uint8Array(Buffer.from(authResponse.id, 'base64')).buffer;
-                        clientAssertionResponse.response.authenticatorData = new Uint8Array(Buffer.from(authResponse.authenticatorData, 'base64')).buffer;
-                        clientAssertionResponse.response.clientDataJSON = new Uint8Array(Buffer.from(authResponse.clientDataJSON, 'base64')).buffer;
-                        clientAssertionResponse.response.signature = new Uint8Array(Buffer.from(authResponse.signature, 'base64')).buffer;
-                        clientAssertionResponse.response.userHandle = new Uint8Array(Buffer.from(authResponse.userHandle, 'base64')).buffer;
+            if ((authResponse != null) && (authResponse.clientDataJSON)) {
+                // Get all WebAuthn keys
+                var webAuthnKeys = [];
+                for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
+                if (webAuthnKeys.length > 0) {
+                    // Decode authentication response
+                    var clientAssertionResponse = { response: {} };
+                    clientAssertionResponse.id = authResponse.id;
+                    clientAssertionResponse.rawId = Buffer.from(authResponse.id, 'base64');
+                    clientAssertionResponse.response.authenticatorData = Buffer.from(authResponse.authenticatorData, 'base64');
+                    clientAssertionResponse.response.clientDataJSON = Buffer.from(authResponse.clientDataJSON, 'base64');
+                    clientAssertionResponse.response.signature = Buffer.from(authResponse.signature, 'base64');
+                    clientAssertionResponse.response.userHandle = Buffer.from(authResponse.userHandle, 'base64');
 
-                        // Look for the key with clientAssertionResponse.id
-                        var webAuthnKey = null;
-                        for (var i = 0; i < webAuthnKeys.length; i++) { if (webAuthnKeys[i].keyId == clientAssertionResponse.id) { webAuthnKey = webAuthnKeys[i]; } }
+                    // Look for the key with clientAssertionResponse.id
+                    var webAuthnKey = null;
+                    for (var i = 0; i < webAuthnKeys.length; i++) { if (webAuthnKeys[i].keyId == clientAssertionResponse.id) { webAuthnKey = webAuthnKeys[i]; } }
 
-                        // If we found a valid key to use, let's validate the response
-                        if (webAuthnKey != null) {
-                            // Figure out the origin
-                            var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
-                            var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
-                            if (httpport != 443) { origin += ':' + httpport; }
+                    // If we found a valid key to use, let's validate the response
+                    if (webAuthnKey != null) {
+                        // Figure out the origin
+                        var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                        var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
+                        if (httpport != 443) { origin += ':' + httpport; }
 
-                            var assertionExpectations = {
-                                challenge: req.session.u2fchallenge,
-                                origin: origin,
-                                factor: "either",
-                                publicKey: webAuthnKey.publicKey,
-                                prevCounter: webAuthnKey.counter,
-                                userHandle: Buffer(user._id, 'binary').toString('base64')
-                            };
+                        var assertionExpectations = {
+                            challenge: req.session.u2fchallenge,
+                            origin: origin,
+                            factor: "either",
+                            fmt: "fido-u2f",
+                            publicKey: webAuthnKey.publicKey,
+                            prevCounter: webAuthnKey.counter,
+                            userHandle: Buffer(user._id, 'binary').toString('base64')
+                        };
 
-                            obj.f2l.assertionResult(clientAssertionResponse, assertionExpectations).then(
-                                function (authnResult) {
-                                    // Update the hardware key counter and accept the 2nd factor
-                                    webAuthnKey.counter = authnResult.authnrData.get('counter');
-                                    obj.db.SetUser(user);
-                                    func(true);
-                                },
-                                function (error) {
-                                    //console.log('attestationResult-error', error);
-                                    func(false);
-                                }
-                            );
-                            return;
-                        }
-                    }
-                } else {
-                    // Get all U2F keys
-                    var u2fKeys = [];
-                    for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
-                    if (u2fKeys.length > 0) {
-                        // Check authentication response
-                        var authdoglib = null;
-                        try { authdoglib = require('authdog'); } catch (ex) { }
-                        if (authdoglib == null) { func(false); } else {
-                            authdoglib.finishAuthentication(req.session.u2fchallenge, authResponse, u2fKeys).then(function (authenticationStatus) { func(true); }, function (error) { console.log(error); func(false); });
+                        var webauthnResponse = null;
+                        try { webauthnResponse = obj.webauthn.verifyAuthenticatorAssertionResponse(clientAssertionResponse.response, assertionExpectations); } catch (ex) { console.log(ex); }
+                        if ((webauthnResponse != null) && (webauthnResponse.verified === true)) {
+                            // Update the hardware key counter and accept the 2nd factor
+                            webAuthnKey.counter = webauthnResponse.counter;
+                            obj.db.SetUser(user);
+                            func(true);
+                        } else {
+                            func(false);
                         }
                         return;
                     }
@@ -607,46 +591,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
         if (user.otphkeys && (user.otphkeys.length > 0)) {
             // Get all WebAuthn keys
-            if (obj.f2l != null) {
-                var webAuthnKeys = [];
-                for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
-                if (webAuthnKeys.length > 0) {
-                    obj.f2l.assertionOptions().then(function (authnOptions) {
-                        authnOptions.type = 'webAuthn';
-                        authnOptions.keyIds = [];
-                        for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
-                        req.session.u2fchallenge = authnOptions.challenge = Buffer(authnOptions.challenge).toString('base64');
-                        func(JSON.stringify(authnOptions));
-                    }, function (error) {
-                        console.log('assertionOptions-Error', error);
-                        func('');
-                    });
-                    return;
-                }
-            }
-
-            var authdoglib = null;
-            try { authdoglib = require('authdog'); } catch (ex) { }
-            if (authdoglib != null) {
-                // Get all U2F keys
-                var u2fKeys = [];
-                for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 1) { u2fKeys.push(user.otphkeys[i]); } }
-
-                // Generate a U2F challenge
-                if (u2fKeys.length > 0) {
-                    authdoglib.startAuthentication('https://' + obj.parent.certificates.CommonName, u2fKeys, { requestId: 0, timeoutSeconds: 60 }).then(function (registrationRequest) {
-                        // Save authentication request to session for later use
-                        req.session.u2fchallenge = registrationRequest;
-
-                        // Send authentication request to client
-                        func(JSON.stringify(registrationRequest));
-                    }, function (error) {
-                        // Handle authentication request error
-                        func('');
-                    });
-                } else {
-                    func('');
-                }
+            var webAuthnKeys = [];
+            for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
+            if (webAuthnKeys.length > 0) {
+                // Generate a Webauthn challenge, this is really easy, no need to call any modules to do this.
+                var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
+                for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
+                req.session.u2fchallenge = authnOptions.challenge;
+                func(JSON.stringify(authnOptions));
             }
         } else {
             func('');
@@ -1338,7 +1290,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((parent.config.settings.no2factorauth !== true) && domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
-            if ((parent.config.settings.no2factorauth !== true) && (obj.f2l != null)) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
+            if (parent.config.settings.no2factorauth !== true) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
             if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
             if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
 
