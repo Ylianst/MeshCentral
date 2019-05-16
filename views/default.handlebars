@@ -1561,7 +1561,6 @@
                     }
                     x += "</div>";
                     x += "<div><input type=button value='Close' onclick=setDialogMode(0) style=float:right></input>";
-                    if ((features & 0x00020000) == 0) { x += "<input id=d2addkey1 type=button value='Add Key' onclick='account_addhkey(1);'></input>"; }
                     if ((features & 0x00020000) != 0) { x += "<input id=d2addkey3 type=button value='Add Key' onclick='account_addhkey(3);'></input>"; }
                     if ((features & 0x00004000) != 0) { x += "<input id=d2addkey2 type=button value='Add YubiKey&reg; OTP' onclick='account_addhkey(2);'></input>"; }
                     x += "</div><br />";
@@ -1575,23 +1574,6 @@
                     } else {
                         setDialogMode(2, "Add Security Key", 1, null, '<br />Error, Unable to add key.<br /><br />');
                     }
-                    break;
-                }
-                case 'otp-hkey-setup-request': {
-                    if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) return;
-                    var x = "Press the key button now.<br /><br /><div style=width:100%;text-align:center><img width=120 height=117 src='images/hardware-keypress-120.png' /></div><input id=dp1keyname style=display:none value=" + message.name + " />";
-                    setDialogMode(2, "Add Security Key", 2, null, x);
-                    window.u2f.register(message.request.appId, message.request.registerRequests, message.request.registeredKeys, function (registrationResponse) {
-                        if (registrationResponse.registrationData) {
-                            meshserver.send({ action: 'otp-hkey-setup-response', response: registrationResponse, name: Q('dp1keyname').value });
-                            setDialogMode(2, "Add Security Key", 0, null, '<br />Checking...<br /><br /><br />', 'otpauth-hardware-manage');
-                        } else {
-                            if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) {
-                                var errorCodes = ['', 'Unknown error', 'Bad request', 'Unsupported configuration', 'This key was already registered', 'Timeout'];
-                                setDialogMode(2, "Add Security Key", 1, null, '<br />' + errorCodes[registrationResponse.errorCode] + '.<br /><br />');
-                            }
-                        }
-                    }, message.request.timeoutSeconds);
                     break;
                 }
                 case 'otp-hkey-setup-response': {
@@ -5777,7 +5759,7 @@
         }
 
         function account_addhkey(type) {
-            if (type == 1 || type == 3) {
+            if (type == 3) {
                 var x = "Type in the name of the key to add.<br /><br />";
                 x += addHtmlValue('Key Name', '<input id=dp1keyname style=width:230px maxlength=20 autocomplete=off placeholder="MyKey" onkeyup=account_addhkeyValidate(event,2) />');
             } else if (type == 2) {
@@ -5796,9 +5778,7 @@
         function account_addhkeyEx(button, type) {
             var name = Q('dp1keyname').value;
             if (name == '') { name = 'MyKey'; }
-            if (type == 1) {
-                meshserver.send({ action: 'otp-hkey-setup-request', name: name });
-            } else if (type == 2) {
+            if (type == 2) {
                 meshserver.send({ action: 'otp-hkey-yubikey-add', name: name, otp: Q('dp1key').value });
                 setDialogMode(2, "Add Security Key", 0, null, "<br />Checking...<br /><br /><br />", 'otpauth-hardware-manage');
             } else if (type == 3) {
