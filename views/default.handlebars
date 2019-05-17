@@ -6051,19 +6051,21 @@
             x += addHtmlValue('Features', addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
 
             // Display user consent
-            meshFeatures = [];
-            var consent = 0;
-            if (currentMesh.consent) { consent = currentMesh.consent; }
-            if (serverinfo.consent) { consent |= serverinfo.consent; }
-            if (consent & 0x0008) { meshFeatures.push('Desktop Prompt'); } else { if (consent & 0x0001) { meshFeatures.push('Desktop Notify'); } }
-            if (consent & 0x0010) { meshFeatures.push('Terminal Prompt'); } else { if (consent & 0x0002) { meshFeatures.push('Terminal Notify'); } }
-            if (consent & 0x0020) { meshFeatures.push('Files Prompt'); } else { if (consent & 0x0004) { meshFeatures.push('Files Notify'); } }
-            //if ((consent & 7) == 7) { meshFeatures.push('Always Notify'); } else if ((currentMesh.consent & 7) != 0) { meshFeatures.push('Notify Sometimes'); }
-            //if ((consent & 56) == 56) { meshFeatures.push('Always Blink Border'); } else if ((currentMesh.consent & 56) != 0) { meshFeatures.push('Blick Border Sometimes'); }
+            if (currentMesh.mtype == 2) {
+                meshFeatures = [];
+                var consent = 0;
+                if (currentMesh.consent) { consent = currentMesh.consent; }
+                if (serverinfo.consent) { consent |= serverinfo.consent; }
+                if (consent & 0x0008) { meshFeatures.push('Desktop Prompt'); } else { if (consent & 0x0001) { meshFeatures.push('Desktop Notify'); } }
+                if (consent & 0x0010) { meshFeatures.push('Terminal Prompt'); } else { if (consent & 0x0002) { meshFeatures.push('Terminal Notify'); } }
+                if (consent & 0x0020) { meshFeatures.push('Files Prompt'); } else { if (consent & 0x0004) { meshFeatures.push('Files Notify'); } }
+                if (consent == 7) { meshFeatures = ['Always Notify']; }
+                if ((consent & 56) == 56) { meshFeatures = ['Always Prompt']; }
 
-            meshFeatures = meshFeatures.join(', ');
-            if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
-            x += addHtmlValue('User Consent', addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
+                meshFeatures = meshFeatures.join(', ');
+                if (meshFeatures == '') { meshFeatures = '<i>None</i>'; }
+                x += addHtmlValue('User Consent', addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
+            }
 
             // Intel AMT setup
             if (currentMesh.mtype == 2) {

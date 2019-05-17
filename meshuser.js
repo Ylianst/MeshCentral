@@ -524,7 +524,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     switch (cmd) {
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
-                            r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig, heapdump, relays.';
+                            r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
+                            r += 'heapdump, relays, autobackup.';
                             break;
                         }
                         case 'agentstats': {
@@ -701,6 +702,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 r += '<br />';
                             }
                             if (r == '') { r = 'No relays.'; }
+                            break;
+                        }
+                        case 'autobackup': {
+                            var backupResult = parent.db.performBackup();
+                            if (backupResult == 0) { r = 'Starting auto-backup...'; } else { r = 'Backup alreay in progress.'; }
                             break;
                         }
                         default: { // This is an unknown command, return an error message

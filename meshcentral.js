@@ -1707,12 +1707,15 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 // Load the really basic modules
 var meshserver = null;
 var previouslyInstalledModules = { };
-function mainStart(args) {
+function mainStart() {
     // Check the NodeJS is version 6 or better.
     if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
 
     // Check for any missing modules.
     InstallModules(['minimist'], function () {
+        // Parse inbound arguments
+        var args = require('minimist')(process.argv.slice(2));
+
         // Get the server configuration
         var config = getConfig(false);
         if (config == null) { process.exit(); }
@@ -1764,7 +1767,7 @@ function mainStart(args) {
 }
 
 if (require.main === module) {
-    mainStart(require('minimist')(process.argv.slice(2))); // Called directly, launch normally.
+    mainStart(); // Called directly, launch normally.
 } else {
     module.exports.mainStart = mainStart; // Required as a module, useful for winservice.js
 }
