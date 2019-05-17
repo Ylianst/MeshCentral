@@ -702,7 +702,7 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
-                output.on('close', function () { obj.performingBackup = false; setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive'); } catch (ex) { console.log(ex); } }, 5000); });
+                output.on('close', function () { obj.performingBackup = false; setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
                 output.on('end', function () { });
                 archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
                 archive.on('error', function (err) { console.log('Backup error: ' + err); });
@@ -743,7 +743,7 @@ module.exports.CreateDB = function (parent, func) {
                             var timex = name.substring(23, name.length - 4).split('-');
                             if (timex.length == 5) {
                                 var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                if (fileDate && (cutoffDate > fileDate)) { try { obj.parent.fs.unlink(obj.parent.path.join(obj.parent.backuppath, name)); } catch (ex) { } }
+                                if (fileDate && (cutoffDate > fileDate)) { try { obj.parent.fs.unlink(obj.parent.path.join(obj.parent.backuppath, name), function () { }); } catch (ex) { } }
                             }
                         }
                     }
