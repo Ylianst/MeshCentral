@@ -668,5 +668,88 @@ module.exports.CreateDB = function (parent, func) {
         func(obj); // Completed function setup
     }
 
+    obj.performBackup = function () {
+        console.log('Performing backup...');
+        try { obj.parent.fs.mkdirSync(obj.parent.backuppath); } catch (e) { }
+        const dbname = (obj.parent.args.mongodbname) ? (obj.parent.args.mongodbname) : 'meshcentral';
+        const currentDate = new Date();
+        const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
+        const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
+        const newAutoBackupPath = obj.parent.path.join(obj.parent.backuppath, newAutoBackupFile);
+
+        if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
+            // Perform a MongoDump backup
+            const newBackupFile = 'mongodump-' + fileSuffix;
+            const newBackupPath = obj.parent.path.join(obj.parent.backuppath, newBackupFile);
+            var mongoDumpPath = 'mongodump';
+            if (obj.parent.config.settings.autobackup && obj.parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = obj.parent.config.settings.autobackup.mongodumppath; }
+            const child_process = require('child_process');
+            const cmd = mongoDumpPath + ' --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+            var backupProcess = child_process.exec(cmd, { cwd: obj.parent.backuppath }, function (error, stdout, stderr) {
+                backupProcess = null;
+                if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup.\r\n'); return; }
+
+                // Perform archive compression
+                var archiver = require('archiver');
+                var output = obj.parent.fs.createWriteStream(newAutoBackupPath + '.zip');
+                var archive = null;
+                if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.zippassword == 'string')) {
+                    try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                    archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: obj.parent.config.settings.autobackup.zippassword });
+                } else {
+                    archive = archiver('zip', { zlib: { level: 9 } });
+                }
+                output.on('close', function () { setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive'); } catch (ex) { } }, 5000); });
+                output.on('end', function () { });
+                archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
+                archive.on('error', function (err) { console.log('Backup error: ' + err); });
+                archive.pipe(output);
+                archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' });
+                archive.directory(obj.parent.datapath, 'meshcentral-data');
+                archive.finalize();
+            });
+        } else {
+            // Perform a NeDB backup
+            var archiver = require('archiver');
+            var output = obj.parent.fs.createWriteStream(newAutoBackupPath + '.zip');
+            var archive = null;
+            if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.zippassword == 'string')) {
+                try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
+                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: obj.parent.config.settings.autobackup.zippassword });
+            } else {
+                archive = archiver('zip', { zlib: { level: 9 } });
+            }
+            output.on('close', function () { });
+            output.on('end', function () { });
+            archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
+            archive.on('error', function (err) { console.log('Backup error: ' + err); });
+            archive.pipe(output);
+            archive.directory(obj.parent.datapath, 'meshcentral-data');
+            archive.finalize();
+        }
+
+        // Remove old backups
+        if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
+            var cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - obj.parent.config.settings.autobackup.keeplastdaysbackup);
+            obj.parent.fs.readdir(obj.parent.backuppath, function (err, dir) {
+                if ((err == null) && (dir.length > 0)) {
+                    for (var i in dir) {
+                        var name = dir[i];
+                        if (name.startsWith('meshcentral-autobackup-') && name.endsWith('.zip')) {
+                            var timex = name.substring(23, name.length - 4).split('-');
+                            if (timex.length == 5) {
+                                var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
+                                if (fileDate && (cutoffDate > fileDate)) { try { obj.parent.fs.unlink(obj.parent.path.join(obj.parent.backuppath, name)); } catch (ex) { } }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }
+
     return obj;
 };
