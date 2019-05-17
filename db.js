@@ -668,8 +668,11 @@ module.exports.CreateDB = function (parent, func) {
         func(obj); // Completed function setup
     }
 
+    obj.performingBackup = false;
     obj.performBackup = function () {
-        console.log('Performing backup...');
+        if (obj.performingBackup) return 1;
+        obj.performingBackup = true;
+        //console.log('Performing backup...');
         try { obj.parent.fs.mkdirSync(obj.parent.backuppath); } catch (e) { }
         const dbname = (obj.parent.args.mongodbname) ? (obj.parent.args.mongodbname) : 'meshcentral';
         const currentDate = new Date();
@@ -687,7 +690,7 @@ module.exports.CreateDB = function (parent, func) {
             const cmd = mongoDumpPath + ' --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
             var backupProcess = child_process.exec(cmd, { cwd: obj.parent.backuppath }, function (error, stdout, stderr) {
                 backupProcess = null;
-                if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup.\r\n'); return; }
+                if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup.\r\n'); obj.performingBackup = false; return; }
 
                 // Perform archive compression
                 var archiver = require('archiver');
@@ -699,7 +702,7 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
-                output.on('close', function () { setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive'); } catch (ex) { } }, 5000); });
+                output.on('close', function () { obj.performingBackup = false; setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive'); } catch (ex) { console.log(ex); } }, 5000); });
                 output.on('end', function () { });
                 archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
                 archive.on('error', function (err) { console.log('Backup error: ' + err); });
@@ -719,7 +722,7 @@ module.exports.CreateDB = function (parent, func) {
             } else {
                 archive = archiver('zip', { zlib: { level: 9 } });
             }
-            output.on('close', function () { });
+            output.on('close', function () { obj.performingBackup = false;  });
             output.on('end', function () { });
             archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
             archive.on('error', function (err) { console.log('Backup error: ' + err); });
@@ -747,6 +750,8 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
         }
+
+        return 0;
     }
 
     function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }
