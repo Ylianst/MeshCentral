@@ -5,7 +5,7 @@
 
 // This code is based on a portion of the webauthn module at: https://www.npmjs.com/package/webauthn
 
-'use strict'
+"use strict"
 
 const crypto = require('crypto');
 const cbor = require('cbor');
