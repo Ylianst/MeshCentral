@@ -69,12 +69,14 @@ function CreateMeshCentralServer(config, args) {
         obj.parentpath = obj.path.join(__dirname, '../..');
         obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
+        obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backup');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     } else {
         obj.parentpath = __dirname;
         obj.datapath = obj.path.join(__dirname, '../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../meshcentral-files');
+        obj.backuppath = obj.path.join(__dirname, '../meshcentral-backups');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/views'))) { obj.webViewsPath = obj.path.join(__dirname, '../meshcentral-web/views'); } else { obj.webViewsPath = obj.path.join(__dirname, 'views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     }
@@ -506,7 +508,7 @@ function CreateMeshCentralServer(config, args) {
         );
     };
 
-    // Time to start the serverf or real.
+    // Time to start the server or real.
     obj.StartEx1b = function () {
         var i;
 
@@ -865,6 +867,11 @@ function CreateMeshCentralServer(config, args) {
                 //obj.debug(1, 'Server started');
                 if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                 obj.updateServerState('state', 'running');
+
+                // Setup database backup
+                if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupinvervalhours == 'number')) {
+                    setInterval(obj.db.performBackup, obj.config.settings.autobackup.backupinvervalhours * 60 * 60 * 1000);
+                }
             });
         });
     };
@@ -1615,10 +1622,7 @@ function CreateMeshCentralServer(config, args) {
 // Return the server configuration
 function getConfig(createSampleConfig) {
     // Figure out the datapath location
-    var i;
-    var fs = require('fs');
-    var path = require('path');
-    var datapath = null;
+    var i, fs = require('fs'), path = require('path'), datapath = null;
     var args = require('minimist')(process.argv.slice(2));
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
         datapath = path.join(__dirname, '../../meshcentral-data');
@@ -1686,7 +1690,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
     InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
-        if (error != null) {
+        if ((error != null) && (error != '')) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
             return;
@@ -1735,7 +1739,7 @@ function mainStart(args) {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoJS
-        else if (config.settings.mongo != null) { modules.push('mongodb'); } // Add MongoDB
+        else if (config.settings.xmongodb != null) { modules.push('mongodb'); } // Add MongoDB
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
         // Get the current node version
@@ -1743,6 +1747,9 @@ function mainStart(args) {
 
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
+
+        // Setup encrypted zip support if needed
+        if (config.settings.autobackup && config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted'); }
 
         // Setup 2nd factor authentication
         if (config.settings.no2factorauth !== true) {
