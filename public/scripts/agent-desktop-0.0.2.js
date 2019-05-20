@@ -258,7 +258,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                         if (disp == 65535) { displays[disp] = 'All Displays'; } else { displays[disp] = 'Display ' + disp; }
                     }
                 }
-                console.log('Get Displays', displays, selectedDisplay, rstr2hex(str));
+                //console.log('Get Displays', displays, selectedDisplay, rstr2hex(str));
                 if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, displays, selectedDisplay); }
                 break;
             case 12: // SetDisplay
@@ -283,7 +283,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 break;
             case 65: // Alert
                 str = str.substring(4);
-                if (str[0] != '.') { console.log(str); alert('KVM: ' + str); } else { console.log('KVM: ' + str.substring(1)); }
+                if (str[0] != '.') {
+                    console.log(str); //alert('KVM: ' + str);
+                    obj.parent.consoleMessage = str;
+                    if (obj.parent.onConsoleMessageChange) { obj.parent.onConsoleMessageChange(obj.parent, str); }
+                } else {
+                    console.log('KVM: ' + str.substring(1));
+                }
                 break;
         }
         return cmdsize + jumboAdd;

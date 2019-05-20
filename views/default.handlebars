@@ -468,6 +468,7 @@
                                 <div id="DeskToolsProcesses" style=""></div>
                             </div>
                         </div>
+                        <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;right:30px;bottom:30px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p11clearConsoleMsg()></div>
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
@@ -508,53 +509,56 @@
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                 </div>
-                <table id=termTable cellpadding=0 cellspacing=0>
-                    <tr>
-                        <td class="areaHead">
-                            <div class="toright2">
-                                <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction()/>
-                            </div>
-                            <div>
-                                <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
-                                <span id="connectbutton2span"><input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                                <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
-                                <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false"></span>
-                                &nbsp;<span id="termstatus">Disconnected</span>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="areaProgress"><div id="termprogressbar" style=""></div></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td id="termarea3x">
-                            <pre id="Term"></pre>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="areaFoot">
-                            <div class="toright2">
-                                <span id="terminalSettingsButtons" style="display:none">
-                                    <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
-                                    <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
-                                    <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
-                                </span>
-                                <select id="specialkeylist" onkeypress="return false"></select>
-                                <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
-                            </div>
-                            <div>
-                                &nbsp;
-                                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
-                                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
-                                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
-                                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
-                                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+                <div id=termTable style="position:relative">
+                    <table style="width:100%" cellpadding=0 cellspacing=0>
+                        <tr>
+                            <td class="areaHead">
+                                <div class="toright2">
+                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction()/>
+                                </div>
+                                <div>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
+                                    <span id="connectbutton2span"><input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false"></span>
+                                    &nbsp;<span id="termstatus">Disconnected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="areaProgress"><div id="termprogressbar" style=""></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="termarea3x">
+                                <pre id="Term"></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="areaFoot">
+                                <div class="toright2">
+                                    <span id="terminalSettingsButtons" style="display:none">
+                                        <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
+                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
+                                        <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
+                                    </span>
+                                    <select id="specialkeylist" onkeypress="return false"></select>
+                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                                </div>
+                                <div>
+                                    &nbsp;
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;right:30px;bottom:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+                </div>
             </div>
             <div id=p13 style="display:none">
                 <div id="p13title">
@@ -607,6 +611,7 @@
                         </td>
                     </tr>
                 </table>
+                <div id=p13FilesConsoleMsg style="display:none;cursor:pointer;position:absolute;right:30px;bottom:55px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
                 <div id="p13filetable" style="">
                     <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
                     <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
@@ -930,6 +935,11 @@
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
+
+        // Console Message Display Timers
+        var p11DeskConsoleMsgTimer = null;
+        var p12TermConsoleMsgTimer = null;
+        var p13FilesConsoleMsgTimer = null;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -2479,6 +2489,7 @@
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
+                    //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
                     desk.m.FrameRateTimer = multidesktopsettings.framerate;
@@ -4458,6 +4469,12 @@
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.onConsoleMessageChange = function () {
+                        p11clearConsoleMsg();
+                        QH('p11DeskConsoleMsg', EscapeHtml(desktop.consoleMessage).split('\n').join('<br />'));
+                        QV('p11DeskConsoleMsg', true);
+                        p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                    }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
@@ -4473,6 +4490,10 @@
                 desktopNode = desktop = null;
             }
         }
+
+        function p11clearConsoleMsg() { QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
+        function p12clearConsoleMsg() { QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
+        function p13clearConsoleMsg() { QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
 
         var webRtcDesktop = null;
         function webRtcDesktopReset() {
@@ -4946,6 +4967,12 @@
                     terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
+                    terminal.onConsoleMessageChange = function () {
+                        p12clearConsoleMsg();
+                        QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                        QV('p12TermConsoleMsg', true);
+                        p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                    }
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
                     terminal.m.terminalEmulation = 0;
@@ -5065,6 +5092,12 @@
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
+                files.onConsoleMessageChange = function () {
+                    p13clearConsoleMsg();
+                    QH('p13FilesConsoleMsg', EscapeHtml(files.consoleMessage).split('\n').join('<br />'));
+                    QV('p13FilesConsoleMsg', true);
+                    p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                }
                 files.Start(filesNode._id);
             } else {
                 //QH('Term', '');

@@ -26,6 +26,10 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.webrtc = null;
     obj.debugmode = 0;
 
+    // Console Message
+    obj.consoleMessage = null;
+    obj.onConsoleMessageChange = null;
+
     // Private method
     //obj.debug = function (msg) { console.log(msg); }
 
@@ -59,7 +63,10 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         try { controlMsg = JSON.parse(msg); } catch (e) { return; }
         if (controlMsg.ctrlChannel != '102938') { obj.xxOnSocketData(msg); return; }
         //console.log(controlMsg);
-        if (obj.webrtc != null) {
+        if (controlMsg.type == 'console') {
+            obj.consoleMessage = controlMsg.msg;
+            if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
+        } else if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
             } else if (controlMsg.type == 'webrtc0') {
