@@ -813,6 +813,9 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Test the console messaging system
+                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote terminal...' })); // Send a console message back using the console channel, "\n" is supported.
+
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 2)) {
                         try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
@@ -860,8 +863,8 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
                     if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
-                } else if (this.httprequest.protocol == 2)
-                {
+                } else if (this.httprequest.protocol == 2) {
+
                     // Check user access rights for desktop
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -870,6 +873,9 @@ function createMeshCore(agent) {
                         sendConsoleText('Error: No Desktop Control Rights.');
                         return;
                     }
+
+                    // Test the console messaging system
+                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote desktop...' })); // Send a console message back using the console channel, "\n" is supported.
 
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 1)) {
@@ -916,7 +922,9 @@ function createMeshCore(agent) {
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
+
                 } else if (this.httprequest.protocol == 5) {
+
                     // Check user access rights for files
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -925,6 +933,9 @@ function createMeshCore(agent) {
                         sendConsoleText('Error: No Files Control Rights.');
                         return;
                     }
+
+                    // Test the console messaging system
+                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote files...' })); // Send a console message back using the console channel, "\n" is supported.
 
                     // Perform notification if needed
                     if (this.httprequest.consent && (this.httprequest.consent & 4)) {
