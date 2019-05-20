@@ -4471,9 +4471,11 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
                         p11clearConsoleMsg();
-                        QH('p11DeskConsoleMsg', EscapeHtml(desktop.consoleMessage).split('\n').join('<br />'));
-                        QV('p11DeskConsoleMsg', true);
-                        p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                        if (desktop.consoleMessage) {
+                            QH('p11DeskConsoleMsg', EscapeHtml(desktop.consoleMessage).split('\n').join('<br />'));
+                            QV('p11DeskConsoleMsg', true);
+                            p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                        }
                     }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -4969,9 +4971,11 @@
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.onConsoleMessageChange = function () {
                         p12clearConsoleMsg();
-                        QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
-                        QV('p12TermConsoleMsg', true);
-                        p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                        if (terminal.consoleMessage) {
+                            QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                            QV('p12TermConsoleMsg', true);
+                            p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                        }
                     }
                     terminal.Start(terminalNode._id);
                     terminal.contype = 1;
@@ -5094,9 +5098,11 @@
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
                     p13clearConsoleMsg();
-                    QH('p13FilesConsoleMsg', EscapeHtml(files.consoleMessage).split('\n').join('<br />'));
-                    QV('p13FilesConsoleMsg', true);
-                    p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                    if (files.consoleMessage) {
+                        QH('p13FilesConsoleMsg', EscapeHtml(files.consoleMessage).split('\n').join('<br />'));
+                        QV('p13FilesConsoleMsg', true);
+                        p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                    }
                 }
                 files.Start(filesNode._id);
             } else {
