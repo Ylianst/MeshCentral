@@ -600,7 +600,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             var device;
 
             // See if this node exists in the database
-            if (nodes.length == 0) {
+            if ((nodes == null) || (nodes.length == 0)) {
                 // This device does not exist, use the meshid given by the device
 
                 // See if this mesh exists, if it does not we may want to create it.
@@ -798,7 +798,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Fetch the the real agent nodeid
         db.Get('da' + obj.dbNodeKey, function (err, nodes, self)
         {
-            if (nodes.length == 1)
+            if ((nodes != null) && (nodes.length == 1))
             {
                 self.realNodeKey = nodes[0].raid;
 
@@ -834,7 +834,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Fetch the the diagnostic agent nodeid
         db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
-            if (nodes.length == 1) {
+            if ((nodes != null) && (nodes.length == 1)) {
                 obj.diagnosticNodeKey = nodes[0].daid;
                 obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.diagnosticNodeKey } }));
             }
@@ -849,7 +849,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (domain.iplocation == true) {
             // Check if we already have IP location information for this node
             db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
-                if (iplocs.length == 1) {
+                if ((iplocs != null) && (iplocs.length == 1)) {
                     // We have a location in the database for this remote IP
                     const iploc = nodes[0], x = {};
                     if ((iploc != null) && (iploc.ip != null) && (iploc.loc != null)) {
@@ -876,7 +876,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // If we need to ask for IP location, see if we have the quota to do it.
                     if (doIpLocation > 0) {
                         db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
-                            if (ipLocationLimitor.value > 0) {
+                            if ((ipLocationLimitor != null) && (ipLocationLimitor.value > 0)) {
                                 ipLocationLimitor.value--;
                                 db.Set(ipLocationLimitor);
                                 obj.send(JSON.stringify({ action: 'iplocation' }));
@@ -1103,7 +1103,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (command.oldnodeid.length != 64) break;
                         const oldNodeKey = 'node//' + command.oldnodeid.toLowerCase();
                         db.Get(oldNodeKey, function (err, nodes) {
-                            if (nodes.length != 1) return;
+                            if ((nodes != null) && (nodes.length != 1)) return;
                             const node = nodes[0];
                             if (node.meshid == obj.dbMeshKey) {
                                 // Update the device name & host
@@ -1212,7 +1212,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
-            if (nodes.length != 1) return;
+            if ((nodes == null) || (nodes.length != 1)) return;
             const device = nodes[0];
             if (device.agent) {
                 var changes = [], change = 0, log = 0;
@@ -1280,7 +1280,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) {
-            if (nodes.length != 1) { return; }
+            if ((nodes == null) || (nodes.length != 1)) { return; }
             const device = nodes[0];
             if (device.agent) {
                 var changes = [], change = 0;
@@ -1318,7 +1318,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (tag.length == 0) { tag = null; }
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) {
-            if (nodes.length != 1) return;
+            if ((nodes == null) || (nodes.length != 1)) return;
             const device = nodes[0];
             if (device.agent) {
                 if (device.agent.tag != tag) {

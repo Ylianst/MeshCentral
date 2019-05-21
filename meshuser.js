@@ -369,6 +369,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Request a list of all nodes
                     db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
+                        if (docs == null) { docs = []; }
                         var r = {};
                         for (i in docs) {
                             // Remove any connectivity and power state information, that should not be in the database anyway.
@@ -415,7 +416,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
                     if (common.validateString(command.nodeid, 0, 128) == false) return;
                     db.getPowerTimeline(command.nodeid, function (err, docs) {
-                        if (err == null && docs.length > 0) {
+                        if ((err == null) && (docs != null) && (docs.length > 0)) {
                             var timeline = [], time = null, previousPower;
                             for (i in docs) {
                                 var doc = docs[i];
@@ -826,7 +827,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (parent.users[req.session.userid].email != command.email) {
                         // Check if this email is already validated on a different account
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
-                            if (docs.length > 0) {
+                            if ((docs != null) && (docs.length > 0)) {
                                 // Notify the duplicate email error
                                 try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', tag: 'ServerNotify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
                             } else {
@@ -1677,7 +1678,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Get the device
                         db.Get(nodeid, function (err, nodes) {
-                            if (nodes.length != 1) return;
+                            if ((nodes == null) || (nodes.length != 1)) return;
                             var node = nodes[0];
 
                             // Get the mesh for this device
@@ -1695,7 +1696,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
                                 db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
                                 db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
-                                    if (nodes.length == 1) { db.Remove('da' + nodes[0].daid); }     // Remove diagnostic agent to real agent link
+                                    if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); }     // Remove diagnostic agent to real agent link
                                     db.Remove('ra' + node._id);                                     // Remove real agent to diagnostic agent link
                                 });
 
@@ -1727,7 +1728,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
                             db.Get(nodeid, function (err, nodes) {
-                                if (nodes.length != 1) return;
+                                if ((nodes == null) || (nodes.length != 1)) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
@@ -1739,7 +1740,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                         // Get the device interface information
                                         db.Get('if' + node._id, function (err, nodeifs) {
-                                            if (nodeifs.length == 1) {
+                                            if ((nodeifs != null) && (nodeifs.length == 1)) {
                                                 var nodeif = nodeifs[0];
                                                 var macs = [];
                                                 for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
@@ -1783,7 +1784,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
                             db.Get(nodeid, function (err, nodes) {
-                                if (nodes.length != 1) return;
+                                if ((nodes == null) || (nodes.length != 1)) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
@@ -1821,7 +1822,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
                             // Get the device
                             db.Get(nodeid, function (err, nodes) {
-                                if (nodes.length != 1) return;
+                                if ((nodes == null) || (nodes.length != 1)) return;
                                 var node = nodes[0];
 
                                 // Get the mesh for this device
@@ -1852,7 +1853,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the device
                     db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
+                        if ((nodes == null) || (nodes.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                         var node = nodes[0];
 
                         // Get the mesh for this device
@@ -1863,7 +1864,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Get network information about this node
                             db.Get('if' + command.nodeid, function (err, netinfos) {
-                                if (netinfos.length != 1) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
+                                if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
                                 var netinfo = netinfos[0];
                                 try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
                             });
@@ -1880,7 +1881,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Change the device
                     db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes.length != 1) return;
+                        if ((nodes == null) || (nodes.length != 1)) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
@@ -1947,7 +1948,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Change the device
                     db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes.length != 1) return;
+                        if ((nodes == null) || (nodes.length != 1)) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
@@ -1988,7 +1989,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Change the device
                     db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes.length != 1) return;
+                        if ((nodes == null) || (nodes.length != 1)) return;
                         var node = nodes[0];
 
                         // Get the mesh for this device
@@ -2015,7 +2016,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check if this user has rights on this nodeid
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     db.Get(command.nodeid, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                        if (nodes.length == 1) {
+                        if ((nodes == null) || (nodes.length == 1)) {
                             meshlinks = user.links[nodes[0].meshid];
                             if ((meshlinks) && (meshlinks.rights) && ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) != 0)) {
                                 // Add a user authentication cookie to a url
@@ -2062,7 +2063,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (idtype == 'node') {
                         // Check if this user has rights on this id to set notes
                         db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                            if (nodes.length == 1) {
+                            if ((nodes == null) || (nodes.length == 1)) {
                                 meshlinks = user.links[nodes[0].meshid];
                                 if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & parent.MESHRIGHT_SETNOTES != 0)) {
                                     // Set the id's notes
@@ -2340,7 +2341,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the device
                 db.Get(command.nodeid, function (err, nodes) {
-                    if (nodes.length != 1) return;
+                    if ((nodes == null) || (nodes.length != 1)) return;
                     var node = nodes[0];
 
                     // Get the mesh for this device
@@ -2362,7 +2363,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the device
                 db.Get(command.nodeid, function (err, nodes) {
-                    if (nodes.length != 1) return;
+                    if ((nodes == null) || (nodes.length != 1)) return;
                     var node = nodes[0];
 
                     // Get the mesh for this device
@@ -2396,7 +2397,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (idtype == 'node') {
                         // Get the device
                         db.Get(command.id, function (err, nodes) {
-                            if (nodes.length != 1) return;
+                            if ((nodes == null) || (nodes.length != 1)) return;
                             var node = nodes[0];
 
                             // Get the mesh for this device
@@ -2408,7 +2409,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Get the notes about this node
                                 db.Get('nt' + command.id, function (err, notes) {
                                     try {
-                                        if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                        if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                         ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
                                     } catch (ex) { }
                                 });
@@ -2424,7 +2425,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Get the notes about this node
                             db.Get('nt' + command.id, function (err, notes) {
                                 try {
-                                    if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                    if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                     ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
                                 } catch (ex) { }
                             });
@@ -2433,7 +2434,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the notes about this node
                         db.Get('nt' + command.id, function (err, notes) {
                             try {
-                                if (notes.length != 1) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
                                 ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
                             } catch (ex) { }
                         });

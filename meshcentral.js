@@ -1745,8 +1745,8 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
-        if (config.settings.mongodb != null) { modules.push('mongojs'); } // Add MongoJS
-        else if (config.settings.xmongodb != null) { modules.push('mongodb'); } // Add MongoDB
+        if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
+        else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
         // Get the current node version

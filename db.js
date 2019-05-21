@@ -198,14 +198,19 @@ module.exports.CreateDB = function (parent, func) {
         if (typeof obj.parent.args.dbexpire.statsevents == 'number') { expireServerStatsSeconds = obj.parent.args.dbexpire.statsevents; }
     }
 
-    if (obj.parent.args.xmongodb) {
+    if (obj.parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
-        require('mongodb').MongoClient.connect(obj.parent.args.xmongodb, { useNewUrlParser: true }, function (err, client) {
+        require('mongodb').MongoClient.connect(obj.parent.args.mongodb, { useNewUrlParser: true }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
-
             Datastore = client;
-            const dbname = (obj.parent.args.mongodbname) ? (obj.parent.args.mongodbname) : 'meshcentral';
+
+            // Get the database name and setup the database client
+            var dbNamefromUrl = null;
+            try { dbNamefromUrl = require('url').parse(obj.parent.args.mongodb).path.split('/')[1]; } catch (ex) { }
+            var dbname = 'meshcentral';
+            if (dbNamefromUrl) { dbname = dbNamefromUrl; }
+            if (obj.parent.args.mongodbname) { dbname = obj.parent.args.mongodbname; }
             const dbcollectionname = (obj.parent.args.mongodbcol) ? (obj.parent.args.mongodbcol) : 'meshcentral';
             const db = client.db(dbname);
 
@@ -311,11 +316,11 @@ module.exports.CreateDB = function (parent, func) {
 
             setupFunctions(func); // Completed setup of MongoDB
         });
-    } else if (obj.parent.args.mongodb) {
-        // Use MongoJS
+    } else if (obj.parent.args.xmongodb) {
+        // Use MongoJS, this is the old system.
         obj.databaseType = 2;
         Datastore = require('mongojs');
-        var db = Datastore(obj.parent.args.mongodb);
+        var db = Datastore(obj.parent.args.xmongodb);
         var dbcollection = 'meshcentral';
         if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
 
@@ -504,7 +509,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAll = function (func) { obj.file.deleteMany({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.deleteMany({ type: type }, { multi: true }, func); };
             obj.InsertMany = function (data, func) { obj.file.insertMany(data, func); };
-            obj.RemoveMeshDocuments = function (id) { obj.file.deleteMany({ meshid: id }, { multi: true }); obj.file.remove({ _id: 'nt' + id }); };
+            obj.RemoveMeshDocuments = function (id) { obj.file.deleteMany({ meshid: id }, { multi: true }); obj.file.deleteOne({ _id: 'nt' + id }); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.deleteMany({ domain: domain }, { multi: true }, func); };
             obj.SetUser = function (user) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); };
