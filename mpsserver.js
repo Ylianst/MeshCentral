@@ -198,10 +198,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                     // Fetch the mesh
                     obj.db.Get(socket.tag.meshid, function (err, meshes) {
-                        if (meshes.length === 1) {
+                        if ((meshes != null) && (meshes.length === 1)) {
                             var mesh = meshes[0];
                             obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-                                if (nodes.length !== 1) {
+                                if ((nodes == null) || (nodes.length !== 1)) {
                                     if (mesh.mtype == 1) {
                                         // Node is not in the database, add it. Credentials will be empty until added by the user.
                                         var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
@@ -318,7 +318,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         socket.tag.connectTime = Date.now();
 
                         obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-                            if (nodes.length !== 1) {
+                            if ((nodes == null) || (nodes.length !== 1)) {
                                 // Node is not in the database, add it. Credentials will be empty until added by the user.
                                 var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
                                 obj.db.Set(device);
@@ -343,7 +343,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                         // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
                         obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
-                            if (nodes.length !== 1) {
+                            if ((nodes == null) || (nodes.length !== 1)) {
                                 // New CIRA connection for unknown node, disconnect.
                                 unknownNodeCount++;
                                 console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
@@ -748,7 +748,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         // Change the device
         obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-            if (nodes.length !== 1) return;
+            if ((nodes == null) || (nodes.length !== 1)) return;
             var node = nodes[0];
 
             // See if any changes need to be made
@@ -756,7 +756,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
             // Get the mesh for this device
             obj.db.Get(node.meshid, function (err, meshes) {
-                if (meshes.length !== 1) return;
+                if ((meshes == null) || (meshes.length !== 1)) return;
                 var mesh = meshes[0];
 
                 // Ready the node change event
