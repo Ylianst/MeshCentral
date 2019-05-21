@@ -597,14 +597,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Check that the node exists
         db.Get(obj.dbNodeKey, function (err, nodes) {
             if (obj.agentInfo == null) { return; }
-            var device;
+            var device, mesh;
 
             // See if this node exists in the database
             if ((nodes == null) || (nodes.length == 0)) {
                 // This device does not exist, use the meshid given by the device
 
                 // See if this mesh exists, if it does not we may want to create it.
-                const mesh = getMeshAutoCreate();
+                mesh = getMeshAutoCreate();
 
                 // Check if the mesh exists
                 if (mesh == null) {
@@ -647,7 +647,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // See if this mesh exists, if it does not we may want to create it.
-                const mesh = getMeshAutoCreate();
+                mesh = getMeshAutoCreate();
 
                 // Check if the mesh exists
                 if (mesh == null) {
@@ -705,6 +705,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             const dupAgent = parent.wsagents[obj.dbNodeKey];
             parent.wsagents[obj.dbNodeKey] = obj;
             if (dupAgent) {
+                // Record duplicate agents
+                if (parent.duplicateAgentsLog[obj.dbNodeKey] == null) {
+                    if (dupAgent.remoteaddr == obj.remoteaddr) {
+                        parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr], count: 1 };
+                    } else {
+                        parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr, dupAgent.remoteaddr], count: 1 };
+                    }
+                } else {
+                    parent.duplicateAgentsLog[obj.dbNodeKey].name = device.name;
+                    parent.duplicateAgentsLog[obj.dbNodeKey].group = mesh.name;
+                    parent.duplicateAgentsLog[obj.dbNodeKey].count++;
+                    if (parent.duplicateAgentsLog[obj.dbNodeKey].ip.indexOf(obj.remoteaddr) == -1) { parent.duplicateAgentsLog[obj.dbNodeKey].ip.push(obj.remoteaddr); }
+                }
+
                 // Close the duplicate agent
                 parent.agentStats.duplicateAgentCount++;
                 if (obj.nodeid != null) { parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }

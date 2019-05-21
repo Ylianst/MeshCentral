@@ -2485,7 +2485,7 @@
                     multiDesktop[nodeid] = desk;
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
-                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie);
+                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, domainUrl);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
@@ -4464,7 +4464,7 @@
                     desktop.contype = 2;
                 } else {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -4963,7 +4963,7 @@
                     Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
                 } else {
                     // Setup a mesh agent terminal
-                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort, authCookie);
+                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort, authCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
                     terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
@@ -5093,7 +5093,7 @@
         function connectFiles(e) {
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -5354,7 +5354,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie); // Create our websocket file transport
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, domainUrl); // Create our websocket file transport
             downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
@@ -5441,7 +5441,7 @@
 
         // Connect again
         function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie);
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, domainUrl);
             uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
@@ -7235,8 +7235,8 @@
         function p30showUserChangePassDialog(multiFactor) {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
-            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=showCreateNewAccountDialogValidate(1)></input>');
+            x += addHtmlValue('Password', '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
+            x += addHtmlValue('Password', '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
             if (features & 0x00010000) { x += addHtmlValue('Password hint', '<input id=p4hint type=text style=width:230px maxlength=256></input>'); }
 
             if (passRequirements) {
@@ -7248,8 +7248,19 @@
             x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
             if (multiFactor == 1) { x += '<div><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</div>'; }
             setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
-            showCreateNewAccountDialogValidate(1);
+            p30showUserChangePassDialogValidate();
             Q('p4pass1').focus();
+            if (currentUser.passchange == -1) { Q('p4resetNextLogin').checked = true; }
+        }
+
+        function p30showUserChangePassDialogValidate() {
+            var ok = true;
+            if ((Q('p4pass1').value != '') || (Q('p4pass2').value != '')) {
+                if (Q('p4pass1').value != Q('p4pass2').value) { ok = false; } else {
+                    if (passRequirements) { if (checkPasswordRequirements(Q('p4pass1').value, passRequirements) == false) { ok = false; } }
+                }
+            }
+            QE('idx_dlgOkButton', ok);
         }
 
         function p30showUserChangePassDialogEx(b, tag) {
