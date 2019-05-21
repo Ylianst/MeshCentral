@@ -2167,7 +2167,7 @@
                     desktop.contype = 2;
                 } else {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -2468,7 +2468,7 @@
         function connectFiles(e) {
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
@@ -2693,7 +2693,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie); // Create our websocket file transport
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, domainUrl); // Create our websocket file transport
             downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
@@ -2780,7 +2780,7 @@
 
         // Connect again
         function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie);
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, domainUrl);
             uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;

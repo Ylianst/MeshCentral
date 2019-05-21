@@ -548,7 +548,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
                             r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
-                            r += 'heapdump, relays, autobackup.';
+                            r += 'heapdump, relays, autobackup, dupagents.';
+                            break;
+                        }
+                        case 'dupagents': {
+                            for (var i in parent.duplicateAgentsLog) { r += JSON.stringify(parent.duplicateAgentsLog[i]) + '\r\n'; }
+                            if (r == '') { r = 'No duplicate agents in log.'; }
                             break;
                         }
                         case 'agentstats': {
@@ -1217,10 +1222,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Change a user's password
                     if (user.siteadmin != 0xFFFFFFFF) break;
                     if (common.validateString(command.userid, 1, 256) == false) break;
-                    if (common.validateString(command.pass, 1, 256) == false) break;
+                    if (common.validateString(command.pass, 0, 256) == false) break;
                     if ((command.hint != null) && (common.validateString(command.hint, 0, 256) == false)) break;
                     if (typeof command.removeMultiFactor != 'boolean') break;
-                    if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
+                    if ((command.pass != '') && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) break; // Password does not meet requirements
 
                     var chguser = parent.users[command.userid];
                     if (chguser) {
@@ -1230,8 +1235,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Compute the password hash & save it
                         require('./pass').hash(command.pass, function (err, salt, hash, tag) {
                             if (!err) {
-                                chguser.salt = salt;
-                                chguser.hash = hash;
+                                if (command.pass != '') { chguser.salt = salt; chguser.hash = hash; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (command.hint != null)) {
                                     var hint = command.hint;
                                     if (hint.length > 250) { hint = hint.substring(0, 250); }

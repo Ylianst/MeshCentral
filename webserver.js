@@ -157,6 +157,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.wsagents = {};              // NodeId --> Agent
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
+    obj.duplicateAgentsLog = {};
     obj.wssessions = {};            // UserId --> Array Of Sessions
     obj.wssessions2 = {};           // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
     obj.wsPeerSessions = {};        // ServerId --> Array Of "UserId + SessionRnd"
@@ -599,10 +600,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                 req.session.u2fchallenge = authnOptions.challenge;
                 func(JSON.stringify(authnOptions));
+                return;
             }
-        } else {
-            func('');
         }
+        func('');
     }
 
     function handleLoginRequest(req, res) {
