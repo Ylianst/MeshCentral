@@ -679,25 +679,28 @@ module.exports.CreateDB = function (parent, func) {
             if (obj.performingBackup) return 1;
             obj.performingBackup = true;
             //console.log('Performing backup...');
-            try { obj.parent.fs.mkdirSync(obj.parent.backuppath); } catch (e) { }
+
+            var backupPath = obj.parent.backuppath;
+            if (obj.parent.config.settings.autobackup && obj.parent.config.settings.autobackup.backuppath) { backupPath = obj.parent.config.settings.autobackup.backuppath; }
+            try { obj.parent.fs.mkdirSync(backupPath); } catch (e) { }
             const dbname = (obj.parent.args.mongodbname) ? (obj.parent.args.mongodbname) : 'meshcentral';
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
             const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
-            const newAutoBackupPath = obj.parent.path.join(obj.parent.backuppath, newAutoBackupFile);
+            const newAutoBackupPath = obj.parent.path.join(backupPath, newAutoBackupFile);
 
             if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
                 // Perform a MongoDump backup
                 const newBackupFile = 'mongodump-' + fileSuffix;
-                const newBackupPath = obj.parent.path.join(obj.parent.backuppath, newBackupFile);
+                var newBackupPath = obj.parent.path.join(backupPath, newBackupFile);
                 var mongoDumpPath = 'mongodump';
                 if (obj.parent.config.settings.autobackup && obj.parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = obj.parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
                 const cmd = mongoDumpPath + ' --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
-                var backupProcess = child_process.exec(cmd, { cwd: obj.parent.backuppath }, function (error, stdout, stderr) {
+                var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         backupProcess = null;
-                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup.\r\n'); obj.performingBackup = false; return; }
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to perform database backup: ' + error + '\r\n'); obj.performingBackup = false; return; }
 
                         // Perform archive compression
                         var archiver = require('archiver');
