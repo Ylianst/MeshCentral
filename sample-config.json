@@ -40,7 +40,8 @@
     "_AutoBackup": {
       "backupInvervalHours": 24,
       "keepLastDaysBackup": 10,
-      "zippassword": "MyReallySecretPassword3"
+      "zipPassword": "MyReallySecretPassword3",
+      "_backupPath": "C:\\backups"
     }
   },
   "_domains": {
