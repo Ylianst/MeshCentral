@@ -374,7 +374,7 @@
                 <div id="p2ServerActions">
                     <p><strong>Server actions</strong></p>
                     <div class="mL">
-                        <div id="p2ServerActionsBackup"><a href="/backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                        <div id="p2ServerActionsBackup"><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
                         <div id="p2ServerActionsRestore"><a onclick="server_showRestoreDlg()">Restore server with backup</a></div>
                         <div id="p2ServerActionsVersion"><a onclick="server_showVersionDlg()">Check server version</a></div>
                         <div id="p2ServerActionsErrors"><a onclick="server_showErrorsDlg()">Show server error log</a></div>
@@ -641,6 +641,7 @@
                             <div class="toright2">
                                 <div id=p15coreName title="Information about current core running on this agent"></div>
                                 <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                                <img onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px" title="Download console text" src="images/link4.png" />
                             </div>
                             <div id="p15statetext"></div>
                         </td>
@@ -5706,6 +5707,11 @@
                     Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                 }
             }
+        }
+
+        // Save console text to file
+        function p15downloadConsoleText() {
+            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: "application/octet-stream" }), "console.txt");
         }
 
         // Called then user presses the "Change Core" button

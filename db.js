@@ -31,8 +31,6 @@ module.exports.CreateDB = function (parent, func) {
     var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days. (Seconds * Minutes * Hours * Days)
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days. (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days. (Seconds * Minutes * Hours * Days)
-    obj.path = require('path');
-    obj.parent = parent;
     obj.identifier = null;
     obj.dbKey = null;
 
@@ -131,15 +129,15 @@ module.exports.CreateDB = function (parent, func) {
     // Get encryption key
     obj.getEncryptDataKey = function (password) {
         if (typeof password != 'string') return null;
-        return obj.parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
+        return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
     }
 
     // Encrypt data 
     obj.encryptData = function (password, plaintext) {
         var key = obj.getEncryptDataKey(password);
         if (key == null) return null;
-        const iv = obj.parent.crypto.randomBytes(16);
-        const aes = obj.parent.crypto.createCipheriv('aes-256-cbc', key, iv);
+        const iv = parent.crypto.randomBytes(16);
+        const aes = parent.crypto.createCipheriv('aes-256-cbc', key, iv);
         var ciphertext = aes.update(plaintext);
         ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
         return ciphertext.toString('base64');
@@ -153,7 +151,7 @@ module.exports.CreateDB = function (parent, func) {
             const ciphertextBytes = Buffer.from(ciphertext, 'base64');
             const iv = ciphertextBytes.slice(0, 16);
             const data = ciphertextBytes.slice(16);
-            const aes = obj.parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
+            const aes = parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
             var plaintextBytes = Buffer.from(aes.update(data));
             plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
             return plaintextBytes;
@@ -192,26 +190,26 @@ module.exports.CreateDB = function (parent, func) {
 
 
     // Read expiration time from configuration file
-    if (typeof obj.parent.args.dbexpire == 'object') {
-        if (typeof obj.parent.args.dbexpire.events == 'number') { expireEventsSeconds = obj.parent.args.dbexpire.events; }
-        if (typeof obj.parent.args.dbexpire.powerevents == 'number') { expirePowerEventsSeconds = obj.parent.args.dbexpire.powerevents; }
-        if (typeof obj.parent.args.dbexpire.statsevents == 'number') { expireServerStatsSeconds = obj.parent.args.dbexpire.statsevents; }
+    if (typeof parent.args.dbexpire == 'object') {
+        if (typeof parent.args.dbexpire.events == 'number') { expireEventsSeconds = parent.args.dbexpire.events; }
+        if (typeof parent.args.dbexpire.powerevents == 'number') { expirePowerEventsSeconds = parent.args.dbexpire.powerevents; }
+        if (typeof parent.args.dbexpire.statsevents == 'number') { expireServerStatsSeconds = parent.args.dbexpire.statsevents; }
     }
 
-    if (obj.parent.args.mongodb) {
+    if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
-        require('mongodb').MongoClient.connect(obj.parent.args.mongodb, { useNewUrlParser: true }, function (err, client) {
+        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
 
             // Get the database name and setup the database client
             var dbNamefromUrl = null;
-            try { dbNamefromUrl = require('url').parse(obj.parent.args.mongodb).path.split('/')[1]; } catch (ex) { }
+            try { dbNamefromUrl = require('url').parse(parent.args.mongodb).path.split('/')[1]; } catch (ex) { }
             var dbname = 'meshcentral';
             if (dbNamefromUrl) { dbname = dbNamefromUrl; }
-            if (obj.parent.args.mongodbname) { dbname = obj.parent.args.mongodbname; }
-            const dbcollectionname = (obj.parent.args.mongodbcol) ? (obj.parent.args.mongodbcol) : 'meshcentral';
+            if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
+            const dbcollectionname = (parent.args.mongodbcol) ? (parent.args.mongodbcol) : 'meshcentral';
             const db = client.db(dbname);
 
             // Setup MongoDB main collection and indexes
@@ -316,13 +314,13 @@ module.exports.CreateDB = function (parent, func) {
 
             setupFunctions(func); // Completed setup of MongoDB
         });
-    } else if (obj.parent.args.xmongodb) {
+    } else if (parent.args.xmongodb) {
         // Use MongoJS, this is the old system.
         obj.databaseType = 2;
         Datastore = require('mongojs');
-        var db = Datastore(obj.parent.args.xmongodb);
+        var db = Datastore(parent.args.xmongodb);
         var dbcollection = 'meshcentral';
-        if (obj.parent.args.mongodbcol) { dbcollection = obj.parent.args.mongodbcol; }
+        if (parent.args.mongodbcol) { dbcollection = parent.args.mongodbcol; }
 
         // Setup MongoDB main collection and indexes
         obj.file = db.collection(dbcollection);
@@ -420,15 +418,15 @@ module.exports.CreateDB = function (parent, func) {
         // Use NeDB (The default)
         obj.databaseType = 1;
         Datastore = require('nedb');
-        var datastoreOptions = { filename: obj.parent.getConfigFilePath('meshcentral.db'), autoload: true };
+        var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
-        if ((typeof obj.parent.args.dbencryptkey == 'string') && (obj.parent.args.dbencryptkey.length != 0)) {
+        if ((typeof parent.args.dbencryptkey == 'string') && (parent.args.dbencryptkey.length != 0)) {
             // Hash the database password into a AES256 key and setup encryption and decryption.
-            obj.dbKey = obj.parent.crypto.createHash('sha384').update(obj.parent.args.dbencryptkey).digest("raw").slice(0, 32);
+            obj.dbKey = parent.crypto.createHash('sha384').update(parent.args.dbencryptkey).digest("raw").slice(0, 32);
             datastoreOptions.afterSerialization = function (plaintext) {
-                const iv = obj.parent.crypto.randomBytes(16);
-                const aes = obj.parent.crypto.createCipheriv('aes-256-cbc', obj.dbKey, iv);
+                const iv = parent.crypto.randomBytes(16);
+                const aes = parent.crypto.createCipheriv('aes-256-cbc', obj.dbKey, iv);
                 var ciphertext = aes.update(plaintext);
                 ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
                 return ciphertext.toString('base64');
@@ -437,7 +435,7 @@ module.exports.CreateDB = function (parent, func) {
                 const ciphertextBytes = Buffer.from(ciphertext, 'base64');
                 const iv = ciphertextBytes.slice(0, 16);
                 const data = ciphertextBytes.slice(16);
-                const aes = obj.parent.crypto.createDecipheriv('aes-256-cbc', obj.dbKey, iv);
+                const aes = parent.crypto.createDecipheriv('aes-256-cbc', obj.dbKey, iv);
                 var plaintextBytes = Buffer.from(aes.update(data));
                 plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
                 return plaintextBytes.toString();
@@ -454,23 +452,23 @@ module.exports.CreateDB = function (parent, func) {
         obj.file.ensureIndex({ fieldName: 'email', sparse: true });
 
         // Setup the events collection and setup indexes
-        obj.eventsfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-events.db'), autoload: true });
+        obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true });
         obj.eventsfile.persistence.setAutocompactionInterval(36000);
         obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
         obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
         obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 20 }); // Limit the power event log to 20 days (Seconds * Minutes * Hours * Days)
 
         // Setup the power collection and setup indexes
-        obj.powerfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-power.db'), autoload: true });
+        obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true });
         obj.powerfile.persistence.setAutocompactionInterval(36000);
         obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 10 }); // Limit the power event log to 10 days (Seconds * Minutes * Hours * Days)
 
         // Setup the SMBIOS collection
-        obj.smbiosfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true });
+        obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true });
 
         // Setup the server stats collection and setup indexes
-        obj.serverstatsfile = new Datastore({ filename: obj.parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
+        obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
         obj.serverstatsfile.persistence.setAutocompactionInterval(36000);
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 30 }); // Limit the server stats log to 30 days (Seconds * Minutes * Hours * Days)
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
@@ -680,21 +678,21 @@ module.exports.CreateDB = function (parent, func) {
             obj.performingBackup = true;
             //console.log('Performing backup...');
 
-            var backupPath = obj.parent.backuppath;
-            if (obj.parent.config.settings.autobackup && obj.parent.config.settings.autobackup.backuppath) { backupPath = obj.parent.config.settings.autobackup.backuppath; }
-            try { obj.parent.fs.mkdirSync(backupPath); } catch (e) { }
-            const dbname = (obj.parent.args.mongodbname) ? (obj.parent.args.mongodbname) : 'meshcentral';
+            var backupPath = parent.backuppath;
+            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
+            const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
             const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
-            const newAutoBackupPath = obj.parent.path.join(backupPath, newAutoBackupFile);
+            const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
 
             if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
                 // Perform a MongoDump backup
                 const newBackupFile = 'mongodump-' + fileSuffix;
-                var newBackupPath = obj.parent.path.join(backupPath, newBackupFile);
+                var newBackupPath = parent.path.join(backupPath, newBackupFile);
                 var mongoDumpPath = 'mongodump';
-                if (obj.parent.config.settings.autobackup && obj.parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = obj.parent.config.settings.autobackup.mongodumppath; }
+                if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
                 const cmd = mongoDumpPath + ' --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
@@ -704,32 +702,32 @@ module.exports.CreateDB = function (parent, func) {
 
                         // Perform archive compression
                         var archiver = require('archiver');
-                        var output = obj.parent.fs.createWriteStream(newAutoBackupPath + '.zip');
+                        var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
-                        if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.zippassword == 'string')) {
+                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
                             try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
-                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: obj.parent.config.settings.autobackup.zippassword });
+                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
-                        output.on('close', function () { obj.performingBackup = false; setTimeout(function () { try { obj.parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
+                        output.on('close', function () { obj.performingBackup = false; setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
                         output.on('end', function () { });
                         archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
                         archive.on('error', function (err) { console.log('Backup error: ' + err); });
                         archive.pipe(output);
                         archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' });
-                        archive.directory(obj.parent.datapath, 'meshcentral-data');
+                        archive.directory(parent.datapath, 'meshcentral-data');
                         archive.finalize();
                     } catch (ex) { console.log(ex); }
                 });
             } else {
                 // Perform a NeDB backup
                 var archiver = require('archiver');
-                var output = obj.parent.fs.createWriteStream(newAutoBackupPath + '.zip');
+                var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                 var archive = null;
-                if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.zippassword == 'string')) {
+                if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
                     try { archiver.registerFormat('zip-encrypted', require("archiver-zip-encrypted")); } catch (ex) { }
-                    archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: obj.parent.config.settings.autobackup.zippassword });
+                    archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
@@ -738,15 +736,15 @@ module.exports.CreateDB = function (parent, func) {
                 archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
                 archive.on('error', function (err) { console.log('Backup error: ' + err); });
                 archive.pipe(output);
-                archive.directory(obj.parent.datapath, 'meshcentral-data');
+                archive.directory(parent.datapath, 'meshcentral-data');
                 archive.finalize();
             }
 
             // Remove old backups
-            if (obj.parent.config.settings.autobackup && (typeof obj.parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
+            if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
                 var cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - obj.parent.config.settings.autobackup.keeplastdaysbackup);
-                obj.parent.fs.readdir(obj.parent.backuppath, function (err, dir) {
+                cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
+                parent.fs.readdir(parent.backuppath, function (err, dir) {
                     try {
                         if ((err == null) && (dir.length > 0)) {
                             for (var i in dir) {
@@ -755,7 +753,7 @@ module.exports.CreateDB = function (parent, func) {
                                     var timex = name.substring(23, name.length - 4).split('-');
                                     if (timex.length == 5) {
                                         var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                        if (fileDate && (cutoffDate > fileDate)) { try { obj.parent.fs.unlink(obj.parent.path.join(obj.parent.backuppath, name), function () { }); } catch (ex) { } }
+                                        if (fileDate && (cutoffDate > fileDate)) { try { parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { }); } catch (ex) { } }
                                     }
                                 }
                             }
