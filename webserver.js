@@ -241,6 +241,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Agent counters
     obj.agentStats = {
         createMeshAgentCount: 0,
+        agentClose: 0,
+        agentBinaryUpdate: 0,
         coreIsStableCount: 0,
         verifiedAgentConnectionCount: 0,
         clearingCoreCount: 0,
@@ -2197,9 +2199,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
+        if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
-        if ((user.siteadmin & 1) == 0) { res.sendStatus(401); return; } // Check if we have server backup rights
+        if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
         // Require modules
         const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
@@ -2229,9 +2231,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRestoreRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
-        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
+        if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
-        if ((user.siteadmin & 4) == 0) { res.sendStatus(401); return; } // Check if we have server restore rights
+        if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
 
         const multiparty = require('multiparty');
         const form = new multiparty.Form();
@@ -2627,13 +2629,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
 
         // Setup all HTTP handlers
-        obj.app.get('/backup.zip', handleBackupRequest);
-        obj.app.post('/restoreserver.ashx', handleRestoreRequest);
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
         for (var i in parent.config.domains) {
             if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var url = parent.config.domains[i].url;
             obj.app.get(url, handleRootRequest);
+            obj.app.get(url + 'backup.zip', handleBackupRequest);
+            obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest);
             obj.app.get(url + 'terms', handleTermsRequest);
             obj.app.post(url + 'login', handleLoginRequest);
             obj.app.post(url + 'tokenlogin', handleLoginRequest);

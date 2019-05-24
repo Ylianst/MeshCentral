@@ -220,6 +220,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
+                            parent.agentStats.agentBinaryUpdate++;
                             if (obj.agentExeInfo.data == null) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
@@ -457,6 +458,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) {
+        parent.agentStats.agentClose++;
         if (obj.nodeid != null) {
             const agentId = (obj.agentInfo && obj.agentInfo.agentId) ? obj.agentInfo.agentId : 'Unknown';
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
