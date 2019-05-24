@@ -833,37 +833,35 @@ function activeToACMEx(fwNonce) {
             if (message.provCertObj !== undefined) {
                 activeToACMEx1(message, function (stack, name, responses, status, message) {
                     if (status !== 200) {
-                        if (status == 2) {
-                            console.log((new Date()) + ' AMT already provisioned.Exiting ' + status);
-                            socket.write({ "Type": "finish", "Body": "failed" });
-                        } else {
-                            console.log((new Date()) + ' Failed to fetch activation status, status ' + status);
-                            socket.write({ "Type": "finish", "Body": "failed" });
+                        if (status == 2) { 
+                            console.log((new Date()) + ' AMT already provisioned.Exiting ' + status); 
+                            socket.write({ "Type": "finish", "Body": "failed" }); 
+                        } 
+                        else { 
+                            console.log((new Date()) + ' Failed to fetch activation status, status ' + status); 
+                            socket.write({ "Type": "finish", "Body": "failed" }); 
                         }
                         socket.end();
                         exit(status);
-                    }
-                    else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) {
-                        console.log((new Date()) + ' Admin control mode activation not allowed');
+                    } else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { 
+                        console.log((new Date()) + ' Admin control mode activation not allowed'); 
                         socket.write({ "Type": "finish", "Body": "failed" });
                         socket.end();
                         exit(status);
-                    } else {
-                        console.log((new Date()) + ' Certificate Injection Successful');
+                    } else { 
+                        console.log((new Date()) + ' Certificate Injection Successful'); 
                         activeToACMEx2(message.digitalSignature, message.mcNonce, message.amtPassword, responses, function(stack, name, responses, status){
-                            if (status != 200) {
-                                console.log((new Date()) + ' Failed to activate, status ' + status);
-                                console.log(JSON.stringify(responses));
-                                socket.write({ "Type": "finish", "Body": "failed" });
-                            }
-                            else if (responses.Body.ReturnValue != 0) { 
+                            if (status != 200) { 
+                                console.log((new Date()) + ' Failed to activate, status ' + status); 
+                                console.log(JSON.stringify(responses)); 
+                                socket.write({ "Type": "finish", "Body": "failed" }); 
+                            } else if (responses.Body.ReturnValue != 0) { 
                                 console.log((new Date()) + ' Admin control mode activation failed: ' + responses.Body.ReturnValueStr); 
-                                socket.write({ "Type": "finish", "Body": "failed" });
-                            }
-                            else { 
+                                socket.write({ "Type": "finish", "Body": "failed" }); 
+                            } else { 
                                 console.log((new Date()) + ' AMT Provisioning Success'); 
-                                socket.write({"Type":"finish", "Body": "success"});
-                                socket.end();
+                                socket.write({"Type":"finish", "Body": "success"}); 
+                                socket.end(); 
                                 exit(0); 
                             }
                             socket.end();
@@ -888,36 +886,14 @@ function activeToACMEx(fwNonce) {
 // Detects AMT provisioning state and injects the certificate chain into AMT firmware
 function activeToACMEx1(data, callback) {
     if (mestate.ProvisioningState.state == 0) {
-        console.log((new Date()) + ' Performing full provisioning flow.');
+        console.log((new Date()) + ' Performing ACM provisioning.');
         // Perform full provisioning -- AMT was fully unprovisioned
-        osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.leaf, true, false, function (stack, name, responses, status) {
+        injectCert(0, data, function (stack, name, responses, status, data) {
             if (status !== 200) { exit(status); return; }
             else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
             else if (responses['Body']['ReturnValue'] == 0) {
-                console.log((new Date()) + ' Leaf Cert Injection: ' + responses['Body']['ReturnValueStr']);
-                osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.inter3, false, false, function (stack, name, responses, status) {
-                    if (status !== 200) { exit(status); return; }
-                    else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
-                    else if (responses['Body']['ReturnValue'] == 0) {
-                        console.log((new Date()) + ' Intermediate 3 Cert Injection: ' + responses['Body']['ReturnValueStr']);
-                        osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.inter2, false, false, function (stack, name, responses, status) {
-                            if (status !== 200) { exit(status); return; }
-                            else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
-                            else if (responses['Body']['ReturnValue'] == 0) {
-                                console.log((new Date()) + ' Intermediate 2 Cert Injection: ' + responses['Body']['ReturnValueStr']);
-                                osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.root, false, true, function (stack, name, responses, status) {
-                                    if (status !== 200) { exit(status); return; }
-                                    else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
-                                    else if (responses['Body']['ReturnValue'] == 0) {
-                                        console.log((new Date()) + ' Root Cert Injection: ' + responses['Body']['ReturnValueStr']);
-                                        osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], function(stack, name, responses, status){
-                                            callback(stack, name, responses, status, data);
-                                        });
-                                    } else { console.log((new Date()) + ' Oops, I fell through the world!'); exit(1); }
-                                });
-                            }
-                        });
-                    }
+                osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], function (stack, name, responses, status) {
+                    callback(stack, name, responses, status, data);
                 });
             }
         });
@@ -932,6 +908,25 @@ function activeToACMEx1(data, callback) {
         callback(null, null, null, 2, 'AMT already provisioned.  Exiting')
         exit(0);
     }
+}
+
+function injectCert(index, cert, callback, stack, name, responses, status) {
+    var leaf = false;
+    var root = false;
+    if (index == 0) { leaf = true; }
+    if (index == cert.provCertObj.certChain.length - 1) { root = true; }
+    if (index < cert.provCertObj.certChain.length){
+        if (cert.provCertObj.certChain[index] !== undefined){
+            osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert.provCertObj.certChain[index], leaf, root, function (stack, name, responses, status) {
+                if (status !== 200) { exit(status); return; }
+                else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
+                else if (responses['Body']['ReturnValue'] == 0) {
+                    index++;
+                    injectCert(index, cert, callback, stack, name, responses, status);
+                }
+            });
+        }
+    } else { callback(stack, name, responses, status, cert); }
 }
 
 // Sends the password hash, mcnonce, and digital signature to complete the admin control mode provisioning
