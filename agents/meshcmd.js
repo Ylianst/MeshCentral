@@ -95,7 +95,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -111,6 +111,8 @@ function run(argv) {
     if ((typeof args.remotenodeid) == 'string') { settings.remotenodeid = args.remotenodeid; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
+    if ((typeof args.wss) == 'string') { settings.wss = args.wss; }
+    if ((typeof args.type) == 'string') { settings.type = args.type; }
     if ((typeof args.user) == 'string') { settings.username = args.user; }
     if ((typeof args.pass) == 'string') { settings.password = args.pass; }
     if ((typeof args.host) == 'string') { settings.hostname = args.host; }
@@ -140,24 +142,26 @@ function run(argv) {
         console.log('Valid MeshCentral actions:');
         console.log('  Route           - Map a local TCP port to a remote computer.');
         console.log('\r\nValid local actions:');
-        console.log('  SMBios          - Display System Management BIOS tables for this computer.');
-        console.log('  RawSMBios       - Display RAW System Management BIOS tables for this computer.');
-        console.log('  MicroLMS        - Run MicroLMS, allowing local access to Intel AMT.');
-        console.log('  AmtInfo         - Show Intel AMT version and activation state.');
-        console.log('  AmtVersions     - Show all Intel ME version information.');
-        console.log('  AmtHashes       - Show all Intel AMT trusted activation hashes.');
-        console.log('  AmtCCM          - Activate Intel AMT into Client Control Mode.');
-        console.log('  AmtDeactivate   - Deactivate Intel AMT if activated in Client Control mode.');
+        console.log('  SMBios            - Display System Management BIOS tables for this computer.');
+        console.log('  RawSMBios         - Display RAW System Management BIOS tables for this computer.');
+        console.log('  MicroLMS          - Run MicroLMS, allowing local access to Intel AMT.');
+        console.log('  AmtInfo           - Show Intel AMT version and activation state.');
+        console.log('  AmtVersions       - Show all Intel ME version information.');
+        console.log('  AmtHashes         - Show all Intel AMT trusted activation hashes.');
+        console.log('  AmtCCM            - Activate Intel AMT into Client Control Mode.');
+        console.log('  AmtACM            - Activate Intel AMT into Admin Control Mode.');
+        console.log('  AmtDeactivate     - Deactivate Intel AMT if activated in Client Control mode.');
+        console.log('  AmtAcmDeactivate  - Deactivate Intel AMT if activated in Admin Control mode.');
         console.log('\r\nValid local or remote actions:');
-        console.log('  MeshCommander   - Launch a local MeshCommander web server.');
-        console.log('  AmtUUID         - Show Intel AMT unique identifier.');
-        console.log('  AmtAuditLog     - Show the Intel AMT audit log.');
-        console.log('  AmtLoadWebApp   - Load MeshCommander in Intel AMT 11.6+ firmware.');
-        console.log('  AmtClearWebApp  - Clear everything from Intel AMT web storage.');
-        console.log('  AmtStorageState - Show contents of the Intel AMT web storage.');
-        console.log('  AmtSaveState    - Save all Intel AMT WSMAN object to file.');
-        console.log('  AmtPresence     - Heartbeat a local Intel AMT watchdog agent.');
-        console.log('  AmtScript       - Run .mescript on Intel AMT.');
+        console.log('  MeshCommander     - Launch a local MeshCommander web server.');
+        console.log('  AmtUUID           - Show Intel AMT unique identifier.');
+        console.log('  AmtAuditLog       - Show the Intel AMT audit log.');
+        console.log('  AmtLoadWebApp     - Load MeshCommander in Intel AMT 11.6+ firmware.');
+        console.log('  AmtClearWebApp    - Clear everything from Intel AMT web storage.');
+        console.log('  AmtStorageState   - Show contents of the Intel AMT web storage.');
+        console.log('  AmtSaveState      - Save all Intel AMT WSMAN object to file.');
+        console.log('  AmtPresence       - Heartbeat a local Intel AMT watchdog agent.');
+        console.log('  AmtScript         - Run .mescript on Intel AMT.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -193,8 +197,18 @@ function run(argv) {
             console.log('  microlms install/uninstall/start/stop.');
         } else if (action == 'amtccm') {
             console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided. Example usage:\r\n\r\n  meshcmd amtccm --pass mypassword');
+        } else if (action == 'amtacm') {
+            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password and provisioning certificate must be provided. Example usage:\r\n\r\n  amtconfig.js amtacm --wss servername:port');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --wss [server:port]    The address of the AMT remote configuration server.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
+        } else if (action == 'amtacmdeactivate') {
+            console.log('AmtACMDeactivate will attempt to deactivate Intel AMT on this computer when in admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in admin control mode for this command to work. Example usage:\r\n\r\n  amtconfig.js amtacmdeactivate');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --type [partial/full]  Specifies to perform partial or full unprovision.');
         } else if (action == 'amtuuid') {
             console.log('AmtUUID action will get the unique identifier of the local or remote Intel AMT computer. By default, the local UUID is obtained unless a host is specified. Intel AMT must be activated for this command to work. Example usage:\r\n\r\n  meshcmd amtuuid --host 1.2.3.4 --user admin --pass mypassword --tls');
             console.log('\r\nPossible arguments:\r\n');
@@ -402,7 +416,7 @@ function run(argv) {
         amtMei.getLanInterfaceSettings(0, function (result) { console.log('getLanInterfaceSettings0: ' + JSON.stringify(result)); });
         amtMei.getLanInterfaceSettings(1, function (result) { console.log('getLanInterfaceSettings1: ' + JSON.stringify(result)); });
         amtMei.getUuid(function (result) { console.log('getUuid: ' + JSON.stringify(result)); });
-        amtMei.getDnsSuffix(function (result) { console.log('getDnsSuffix: ' + JSON.stringify(result)); });
+        amtMei.getDnsSuffix(function (result) { console.log('getDnsSuffix: ' + JSON.stringify(result)); exit(1);});
     } else if (settings.action == 'amtsavestate') {
         // Save the entire state of Intel AMT info a JSON file
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -449,10 +463,26 @@ function run(argv) {
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
         activeToCCM();
+    } else if (settings.action == 'amtacm') {
+        // Start activation to ACM 
+        if ((settings.wss == null) || (typeof settings.wss != 'string') || (settings.wss == '')) { console.log('No or invalid \"server name\" specified, use --wss [servername:port].'); exit(1); return; }
+        settings.protocol = 'http:';
+        settings.localport = 16992;
+        debug(1, "Settings: " + JSON.stringify(settings));
+        activeToACM();
     } else if (settings.action == 'amtdeactivate') {
         // Deactivate CCM
         debug(1, "Settings: " + JSON.stringify(settings));
         deactivateCCM();
+    } else if (settings.action == 'amtacmdeactivate') {
+        // Deactivate ACM
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.type == null) || (typeof settings.type != 'string') || (settings.type == '')) { console.log('Unprovisioning \"type\" must be specified, use --type [partial/full].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if (settings.tls == null) { settings.tls = false; }
+        debug(1, "Settings: " + JSON.stringify(settings));
+        deactivateACM();
     } else if (settings.action == 'meshcommander') { // Start MeshCommander
         startMeshCommander();
     } else if (settings.action == 'amtauditlog') { // Read the Intel AMT audit log
@@ -713,6 +743,202 @@ function activeToCCMEx3(stack, name, responses, status) {
     exit(1);
 }
 
+//
+// Deactivate Intel AMT ACM
+//
+
+// When called, this will use MEI to deactivate Intel AMT when it's in ACM mode. Calls "unprovision" on MEI and checks the return code.
+function deactivateACM() {
+    settings.noconsole = true;
+    startLms(deactivateACMEx);
+}
+
+function deactivateACMEx() {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.Get("AMT_SetupAndConfigurationService", function (stack, name, responses, status) {
+        if (status !== 200) {
+            console.log('Command not allowed.  Status: ' + status);
+            exit(1);
+        } else {
+            var sacs = responses.Body;
+            if (sacs.ZeroTouchConfigurationEnabled == true) { sacs.ZeroTouchConfigurationEnabled = true; }
+            amtstack.Put("AMT_SetupAndConfigurationService", sacs, function (stack, name, responses, status) {
+                if (settings.type == 'full') {
+                    amtstack.AMT_SetupAndConfigurationService_Unprovision(2, function (stack, name, responses, status) {
+                        if (status != 200) { console.log('Failed to fully unconfigure AMT, status ' + status); exit(1); }
+                        else if (responses.Body.ReturnValue != 0) { console.log('Unprovision failed: ' + responses.Body.ReturnValueStr); exit(1); }
+                        else { console.log('AMT fully unprovisioned.'); exit(0); }
+                    });
+                } else {
+                    console.log('Only full unprovision is currently supported.');
+                    exit(0);
+                }
+                //} else if (settings.type == 'partial') {
+                //    amtstack.AMT_SetupAndConfigurationService_PartialUnprovision(null, function (stack, name, responses, status) {
+                //        if (status != 200) { console.log('Failed to partially unconfigure AMT, status ' + status); exit(1); }
+                //        else if (responses.Body.ReturnValue != 0) { console.log('Unprovision failed: ' + responses.Body.ReturnValueStr); exit(1); }
+                //        else { console.log('AMT partially unprovisioned.'); exit(0); }
+                //    });
+                //}
+            });
+        }
+    });
+}
+
+//
+// Activate Intel AMT to ACM
+//
+
+
+function activeToACM() {
+    // See if MicroLMS needs to be started and setup the $$OsAdmin wsman stack
+    console.log('Starting AMT Provisioning to Admin Control Mode.');
+    settings.noconsole = true;
+    // Display Intel AMT version and activation state
+    mestate = {};
+    var amtMeiModule, amtMei;
+    try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
+    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+    amtMei.getProvisioningState(function (result) {
+        if (result) {
+            mestate.ProvisioningState = result;
+            startLms(getFwNonce); // TODO: Fix this so that it works even if LMS already running.            
+        }
+    });
+}
+
+// Gets the FWNonce from AMT and saves it to a file.  
+function getFwNonce() {
+    osamtstack.Get("IPS_HostBasedSetupService", function (obj, name, responses, status) {
+        var fwNonce = Buffer.from(responses["Body"]['ConfigurationNonce'], 'base64');
+        activeToACMEx(fwNonce);
+    });
+}
+
+function activeToACMEx(fwNonce) {
+    // open connection to RCS
+    console.log((new Date()) + ' initializing WebSocket');
+    // Establish WebSocket connection to RCS server
+    var connection = http.request(settings.wss);
+    connection.on('upgrade', function (response, socket) {
+        // WebSocket is up.  Handle data on the duplex socket
+        socket.on('data', function (data) {
+            // All messages from RCS are JSON.stringify format and need to be parsed
+            var message = JSON.parse(data);
+            // Handle the AMT provisioning certificate blob (contains provisioning certificate, mcnonce, digital signature and password hash)
+            if (message.provCertObj !== undefined) {
+                activeToACMEx1(message, function (stack, name, responses, status, message) {
+                    if (status !== 200) {
+                        if (status == 2) {
+                            console.log((new Date()) + ' AMT already provisioned.Exiting ' + status);
+                            socket.write({ "Type": "finish", "Body": "failed" });
+                        } else {
+                            console.log((new Date()) + ' Failed to fetch activation status, status ' + status);
+                            socket.write({ "Type": "finish", "Body": "failed" });
+                        }
+                        socket.end();
+                        exit(status);
+                    }
+                    else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) {
+                        console.log((new Date()) + ' Admin control mode activation not allowed');
+                        socket.write({ "Type": "finish", "Body": "failed" });
+                        socket.end();
+                        exit(status);
+                    } else {
+                        console.log((new Date()) + ' Certificate Injection Successful');
+                        activeToACMEx2(message.digitalSignature, message.mcNonce, message.amtPassword, responses, function(stack, name, responses, status){
+                            if (status != 200) {
+                                console.log((new Date()) + ' Failed to activate, status ' + status);
+                                console.log(JSON.stringify(responses));
+                                socket.write({ "Type": "finish", "Body": "failed" });
+                            }
+                            else if (responses.Body.ReturnValue != 0) { 
+                                console.log((new Date()) + ' Admin control mode activation failed: ' + responses.Body.ReturnValueStr); 
+                                socket.write({ "Type": "finish", "Body": "failed" });
+                            }
+                            else { 
+                                console.log((new Date()) + ' AMT Provisioning Success'); 
+                                socket.write({"Type":"finish", "Body": "success"});
+                                socket.end();
+                                exit(0); 
+                            }
+                            socket.end();
+                            exit(status);
+                        });
+                    }
+                });
+            }
+            if (message.Type == 'cmd' && message.Body == 'acmready') {
+                socket.write(JSON.stringify(fwNonce));
+            } else if (message.Type == 'cmd' && message.Body == 'profileready') {
+                // TODO Receive .mescript file and apply profile
+            }
+        });
+        socket.on('end', function () {
+            console.log((new Date()) + ' socket closed');
+        });
+        socket.write(JSON.stringify({ "Type": "cmd", "Body": "acm" }));
+    });
+}
+
+// Detects AMT provisioning state and injects the certificate chain into AMT firmware
+function activeToACMEx1(data, callback) {
+    if (mestate.ProvisioningState.state == 0) {
+        console.log((new Date()) + ' Performing full provisioning flow.');
+        // Perform full provisioning -- AMT was fully unprovisioned
+        osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.leaf, true, false, function (stack, name, responses, status) {
+            if (status !== 200) { exit(status); return; }
+            else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
+            else if (responses['Body']['ReturnValue'] == 0) {
+                console.log((new Date()) + ' Leaf Cert Injection: ' + responses['Body']['ReturnValueStr']);
+                osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.inter3, false, false, function (stack, name, responses, status) {
+                    if (status !== 200) { exit(status); return; }
+                    else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
+                    else if (responses['Body']['ReturnValue'] == 0) {
+                        console.log((new Date()) + ' Intermediate 3 Cert Injection: ' + responses['Body']['ReturnValueStr']);
+                        osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.inter2, false, false, function (stack, name, responses, status) {
+                            if (status !== 200) { exit(status); return; }
+                            else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
+                            else if (responses['Body']['ReturnValue'] == 0) {
+                                console.log((new Date()) + ' Intermediate 2 Cert Injection: ' + responses['Body']['ReturnValueStr']);
+                                osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(data.provCertObj.root, false, true, function (stack, name, responses, status) {
+                                    if (status !== 200) { exit(status); return; }
+                                    else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
+                                    else if (responses['Body']['ReturnValue'] == 0) {
+                                        console.log((new Date()) + ' Root Cert Injection: ' + responses['Body']['ReturnValueStr']);
+                                        osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], function(stack, name, responses, status){
+                                            callback(stack, name, responses, status, data);
+                                        });
+                                    } else { console.log((new Date()) + ' Oops, I fell through the world!'); exit(1); }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    } else if (mestate.ProvisioningState.state == 1) {
+        // Perform partial provisioning -- AMT was partial unprovisioned
+        // TODO Set remote configuration server parameter in AMT in order to complete provisioning 
+        console.log((new Date()) + ' Performing partial provisioning flow');
+        osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACMEx2);
+    } else {
+        // AMT already provisioned
+        console.log((new Date()) + ' AMT already provisioned.  Exiting');
+        callback(null, null, null, 2, 'AMT already provisioned.  Exiting')
+        exit(0);
+    }
+}
+
+// Sends the password hash, mcnonce, and digital signature to complete the admin control mode provisioning
+function activeToACMEx2(signature, mcnonce, amtpassword, responses, callback) {
+    var passwordhash = md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + amtpassword).substring(0, 32);
+    osamtstack.IPS_HostBasedSetupService_AdminSetup(2, passwordhash, mcnonce, 2, signature, callback);
+}
 
 //
 // Get AMT UUID
