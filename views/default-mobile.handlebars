@@ -1829,7 +1829,11 @@
                 // Node tags
                 var groupingTags = '<i>None</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
-                x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+                if ((meshrights & 4) != 0) {
+                    x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+                } else {
+                    x += addDeviceAttribute('Tags', groupingTags);
+                }
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
