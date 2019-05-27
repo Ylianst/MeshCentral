@@ -131,8 +131,8 @@ module.exports.escapeHtmlBreaks = function (string) { return String(string).repl
 // Allow for exception keys, child of exceptions will not get lower-cased.
 module.exports.objKeysToLower = function (obj, exceptions) {
     for (var i in obj) {
-        if (i.toLowerCase() !== i) { obj[i.toLowerCase()] = obj[i]; delete obj[i]; } // LowerCase all key names
         if ((typeof obj[i] == 'object') && ((exceptions == null) || (exceptions.indexOf(i.toLowerCase()) == -1))) { module.exports.objKeysToLower(obj[i], exceptions); } // LowerCase all key names in the child object
+        if (i.toLowerCase() !== i) { obj[i.toLowerCase()] = obj[i]; delete obj[i]; } // LowerCase all key names
     }
     return obj;
 };

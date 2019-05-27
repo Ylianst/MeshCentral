@@ -1724,7 +1724,7 @@ function mainStart() {
         var config = getConfig(false);
         if (config == null) { process.exit(); }
 
-        // Lowercase the auth value is present
+        // Lowercase the auth value if present
         for (var i in config.domains) { if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); } }
 
         // Check is Windows SSPI and YubiKey OTP will be used
