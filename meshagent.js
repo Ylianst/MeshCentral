@@ -89,6 +89,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             delete obj.agentUpdate;
         }
 
+        // Perform timer cleanup
+        if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
+        if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
+
         // Perform aggressive cleanup
         if (obj.nonce) { delete obj.nonce; }
         if (obj.nodeid) { delete obj.nodeid; }
@@ -531,10 +535,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         return mesh;
     }
 
+    // Send a PING/PONG message
+    function sendPing() { obj.send('{"action":"ping"}'); }
+    function sendPong() { obj.send('{"action":"pong"}'); }
+
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
         obj.pendingCompleteAgentConnection = true;
+
+        // Setup the agent PING/PONG timers
+        if ((typeof args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, args.agentping * 1000); }
+        else if ((typeof args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, args.agentpong * 1000); }
 
         // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
@@ -1144,6 +1156,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Nothing is done right now.
                         break;
                     }
+                case 'ping': { sendPong(); break; }
+                case 'pong': { break; }
                 case 'getScript':
                     {
                         // Used by the agent to get configuration scripts.
