@@ -198,13 +198,13 @@ function run(argv) {
         } else if (action == 'amtccm') {
             console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided. Example usage:\r\n\r\n  meshcmd amtccm --pass mypassword');
         } else if (action == 'amtacm') {
-            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password and provisioning certificate must be provided. Example usage:\r\n\r\n  amtconfig.js amtacm --wss servername:port');
+            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password and provisioning certificate must be provided. Example usage:\r\n\r\n  meshcmd amtacm --wss servername:port');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --wss [server:port]    The address of the AMT remote configuration server.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
         } else if (action == 'amtacmdeactivate') {
-            console.log('AmtACMDeactivate will attempt to deactivate Intel AMT on this computer when in admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in admin control mode for this command to work. Example usage:\r\n\r\n  amtconfig.js amtacmdeactivate');
+            console.log('AmtACMDeactivate will attempt to deactivate Intel AMT on this computer when in admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in admin control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtacmdeactivate');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
@@ -792,7 +792,6 @@ function deactivateACMEx() {
 //
 // Activate Intel AMT to ACM
 //
-
 
 function activeToACM() {
     // See if MicroLMS needs to be started and setup the $$OsAdmin wsman stack
