@@ -257,13 +257,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (agentstats.invalidJsonCount > 0) { errorCountersCount++; errorCounters["Invalid JSON"] = agentstats.invalidJsonCount; }
                 if (agentstats.unknownAgentActionCount > 0) { errorCountersCount++; errorCounters["Unknown Action"] = agentstats.unknownAgentActionCount; }
                 if (agentstats.agentBadWebCertHashCount > 0) { errorCountersCount++; errorCounters["Bad Web Certificate"] = agentstats.agentBadWebCertHashCount; }
-                if (agentstats.agentBadSignature1Count > 0) { errorCountersCount++; errorCounters["Bad Signature (1)"] = agentstats.agentBadSignature1Count; }
-                if (agentstats.agentBadSignature2Count > 0) { errorCountersCount++; errorCounters["Bad Signature (2)"] = agentstats.agentBadSignature2Count; }
+                if ((agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count) > 0) { errorCountersCount++; errorCounters["Bad Signature"] = (agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count); }
                 if (agentstats.agentMaxSessionHoldCount > 0) { errorCountersCount++; errorCounters["Max Sessions Reached"] = agentstats.agentMaxSessionHoldCount; }
-                if (agentstats.invalidDomainMeshCount > 0) { errorCountersCount++; errorCounters["Invalid Domain"] = agentstats.invalidDomainMeshCount; }
-                if (agentstats.invalidMeshTypeCount > 0) { errorCountersCount++; errorCounters["Invalid Group Type (1)"] = agentstats.invalidMeshTypeCount; }
-                if (agentstats.invalidDomainMesh2Count > 0) { errorCountersCount++; errorCounters["Invalid Group"] = agentstats.invalidDomainMesh2Count; }
-                if (agentstats.invalidMeshType2Count > 0) { errorCountersCount++; errorCounters["Invalid Group Type (2)"] = agentstats.invalidMeshType2Count; }
+                if ((agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count) > 0) { errorCountersCount++; errorCounters["Unknown Device Group"] = (agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count); }
+                if ((agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count) > 0) { errorCountersCount++; errorCounters["Invalid Device Group Type"] = (agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count); }
                 if (agentstats.duplicateAgentCount > 0) { errorCountersCount++; errorCounters["Duplicate Agent"] = agentstats.duplicateAgentCount; }
 
                 // Send out the stats
