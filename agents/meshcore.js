@@ -623,6 +623,8 @@ function createMeshCore(agent) {
                     sendConsoleText('getScript: ' + JSON.stringify(data));
                     break;
                 }
+                case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
+                case 'pong': { break; }
                 default:
                     // Unknown action, ignore it.
                     break;
