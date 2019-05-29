@@ -3,6 +3,7 @@
   "settings": {
     "_Cert": "myserver.mydomain.com",
     "_MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
+    "_MongoDbChangeStream": true,
     "_WANonly": true,
     "_LANonly": true,
     "_Minify": 1,
@@ -41,7 +42,7 @@
       ]
     },
     "_AutoBackup": {
-      "backupInvervalHours": 24,
+      "backupIntervalHours": 24,
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",
       "_backupPath": "C:\\backups"
