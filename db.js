@@ -231,19 +231,45 @@ module.exports.CreateDB = function (parent, func) {
 
             // Setup the changeStream on the MongoDB main collection if possible
             if (parent.args.mongodbchangestream == true) {
-                obj.fileChangeStream = obj.file.watch([{ $match: { 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } } }], { fullDocument: 'updateLookup' });
+                obj.fileChangeStream = obj.file.watch( [ { $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } }, { 'operationType': 'delete' }] } } ], { fullDocument: 'updateLookup' });
                 obj.fileChangeStream.on('change', function (change) {
-                    switch (change.fullDocument.type) {
-                        case 'node': { dbNodeChange(change); break; } // A node has changed
-                        case 'mesh': { dbMeshChange(change); break; } // A device group has changed
-                        case 'user': { dbUserChange(change); break; } // A user account has changed
+                    if (change.operationType == 'update') {
+                        switch (change.fullDocument.type) {
+                            case 'node': { dbNodeChange(change, false); break; } // A node has changed
+                            case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
+                            case 'user': { dbUserChange(change, false); break; } // A user account has changed
+                        }
+                    } else if (change.operationType == 'insert') {
+                        switch (change.fullDocument.type) {
+                            case 'node': { dbNodeChange(change, true); break; } // A node has added
+                            case 'mesh': { dbMeshChange(change, true); break; } // A device group has created
+                            case 'user': { dbUserChange(change, true); break; } // A user account has created
+                        }
+                    } else if (change.operationType == 'delete') {
+                        var splitId = change.documentKey._id.split('/');
+                        switch (splitId[0]) {
+                            case 'node': {
+                                //Not Good: Problem here is that we don't know what meshid the node belonged to before the delete.
+                                //parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: change.documentKey._id, domain: splitId[1] });
+                                break;
+                            }
+                            case 'mesh': {
+                                parent.DispatchEvent(['*', node.meshid], obj, { etype: 'mesh', action: 'deletemesh', meshid: change.documentKey._id, domain: splitId[1] });
+                                break;
+                            }
+                            case 'user': {
+                                //Not Good: This is not a perfect user removal because we don't know what groups the user was in.
+                                //parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', action: 'accountremove', userid: change.documentKey._id, domain: splitId[1], username: splitId[2] });
+                                break;
+                            }
+                        }
                     }
                 });
                 obj.changeStream = true;
             }
 
             // Setup MongoDB events collection and indexes
-            obj.eventsfile = db.collection('events');                               // Collection containing all events
+            obj.eventsfile = db.collection('events'); // Collection containing all events
             obj.eventsfile.indexes(function (err, indexes) {
                 // Check if we need to reset indexes
                 var indexesByName = {}, indexCount = 0;
@@ -773,16 +799,16 @@ module.exports.CreateDB = function (parent, func) {
     function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }
 
     // Called when a node has changed
-    function dbNodeChange(nodeChange) {
+    function dbNodeChange(nodeChange, added) {
         const node = nodeChange.fullDocument;
         if (node.intelamt && node.intelamt.pass) { delete node.intelamt.pass; } // Remove the Intel AMT password before eventing this.
-        parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'changenode', node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
+        parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
     }
 
     // Called when a device group has changed
-    function dbMeshChange(meshChange) {
+    function dbMeshChange(meshChange, added) {
         const mesh = meshChange.fullDocument;
-        mesh.action = 'meshchange';
+        if (mesh.deleted) { mesh.action = 'deletemesh'; } else { mesh.action = (added ? 'createmesh' : 'meshchange'); }
         mesh.meshid = mesh._id;
         mesh.nolog = 1;
         delete mesh.type;
@@ -791,9 +817,9 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Called when a user account has changed
-    function dbUserChange(userChange) {
+    function dbUserChange(userChange, added) {
         const user = userChange.fullDocument;
-        parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: 'accountchange', domain: user.domain, nolog: 1 });
+        parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: (added ? 'accountcreate' : 'accountchange'), domain: user.domain, nolog: 1 });
     }
 
     return obj;
