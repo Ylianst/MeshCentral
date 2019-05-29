@@ -89,6 +89,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             delete obj.agentUpdate;
         }
 
+        // Perform timer cleanup
+        if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
+        if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
+
         // Perform aggressive cleanup
         if (obj.nonce) { delete obj.nonce; }
         if (obj.nodeid) { delete obj.nodeid; }
@@ -220,6 +224,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
+                            parent.agentStats.agentBinaryUpdate++;
                             if (obj.agentExeInfo.data == null) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
@@ -457,6 +462,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) {
+        parent.agentStats.agentClose++;
         if (obj.nodeid != null) {
             const agentId = (obj.agentInfo && obj.agentInfo.agentId) ? obj.agentInfo.agentId : 'Unknown';
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
@@ -471,7 +477,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
         obj.close(0);
     });
-    // ws._socket._parent.on('close', function (req) { if (obj.nodeid != null) { parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } });
+    ws._socket._parent.on('close', function (req) {
+        parent.agentStats.agentTcpClose++;
+        //if (obj.nodeid != null) { parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
+    });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
@@ -529,10 +538,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         return mesh;
     }
 
+    // Send a PING/PONG message
+    function sendPing() { obj.send('{"action":"ping"}'); }
+    function sendPong() { obj.send('{"action":"pong"}'); }
+
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
         obj.pendingCompleteAgentConnection = true;
+
+        // Setup the agent PING/PONG timers
+        if ((typeof args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, args.agentping * 1000); }
+        else if ((typeof args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, args.agentpong * 1000); }
 
         // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
@@ -697,6 +714,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     const device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1142,6 +1160,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Nothing is done right now.
                         break;
                     }
+                case 'ping': { sendPong(); break; }
+                case 'pong': { break; }
                 case 'getScript':
                     {
                         // Used by the agent to get configuration scripts.
@@ -1277,6 +1297,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1320,6 +1341,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1351,6 +1373,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }

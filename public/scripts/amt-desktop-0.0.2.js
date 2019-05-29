@@ -206,9 +206,12 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                         // ###END###{DesktopRotation}
                         var xspacecachename = obj.sparew2 + 'x' + obj.spareh2;
                         obj.spare = obj.sparecache[xspacecachename];
-                        if (!obj.spare) { obj.sparecache[xspacecachename] = obj.spare = obj.canvas.createImageData(obj.sparew2, obj.spareh2); }
+                        if (!obj.spare) {
+                            obj.sparecache[xspacecachename] = obj.spare = obj.canvas.createImageData(obj.sparew2, obj.spareh2);
+                            var j = (obj.sparew2 * obj.spareh2) << 2;
+                            for (var i = 3; i < j; i += 4) { obj.spare.data[i] = 0xFF; } // Set alpha channel to opaque.
+                        }
                     }
-
                 }
 
                 if (encoding == 0xFFFFFF21) {
@@ -227,7 +230,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                     cmdsize = cs;
 
                     // CRITICAL LOOP, optimize this as much as possible
-                    for (var i = 0; i < s; i++) { _setPixel(obj.acc.charCodeAt(ptr++) + ((obj.bpp == 2) ? (obj.acc.charCodeAt(ptr++) << 8) : 0), i); }
+                    if (obj.bpp == 2) {
+                        for (var i = 0; i < s; i++) { _setPixel16(obj.acc.charCodeAt(ptr++) + (obj.acc.charCodeAt(ptr++) << 8), i); }
+                    } else {
+                        for (var i = 0; i < s; i++) { _setPixel8(obj.acc.charCodeAt(ptr++), i); }
+                    }
                     _putImage(obj.spare, x, y);
                 }
                 else if (encoding == 16) {
@@ -279,7 +286,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         // obj.Debug("RECT RLE (" + (datalen - 5) + ", " + subencoding + "):" + rstr2hex(data.substring(21, 21 + (datalen - 5))));
         if (subencoding == 0) {
             // RAW encoding
-            for (i = 0; i < s; i++) { _setPixel(data.charCodeAt(ptr++) + ((obj.bpp == 2) ? (data.charCodeAt(ptr++) << 8) : 0), i); }
+            if (obj.bpp == 2) {
+                for (i = 0; i < s; i++) { _setPixel16(data.charCodeAt(ptr++) + (data.charCodeAt(ptr++) << 8), i); }
+            } else {
+                for (i = 0; i < s; i++) { _setPixel8(data.charCodeAt(ptr++), i); }
+            }
             _putImage(obj.spare, x, y);
         }
         else if (subencoding == 1) {
@@ -298,31 +309,58 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         else if (subencoding > 1 && subencoding < 17) { // Packed palette encoded tile
             // Read the palette
             var br = 4, bm = 15; // br is BitRead and bm is BitMask. By adjusting these two we can support all the variations in this encoding.
-            for (i = 0; i < subencoding; i++) { palette[i] = data.charCodeAt(ptr++) + ((obj.bpp == 2) ? (data.charCodeAt(ptr++) << 8) : 0); }
-
-            // Compute bits to read & bit mark
-            if (subencoding == 2) { br = 1; bm = 1; } else if (subencoding <= 4) { br = 2; bm = 3; }
-
-            // Display all the bits
-            while (rlecount < s && ptr < data.length) { v = data.charCodeAt(ptr++); for (i = (8 - br) ; i >= 0; i -= br) { _setPixel(palette[(v >> i) & bm], rlecount++); } }
+            if (obj.bpp == 2) {
+                for (i = 0; i < subencoding; i++) { palette[i] = data.charCodeAt(ptr++) + (data.charCodeAt(ptr++) << 8); }
+                if (subencoding == 2) { br = 1; bm = 1; } else if (subencoding <= 4) { br = 2; bm = 3; } // Compute bits to read & bit mark
+                while (rlecount < s && ptr < data.length) { v = data.charCodeAt(ptr++); for (i = (8 - br) ; i >= 0; i -= br) { _setPixel16(palette[(v >> i) & bm], rlecount++); } } // Display all the bits
+            } else {
+                for (i = 0; i < subencoding; i++) { palette[i] = data.charCodeAt(ptr++); }
+                if (subencoding == 2) { br = 1; bm = 1; } else if (subencoding <= 4) { br = 2; bm = 3; } // Compute bits to read & bit mark
+                while (rlecount < s && ptr < data.length) { v = data.charCodeAt(ptr++); for (i = (8 - br) ; i >= 0; i -= br) { _setPixel8(palette[(v >> i) & bm], rlecount++); } } // Display all the bits
+            }
             _putImage(obj.spare, x, y);
         }
         else if (subencoding == 128) { // RLE encoded tile
-            while (rlecount < s && ptr < data.length) {
-                // Get the run color
-                v = data.charCodeAt(ptr++) + ((obj.bpp == 2) ? (data.charCodeAt(ptr++) << 8) : 0);
+            if (obj.bpp == 2) {
+                while (rlecount < s && ptr < data.length) {
+                    // Get the run color
+                    v = data.charCodeAt(ptr++) + (data.charCodeAt(ptr++) << 8);
 
-                // Decode the run length. This is the fastest and most compact way I found to do this.
-                runlength = 1; do { runlength += (runlengthdecode = data.charCodeAt(ptr++)); } while (runlengthdecode == 255);
+                    // Decode the run length. This is the fastest and most compact way I found to do this.
+                    runlength = 1; do { runlength += (runlengthdecode = data.charCodeAt(ptr++)); } while (runlengthdecode == 255);
 
-                // Draw a run
-                while (--runlength >= 0) { _setPixel(v, rlecount++); }
+                    // Draw a run
+                    if (obj.rotation == 0) {
+                        _setPixel16run(v, rlecount, runlength); rlecount += runlength;
+                    } else {
+                        while (--runlength >= 0) { _setPixel16(v, rlecount++); }
+                    }
+                }
+            } else {
+                while (rlecount < s && ptr < data.length) {
+                    // Get the run color
+                    v = data.charCodeAt(ptr++);
+
+                    // Decode the run length. This is the fastest and most compact way I found to do this.
+                    runlength = 1; do { runlength += (runlengthdecode = data.charCodeAt(ptr++)); } while (runlengthdecode == 255);
+
+                    // Draw a run
+                    if (obj.rotation == 0) {
+                        _setPixel8run(v, rlecount, runlength); rlecount += runlength;
+                    } else {
+                        while (--runlength >= 0) { _setPixel8(v, rlecount++); }
+                    }
+                }
             }
             _putImage(obj.spare, x, y);
         }
         else if (subencoding > 129) { // Palette RLE encoded tile
             // Read the palette
-            for (i = 0; i < (subencoding - 128) ; i++) { palette[i] = data.charCodeAt(ptr++) + ((obj.bpp == 2) ? (data.charCodeAt(ptr++) << 8) : 0); }
+            if (obj.bpp == 2) {
+                for (i = 0; i < (subencoding - 128) ; i++) { palette[i] = data.charCodeAt(ptr++) + (data.charCodeAt(ptr++) << 8); }
+            } else {
+                for (i = 0; i < (subencoding - 128) ; i++) { palette[i] = data.charCodeAt(ptr++); }
+            }
 
             // Decode RLE  on palette
             while (rlecount < s && ptr < data.length) {
@@ -333,7 +371,19 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 if (index > 127) { do { runlength += (runlengthdecode = data.charCodeAt(ptr++)); } while (runlengthdecode == 255); }
 
                 // Draw a run
-                while (--runlength >= 0) { _setPixel(v, rlecount++); }
+                if (obj.rotation == 0) {
+                    if (obj.bpp == 2) {
+                        _setPixel16run(v, rlecount, runlength); rlecount += runlength;
+                    } else {
+                        _setPixel8run(v, rlecount, runlength); rlecount += runlength;
+                    }
+                } else {
+                    if (obj.bpp == 2) {
+                        while (--runlength >= 0) { _setPixel16(v, rlecount++); }
+                    } else {
+                        while (--runlength >= 0) { _setPixel8(v, rlecount++); }
+                    }
+                }
             }
             _putImage(obj.spare, x, y);
         }
@@ -372,39 +422,50 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         obj.canvas.putImageData(i, x, y);
     }
 
-    function _setPixel(v, p) {
-        var pp = p * 4;
+    // Set 8bit color RGB332
+    function _setPixel8(v, p) {
+        var pp = p << 2;
 
         // ###BEGIN###{DesktopRotation}
         if (obj.rotation > 0) {
-            if (obj.rotation == 1) {
-                var x = p % obj.sparew;
-                var y = Math.floor(p / obj.sparew);
-                p = (x * obj.sparew2) + (obj.sparew2 - 1 - y);
-                pp = p * 4;
-            }
+            if (obj.rotation == 1) { var x = p % obj.sparew, y = Math.floor(p / obj.sparew); p = (x * obj.sparew2) + (obj.sparew2 - 1 - y); pp = p << 2; }
             else if (obj.rotation == 2) { pp = (obj.sparew * obj.spareh * 4) - 4 - pp; }
-            else if (obj.rotation == 3) {
-                var x = p % obj.sparew;
-                var y = Math.floor(p / obj.sparew);
-                p = ((obj.sparew2 - 1 - x) * obj.sparew2) + (y);
-                pp = p * 4;
-            }
+            else if (obj.rotation == 3) { var x = p % obj.sparew, y = Math.floor(p / obj.sparew); p = ((obj.sparew2 - 1 - x) * obj.sparew2) + (y); pp = p << 2; }
         }
         // ###END###{DesktopRotation}
 
-        if (obj.bpp == 1) {
-            // Set 8bit color RGB332
-            obj.spare.data[pp++] = v & 224;
-            obj.spare.data[pp++] = (v & 28) << 3;
-            obj.spare.data[pp++] = _fixColor((v & 3) << 6);
-        } else {
-            // Set 16bit color RGB565
-            obj.spare.data[pp++] = (v >> 8) & 248;
-            obj.spare.data[pp++] = (v >> 3) & 252;
-            obj.spare.data[pp++] = (v & 31) << 3;
+        obj.spare.data[pp] = v & 224;
+        obj.spare.data[pp + 1] = (v & 28) << 3;
+        obj.spare.data[pp + 2] = _fixColor((v & 3) << 6);
+    }
+
+    // Set 16bit color RGB565
+    function _setPixel16(v, p) {
+        var pp = p << 2;
+
+        // ###BEGIN###{DesktopRotation}
+        if (obj.rotation > 0) {
+            if (obj.rotation == 1) { var x = p % obj.sparew, y = Math.floor(p / obj.sparew); p = (x * obj.sparew2) + (obj.sparew2 - 1 - y); pp = p << 2; }
+            else if (obj.rotation == 2) { pp = (obj.sparew * obj.spareh * 4) - 4 - pp; }
+            else if (obj.rotation == 3) { var x = p % obj.sparew, y = Math.floor(p / obj.sparew); p = ((obj.sparew2 - 1 - x) * obj.sparew2) + (y); pp = p << 2; }
         }
-        obj.spare.data[pp] = 0xFF; // Set alpha channel to opaque.
+        // ###END###{DesktopRotation}
+
+        obj.spare.data[pp] = (v >> 8) & 248;
+        obj.spare.data[pp + 1] = (v >> 3) & 252;
+        obj.spare.data[pp + 2] = (v & 31) << 3;
+    }
+
+    // Set a run of 8bit color RGB332
+    function _setPixel8run(v, p, run) {
+        var pp = (p << 2), r = (v & 224), g = ((v & 28) << 3), b = (_fixColor((v & 3) << 6));
+        while (--run >= 0) { obj.spare.data[pp] = r; obj.spare.data[pp + 1] = g; obj.spare.data[pp + 2] = b; pp += 4; }
+    }
+
+    // Set a run of 16bit color RGB565
+    function _setPixel16run(v, p, run) {
+        var pp = (p << 2), r = ((v >> 8) & 248), g = ((v >> 3) & 252), b = ((v & 31) << 3);
+        while (--run >= 0) { obj.spare.data[pp] = r; obj.spare.data[pp + 1] = g; obj.spare.data[pp + 2] = b; pp += 4; }
     }
 
     // ###BEGIN###{DesktopRotation}

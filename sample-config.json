@@ -3,6 +3,7 @@
   "settings": {
     "_Cert": "myserver.mydomain.com",
     "_MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
+    "_MongoDbChangeStream": true,
     "_WANonly": true,
     "_LANonly": true,
     "_Minify": 1,
@@ -20,6 +21,9 @@
     "_WebRTC": false,
     "_ClickOnce": false,
     "_SelfUpdate": true,
+    "_AgentPing": 60,
+    "_AgentPong": 60,
+    "_AllowHighQualityDesktop": true,
     "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
     "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_AgentAllowedIP": "192.168.0.100/24",
@@ -38,7 +42,7 @@
       ]
     },
     "_AutoBackup": {
-      "backupInvervalHours": 24,
+      "backupIntervalHours": 24,
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",
       "_backupPath": "C:\\backups"
