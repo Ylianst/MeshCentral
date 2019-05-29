@@ -33,6 +33,7 @@ module.exports.CreateDB = function (parent, func) {
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days. (Seconds * Minutes * Hours * Days)
     obj.identifier = null;
     obj.dbKey = null;
+    obj.changeStream = false;
 
     obj.SetupDatabase = function (func) {
         // Check if the database unique identifier is present
@@ -228,14 +229,18 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
 
-            /*
-            // Setup the changeStream on the MongoDB main collection
-            obj.fileChangeStream = obj.file.watch({ fullDocument: 'updateLookup' });
-            obj.fileChangeStream.on('change', function (next) {
-                // Process next document
-                console.log('change', next);
-            });
-            */
+            // Setup the changeStream on the MongoDB main collection if possible
+            try {
+                obj.fileChangeStream = obj.file.watch([{ $match: { 'fullDocument.type': { $in: [ 'node', 'mesh', 'user' ] } } }], { fullDocument: 'updateLookup' });
+                obj.fileChangeStream.on('change', function (change) {
+                    switch (change.fullDocument.type) {
+                        case 'node': { dbNodeChange(change); break; } // A node has changed
+                        case 'mesh': { dbMeshChange(change); break; } // A device group has changed
+                        case 'user': { dbUserChange(change); break; } // A user account has changed
+                    }
+                });
+                obj.changeStream = true;
+            } catch (ex) { }
 
             // Setup MongoDB events collection and indexes
             obj.eventsfile = db.collection('events');                               // Collection containing all events
@@ -766,6 +771,30 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }
+
+    // Called when a node has changed
+    function dbNodeChange(nodeChange) {
+        const node = nodeChange.fullDocument;
+        if (node.intelamt && node.intelamt.pass) { delete node.intelamt.pass; } // Remove the Intel AMT password before eventing this.
+        parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'changenode', node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
+    }
+
+    // Called when a device group has changed
+    function dbMeshChange(meshChange) {
+        const mesh = meshChange.fullDocument;
+        mesh.action = 'meshchange';
+        mesh.meshid = mesh._id;
+        mesh.nolog = 1;
+        delete mesh.type;
+        delete mesh._id;
+        parent.DispatchEvent(['*', mesh._id], obj, mesh);
+    }
+
+    // Called when a user account has changed
+    function dbUserChange(userChange) {
+        const user = userChange.fullDocument;
+        parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: 'accountchange', domain: user.domain, nolog: 1 });
+    }
 
     return obj;
 };

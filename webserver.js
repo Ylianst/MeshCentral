@@ -316,8 +316,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // If the display username has changes, update it.
                         if (user.name != username) {
                             user.name = username;
-                            db.SetUser(user);
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                            obj.db.SetUser(user);
+                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
                         // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
@@ -368,8 +370,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // If the display username has changes, update it.
                         if (user.name != username) {
                             user.name = username;
-                            db.SetUser(user);
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id });
+                            obj.db.SetUser(user);
+                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
                         // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
@@ -870,7 +874,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user.passchange = Math.floor(Date.now() / 1000);
                             delete user.passtype;
                             obj.db.SetUser(user);
-                            obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id });
+                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id };
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                             // Login succesful
                             req.session.userid = userid;
@@ -995,7 +1001,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(user);
 
                                                 // Event the change
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id });
+                                                var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id };
+                                                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the confirmation page
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
@@ -1028,7 +1036,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(userinfo);
 
                                                 // Event the change
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id });
+                                                var event = { etype: 'user', username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
+                                                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the new password
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
@@ -2169,6 +2179,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                         var node2 = obj.common.Clone(node);
                                                         if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                                         event.node = node2;
+                                                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                                                         obj.parent.DispatchEvent(['*', node.meshid], obj, event);
                                                     }
                                                 }
