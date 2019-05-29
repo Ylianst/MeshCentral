@@ -776,6 +776,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 var node2 = common.Clone(node);
                 if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                 event.node = node2;
+                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 obj.parent.DispatchEvent(['*', node.meshid], obj, event);
             });
         });

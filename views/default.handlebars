@@ -1624,6 +1624,7 @@
                         while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
                         masterUpdate(32);
                     }
+                    if (message.event.noact) break; // Take no action on this event
                     switch (message.event.action) {
                         case 'userWebState': {
                             // New user web state, update the web page as needed
@@ -1670,7 +1671,7 @@
                             }
                             if (users == null) break;
                             
-                            // Check if the account if part of our user group
+                            // Check if the account is part of our user group
                             if ((userinfo.groups == null) || (userinfo.groups.length == 0) || (findOne(message.event.account.groups, userinfo.groups) == true)) {
                                 users[message.event.account._id] = message.event.account; // Part of our groups, update this user.
                             } else {
@@ -1704,8 +1705,8 @@
                                 meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                             } else {
                                 // This is an existing mesh
-                                if (message.event.name) { meshes[message.event.meshid].name = message.event.name; }
-                                if (message.event.desc) { meshes[message.event.meshid].desc = message.event.desc; }
+                                if (message.event.name != null) { meshes[message.event.meshid].name = message.event.name; }
+                                if (message.event.desc != null) { meshes[message.event.meshid].desc = message.event.desc; }
                                 if (message.event.flags != null) { meshes[message.event.meshid].flags = message.event.flags; }
                                 if (message.event.consent != null) { meshes[message.event.meshid].consent = message.event.consent; }
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }

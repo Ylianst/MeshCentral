@@ -799,6 +799,7 @@
                         events_update();
                     }
                     */
+                    if (message.event.noact) break; // Take no action on this event
                     switch (message.event.action) {
                         case 'accountchange': {
                             // An account was created or changed

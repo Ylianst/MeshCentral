@@ -714,6 +714,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     const device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1296,6 +1297,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1339,6 +1341,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
@@ -1370,6 +1373,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                     event.node = device;
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(['*', device.meshid], obj, event);
                 }
             }
