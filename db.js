@@ -230,8 +230,8 @@ module.exports.CreateDB = function (parent, func) {
             });
 
             // Setup the changeStream on the MongoDB main collection if possible
-            try {
-                obj.fileChangeStream = obj.file.watch([{ $match: { 'fullDocument.type': { $in: [ 'node', 'mesh', 'user' ] } } }], { fullDocument: 'updateLookup' });
+            if (parent.args.mongodbchangestream == true) {
+                obj.fileChangeStream = obj.file.watch([{ $match: { 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } } }], { fullDocument: 'updateLookup' });
                 obj.fileChangeStream.on('change', function (change) {
                     switch (change.fullDocument.type) {
                         case 'node': { dbNodeChange(change); break; } // A node has changed
@@ -240,7 +240,7 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 });
                 obj.changeStream = true;
-            } catch (ex) { }
+            }
 
             // Setup MongoDB events collection and indexes
             obj.eventsfile = db.collection('events');                               // Collection containing all events
