@@ -1690,7 +1690,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links[userinfo._id] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if ((meshes[message.event.meshid] == null) && (message.event.links[userinfo._id] != null)) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 masterUpdate(4 + 128);
                                 meshserver.send({ action: 'files' });
@@ -1758,6 +1758,7 @@
                         case 'addnode': {
                             var node = message.event.node;
                             if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
+                            if (getNodeFromId(node._id) != null) break; // This node is already known.
                             node.namel = node.name.toLowerCase();
                             if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                             node.meshnamel = meshes[node.meshid].name.toLowerCase();

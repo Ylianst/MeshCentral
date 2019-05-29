@@ -881,6 +881,7 @@
                         case 'addnode': {
                             var node = message.event.node;
                             if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
+                            if (getNodeFromId(node._id) != null) break; // This node is already known.
                             node.namel = node.name.toLowerCase();
                             if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                             node.meshnamel = meshes[node.meshid].name.toLowerCase();
