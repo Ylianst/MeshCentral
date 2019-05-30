@@ -6137,7 +6137,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<a onclick=p20showAddMeshUserDialog() style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Add Users</a>'; }
 
             if ((meshrights & 4) != 0) {
                 if (currentMesh.mtype == 1) {
@@ -6337,8 +6337,10 @@
             if (xxdialogMode) return;
             var x = "Allow users to manage this device group and devices in this group.";
             if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
-            x += "<br /><br />";
+            x += "<br /><br /><div style='position:relative'>";
             x += addHtmlValue('User Names', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
+            x += "<div id=dp20usersuggest class=suggestionBox style='top:30px;left:130px;display:none'></div>";
+            x += '</div>';
             x += '<br><div style="height:120px;overflow-y:scroll;border:1px solid gray">';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
@@ -6360,11 +6362,40 @@
             Q('dp20username').focus();
         }
 
+        function p20setname(name) {
+            name = decodeURIComponent(name);
+            var xusers = Q('dp20username').value.split(',');
+            for (var i in xusers) { xusers[i] = xusers[i].trim(); }
+            xusers[xusers.length - 1] = name;
+            Q('dp20username').value = xusers.join(', ');
+            p20validateAddMeshUserDialog();
+        }
+
         function p20validateAddMeshUserDialog() {
             var meshrights = currentMesh.links[userinfo._id].rights;
-            var ok = true, users = Q('dp20username').value.split(',');
-            for (var i in users) { var user = users[i].trim(); if (user.length == 0) { ok = false; } else if (user.indexOf('"') >= 0) { ok = false; } }
+            var ok = true, xusers = Q('dp20username').value.split(',');
+            for (var i in xusers) { var xuser = xusers[i] = xusers[i].trim(); if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; } }
             QE('idx_dlgOkButton', ok);
+
+            // Fill the suggestion box
+            var showsuggestbox = false, exactMatch = false;
+            if (users != null) {
+                var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
+                if (lastuser.length > 0) {
+                    for (var i in users) {
+                        if (users[i].name === lastuser) { exactMatch = true; break; }
+                        if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
+                    }
+                    if ((exactMatch == false) && (matchingUsers.length > 0)) {
+                        var x = '';
+                        for (var i in matchingUsers) { x += '<a onclick=p20setname("' + encodeURIComponent(matchingUsers[i]) + '")>' + matchingUsers[i] + '</a><br />'; }
+                        QH('dp20usersuggest', x);
+                        showsuggestbox = true;
+                    }
+                }
+            }
+            QV('dp20usersuggest', showsuggestbox);
+
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
             QE('p20manageusers', !Q('p20fulladmin').checked);

@@ -2459,3 +2459,11 @@ a {
     margin-right: 4px;
     border-radius: 5px;
 }
+
+.suggestionBox {
+    position:absolute;
+    background-color: #6CC;
+    border-radius:4px;
+    padding:6px;
+    box-shadow: 0px 0px 15px #666;
+}
