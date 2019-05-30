@@ -832,7 +832,13 @@ function createMeshCore(agent) {
                         this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
                         //this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
                     } else {
-                        this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
+                        if (fs.existsSync("/bin/bash")) {
+                            this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
+                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
+                        } else {
+                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
+                        }
+                        //if (this.httprequest.process == null) {  }
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
                         this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
@@ -864,7 +870,6 @@ function createMeshCore(agent) {
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
-                    if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n"); }
                 } else if (this.httprequest.protocol == 2) {
 
                     // Check user access rights for desktop

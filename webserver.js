@@ -489,7 +489,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) return;
+        if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         // Destroy the user's session to log them out will be re-created next request
@@ -619,7 +619,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLoginRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
 
         // Normally, use the body username/password. If this is a token, use the username/password in the session.
         var xusername = req.body.username, xpassword = req.body.password;
@@ -738,7 +738,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
         // Check if we are allowed to create new users using the login screen
         var domainUserCount = -1;
@@ -911,7 +911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
         // Get the email from the body or session.
         var email = req.body.email;
@@ -975,7 +975,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -1066,7 +1066,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -1137,7 +1137,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(401); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url); return; }
@@ -1169,7 +1169,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if (!obj.args) { res.sendStatus(500); return; }
 
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
@@ -1441,7 +1441,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
 
         // See if term.txt was loaded from the database
         if ((parent.configurationFiles != null) && (parent.configurationFiles['terms.txt'] != null)) {
@@ -1493,6 +1493,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Render the messenger application.
     function handleMessengerRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { res.sendStatus(404); return; }
+
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -1608,7 +1611,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
@@ -1708,7 +1711,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Download a file from the server
     function handleDownloadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         const user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(404); return; }
@@ -1721,7 +1724,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
         if (user.siteadmin != 0xFFFFFFFF) { res.sendStatus(401); return; } // Check if we have mesh core upload rights (Full admin only)
@@ -1746,7 +1749,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Upload a file to the server
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
         if ((user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
@@ -2097,7 +2100,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle the web socket echo request, just echo back the data sent
     function handleEchoWebSocket(ws, req) {
         const domain = checkUserIpAddress(ws, req);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
         // When data is received from the web socket, echo it back
@@ -2218,7 +2221,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a server backup request
     function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
@@ -2250,7 +2253,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a server restore request
     function handleRestoreRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
@@ -2266,7 +2269,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
@@ -2512,7 +2515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
 
         // If required, check if this user has rights to do this
@@ -2552,7 +2555,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a request for power events
     obj.handleDevicePowerEvents = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) return;
+        if (domain == null) { res.sendStatus(404); return; }
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (req.query.id == null) || (typeof req.query.id != 'string')) { res.sendStatus(401); return; }
         var x = req.query.id.split('/');
         var user = obj.users[req.session.userid];
