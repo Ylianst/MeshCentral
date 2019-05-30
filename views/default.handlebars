@@ -6183,7 +6183,7 @@
             for (var i in sortedusers) {
                 var trash = '', rights = 'Partial Rights', r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = 'Full Administrator'; else if (r == 0) rights = 'No Rights';
-                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title="User" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
@@ -6335,10 +6335,10 @@
 
         function p20showAddMeshUserDialog() {
             if (xxdialogMode) return;
-            var x = "Allow a user to manage this device group and devices in this group.";
+            var x = "Allow users to manage this device group and devices in this group.";
             if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
             x += "<br /><br />";
-            x += addHtmlValue('User Name', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
+            x += addHtmlValue('User Names', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
             x += '<br><div style="height:120px;overflow-y:scroll;border:1px solid gray">';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
@@ -6355,14 +6355,16 @@
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
             x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
             x += '</div>';
-            setDialogMode(2, "Add User to Device Group", 3, p20showAddMeshUserDialogEx, x);
+            setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
             Q('dp20username').focus();
         }
 
         function p20validateAddMeshUserDialog() {
             var meshrights = currentMesh.links[userinfo._id].rights;
-            QE('idx_dlgOkButton', (Q('dp20username').value.length > 0));
+            var ok = true, users = Q('dp20username').value.split(',');
+            for (var i in users) { var user = users[i].trim(); if (user.length == 0) { ok = false; } else if (user.indexOf('"') >= 0) { ok = false; } }
+            QE('idx_dlgOkButton', ok);
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
             QE('p20manageusers', !Q('p20fulladmin').checked);
@@ -6396,7 +6398,10 @@
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
             }
-            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, username: Q('dp20username').value , meshadmin: meshadmin});
+
+            var users = Q('dp20username').value.split(','), users2 = [];
+            for (var i in users) { users2.push(users[i].trim()); }
+            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: users2, meshadmin: meshadmin });
         }
 
         function p20viewuser(userid) {
@@ -6421,9 +6426,9 @@
             r = r.substring(2);
             if (r == '') { r = 'No Rights'; }
             var uname = userid.split('/')[2];
-            if (users) { uname = users[userid].name; }
+            if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
-            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(uname));
+            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(decodeURIComponent(uname)));
             if (userid.split('/')[2] != uname) { x += addHtmlValue('User Identifier', EscapeHtml(userid.split('/')[2])); }
 
             x += addHtmlValue('Permissions', r);
@@ -6431,9 +6436,15 @@
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
         }
 
-        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid); }
+        function p20viewuserEx(button, userid) {
+            if (button != 2) return;
+            var uname = userid.split('/')[2];
+            if (users && users[userid]) { uname = users[userid].name; }
+            if (userinfo._id == userid) { uname = userinfo.name; }
+            setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + EscapeHtml(decodeURIComponent(uname)) + "?", userid);
+        }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
-        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid}); }
+        function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
         //
         // MY FILES

@@ -391,7 +391,7 @@
 
         function validateCreate(box,e) {
             setDialogMode(0);
-            var ok = ((Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (validateEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
+            var ok = ((Q('ausername').value.length > 0) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1) && (Q('ausername').value.indexOf(' ') == -1) && (validateEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
             if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');

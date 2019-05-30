@@ -154,7 +154,7 @@ module.exports.validateArray = function (array, minlen, maxlen) { return ((array
 module.exports.validateStrArray = function (array, minlen, maxlen) { if (((array != null) && Array.isArray(array)) == false) return false; for (var i in array) { if ((typeof array[i] != 'string') && ((minlen == null) || (array[i].length >= minlen)) && ((maxlen == null) || (array[i].length <= maxlen))) return false; } return true; };
 module.exports.validateObject = function (obj) { return ((obj != null) && (typeof obj == 'object')); };
 module.exports.validateEmail = function (email, minlen, maxlen) { if (module.exports.validateString(email, minlen, maxlen) == false) return false; var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(email); };
-module.exports.validateUsername = function (username, minlen, maxlen) { return (module.exports.validateString(username, minlen, maxlen) && (username.indexOf(' ') == -1)); };
+module.exports.validateUsername = function (username, minlen, maxlen) { return (module.exports.validateString(username, minlen, maxlen) && (username.indexOf(' ') == -1) && (username.indexOf('"') == -1) && (username.indexOf(',') == -1)); };
 
 // Check password requirements
 module.exports.checkPasswordRequirements = function(password, requirements) {

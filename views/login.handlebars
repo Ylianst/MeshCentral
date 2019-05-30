@@ -402,7 +402,7 @@
 
         function validateCreate(box, e) {
             setDialogMode(0);
-            var userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1);
+            var userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1);
             var emailok = (validateEmail(Q('aemail').value) == true);
             var pass1ok = (Q('apassword1').value.length > 0);
             var pass2ok = (Q('apassword2').value.length > 0) && (Q('apassword2').value == Q('apassword1').value);

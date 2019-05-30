@@ -1478,16 +1478,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'addmeshuser':
                 {
                     if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    if (common.validateString(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters
                     if (common.validateInt(command.meshadmin) == false) break; // Mesh rights must be an integer
-
-                    // Check if the user exists
-                    var newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase(), newuser = parent.users[newuserid];
-                    if (newuser == null) {
-                        // Send error back, user not found.
-                        displayNotificationMessage('User "' + EscapeHtml(command.username) + '" not found.', 'Device Group', 'ServerNotify');
-                        break;
-                    }
+                    if (common.validateStrArray(command.usernames, 1, 64) == false) break; // Username is between 1 and 64 characters
 
                     // Get the mesh
                     mesh = parent.meshes[command.meshid];
@@ -1496,20 +1488,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) return;
                         if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                        // Add mesh to user
-                        if (newuser.links == null) newuser.links = {};
-                        newuser.links[command.meshid] = { rights: command.meshadmin };
-                        db.SetUser(newuser);
-                        parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+                        var unknownUsers = [];
+                        for (var i in command.usernames) {
+                            // Check if the user exists
+                            var newuserid = 'user/' + domain.id + '/' + command.usernames[i].toLowerCase(), newuser = parent.users[newuserid];
+                            if (newuser != null) {
+                                // Add mesh to user
+                                if (newuser.links == null) newuser.links = {};
+                                newuser.links[command.meshid] = { rights: command.meshadmin };
+                                db.SetUser(newuser);
+                                parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
-                        // Add a user to the mesh
-                        mesh.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: command.meshadmin };
-                        db.Set(common.escapeLinksFieldName(mesh));
+                                // Add a user to the mesh
+                                mesh.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: command.meshadmin };
+                                db.Set(common.escapeLinksFieldName(mesh));
 
-                        // Notify mesh change
-                        var event = { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                        parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
+                                // Notify mesh change
+                                var event = { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                                parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
+                            } else {
+                                unknownUsers.push(command.usernames[i]);
+                            }
+                        }
+
+                        if (unknownUsers.length > 0) {
+                            // Send error back, user not found.
+                            displayNotificationMessage('User' + ((unknownUsers.length > 1)?'s':'') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
+                        }
                     }
                     break;
                 }
