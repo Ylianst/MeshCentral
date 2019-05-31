@@ -729,7 +729,7 @@ module.exports.CreateDB = function (parent, func) {
                 var mongoDumpPath = 'mongodump';
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
-                const cmd = mongoDumpPath + ' --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+                const cmd = '\"' + mongoDumpPath + '\" --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         backupProcess = null;

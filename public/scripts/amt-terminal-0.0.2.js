@@ -601,8 +601,8 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
     }
 
-    obj.TermSendKeys = function (keys) { if (obj.debugmode == 2) { if (obj.debugmode == 2) { console.log("TSend(" + keys.length + "): " + rstr2hex(keys)); } } obj.parent.send(keys); }
-    obj.TermSendKey = function (key) { if (obj.debugmode == 2) { if (obj.debugmode == 2) { console.log("TSend(1): " + rstr2hex(String.fromCharCode(key))); } } obj.parent.send(String.fromCharCode(key)); }
+    obj.TermSendKeys = function (keys) { if (obj.debugmode == 2) { console.log("TSend(" + keys.length + "): " + rstr2hex(keys)); } obj.parent.send(keys); }
+    obj.TermSendKey = function (key) { if (obj.debugmode == 2) { console.log("TSend(1): " + rstr2hex(String.fromCharCode(key))); } obj.parent.send(String.fromCharCode(key)); }
 
     function _TermMoveUp(linecount) {
         var x, y;
