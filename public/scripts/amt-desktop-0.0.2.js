@@ -737,7 +737,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
             if (k == 192) kk = 96; // `
             if (k == 219) kk = 91; // [
             if (k == 220) kk = 92; // \
-            if (k == 221) kk = 93; // ]t
+            if (k == 221) kk = 93; // ]
             if (k == 222) kk = 39; // '
             //console.log('Key' + d + ": " + k + " = " + kk);
             obj.sendkey(kk, d);

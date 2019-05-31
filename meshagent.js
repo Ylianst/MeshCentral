@@ -477,10 +477,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
         obj.close(0);
     });
-    ws._socket._parent.on('close', function (req) {
-        parent.agentStats.agentTcpClose++;
-        //if (obj.nodeid != null) { parent.parent.debug(1, 'Agent TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
-    });
 
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce

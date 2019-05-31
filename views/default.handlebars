@@ -488,6 +488,8 @@
                                 <option value=3>Win+M</option>
                                 <option value=4>Shift+Win+M</option>
                                 <option value=6>Win+R</option>
+                                <option value=7>Alt-F4</option>
+                                <option value=8>Ctrl-W</option>
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
@@ -2706,8 +2708,8 @@
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=")>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=")>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2771,6 +2773,14 @@
             }
             Q('aginsSelect').focus();
             addAgentToMeshClick();
+        }
+
+        function copyAgentUrl(url) {
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+            var portStr = (serverinfo.port == 443) ? '' : (":" + serverinfo.port);
+            navigator.clipboard.writeText("http://" + servername + portStr + domainUrl + url + Q('aginsType').value);
         }
 
         function fileDownload(path, name, appendFlag) {
@@ -4778,9 +4788,21 @@
                 }
             } else if (ks == 6) { // WIN+R
                 if (desktop.contype == 2) {
-                    desktop.m.sendkey([[0xffe7, 1], [0x72, 1], [0x72, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
+                    desktop.m.sendkey([[0xffe7,1],[0x72,1],[0x72,0],[0xffe7,0]]); // Intel AMT: Meta-left down, 'r' press, 'r' release, Meta-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 82], [desktop.m.KeyAction.UP, 82], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'R' press, 'R' release, L-Winkey release
+                }
+            } else if (ks == 7) { // ALT-F4
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe9,1],[0xffc1,1],[0xffc1,0],[0xffe9,0]]); // Intel AMT: Alt down, 'F4' press, 'F4' release, Alt release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 115], [desktop.m.KeyAction.UP, 115], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'F4' press, 'F4' release, Alt release
+                }
+            } else if (ks == 8) { // CTRL-W
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe3,1],[0x77,1],[0x77,0],[0xffe3,0]]); // Intel AMT: Ctrl down, 'w' press, 'w' release, Ctrl release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 17], [desktop.m.KeyAction.DOWN, 87], [desktop.m.KeyAction.UP, 87], [desktop.m.KeyAction.EXUP, 17]]); // MeshAgent: Ctrl press, 'W' press, 'W' release, Ctrl release
                 }
             }
         }
