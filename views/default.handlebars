@@ -60,7 +60,7 @@
             <div style="float:right">
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
-            <p id="logoutControl">{{{logoutControl}}}</p>
+            <p id="logoutControl">{{{logoutControl}}}<span id=idleTimeoutNotify style="color:yellow"></span></p>
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
@@ -937,6 +937,7 @@
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
+        var sessionActivity = Date.now();
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1280,6 +1281,19 @@
         }
 
         function addLetterS(x) { return (x > 1) ? 's' : ''; }
+        function setSessionActivity() { sessionActivity = Date.now(); QH('idleTimeoutNotify', ''); }
+        function checkIdleSessionTimeout() {
+            var delta = (Date.now() - sessionActivity);
+            if (delta > serverinfo.timeout) { window.location.href = 'logout'; } else {
+                var ds = Math.round((serverinfo.timeout - delta) / 1000);
+                if (ds <= 60) {
+                    QH('idleTimeoutNotify', '<br />' + ds + ' second' + addLetterS(ds) + ' until disconnect');
+                } else {
+                    ds = Math.round(ds / 60);
+                    if (ds <= 5) { QH('idleTimeoutNotify', '<br />' + ds + ' minute' + addLetterS(ds) + ' until disconnect'); }
+                }
+            }
+        }
 
         function onMessage(server, message) {
             switch (message.action) {
@@ -1298,6 +1312,7 @@
                 }
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
+                    if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     break;
                 }
                 case 'userinfo': {
@@ -1993,6 +2008,7 @@
         }
 
         function ondockeypress(e) {
+            setSessionActivity();
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
@@ -2052,6 +2068,7 @@
         }
 
         function ondockeydown(e) {
+            setSessionActivity();
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
@@ -2086,6 +2103,7 @@
         }
 
         function ondockeyup(e) {
+            setSessionActivity();
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
@@ -2109,6 +2127,7 @@
 
         // Highlights the device being hovered
         function devMouseHover(element, over) {
+            setSessionActivity();
             var view = Q('viewselect').value;
             if (view == 1) {
                 var e = element.children[1].children[1];
@@ -2203,8 +2222,8 @@
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
-                            r += getMeshActions(mesh2, meshrights);
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + node.meshid + '")>' + EscapeHtml(meshes[node.meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span></div>';
+                            r += '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span>' + extra;
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + node.meshid + '")>' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
                             if (view == 2) { r += '</div>'; }
                             current = node.meshid;
                             displayedMeshes[current] = 1;
@@ -2216,7 +2235,7 @@
                         if (pwr !== current) {
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
-                            r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + PowerStateStr2(node.pwr) + '</span><span id=DevxHeader' + deviceHeaderId + ' class="devHeaderx"></span></div>';
+                            r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span><span>' + PowerStateStr2(node.pwr) + '</span></div>';
                             current = pwr;
                             c = 0;
                         }
@@ -2289,7 +2308,7 @@
                     for (var i in groups) { groupNames.push(i); }
                     groupNames.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
                     for (var j in groupNames) {
-                        var i = groupNames[j]; r += '<div class=DevSt style=width:100%;padding-top:4px><span>' + i + '</span><span class="devHeaderx">, ' + groupCount[i] + ' device' + ((groupCount[i] > 1)?'s':'') + '</span></div>' + groups[i];
+                        var i = groupNames[j]; r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
                     }
                 }
 
@@ -2304,7 +2323,7 @@
 
                 if ((view == 1) && (c == 2)) r += '<td><div style=width:301px></div></td>'; // Adds device padding
 
-                // Display all empty meshes, we need to do this because users can add devices to these at any time.
+                // Display all empty device groups, we need to do this because users can add devices to these at any time.
                 if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
                     for (var i in meshes) {
                         var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
@@ -2312,9 +2331,9 @@
                             var meshrights = meshlink.rights;
                             if (displayedMeshes[mesh._id] == null) {
                                 if ((current != '') && (r != '')) { r += '</tr></table>'; }
-                                r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span style=float:right>';
+                                r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
                                 r += getMeshActions(mesh, meshrights);
-                                r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></td></tr><tr>';
+                                r += '</span></td></tr><tr>';
                                 if (mesh.mtype == 1) {
                                     r += '<td><div style=padding:10px><i>No Intel&reg; AMT devices in this mesh';
                                     if ((meshrights & 4) != 0) { r += ', <a style=cursor:pointer onclick=addDeviceToMesh(\"' + mesh._id + '\")>add one</a>'; }
@@ -2805,7 +2824,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders["DevxHeader" + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
+            deviceHeaders["DevxHeader" + deviceHeaderId] = deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
             //var title = '';
             //for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             //deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
@@ -4873,10 +4892,10 @@
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
-        function dmouseup(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
-        function dmousewheel(e) { e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
+        function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
+        function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type:'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
@@ -7837,6 +7856,7 @@
         // Display a dialog box
         // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
         function setDialogMode(x, y, b, f, c, tag) {
+            setSessionActivity();
             QV('uiMenu', false);
             xxdialogMode = x;
             xxdialogFunc = f;
@@ -7855,20 +7875,23 @@
         }
 
         function dialogclose(x) {
+            setSessionActivity();
             var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
             setDialogMode();
             if (((b & 8) || x) && f) f(x, t);
         }
 
         function center() {
+            setSessionActivity();
             if (xxcurrentView == 11) { deskAdjust(); }
             else if (xxcurrentView == 10) { masterUpdate(256); }
             else if (xxcurrentView == 1) { masterUpdate(4); }
         }
-        function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
-        function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
 
         function goBack() {
+            setSessionActivity();
             if (xxdialogMode) return;
             if (fullscreen) { deskToggleFull(); }
             if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } // Return to My Devices
@@ -7877,6 +7900,7 @@
         }
 
         function go(x) {
+            setSessionActivity();
             if (xxdialogMode || xxcurrentView == x) return;
             QV('uiMenu', false);
 

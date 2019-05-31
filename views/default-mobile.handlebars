@@ -594,6 +594,7 @@
         var files;
         var passRequirements = "{{{passRequirements}}}";
         if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        var sessionActivity = Date.now();
 
         function startup() {
             if ((features & 32) == 0) {
@@ -673,11 +674,14 @@
         }
 
         function addLetterS(x) { return (x > 1) ? 's' : ''; }
+        function setSessionActivity() { sessionActivity = Date.now(); }
+        function checkIdleSessionTimeout() { var delta = (Date.now() - sessionActivity); if (delta > serverinfo.timeout) { window.location.href = 'logout'; } }
 
         function onMessage(server, message) {
             switch (message.action) {
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
+                    if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     QV('p3AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
                     QV('logoutMenuOption', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide logout if in single user mode or domain authentication
                     break;
@@ -2158,6 +2162,7 @@
         }
 
         function connectDesktop(e, contype) {
+            setSessionActivity();
             if (desktop == null) {
                 desktopNode = currentNode;
                 if (contype == 2) {
@@ -2354,6 +2359,7 @@
 
         // Show process dialogs
         function toggleDeskTools() {
+            setSessionActivity();
             if (xxdialogMode) return;
             if (QS('DeskTools').display == 'none') {
                 QV('DeskTools', true);
@@ -2366,6 +2372,7 @@
 
         // Refresh all of the desktop tool panels
         function refreshDeskTools() {
+            setSessionActivity();
             QV('DeskToolsRefreshButton', false);
             setTimeout(refreshDeskToolsEx, 500);
             meshserver.send({ action: 'msg', type: 'ps', nodeid: currentNode._id });
@@ -2393,6 +2400,7 @@
 
         // Save the desktop image to file
         function deskSaveImage() {
+            setSessionActivity();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
             Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
@@ -2407,15 +2415,16 @@
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
 
         function deskSetDisplay(e) {
+            setSessionActivity();
             var display = 0, txt = Q('termdisplays').value;
             if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousedown(e) }
-        function dmouseup(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mouseup(e) }
-        function dmousemove(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousemove(e) }
-        function dmousewheel(e) { if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousedown(e) }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mouseup(e) }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousemove(e) }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
@@ -2435,6 +2444,7 @@
         }
 
         function onFilesStateChange(xfiles, state) {
+            setSessionActivity();
             p13Connect.value = (state == 0) ? 'Connect' : 'Disconnect';
             var str = StatusStrs[state];
             if (files.webRtcActive == true) { str += ', WebRTC'; }
@@ -2494,6 +2504,7 @@
         var p13filetreelocation = [];
 
         function p13gotFiles(data) {
+            setSessionActivity();
             //console.log('p13gotFiles', data);
             if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; }
             //console.log('p13gotFiles', data);
@@ -3069,6 +3080,7 @@
 
         var xxcurrentView = -1;
         function go(x) {
+            setSessionActivity();
             if (xxdialogMode || xxcurrentView == x) return;
             updateFooterMenu();
             setDialogMode(0);
@@ -3090,6 +3102,7 @@
         // Display a dialog box
         // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
         function setDialogMode(x, y, b, f, c, tag) {
+            setSessionActivity();
             xxdialogMode = x;
             xxdialogFunc = f;
             xxdialogButtons = b;
@@ -3106,6 +3119,7 @@
         }
 
         function dialogclose(x) {
+            setSessionActivity();
             var f = xxdialogFunc;
             var b = xxdialogButtons;
             var t = xxdialogTag;
