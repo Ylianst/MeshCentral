@@ -45,6 +45,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _cursorVisible = true;
     var _scrollRegion = [0, 24];
     var _altKeypadMode = false;
+    var scrollBackBuffer = [];
 
     obj.Start = function () { }
 
@@ -251,6 +252,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                         obj.TermClear((_TermCurrentBColor << 12) + (_TermCurrentFColor << 6)); // Erase entire screen
                         _termx = 0;
                         _termy = 0;
+                        scrollBackBuffer = [];
                     }
                     else if (argslen == 0 || argslen == 1 && args[0] == 0) // Erase cursor down
                     {
@@ -526,6 +528,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                 _termy++;
                 if (_termy > _scrollRegion[1]) {
                     // Move everything up one line
+                    obj.recordLineTobackBuffer(0);
                     _TermMoveUp(1);
                     _termy = _scrollRegion[1];
                 }
@@ -544,7 +547,6 @@ var CreateAmtRemoteTerminal = function (divid) {
                 _termx++;
                 break;
         }
-
     }
 
     function _TermDrawChar(c) {
@@ -559,6 +561,7 @@ var CreateAmtRemoteTerminal = function (divid) {
                 _scratt[y][x] = TermColor;
             }
         }
+        scrollBackBuffer = [];
     }
 
     obj.TermResetScreen = function () {
@@ -695,36 +698,57 @@ var CreateAmtRemoteTerminal = function (divid) {
         return false;
     }
 
-    obj.TermDraw = function() {
-        var c, buf = '', closetag = '', newat, oldat = 1, x1, x2;
-        for (var y = 0; y < obj.height; ++y) {
-            for (var x = 0; x < obj.width; ++x) {
-                newat = _scratt[y][x];
-                if (_termx == x && _termy == y && _cursorVisible) { newat |= _VTREVERSE; } // If this is the cursor location, reverse the color.
-                if (newat != oldat) {
-                    buf += closetag;
-                    closetag = '';
-                    x1 = 6; x2 = 12;
-                    if (newat & _VTREVERSE) { x1 = 12; x2 = 6; }
-                    buf += '<span style="color:#' + _TermColors[(newat >> x1) & 0x3F] + ';background-color:#' + _TermColors[(newat >> x2) & 0x3F];
-                    if (newat & _VTUNDERLINE) buf += ';text-decoration:underline';
-                    buf += ';">';
-                    closetag = "</span>" + closetag;
-                    oldat = newat;
-                }
+    obj.recordLineTobackBuffer = function(y) {
+        var closetag = '', buf = '';
+        var r = obj.TermDrawLine(buf, y, closetag);
+        buf = r[0];
+        closetag = r[1];
+        scrollBackBuffer.push(buf + closetag + '<br>');
+        if (scrollBackBuffer.length > 800) { scrollBackBuffer = scrollBackBuffer.slice(0, 800); }
+    }
 
-                c = _tscreen[y][x];
-                switch (c) {
-                    case '&': buf += '&amp;'; break;
-                    case '<': buf += '&lt;'; break;
-                    case '>': buf += '&gt;'; break;
-                    case ' ': buf += '&nbsp;'; break;
-                    default: buf += c; break;
-                }
+    obj.TermDrawLine = function (buf, y, closetag) {
+        var newat, c, oldat = 1, x1, x2;
+        for (var x = 0; x < obj.width; ++x) {
+            newat = _scratt[y][x];
+            if (_termx == x && _termy == y && _cursorVisible) { newat |= _VTREVERSE; } // If this is the cursor location, reverse the color.
+            if (newat != oldat) {
+                buf += closetag;
+                closetag = '';
+                x1 = 6; x2 = 12;
+                if (newat & _VTREVERSE) { x1 = 12; x2 = 6; }
+                buf += '<span style="color:#' + _TermColors[(newat >> x1) & 0x3F] + ';background-color:#' + _TermColors[(newat >> x2) & 0x3F];
+                if (newat & _VTUNDERLINE) buf += ';text-decoration:underline';
+                buf += ';">';
+                closetag = "</span>" + closetag;
+                oldat = newat;
             }
+
+            c = _tscreen[y][x];
+            switch (c) {
+                case '&': buf += '&amp;'; break;
+                case '<': buf += '&lt;'; break;
+                case '>': buf += '&gt;'; break;
+                case ' ': buf += '&nbsp;'; break;
+                default: buf += c; break;
+            }
+        }
+        return [buf, closetag];
+    }
+
+    obj.TermDraw = function() {
+        var closetag = '', buf = '';
+        for (var y = 0; y < obj.height; ++y) {
+            var r = obj.TermDrawLine(buf, y, closetag);
+            buf = r[0];
+            closetag = r[1];
             if (y != (obj.height - 1)) buf += '<br>';
         }
-        obj.DivElement.innerHTML = "<font size='4'><b>" + buf + closetag + "</b></font>";
+
+        var backbuffer = '';
+        for (var i in scrollBackBuffer) { backbuffer += scrollBackBuffer[i]; }
+        obj.DivElement.innerHTML = "<font size='4'><b>" + backbuffer + buf + closetag + "</b></font>";
+        obj.DivElement.scrollTop = obj.DivElement.scrollHeight;
     }
 
     obj.TermInit = function () { obj.TermResetScreen(); }

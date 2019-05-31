@@ -242,7 +242,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.agentStats = {
         createMeshAgentCount: 0,
         agentClose: 0,
-        agentTcpClose: 0,
         agentBinaryUpdate: 0,
         coreIsStableCount: 0,
         verifiedAgentConnectionCount: 0,
