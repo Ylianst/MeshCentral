@@ -490,6 +490,7 @@
                                 <option value=6>Win+R</option>
                                 <option value=7>Alt-F4</option>
                                 <option value=8>Ctrl-W</option>
+                                <option value=9>Alt-Tab</option>
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
@@ -4805,6 +4806,12 @@
                     desktop.m.sendkey([[0xffe3,1],[0x77,1],[0x77,0],[0xffe3,0]]); // Intel AMT: Ctrl down, 'w' press, 'w' release, Ctrl release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 17], [desktop.m.KeyAction.DOWN, 87], [desktop.m.KeyAction.UP, 87], [desktop.m.KeyAction.EXUP, 17]]); // MeshAgent: Ctrl press, 'W' press, 'W' release, Ctrl release
+                }
+            } else if (ks == 9) { // ALT-TAB
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe9, 1], [0xff09, 1], [0xff09, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'TAB' press, 'TAB' release, Alt release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
                 }
             }
         }
