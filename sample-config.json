@@ -67,6 +67,8 @@
       "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
       "_AgentAllowedIP": "192.168.0.100/24",
       "_AgentBlockedIP": "127.0.0.1,::1",
+      "___UserSessionIdleTimeout__" : "Number of user idle minutes before auto-disconnect",
+      "_UserSessionIdleTimeout" : 30,
       "__UserConsentFlags__" : "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
       "_UserConsentFlags" : 7,
       "_Limits": {
