@@ -2140,14 +2140,11 @@ a {
 #termarea3x {
     background: black;
     text-align: center;
-    height: 450px;
+    height: 500px;
     position: relative;
 }
 
 #Term {
-    height: 450px;
-    max-height: 450px;
-    overflow-y: scroll;
     background: black;
     margin: 0;
     padding: 0;

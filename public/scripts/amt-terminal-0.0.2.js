@@ -21,6 +21,7 @@ var CreateAmtRemoteTerminal = function (divid) {
 
     obj.width = 80; // 80 or 100
     obj.height = 25; // 25 or 30
+    obj.heightLock = 0;
 
     var _Terminal_CellHeight = 21;
     var _Terminal_CellWidth = 13;
@@ -749,6 +750,13 @@ var CreateAmtRemoteTerminal = function (divid) {
         for (var i in scrollBackBuffer) { backbuffer += scrollBackBuffer[i]; }
         obj.DivElement.innerHTML = "<font size='4'><b>" + backbuffer + buf + closetag + "</b></font>";
         obj.DivElement.scrollTop = obj.DivElement.scrollHeight;
+        if (obj.heightLock == 0) { setTimeout(obj.TermLockHeight, 10); }
+    }
+
+    obj.TermLockHeight = function () {
+        obj.heightLock = obj.DivElement.clientHeight;
+        obj.DivElement.style['height'] = obj.DivElement.parentNode.style['height'] = obj.heightLock + 'px';
+        obj.DivElement.style['overflow-y'] = 'scroll';
     }
 
     obj.TermInit = function () { obj.TermResetScreen(); }

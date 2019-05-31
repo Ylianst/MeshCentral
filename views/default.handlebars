@@ -2676,7 +2676,7 @@
             var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
             x += addHtmlValue('Name (optional)', '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
             x += addHtmlValue('Email', '<input id=agentInviteEmail style=width:230px placeholder="example@email.com" onkeyup=validateAgentInvite()></input>');
-            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=0>Any supported</option><option value=1>Windows only</option><option value=3>Apple OSX only</option><option value=2>Linux only</option></select>');
+            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=0>Any supported</option><option value=1>Windows only</option><option value=3>Apple MacOS only</option><option value=2>Linux only</option></select>');
             x += addHtmlValue('Installation Type', '<select id=agentInviteType style=width:236px><option value=0>Background and interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
             x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
@@ -2694,7 +2694,7 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return;
             var mesh = meshes[meshid], x = '', installType = 0;
-            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple OSX</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>');
+            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple MacOS</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>');
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue('Installation Type', '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>Background & interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
             x += '</div><hr>';
@@ -2705,11 +2705,11 @@
 
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
-            x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and mesh information embedded within it.<br /><br />";
+            x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.<br /><br />";
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
             //x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=")>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=")>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2718,17 +2718,17 @@
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += "</div>";
 
-            // OSX agent install
-            x += "<div id=agins_osx style=display:none>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent installer has server and mesh information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" rel="noreferrer noopener" target="_blank" title="64bit version of OSX Mesh Agent">OSX Agent (64bit)</a>');
+            // MacOS agent install
+            x += "<div id=agins_osx style=display:none>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.<br /><br />";
+            x += addHtmlValue('Mesh Agent', '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" rel="noreferrer noopener" target="_blank" title="64bit version of MacOS Mesh Agent">MacOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="Copy MacOS agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += "</div>";
 
             // Windows agent uninstall
             x += "<div id=agins_windows_un style=display:none>To remove a mesh agent, download the file below, run it and click \"uninstall\".<br /><br />";
             //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
             //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=3","MeshAgent.exe") title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=4","MeshAgent.exe") title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=3","MeshAgent.exe") title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3",0)>');
+            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=4","MeshAgent.exe") title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4",0)>');
             x += "</div>";
 
             // Linux agent uninstall
@@ -2775,12 +2775,14 @@
             addAgentToMeshClick();
         }
 
-        function copyAgentUrl(url) {
+        function copyAgentUrl(url,addflag) {
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
             var portStr = (serverinfo.port == 443) ? '' : (":" + serverinfo.port);
-            navigator.clipboard.writeText("http://" + servername + portStr + domainUrl + url + Q('aginsType').value);
+            var c = "https://" + servername + portStr + domainUrl + url;
+            if (addflag == 1) c += Q('aginsType').value;
+            navigator.clipboard.writeText(c);
         }
 
         function fileDownload(path, name, appendFlag) {
@@ -3757,7 +3759,7 @@
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'OSX 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'OSX 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l', 'ARMv8 64bit'];
+                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'MacOS 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'MacOS 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l', 'ARMv8 64bit'];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
