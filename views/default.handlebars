@@ -1977,6 +1977,28 @@
                     }
                     break;
                 }
+                case 'createInviteLink': { // Agent installation invitation link
+                    if (xxdialogTag != message.meshid) break;
+                    var servername = serverinfo.name;
+                    if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+                    var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+                    var url;
+                    if (serverinfo.https == true) {
+                        var portStr = (serverinfo.port == 443) ? '' : (":" + serverinfo.port);
+                        url = "https://" + servername + portStr + domainUrl + "agentinvite?c=" + message.cookie;
+                    } else {
+                        var portStr = (serverinfo.port == 80) ? '' : (":" + serverinfo.port);
+                        url = "http://" + servername + portStr + domainUrl + "agentinvite?c=" + message.cookie;
+                    }
+                    Q('agentInvitationLink').href = url;
+                    var t = message.expire + ' hour' + addLetterS(message.expire);
+                    if (message.expire == 24) { t = '1 day'; }
+                    if (message.expire == 168) { t = '1 week'; }
+                    if (message.expire == 5040) { t = '1 month'; }
+                    QH('agentInvitationLink', 'Invitation Link (' + t + ')');
+                    QV('agentInvitationLinkDiv', true);
+                    break;
+                }
                 case 'stopped': { // Server is stopping.
                     // Disconnect
                     autoReconnect = false;
@@ -2547,9 +2569,7 @@
             }
             if (mesh.mtype == 2) {
                 r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
-                if (features & 64) {
-                    r += ' <a style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent on this mesh." onclick=inviteAgentToMesh(\"' + mesh._id + '\")>Invite</a>';
-                }
+                r += ' <a style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent on this mesh." onclick=inviteAgentToMesh(\"' + mesh._id + '\")>Invite</a>';
             }
             return r;
         }
@@ -2673,23 +2693,51 @@
 
         function inviteAgentToMesh(meshid) {
             if (xxdialogMode) return;
-            var mesh = meshes[meshid];
-            var x = "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for " + EscapeHtml(mesh.name) + ".<br /><br />";
-            x += addHtmlValue('Name (optional)', '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
-            x += addHtmlValue('Email', '<input id=agentInviteEmail style=width:230px placeholder="example@email.com" onkeyup=validateAgentInvite()></input>');
-            x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=0>Any supported</option><option value=1>Windows only</option><option value=3>Apple MacOS only</option><option value=2>Linux only</option></select>');
-            x += addHtmlValue('Installation Type', '<select id=agentInviteType style=width:236px><option value=0>Background and interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
-            x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
+            var x = '', mesh = meshes[meshid];
+            if (features & 64) {
+                x += addHtmlValue('Invitation Type', '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>Link invitation</option><option value=1>Email invitation</option></select>') + "<hr />";
+                x += "<div id=emailInviteDiv style=display:none>Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"" + EscapeHtml(mesh.name) + "\" device group.<br /><br />";
+                x += addHtmlValue('Name (optional)', '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
+                x += addHtmlValue('Email', '<input id=agentInviteEmail style=width:230px placeholder="example@email.com" onkeyup=validateAgentInvite()></input>');
+                x += addHtmlValue('Operating System', '<select id=agentInviteNameOs style=width:236px><option value=0>Any supported</option><option value=1>Windows only</option><option value=3>Apple MacOS only</option><option value=2>Linux only</option></select>');
+                x += addHtmlValue('Installation Type', '<select id=agentInviteType style=width:236px><option value=0>Background and interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
+                x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
+                x += '</div>';
+            }
+            x += '<div id=urlInviteDiv>Invite someone to install the mesh agent by sharing a invitation link. This link points the user to installation instructions for the \"' + EscapeHtml(mesh.name) + '\" device group. The link is public and no account this server is needed.<br /><br />';
+            x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option></select>');
+            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a id=agentInvitationLink target="_blank" href="" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="Copy link to clipboard" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
+            validateAgentInvite();
+            d2RequestInvitationLink();
+        }
+
+        function d2RequestInvitationLink() {
+            meshserver.send({ action: 'createInviteLink', meshid: xxdialogTag, expire: parseInt(Q('d2inviteExpire').value), flags: 0 });
+        }
+
+        function d2ChangedInviteType() {
+            QV('urlInviteDiv', Q('d2InviteType').value == 0);
+            if (features & 64) { QV('emailInviteDiv', Q('d2InviteType').value == 1); }
             validateAgentInvite();
         }
 
+        function d2CopyInviteToClip() { navigator.clipboard.writeText(Q('agentInvitationLink').href); }
+        
         function validateAgentInvite() {
-            QE('idx_dlgOkButton', checkEmail(Q('agentInviteEmail').value));
+            if ((features & 64) && (Q('d2InviteType').value == 1)) {
+                QE('idx_dlgOkButton', checkEmail(Q('agentInviteEmail').value));
+                QV('idx_dlgCancelButton', true);
+            } else {
+                QE('idx_dlgOkButton', true);
+                QV('idx_dlgCancelButton', false);
+            }
         }
 
         function performAgentInvite(button, meshid) {
-            meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value, name: Q('agentInviteName').value, os: Q('agentInviteNameOs').value, flags: Q('agentInviteType').value, msg: Q('agentInviteMessage').value });
+            if ((features & 64) && (Q('d2InviteType').value == 1)) {
+                meshserver.send({ action: 'inviteAgent', meshid: meshid, email: Q('agentInviteEmail').value, name: Q('agentInviteName').value, os: Q('agentInviteNameOs').value, flags: Q('agentInviteType').value, msg: Q('agentInviteMessage').value });
+            }
         }
 
         function addAgentToMesh(meshid) {
@@ -6196,9 +6244,7 @@
                 }
                 if (currentMesh.mtype == 2) {
                     x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new computer to this mesh by installing the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
-                    if (features & 64) {
-                        x += '<a onclick=inviteAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Invite someone to install the mesh agent on this mesh."><img src=images/icon-addnew.png border=0 height=12 width=12> Invite</a>';
-                    }
+                    x += '<a onclick=inviteAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Invite someone to install the mesh agent on this mesh."><img src=images/icon-addnew.png border=0 height=12 width=12> Invite</a>';
                 }
             }
 

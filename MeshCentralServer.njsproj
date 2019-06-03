@@ -260,6 +260,7 @@
     <Content Include="readme.txt" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
+    <Content Include="views\agentinvite.handlebars" />
     <Content Include="views\default-min.handlebars" />
     <Content Include="views\default-mobile-min.handlebars" />
     <Content Include="views\default-mobile.handlebars" />

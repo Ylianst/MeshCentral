@@ -2499,6 +2499,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'createInviteLink': {
+                if (common.validateString(command.meshid, 8, 128) == false) break; // Check the meshid
+                if (common.validateInt(command.expire, 1, 99999) == false) break; // Check the expire time in hours
+                if (common.validateInt(command.flags, 0, 256) == false) break; // Check the flags
+                var mesh = parent.meshes[command.meshid];
+                if (mesh == null) break;
+                const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.loginCookieEncryptionKey);
+                if (inviteCookie == null) break;
+                ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, expire: command.expire, cookie: inviteCookie }));
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
