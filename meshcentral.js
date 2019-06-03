@@ -1549,8 +1549,14 @@ function CreateMeshCentralServer(config, args) {
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
-            if (timeout == null) { timeout = 2; }
-            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            if ((o.expire) == null || (typeof o.expire != 'number')) {
+                // Use a fixed cookie expire time
+                if (timeout == null) { timeout = 2; }
+                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            } else {
+                // An expire time is included in the cookie (in minutes), use this.
+                if ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            }
             return o;
         } catch (ex) { obj.debug(1, 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
     };
@@ -1571,8 +1577,14 @@ function CreateMeshCentralServer(config, args) {
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
-            if (timeout == null) { timeout = 2; }
-            if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            if ((o.expire) == null || (typeof o.expire != 'number')) {
+                // Use a fixed cookie expire time
+                if (timeout == null) { timeout = 2; }
+                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            } else {
+                // An expire time is included in the cookie (in minutes), use this.
+                if ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            }
             return o;
         } catch (ex) { obj.debug(1, 'ERR: Bad AESSHA cookie due to exception: ' + ex); return null; }
     };

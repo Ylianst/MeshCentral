@@ -1063,6 +1063,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Called to process an agent invite request
+    function handleAgentInviteRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) { res.sendStatus(404); return; }
+        if (req.query.c != null) {
+            // A cookie is specified in the query string, use that
+            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey);
+            if (cookie == null) { res.sendStatus(404); return; }
+            var mesh = obj.meshes[cookie.mid];
+            if (mesh == null) { res.sendStatus(404); return; }
+            var installflags = cookie.f;
+            if (typeof installflags != 'number') { installflags = 0; }
+            res.render(obj.path.join(obj.parent.webViewsPath, 'agentinvite'), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
+        } else if (req.query.m != null) {
+            // The MeshId is specified in the query string, use that
+            var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
+            if (mesh == null) { res.sendStatus(404); return; }
+            var installflags = 0;
+            if (req.query.f) { installflags = parseInt(req.query.f); }
+            if (typeof installflags != 'number') { installflags = 0; }
+            res.render(obj.path.join(obj.parent.webViewsPath, 'agentinvite'), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
+        }
+    }
+
     function handleDeleteAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
@@ -2670,6 +2694,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'resetpassword', handleResetPasswordRequest);
             obj.app.post(url + 'resetaccount', handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
+            obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
             obj.app.get(url + 'messenger', handleMessengerRequest);
