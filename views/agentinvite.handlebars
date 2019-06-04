@@ -278,10 +278,10 @@
             QH('unlinuxinstall', linuxUnInstall);
 
             // Attempt to detect the most likely operating system for this browser
-            if (navigator.userAgent.indexOf('Win64')) { openTab(null, 'wintab64'); }
-            else if (navigator.userAgent.indexOf('Windows')) { openTab(null, 'wintab32'); }
-            else if (navigator.userAgent.indexOf('Linux')) { openTab(null, 'linuxtab'); }
-            else if (navigator.userAgent.indexOf('Macintosh')) { openTab(null, 'macostab'); }
+            if (navigator.userAgent.indexOf('Win64') >= 0) { openTab(null, 'wintab64'); }
+            else if (navigator.userAgent.indexOf('Windows') >= 0) { openTab(null, 'wintab32'); }
+            else if (navigator.userAgent.indexOf('Linux') >= 0) { openTab(null, 'linuxtab'); }
+            else if (navigator.userAgent.indexOf('Macintosh') >= 0) { openTab(null, 'macostab'); }
             else { openTab(null, 'wintab64'); }
         }
 
