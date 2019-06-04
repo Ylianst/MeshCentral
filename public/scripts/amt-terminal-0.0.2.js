@@ -47,6 +47,8 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _scrollRegion = [0, 24];
     var _altKeypadMode = false;
     var scrollBackBuffer = [];
+    obj.title = null;
+    obj.onTitleChange = null;
 
     obj.Start = function () { }
 
@@ -103,6 +105,9 @@ var CreateAmtRemoteTerminal = function (divid) {
                         break;
                     case ')':
                         _termstate = 5;
+                        break;
+                    case ']':
+                        _termstate = 6; // xterm strings
                         break;
                     case '=':
                         // Set alternate keypad mode
@@ -169,6 +174,26 @@ var CreateAmtRemoteTerminal = function (divid) {
             case 5: // ')' Code
                 _termstate = 0;
                 break;
+            case 6: // ']' Code, xterm
+                const bx = b.charCodeAt(0);
+                if (b == ';') {
+                    _escNumberPtr++;
+                } else if (bx == 7) {
+                    _ProcessXTermHandler(_escNumber);
+                    _termstate = 0;
+                } else {
+                    if (!_escNumber[_escNumberPtr]) { _escNumber[_escNumberPtr] = b; }
+                    else { _escNumber[_escNumberPtr] += b; }
+                }
+                break;
+        }
+    }
+
+    function _ProcessXTermHandler(_escNumber) {
+        if (_escNumber.length == 0) return;
+        var cmd = parseInt(_escNumber[0]);
+        if ((cmd == 0 || cmd == 2) && (_escNumber.length > 1) && (_escNumber[1] != '?')) {
+            if (obj.onTitleChange) { obj.onTitleChange(obj, obj.title = _escNumber[1]); }
         }
     }
 
