@@ -547,6 +547,9 @@
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
                                         <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
                                     </span>
+                                    <span id="terminalSizeDropDown">
+                                        <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option><option value="3" selected>Auto</option></select>
+                                    </span>
                                     <select id="specialkeylist" onkeypress="return false"></select>
                                     <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
@@ -5035,14 +5038,17 @@
             switch (state) {
                 case 0:
                     // Disconnected, clear the terminal
+                    QE('termSizeList', true);
                     QH('termtitle', '');
                     xterminal.m.TermResetScreen();
                     xterminal.m.TermDraw();
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
+                    QE('termSizeList', false);
                     break;
                 default:
+                    QE('termSizeList', false);
                     //console.log('Unhandled onTerminalStateChange state', state);
                     break;
             }
@@ -5058,7 +5064,9 @@
                 if (contype == 2) {
                     // Setup the Intel AMT terminal
                     if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
-                    terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term'), authCookie);
+                    var termoptions = {};
+                    if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; }
+                    terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
                     terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
@@ -5068,7 +5076,17 @@
                     Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
                 } else {
                     // Setup a mesh agent terminal
-                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term'), serverPublicNamePort, authCookie, domainUrl);
+                    var termoptions = {};
+                    if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
+                        if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; termoptions.xterm = true; }
+                        if (Q('termSizeList').value == 3) {
+                            // TODO: Try to improve terminal auto-size.
+                            termoptions.width = Math.floor((Q('column_l').clientWidth - 60) / 10);
+                            termoptions.height = Math.floor((Q('column_l').clientHeight - 120) / 20);
+                            termoptions.xterm = true;
+                        }
+                    }
+                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
                     terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
@@ -5076,6 +5094,7 @@
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.onConsoleMessageChange = function () {
+                        console.log('terminal.consoleMessage', terminal.consoleMessage);
                         p12clearConsoleMsg();
                         if (terminal.consoleMessage) {
                             QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
