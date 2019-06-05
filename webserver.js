@@ -261,7 +261,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         invalidMeshTypeCount: 0,
         invalidDomainMesh2Count: 0,
         invalidMeshType2Count: 0,
-        duplicateAgentCount: 0
+        duplicateAgentCount: 0,
+        maxDomainDevicesReached: 0
     }
     obj.getAgentStats = function () { return obj.agentStats; }
 

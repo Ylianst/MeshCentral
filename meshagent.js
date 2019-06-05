@@ -616,40 +616,21 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if ((nodes == null) || (nodes.length == 0)) {
                 // This device does not exist, use the meshid given by the device
 
-                // See if this mesh exists, if it does not we may want to create it.
-                mesh = getMeshAutoCreate();
-
-                // Check if the mesh exists
-                if (mesh == null) {
-                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
-                    parent.agentStats.invalidDomainMeshCount++;
-                    console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
-                    return;
-                }
-
-                // Check if the mesh is the right type
-                if (mesh.mtype != 2) {
-                    // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
-                    parent.agentStats.invalidMeshTypeCount++;
-                    console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
-                    return;
-                }
-
-                // Mark when this device connected
-                obj.connectTime = Date.now();
-                db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
-
-                // This node does not exist, create it.
-                device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
-                db.Set(device);
-
-                // Event the new node
-                if (obj.agentInfo.capabilities & 0x20) {
-                    // This is a temporary agent, don't log.
-                    parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
+                // Check if we already have too many devices for this domain
+                if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                    db.isMaxType(domain.limits.maxdevices, 'node', domain.id, function (ismax, count) {
+                        if (ismax == true) {
+                            // Too many devices in this domain.
+                            parent.agentStats.maxDomainDevicesReached++;
+                        } else {
+                            // We are under the limit, create the new device.
+                            completeAgentConnection2();
+                        }
+                    });
                 } else {
-                    parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
+                    completeAgentConnection2();
                 }
+                return;
             } else {
                 device = nodes[0];
 
@@ -715,76 +696,119 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
 
-            // Check if this agent is already connected
-            const dupAgent = parent.wsagents[obj.dbNodeKey];
-            parent.wsagents[obj.dbNodeKey] = obj;
-            if (dupAgent) {
-                // Record duplicate agents
-                if (parent.duplicateAgentsLog[obj.dbNodeKey] == null) {
-                    if (dupAgent.remoteaddr == obj.remoteaddr) {
-                        parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr], count: 1 };
-                    } else {
-                        parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr, dupAgent.remoteaddr], count: 1 };
-                    }
-                } else {
-                    parent.duplicateAgentsLog[obj.dbNodeKey].name = device.name;
-                    parent.duplicateAgentsLog[obj.dbNodeKey].group = mesh.name;
-                    parent.duplicateAgentsLog[obj.dbNodeKey].count++;
-                    if (parent.duplicateAgentsLog[obj.dbNodeKey].ip.indexOf(obj.remoteaddr) == -1) { parent.duplicateAgentsLog[obj.dbNodeKey].ip.push(obj.remoteaddr); }
-                }
-
-                // Close the duplicate agent
-                parent.agentStats.duplicateAgentCount++;
-                if (obj.nodeid != null) { parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
-                dupAgent.close(3);
-            } else {
-                // Indicate the agent is connected
-                parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);
-            }
-
-            // We are done, ready to communicate with this agent
-            delete obj.pendingCompleteAgentConnection;
-            obj.authenticated = 2;
-
-            // Check how many times this agent disconnected in the last few minutes.
-            const disconnectCount = parent.wsagentsDisconnections[obj.nodeid];
-            if (disconnectCount > 6) {
-                console.log('Agent in big trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
-                // TODO: Log or do something to recover?
-                return;
-            }
-
-            // Command 4, inform mesh agent that it's authenticated.
-            obj.send(common.ShortToStr(4));
-
-            if (disconnectCount > 4) {
-                // Too many disconnections, this agent has issues. Just clear the core.
-                obj.send(common.ShortToStr(10) + common.ShortToStr(0));
-                //console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
-                // TODO: Log or do something to recover?
-                return;
-            }
-
-            // Not sure why, but in rare cases, obj.agentInfo is undefined here.
-            if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
-
-            // Check if we need to make an native update check
-            obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-            const corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
-            if (corename == null) { obj.send(common.ShortToStr(10) + common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
-
-            if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
-                // Ask the agent for it's executable binary hash
-                obj.send(common.ShortToStr(12) + common.ShortToStr(0));
-            } else {
-                // Check the mesh core, if the agent is capable of running one
-                if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
-                    obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-                } else {
-                    agentCoreIsStable(); // No updates needed, agent is ready to go.
-                }
-            }
+            completeAgentConnection3();
         });
+    }
+
+    function completeAgentConnection2(device) {
+        // See if this mesh exists, if it does not we may want to create it.
+        var mesh = getMeshAutoCreate();
+
+        // Check if the mesh exists
+        if (mesh == null) {
+            // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+            parent.agentStats.invalidDomainMeshCount++;
+            console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+            return;
+        }
+
+        // Check if the mesh is the right type
+        if (mesh.mtype != 2) {
+            // If we disconnect, the agent will just reconnect. We need to log this or tell agent to connect in a few hours.
+            parent.agentStats.invalidMeshTypeCount++;
+            console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
+            return;
+        }
+
+        // Mark when this device connected
+        obj.connectTime = Date.now();
+        db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport });
+
+        // This node does not exist, create it.
+        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+        db.Set(device);
+
+        // Event the new node
+        if (obj.agentInfo.capabilities & 0x20) {
+            // This is a temporary agent, don't log.
+            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
+        } else {
+            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
+        }
+
+        completeAgentConnection3();
+    }
+
+    function completeAgentConnection3() {
+        // Check if this agent is already connected
+        const dupAgent = parent.wsagents[obj.dbNodeKey];
+        parent.wsagents[obj.dbNodeKey] = obj;
+        if (dupAgent) {
+            // Record duplicate agents
+            if (parent.duplicateAgentsLog[obj.dbNodeKey] == null) {
+                if (dupAgent.remoteaddr == obj.remoteaddr) {
+                    parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr], count: 1 };
+                } else {
+                    parent.duplicateAgentsLog[obj.dbNodeKey] = { name: device.name, group: mesh.name, ip: [obj.remoteaddr, dupAgent.remoteaddr], count: 1 };
+                }
+            } else {
+                parent.duplicateAgentsLog[obj.dbNodeKey].name = device.name;
+                parent.duplicateAgentsLog[obj.dbNodeKey].group = mesh.name;
+                parent.duplicateAgentsLog[obj.dbNodeKey].count++;
+                if (parent.duplicateAgentsLog[obj.dbNodeKey].ip.indexOf(obj.remoteaddr) == -1) { parent.duplicateAgentsLog[obj.dbNodeKey].ip.push(obj.remoteaddr); }
+            }
+
+            // Close the duplicate agent
+            parent.agentStats.duplicateAgentCount++;
+            if (obj.nodeid != null) { parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
+            dupAgent.close(3);
+        } else {
+            // Indicate the agent is connected
+            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1);
+        }
+
+        // We are done, ready to communicate with this agent
+        delete obj.pendingCompleteAgentConnection;
+        obj.authenticated = 2;
+
+        // Check how many times this agent disconnected in the last few minutes.
+        const disconnectCount = parent.wsagentsDisconnections[obj.nodeid];
+        if (disconnectCount > 6) {
+            console.log('Agent in big trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+            // TODO: Log or do something to recover?
+            return;
+        }
+
+        // Command 4, inform mesh agent that it's authenticated.
+        obj.send(common.ShortToStr(4));
+
+        if (disconnectCount > 4) {
+            // Too many disconnections, this agent has issues. Just clear the core.
+            obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+            //console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
+            // TODO: Log or do something to recover?
+            return;
+        }
+
+        // Not sure why, but in rare cases, obj.agentInfo is undefined here.
+        if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
+
+        // Check if we need to make an native update check
+        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+        const corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+        if (corename == null) { obj.send(common.ShortToStr(10) + common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
+
+        if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
+            // Ask the agent for it's executable binary hash
+            obj.send(common.ShortToStr(12) + common.ShortToStr(0));
+        } else {
+            // Check the mesh core, if the agent is capable of running one
+            if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
+                obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+            } else {
+                agentCoreIsStable(); // No updates needed, agent is ready to go.
+            }
+        }
     }
 
     // Take a basic Intel AMT policy and add all server information to it, making it ready to send to this agent.

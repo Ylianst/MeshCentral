@@ -4141,7 +4141,7 @@
 
         function addDeviceAttribute(name, value) { return '<tr><td class=style7>' + name + '</td><td class=style9>' + value + '</td></tr>'; }
 
-        function editDeviceAmtSettings(nodeid, func) {
+        function editDeviceAmtSettings(nodeid, func, arg) {
             if (xxdialogMode) return;
             var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
             if ((meshrights & 4) == 0) return;
@@ -4149,7 +4149,7 @@
             x += addHtmlValue('Password', '<input id=dp10password type=password style=width:230px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue('Security', '<select id=dp10tls style=width:236px><option value=0>No TLS security</option><option value=1>TLS security required</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
+            setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func, arg: arg });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
@@ -4172,7 +4172,7 @@
                 meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: Q('dp10tls').value } });
                 tag.node.intelamt.user = amtuser;
                 tag.node.intelamt.tls = Q('dp10tls').value;
-                if (tag.func) { setTimeout(tag.func, 300); }
+                if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 300); }
             }
         }
 
@@ -4471,7 +4471,7 @@
                 desktopNode = currentNode;
                 if (contype == 2) {
                     // Setup the Intel AMT remote desktop
-                    if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop); return; }
+                    if ((desktopNode.intelamt.user == null) || (desktopNode.intelamt.user == '')) { editDeviceAmtSettings(desktopNode._id, connectDesktop, 2); return; }
                     desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'), authCookie);
                     desktop.debugmode = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
@@ -5063,7 +5063,7 @@
             if (!terminal) {
                 if (contype == 2) {
                     // Setup the Intel AMT terminal
-                    if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal); return; }
+                    if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal, 2); return; }
                     var termoptions = {};
                     if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; }
                     terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);

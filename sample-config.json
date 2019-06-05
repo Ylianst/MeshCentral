@@ -72,6 +72,7 @@
       "__UserConsentFlags__" : "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
       "_UserConsentFlags" : 7,
       "_Limits": {
+        "_MaxDevices": 100,
         "_MaxUserAccounts": 100,
         "_MaxUserSessions": 100,
         "_MaxAgentSessions": 100,
