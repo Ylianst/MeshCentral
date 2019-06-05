@@ -5,9 +5,10 @@
 */
 
 // https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+// https://www.x.org/docs/xterm/ctlseqs.pdf
 
 // Construct a MeshServer object
-var CreateAmtRemoteTerminal = function (divid) {
+var CreateAmtRemoteTerminal = function (divid, options) {
     var obj = {};
     obj.DivId = divid;
     obj.DivElement = document.getElementById(divid);
@@ -44,7 +45,7 @@ var CreateAmtRemoteTerminal = function (divid) {
     var _VTREVERSE = 2;
     var _backSpaceErase = false;
     var _cursorVisible = true;
-    var _scrollRegion = [0, 24];
+    var _scrollRegion;
     var _altKeypadMode = false;
     var scrollBackBuffer = [];
     obj.title = null;
@@ -64,7 +65,9 @@ var CreateAmtRemoteTerminal = function (divid) {
         obj.TermDraw();
     }
 
-    obj.xxStateChange = function(newstate) { }
+    obj.xxStateChange = function (newstate) {
+        if ((newstate == 3) && (options != null) && (options.xterm == true)) { obj.TermSendKeys('stty rows ' + obj.height + ' cols ' + obj.width + '\nclear\n'); }
+    }
 
     obj.ProcessData = function (str) {
         if (obj.debugmode == 2) { console.log("TRecv(" + str.length + "): " + rstr2hex(str)); }
@@ -250,14 +253,14 @@ var CreateAmtRemoteTerminal = function (divid) {
                     if (argslen == 1) {
                         _termx = args[0] - 1;
                         if (_termx < 0) _termx = 0;
-                        if (_termx > 79) _termx = 79;
+                        if (_termx > (obj.width - 1)) _termx = (obj.width - 1);
                     }
                     break;
                 case 'P': // Delete X Character(s), default 1 char
                     var x = 1;
                     if (argslen == 1) { x = args[0]; }
-                    for (i = _termx; i < 80 - x; i++) { _tscreen[_termy][i] = _tscreen[_termy][i + x]; _scratt[_termy][i] = _scratt[_termy][i + x]; }
-                    for (i = (80 - x); i < 80; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
+                    for (i = _termx; i < obj.width - x; i++) { _tscreen[_termy][i] = _tscreen[_termy][i + x]; _scratt[_termy][i] = _scratt[_termy][i + x]; }
+                    for (i = (obj.width - x); i < obj.width; i++) { _tscreen[_termy][i] = ' '; _scratt[_termy][i] = (7 << 6); }
                     break;
                 case 'L': // Insert X Line(s), default 1 char
                     var linecount = 1;
@@ -369,9 +372,9 @@ var CreateAmtRemoteTerminal = function (divid) {
                 case 'r': // Set the scroll region
                     if (argslen == 2) { _scrollRegion = [args[0] - 1, args[1] - 1]; }
                     if (_scrollRegion[0] < 0) { _scrollRegion[0] = 0; }
-                    if (_scrollRegion[0] > 24) { _scrollRegion[0] = 24; }
+                    if (_scrollRegion[0] > (obj.height - 1)) { _scrollRegion[0] = (obj.height - 1); }
                     if (_scrollRegion[1] < 0) { _scrollRegion[1] = 0; }
-                    if (_scrollRegion[1] > 24) { _scrollRegion[1] = 24; }
+                    if (_scrollRegion[1] > (obj.height - 1)) { _scrollRegion[1] = (obj.height - 1); }
                     if (_scrollRegion[0] > _scrollRegion[1]) { _scrollRegion[0] = _scrollRegion[1]; }
                     break;
                 case 'S': // Scroll up the scroll region X lines, default 1
@@ -597,7 +600,7 @@ var CreateAmtRemoteTerminal = function (divid) {
         _TermLineWrap = _cursorVisible = true;
         _termx = _termy = 0;
         _backSpaceErase = false;
-        _scrollRegion = [0, 24];
+        _scrollRegion = [0, (obj.height - 1)];
         _altKeypadMode = false;
         obj.TermClear(7 << 6);
     }
@@ -626,8 +629,8 @@ var CreateAmtRemoteTerminal = function (divid) {
         }
     }
 
-    obj.TermSendKeys = function (keys) { if (obj.debugmode == 2) { console.log("TSend(" + keys.length + "): " + rstr2hex(keys)); } obj.parent.send(keys); }
-    obj.TermSendKey = function (key) { if (obj.debugmode == 2) { console.log("TSend(1): " + rstr2hex(String.fromCharCode(key))); } obj.parent.send(String.fromCharCode(key)); }
+    obj.TermSendKeys = function (keys) { if (obj.debugmode == 2) { console.log("TSend(" + keys.length + "): " + rstr2hex(keys), keys); } obj.parent.send(keys); }
+    obj.TermSendKey = function (key) { if (obj.debugmode == 2) { console.log("TSend(1): " + rstr2hex(String.fromCharCode(key)), key); } obj.parent.send(String.fromCharCode(key)); }
 
     function _TermMoveUp(linecount) {
         var x, y;
@@ -730,7 +733,6 @@ var CreateAmtRemoteTerminal = function (divid) {
         buf = r[0];
         closetag = r[1];
         scrollBackBuffer.push(buf + closetag + '<br>');
-        if (scrollBackBuffer.length > 800) { scrollBackBuffer = scrollBackBuffer.slice(0, 800); }
     }
 
     obj.TermDrawLine = function (buf, y, closetag) {
@@ -771,8 +773,8 @@ var CreateAmtRemoteTerminal = function (divid) {
             if (y != (obj.height - 1)) buf += '<br>';
         }
 
-        var backbuffer = '';
-        for (var i in scrollBackBuffer) { backbuffer += scrollBackBuffer[i]; }
+        if (scrollBackBuffer.length > 800) { scrollBackBuffer = scrollBackBuffer.slice(scrollBackBuffer.length - 800); }
+        var backbuffer = scrollBackBuffer.join('');
         obj.DivElement.innerHTML = "<font size='4'><b>" + backbuffer + buf + closetag + "</b></font>";
         obj.DivElement.scrollTop = obj.DivElement.scrollHeight;
         if (obj.heightLock == 0) { setTimeout(obj.TermLockHeight, 10); }
@@ -785,7 +787,9 @@ var CreateAmtRemoteTerminal = function (divid) {
     }
 
     obj.TermInit = function () { obj.TermResetScreen(); }
-    
-    obj.Init();
+
+    obj.heightLock = 0;
+    obj.DivElement.style['height'] = '';
+    if ((options != null) && (options.width != null) && (options.height != null)) { obj.Init(options.width, options.height); } else { obj.Init(); }
     return obj;
 }
