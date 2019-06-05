@@ -128,6 +128,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var disconnectCommandCount = 0;
     var socketClosedCount = 0;
     var socketErrorCount = 0;
+    var maxDomainDevicesReached = 0;
 
     // Return statistics about this MPS server
     obj.getStats = function () {
@@ -153,7 +154,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             channelCloseCount: channelCloseCount,
             disconnectCommandCount: disconnectCommandCount,
             socketClosedCount: socketClosedCount,
-            socketErrorCount: socketErrorCount
+            socketErrorCount: socketErrorCount,
+            maxDomainDevicesReached : maxDomainDevicesReached
         };
     }
 
@@ -189,6 +191,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var xx = socket.tag.clientCert.subject.O.split('/');
                     if (xx.length == 1) { meshid = xx[0]; } else { domainid = xx[0].toLowerCase(); meshid = xx[1]; }
 
+                    // Check the incoming domain
+                    var domain = obj.parent.config.domains[domainid];
+                    if (domain == null) { console.log('CIRA connection for invalid domain. meshid: ' + meshid); socket.end(); return; }
+
+                    socket.tag.domain = domain;
                     socket.tag.domainid = domainid;
                     socket.tag.meshid = 'mesh/' + domainid + '/' + meshid;
                     socket.tag.nodeid = 'node/' + domainid + '/' + require('crypto').createHash('sha384').update(common.hex2rstr(socket.tag.clientCert.modulus, 'binary')).digest('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -203,16 +210,45 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             obj.db.Get(socket.tag.nodeid, function (err, nodes) {
                                 if ((nodes == null) || (nodes.length !== 1)) {
                                     if (mesh.mtype == 1) {
-                                        // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
-                                        obj.db.Set(device);
+                                        // Check if we already have too many devices for this domain
+                                        if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                                            db.isMaxType(domain.limits.maxdevices, 'node', domain.id, function (ismax, count) {
+                                                if (ismax == true) {
+                                                    // Too many devices in this domain.
+                                                    maxDomainDevicesReached++;
+                                                    console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
+                                                    socket.end();
+                                                } else {
+                                                    // We are under the limit, create the new device.
+                                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                                    obj.db.Set(device);
 
-                                        // Event the new node
-                                        addedTlsDeviceCount++;
-                                        var device2 = common.Clone(device);
-                                        if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                        var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                        obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+                                                    // Event the new node
+                                                    addedTlsDeviceCount++;
+                                                    var device2 = common.Clone(device);
+                                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                                    var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+
+                                                    // Add the connection to the MPS connection list
+                                                    obj.ciraConnections[socket.tag.nodeid] = socket;
+                                                    obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                                }
+                                            });
+                                            return;
+                                        } else {
+                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                            obj.db.Set(device);
+
+                                            // Event the new node
+                                            addedTlsDeviceCount++;
+                                            var device2 = common.Clone(device);
+                                            if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                            var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+                                        }
                                     } else {
                                         // New CIRA connection for unknown node, disconnect.
                                         unknownTlsNodeCount++;
@@ -312,6 +348,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
                         var systemid = socket.tag.SystemId.split('-').join('');
                         var nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                        var domain = obj.parent.config.domains[mesh.domain];
+                        socket.tag.domain = domain;
+                        socket.tag.domainid = mesh.domain;
                         socket.tag.name = '';
                         socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
                         socket.tag.meshid = mesh._id;
@@ -319,16 +358,46 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                         obj.db.Get(socket.tag.nodeid, function (err, nodes) {
                             if ((nodes == null) || (nodes.length !== 1)) {
-                                // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
-                                obj.db.Set(device);
+                                // Check if we already have too many devices for this domain
+                                if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                                    db.isMaxType(domain.limits.maxdevices, 'node', mesh.domain, function (ismax, count) {
+                                        if (ismax == true) {
+                                            // Too many devices in this domain.
+                                            maxDomainDevicesReached++;
+                                            console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
+                                            socket.end();
+                                        } else {
+                                            // We are under the limit, create the new device.
+                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                            obj.db.Set(device);
 
-                                // Event the new node
-                                addedDeviceCount++;
-                                var device2 = common.Clone(device);
-                                if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                            // Event the new node
+                                            addedDeviceCount++;
+                                            var device2 = common.Clone(device);
+                                            if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                            var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+
+                                            // Add the connection to the MPS connection list
+                                            obj.ciraConnections[socket.tag.nodeid] = socket;
+                                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                        }
+                                    });
+                                    return;
+                                } else {
+                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                    obj.db.Set(device);
+
+                                    // Event the new node
+                                    addedDeviceCount++;
+                                    var device2 = common.Clone(device);
+                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                }
                             } else {
                                 // Node is already present
                                 var node = nodes[0];
