@@ -8,6 +8,7 @@
 meshcentral.db
 meshcentral.db.json
 mesherrors.txt
+package-lock.json
 bob.json
 
 ## Ignore Visual Studio temporary files, build results, and
