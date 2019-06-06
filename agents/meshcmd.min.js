@@ -45,7 +45,7 @@ var wsstack = null, amtstack = null;
 var oswsstack = null, osamtstack = null;
 var amtMeiTmpState = null;
 var SMBiosTables = null;
-var globalDebugFlags = 0;
+var globalDebugFlags = 0; // 1 = IDER Debug
 const RCSMessageProtocolVersion = 1; // RCS Message Protocol Version.  Needs to be less than or equal to RCS server Message Protocol Version
 
 // MeshCommander for Firmware (GZIP'ed, Base64) v0.7.5
@@ -128,6 +128,10 @@ function run(argv) {
     if ((typeof args.script) == 'string') { settings.script = args.script; }
     if ((typeof args.agent) == 'string') { settings.agent = args.agent; }
     if ((typeof args.proxy) == 'string') { settings.proxy = args.proxy; }
+    if ((typeof args.floppy) == 'string') { settings.floppy = args.floppy; }
+    if ((typeof args.cdrom) == 'string') { settings.cdrom = args.cdrom; }
+    if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
+    if (args.debug === true) { settings.debuglevel = 1; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
     if (args.nocommander) { settings.noconsole = true; }
@@ -163,6 +167,7 @@ function run(argv) {
         console.log('  AmtSaveState      - Save all Intel AMT WSMAN object to file.');
         console.log('  AmtPresence       - Heartbeat a local Intel AMT watchdog agent.');
         console.log('  AmtScript         - Run .mescript on Intel AMT.');
+        console.log('  AmtIDER           - Mount local disk image to remote computer.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -274,6 +279,16 @@ function run(argv) {
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtider') {
+            console.log('AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:\r\n\r\n  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+            console.log('  --floppy [file]        Specifies .img file to be mounted as a flppy disk.');
+            console.log('  --cdrom [file]         Specifies .img file to be mounted as a CDROM disk.');
+            console.log('  --timeout [seconds]    Optional, disconnect after number of seconds without disk read.');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -492,6 +507,14 @@ function run(argv) {
             if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         } else { settings.hostname = '127.0.0.1'; }
         readAmtAuditLog();
+    } else if (settings.action == 'amtider') { // Remote mount IDER image
+        if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [password].'); exit(1); return; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if ((settings.floppy == null) || (typeof settings.floppy != 'string') || (settings.floppy == '')) { settings.floppy = null; }
+        if ((settings.cdrom == null) || (typeof settings.cdrom != 'string') || (settings.cdrom == '')) { settings.cdrom = null; }
+        if ((settings.floppy == null) && (settings.cdrom == null)) { console.log('No or invalid \"floppy\" or \"cdrom\" specified, use --floppy [file] or --cdrom [file].'); exit(1); return; }
+        performIder();
     } else {
         console.log('Invalid \"action\" specified.'); exit(1); return;
     }
@@ -1817,6 +1840,47 @@ function deleteStorage(name, func, noretry) {
     req.on('response', function (response) { if (func != null) { func(response.statusCode); } });
     req.end();
 }
+
+
+//
+//  IDER
+//
+
+ider = null;
+iderIdleTimer = null;
+
+// Perform IDER
+function performIder() {
+    if ((settings.floppy != null) && fs.existsSync(settings.floppy) == false) { console.log("Unable to floppy image file: " + settings.floppy); process.exit(); return; }
+    if ((settings.cdrom != null) && fs.existsSync(settings.cdrom) == false) { console.log("Unable to CDROM image file: " + settings.cdrom); process.exit(); return; }
+    try {
+        var sfloppy = null, scdrom = null;
+        if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
+        if (settings.cdrom) { try { scdrom = fs.statSync(settings.cdrom); if (scdrom) { scdrom.file = fs.openSync(settings.cdrom, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
+        
+        ider = require('amt-redir-duk')(require('amt-ider')());
+        ider.onStateChanged = onIderStateChange;
+        ider.m.floppy = sfloppy;
+        ider.m.cdrom = scdrom;
+        ider.m.iderStart = 1; // OnReboot = 0, Graceful = 1, Now = 2
+        ider.m.debug = (settings.debuglevel > 0);
+        if (settings.timeout > 0) { ider.m.sectorStats = iderSectorStats; }
+        //ider.digestRealmMatch = wsstack.comm.digestRealm;
+        //ider.tlsv1only = amtstack.wsman.comm.tlsv1only;
+        ider.Start(settings.hostname, (settings.tls == true)?16995:16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
+    } catch (ex) { console.log(ex); }
+}
+
+function onIderStateChange(stack, state) { console.log(['Disconnected', 'Connecting...', 'Connected...', 'Started IDER...'][state]);}
+
+function iderSectorStats(mode, dev, mediaBlocks, lba, len) {
+    if (iderIdleTimer != null) { clearTimeout(iderIdleTimer); }
+    iderIdleTimer = setTimeout(function () { console.log('Idle timeout'); process.exit(1); }, 1000 * settings.timeout);
+}
+
+//
+//  Startup
+//
 
 // Parse URL arguments
 function parseUrlArguments(url) {
