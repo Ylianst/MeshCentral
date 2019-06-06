@@ -8773,7 +8773,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             validateAgentInvite();
         }
 
-        function d2CopyInviteToClip() { navigator.clipboard.writeText(Q('agentInvitationLink').href); }
+        function d2CopyInviteToClip() { copyTextToClip(Q('agentInvitationLink').href); }
         
         function validateAgentInvite() {
             if ((features & 64) && (Q('d2InviteType').value == 1)) {
@@ -8882,7 +8882,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             var portStr = (serverinfo.port == 443) ? '' : (":" + serverinfo.port);
             var c = "https://" + servername + portStr + domainUrl + url;
             if (addflag == 1) c += Q('aginsType').value;
-            navigator.clipboard.writeText(c);
+            copyTextToClip(c);
         }
 
         function fileDownload(path, name, appendFlag) {
@@ -14172,5 +14172,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
         function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
         function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
+        function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
 
     </script></body></html>

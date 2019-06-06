@@ -285,8 +285,9 @@
             else { openTab(null, 'wintab64'); }
         }
 
-        function copyToClipLinuxInstall() { navigator.clipboard.writeText(linuxInstall); }
-        function copyToClipLinuxUnInstall() { navigator.clipboard.writeText(linuxUnInstall); }
+        function copyToClipLinuxInstall() { copyTextToClip(linuxInstall); }
+        function copyToClipLinuxUnInstall() { copyTextToClip(linuxUnInstall); }
+        function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
 
     </script>
 </body>
