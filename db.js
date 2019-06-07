@@ -706,6 +706,46 @@ module.exports.CreateDB = function (parent, func) {
         func(obj); // Completed function setup
     }
 
+    // Return a human readable string with current backup configuration
+    obj.getBackupConfig = function () {
+        var r = '', backupPath = parent.backuppath;
+        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+        const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
+        const currentDate = new Date();
+        const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
+        const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
+        const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
+
+        r += 'DB Name: ' + dbname + '\r\n';
+        r += 'DB Type: ' + ['None','NeDB','MongoJS','MongoDB'][obj.databaseType] + '\r\n';
+        r += 'BackupPath: ' + backupPath + '\r\n';
+        r += 'newAutoBackupFile: ' + newAutoBackupFile + '\r\n';
+        r += 'newAutoBackupPath: ' + newAutoBackupPath + '\r\n';
+
+        if (parent.config.settings.autobackup == null) {
+            r += 'No Settings/AutoBackup\r\n';
+        } else {
+            if (parent.config.settings.autobackup.backupintervalhours != null) {
+                if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
+                else { r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
+                if (typeof parent.config.settings.autobackup.keeplastdaysbackup != 'number') { r += 'Bad keeplastdaysbackup type\r\n'; }
+                else { r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.zippassword != null) {
+                if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type\r\n'; }
+                else { r += 'ZIP Password Set\r\n'; }
+            }
+            if (parent.config.settings.autobackup.mongodumppath != null) {
+                if (typeof parent.config.settings.autobackup.mongodumppath != 'string') { r += 'Bad mongodumppath type\r\n'; }
+                else { r += 'MongoDump Path: ' + parent.config.settings.autobackup.mongodumppath + '\r\n'; }
+            }
+        }
+
+        return r;
+    }
+
     obj.performingBackup = false;
     obj.performBackup = function () {
         try {
