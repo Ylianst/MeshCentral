@@ -54,7 +54,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (obj.serverStatsTimer != null) { clearInterval(obj.serverStatsTimer); delete obj.serverStatsTimer; }
         if (req.session && req.session.ws && req.session.ws == ws) { delete req.session.ws; }
         if (parent.wssessions2[ws.sessionId]) { delete parent.wssessions2[ws.sessionId]; }
-        if (parent.wssessions[obj.user._id]) {
+        if ((obj.user != null) && (parent.wssessions[obj.user._id])) {
             var i = parent.wssessions[obj.user._id].indexOf(ws);
             if (i >= 0) {
                 parent.wssessions[obj.user._id].splice(i, 1);
