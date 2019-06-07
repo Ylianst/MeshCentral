@@ -81,6 +81,9 @@
         "_MaxAgentSessions": 100,
         "MaxSingleUserSessions": 10
       },
+      "_Redirects": {
+        "meshcommander": "https://www.meshcommander.com/"
+      },
       "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
       "_httpheaders": { "Strict-Transport-Security": "max-age=360000" },
       "_agentConfig": [ "webSocketMaskOverride=1" ]

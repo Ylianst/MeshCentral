@@ -40,6 +40,7 @@
             border: 1px solid #ccc;
             border-top: none;
         }
+
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="display:none;overflow:hidden">
@@ -69,7 +70,7 @@
             </div>
         </div>
         <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
-            <h1>Agent Installation<span id="groupname"></span></h1>
+            <h1>Remote Agent Installation<span id="groupname"></span></h1>
             <p>
                 You have been invited to install a software that will allow a remote operator to fully access your computer remotely including the desktop and files.
                 Only follow the instructions below if this invitation was expected and you know who will be accessing your computer.
@@ -87,7 +88,7 @@
                     <h3>Microsoft&trade; Windows 64bit</h3>
                     <p><a id="win64url">Download the software here</a>, run it and press "Install" or "Connect".</p>
                     <div style="text-align:center">
-                        <img src="images/winagent.png" />
+                        <img class="winagent-img" src="images/winagent.png" />
                     </div>
                 </div>
 
@@ -95,7 +96,7 @@
                     <h3>Microsoft&trade; Windows 32bit</h3>
                     <p><a id="win32url">Download the software here</a>, run it and press "Install" or "Connect".</p>
                     <div style="text-align:center">
-                        <img src="images/winagent.png" />
+                        <img class="winagent-img" src="images/winagent.png" />
                     </div>
                 </div>
 
@@ -142,7 +143,7 @@
         var serverNoProxy = "{{{servernoproxy}}}";
         var installFlags = "{{{installflags}}}";
         var groupName = decodeURIComponent("{{{meshname}}}");
-        if (groupName != '') { QH('groupname', ' - ' + groupName); }
+        if (groupName != '') { QH('groupname', ' for ' + groupName); }
         userInterfaceSelectMenu();
         setup();
 
