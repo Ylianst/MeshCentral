@@ -46,6 +46,9 @@
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",
       "_backupPath": "C:\\backups"
+    },
+    "_Redirects": {
+      "meshcommander": "https://www.meshcommander.com/"
     }
   },
   "_domains": {
