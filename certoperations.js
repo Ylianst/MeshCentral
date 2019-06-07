@@ -196,7 +196,7 @@ module.exports.CertificateOperations = function (parent) {
     }
 
     // Return true if the name is found in the certificates names, we support wildcard certificates
-    function compareCertificateNames(certNames, name) {
+    obj.compareCertificateNames = function(certNames, name) {
         if (certNames == null) return false;
         if (certNames.indexOf(name.toLowerCase()) >= 0) return true;
         for (var i in certNames) {
@@ -317,9 +317,14 @@ module.exports.CertificateOperations = function (parent) {
                 if (commonName.startsWith('*.')) { console.log("ERROR: Server can't use a wildcard name: " + commonName); process.exit(0); return; }
                 r.CommonName = commonName;
             }
-            r.CommonNames = [r.CommonName.toLowerCase()];
+            r.CommonNames = [ r.CommonName.toLowerCase() ];
             var altNames = webCertificate.getExtension("subjectAltName");
-            if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { r.CommonNames.push(altNames.altNames[i].value.toLowerCase()); } }
+            if (altNames) {
+                for (i = 0; i < altNames.altNames.length; i++) {
+                    var acn = altNames.altNames[i].value.toLowerCase();
+                    if (r.CommonNames.indexOf(acn) == -1) { r.CommonNames.push(acn); }
+                }
+            }
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
             r.RootName = rootCertificate.subject.getField("CN").value;
         }
@@ -330,7 +335,7 @@ module.exports.CertificateOperations = function (parent) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
-                if (compareCertificateNames(r.CommonNames, dnsname) == true) {
+                if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
                     r.dns[i] = { cert: obj.fileLoad("webserver-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-cert-private.key", "utf8") };
                 } else {
                     if (args.tlsoffload) {
@@ -374,7 +379,7 @@ module.exports.CertificateOperations = function (parent) {
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates
-            if (compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; }
+            if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; }
             if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
 
             // If the certificates matches what we want, use them.
@@ -426,9 +431,14 @@ module.exports.CertificateOperations = function (parent) {
             obj.fs.writeFileSync(parent.getConfigFilePath("webserver-cert-private.key"), webPrivateKey);
         } else {
             // Keep the console certificate we have
-            webCertAndKey = { cert: obj.pki.certificateFromPem(r.web.cert), key: obj.pki.privateKeyFromPem(r.web.key) };
-            webCertificate = r.web.cert;
-            webPrivateKey = r.web.key;
+            if (args.tlsoffload) {
+                webCertAndKey = { cert: obj.pki.certificateFromPem(r.web.cert) };
+                webCertificate = r.web.cert;
+            } else {
+                webCertAndKey = { cert: obj.pki.certificateFromPem(r.web.cert), key: obj.pki.privateKeyFromPem(r.web.key) };
+                webCertificate = r.web.cert;
+                webPrivateKey = r.web.key;
+            }
         }
         var webIssuer = webCertAndKey.cert.issuer.getField("CN").value;
 
@@ -486,7 +496,7 @@ module.exports.CertificateOperations = function (parent) {
             if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
-                if (compareCertificateNames(r.CommonNames, dnsname) == true) {
+                if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
                     r.dns[i] = { cert: obj.fileLoad("webserver-cert-public.crt", "utf8"), key: obj.fileLoad("webserver-cert-private.key", "utf8") };
                 } else {
                     if (!args.tlsoffload) {

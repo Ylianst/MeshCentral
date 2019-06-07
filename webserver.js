@@ -911,7 +911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { res.sendStatus(404); return; }
 
         // Get the email from the body or session.
         var email = req.body.email;
@@ -1416,7 +1416,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var message = '';
         if (err != null) message = '<p class="msg error">' + err + '</p>';
         if (msg != null) message = '<p class="msg success">' + msg + '</p>';
-        var emailcheck = ((obj.parent.mailserver != null) && (domain.auth != 'sspi'));
+        var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
         // Check if we are allowed to create new users using the login screen
         var newAccountsAllowed = true;
