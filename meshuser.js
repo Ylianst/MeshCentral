@@ -2501,7 +2501,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createInviteLink': {
                 if (common.validateString(command.meshid, 8, 128) == false) break; // Check the meshid
-                if (common.validateInt(command.expire, 1, 99999) == false) break; // Check the expire time in hours
+                if (common.validateInt(command.expire, 0, 99999) == false) break; // Check the expire time in hours
                 if (common.validateInt(command.flags, 0, 256) == false) break; // Check the flags
                 var mesh = parent.meshes[command.meshid];
                 if (mesh == null) break;

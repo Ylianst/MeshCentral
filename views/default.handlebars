@@ -1998,6 +1998,7 @@
                     if (message.expire == 24) { t = '1 day'; }
                     if (message.expire == 168) { t = '1 week'; }
                     if (message.expire == 5040) { t = '1 month'; }
+                    if (message.expire == 0) { t = 'Unlimited'; }
                     QH('agentInvitationLink', 'Invitation Link (' + t + ')');
                     QV('agentInvitationLinkDiv', true);
                     break;
@@ -2708,7 +2709,7 @@
                 x += '</div>';
             }
             x += '<div id=urlInviteDiv>Invite someone to install the mesh agent by sharing a invitation link. This link points the user to installation instructions for the \"' + EscapeHtml(mesh.name) + '\" device group. The link is public and no account this server is needed.<br /><br />';
-            x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option></select>');
+            x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option><option value=0>Unlimited</option></select>');
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a id=agentInvitationLink target="_blank" href="" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="Copy link to clipboard" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             validateAgentInvite();

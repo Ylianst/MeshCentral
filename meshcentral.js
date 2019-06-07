@@ -1555,7 +1555,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
-                if ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             }
             return o;
         } catch (ex) { obj.debug(1, 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
@@ -1583,7 +1583,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
-                if ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             }
             return o;
         } catch (ex) { obj.debug(1, 'ERR: Bad AESSHA cookie due to exception: ' + ex); return null; }

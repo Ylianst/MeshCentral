@@ -1699,6 +1699,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Handle domain redirection
+    function handleDomainRedirect(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
+        var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split("?");
+        if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
+        if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
+        if ((urlName == null) || (domain.redirects[urlName] == null)) { res.sendStatus(404); return; }
+        res.redirect(domain.redirects[urlName] + urlArgs);
+    }
+
     // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
     obj.getServerFilePath = function (user, domain, path) {
         var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
@@ -2715,6 +2726,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
+
+            // Server redirects
+            if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { obj.app.get(url + j, handleDomainRedirect); } }
 
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
