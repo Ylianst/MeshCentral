@@ -724,7 +724,7 @@
                         <td style=width:200px>
                             <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
                                 <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp">
-                                <img alt="" width=200 height=200 src=images/user-256.jpg />
+                                <img alt="" width=200 height=200 src=images/user-256.png />
                             </picture>
                             <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
                         </td>
@@ -1437,10 +1437,17 @@
 
                             if (currentNode.lastconnect) { x += addHtmlValue2('Last agent connection', new Date(currentNode.lastconnect).toLocaleString()); }
                             if (currentNode.lastaddr) {
-                                if (isPrivateIP(currentNode.lastaddr)) {
-                                    x += addHtmlValue2('Last agent address', currentNode.lastaddr.split(':')[0]);
+                                var splitip = currentNode.lastaddr.split(':');
+                                if (splitip.length > 2) {
+                                    // IPv6
+                                    x += addHtmlValue2('Last agent address', currentNode.lastaddr);
                                 } else {
-                                    x += addHtmlValue2('Last agent address', '<a href="https://iplocation.com/?ip=' + currentNode.lastaddr.split(':')[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + currentNode.lastaddr.split(':')[0] + '</a>');
+                                    // IPv4
+                                    if (isPrivateIP(currentNode.lastaddr)) {
+                                        x += addHtmlValue2('Last agent address', splitip[0]);
+                                    } else {
+                                        x += addHtmlValue2('Last agent address', '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a>');
+                                    }
                                 }
                             }
 
@@ -2708,7 +2715,7 @@
                 x += addHtmlValue('Message<br />(optional)', '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
                 x += '</div>';
             }
-            x += '<div id=urlInviteDiv>Invite someone to install the mesh agent by sharing a invitation link. This link points the user to installation instructions for the \"' + EscapeHtml(mesh.name) + '\" device group. The link is public and no account this server is needed.<br /><br />';
+            x += '<div id=urlInviteDiv>Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"' + EscapeHtml(mesh.name) + '\" device group. The link is public and no account for this server is needed.<br /><br />';
             x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option><option value=0>Unlimited</option></select>');
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a id=agentInvitationLink target="_blank" href="" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="Copy link to clipboard" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
@@ -7019,7 +7026,7 @@
             if (user.links) { for (var i in user.links) { groups++; } }
 
             var username = EscapeHtml(user.name), emailVerified = '';
-            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="Email is not verified">&#x1F5F4</b>' : ' <b style=color:green title="Email is verified">&#x1F5F8</b>'); }
+            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="Email is not verified">&#x2717;</b>' : ' <b style=color:green title="Email is verified">&#x2713</b>'); }
             if (user.email != null) { username += ', <a onclick=doemail(event,\"' + user.email + '\")>' + user.email + '</a>' + emailVerified; }
 
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="2nd factor authentication enabled" style="margin-top:2px" />'; }
@@ -7300,7 +7307,7 @@
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>Not set</i>', everify = '';
-            if (serverinfo.emailcheck) { everify = ((user.emailVerified == true)?'<b style=color:green;cursor:pointer title="Email is verified">&#x1F5F8</b> ':'<b style=color:red;cursor:pointer title="Email not verified">&#x1F5F4</b> '); }
+            if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="Email is verified">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="Email not verified">&#x2717;</b> '); }
             if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute('User Identifier', user._id.split('/')[2]); }
             if ((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF)) { // If we are not site admin, we can't change a admin email.
                 x += addDeviceAttribute('Email', everify + "<a style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"" + userid + "\")>" + email + '</a> <a style=cursor:pointer onclick=doemail(event,\"' + user.email + '\")><img class=hoverButton src="images/link1.png" /></a>');
@@ -7656,7 +7663,8 @@
             } else {
                 for (var i in notifications) {
                     var n = notifications[i];
-                    var t = '<b>' + n.title + '</b>: '
+                    var t = '';
+                    if (n.title != null) { t = '<b>' + n.title + '</b>: ' }
                     var d = new Date(n.time);
                     var icon = 0;
                     if (n.nodeid != null) {
@@ -7736,13 +7744,15 @@
             // If web notifications are granted, use it.
             var notification = null;
             if (Notification && (Notification.permission == "granted")) {
-                var text = n.text.split('&reg;').join(''); // Clean up any HTML codes
+                var text = n.text.split('&reg;').join('').split('<b>').join('').split('</b>').join('').split('<br />').join('\r\n'); // Clean up any HTML codes
                 if (n.nodeid) {
                     var node = getNodeFromId(n.nodeid);
                     if (node) { notification = new Notification("{{{title}}} - " + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
                 } else {
                     if (n.icon == null) { n.icon = 0; }
-                    notification = new Notification("{{{title}}} - " + n.title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
+                    var title = n.title;
+                    if (title == null) { title = ''; } else { title = ' - ' + n.title; }
+                    notification = new Notification("{{{title}}}" + title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
                 }
                 notification.id = n.id;
                 notification.xtag = n.tag;
