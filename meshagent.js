@@ -696,11 +696,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
 
-            completeAgentConnection3(device);
+            completeAgentConnection3(device, mesh);
         });
     }
 
-    function completeAgentConnection2(device) {
+    function completeAgentConnection2() {
         // See if this mesh exists, if it does not we may want to create it.
         var mesh = getMeshAutoCreate();
 
@@ -736,10 +736,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
         }
 
-        completeAgentConnection3(device);
+        completeAgentConnection3(device, mesh);
     }
 
-    function completeAgentConnection3(device) {
+    function completeAgentConnection3(device, mesh) {
         // Check if this agent is already connected
         const dupAgent = parent.wsagents[obj.dbNodeKey];
         parent.wsagents[obj.dbNodeKey] = obj;
