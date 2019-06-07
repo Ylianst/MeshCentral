@@ -816,6 +816,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
+                    if (obj.args.lanonly == true) { console.log("WARNING: SMTP server has limited use in LAN mode."); }
                 }
 
                 // Start periodic maintenance

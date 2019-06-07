@@ -92,7 +92,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                         certs.web.ca = [results.chain];
                     }
                     for (var i in obj.parent.config.domains) {
-                        if ((obj.parent.config.domains[i].dns != null) && (results.altnames.indexOf(obj.parent.config.domains[i].dns) >= 0)) {
+                        if ((obj.parent.config.domains[i].dns != null) && (obj.parent.certificateOperations.compareCertificateNames(results.altnames, obj.parent.config.domains[i].dns))) {
                             certs.dns[i].cert = results.cert;
                             certs.dns[i].key = results.privkey;
                             certs.dns[i].ca = [results.chain];
