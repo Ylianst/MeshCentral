@@ -59,6 +59,7 @@ function CreateMeshCentralServer(config, args) {
     obj.currentVer = null;
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
+    obj.invitationLinkEncryptionKey = null;
     obj.serverSelfWriteAllowed = true;
     obj.serverStatsCounter = Math.floor(Math.random() * 1000);
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
@@ -835,6 +836,15 @@ function CreateMeshCentralServer(config, args) {
                         }
                     });
                 }
+
+                // Load the invitation link encryption key from the database
+                obj.db.Get('InvitationLinkEncryptionKey', function (err, docs) {
+                    if ((docs.length > 0) && (docs[0].key != null) && (docs[0].key.length >= 160)) {
+                        obj.invitationLinkEncryptionKey = Buffer.from(docs[0].key, 'hex');
+                    } else {
+                        obj.invitationLinkEncryptionKey = obj.generateCookieKey(); obj.db.Set({ _id: 'InvitationLinkEncryptionKey', key: obj.invitationLinkEncryptionKey.toString('hex'), time: Date.now() });
+                    }
+                });
 
                 // Start collecting server stats every 5 minutes
                 setInterval(function () {

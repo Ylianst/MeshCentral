@@ -2509,7 +2509,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (common.validateInt(command.flags, 0, 256) == false) break; // Check the flags
                 var mesh = parent.meshes[command.meshid];
                 if (mesh == null) break;
-                const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.loginCookieEncryptionKey);
+                const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.invitationLinkEncryptionKey);
                 if (inviteCookie == null) break;
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, expire: command.expire, cookie: inviteCookie }));
                 break;
