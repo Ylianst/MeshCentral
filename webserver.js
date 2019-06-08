@@ -1070,7 +1070,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) { res.sendStatus(404); return; }
         if (req.query.c != null) {
             // A cookie is specified in the query string, use that
-            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey);
+            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey);
             if (cookie == null) { res.sendStatus(404); return; }
             var mesh = obj.meshes[cookie.mid];
             if (mesh == null) { res.sendStatus(404); return; }
