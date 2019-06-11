@@ -571,6 +571,7 @@
     <iframe name="fileUploadFrame" style=display:none></iframe>
     <script>
         'use strict';
+        var args = parseUriArgs();
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var sessionTime = parseInt("{{{sessiontime}}}");
@@ -1361,7 +1362,7 @@
 
                 // Figure out the date
                 //var fdatestr = '';
-                //if (f.d != null) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + fdate.toLocaleTimeString() + "&nbsp;"; }
+                //if (f.d != null) { var fdate = new Date(f.d), fdatestr = (fdate.getMonth() + 1) + "/" + (fdate.getDate()) + "/" + fdate.getFullYear() + " " + printTime(fdate) + "&nbsp;"; }
 
                 // Figure out the size
                 var fsize = '';
@@ -1973,12 +1974,12 @@
                         var te = Math.min(Math.min(end, block[1]), now);
                         var width = Math.round(((te - ts) * totalWidth) / 86400000);
                         if (width > 0) {
-                            var title = powerStateStrings2[block[2]] + ' from ' + new Date(ts).toLocaleTimeString() + ' to ' + new Date(te).toLocaleTimeString() + '.';
+                            var title = powerStateStrings2[block[2]] + ' from ' + printTime(new Date(ts)) + ' to ' + printTime(new Date(te)) + '.';
                             datavalue += '<div title="' + title + '" style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>';
                         }
                     }
                 }
-                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + date.toLocaleDateString() + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
@@ -3145,6 +3146,10 @@
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+        function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+        function printDate(d) { return d.toLocaleDateString(args.locale); }
+        function printTime(d) { return d.toLocaleTimeString(args.locale); }
+        function printDateTime(d) { return d.toLocaleString(args.locale); }
 
     </script>
 </body>

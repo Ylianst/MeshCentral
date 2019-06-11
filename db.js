@@ -877,7 +877,9 @@ module.exports.CreateDB = function (parent, func) {
         for (var i in muser) { if (user[i] == null) { delete muser[i]; } }
 
         // Send the user update
-        parent.DispatchEvent(['*', 'server-users', user._id], obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: (added ? 'accountcreate' : 'accountchange'), domain: user.domain, nolog: 1 });
+        var targets = ['*', 'server-users', user._id];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: (added ? 'accountcreate' : 'accountchange'), domain: user.domain, nolog: 1 });
     }
 
     return obj;

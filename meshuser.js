@@ -28,6 +28,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_SERVERFILES = 32;
     const MESHRIGHT_WAKEDEVICE = 64;
     const MESHRIGHT_SETNOTES = 128;
+    const MESHRIGHT_REMOTEVIEWONLY = 256;
+    const MESHRIGHT_NOTERMINAL = 512;
+    const MESHRIGHT_NOFILES = 1024;
+    const MESHRIGHT_NOAMT = 2048;
+    const MESHRIGHT_DESKLIMITEDINPUT = 4096;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -36,6 +41,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_FILEACCESS = 8;
     const SITERIGHT_SERVERUPDATE = 16;
     const SITERIGHT_LOCKED = 32;
+    const SITERIGHT_NONEWGROUPS = 64;
+    const SITERIGHT_NOMESHCMD = 128;
 
     var obj = {};
     obj.user = user;
