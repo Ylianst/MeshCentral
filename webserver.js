@@ -917,7 +917,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var email = req.body.email;
         if ((email == null) || (email == '')) { email = req.session.tokenemail; }
 
-        // Check the email stirng format
+        // Check the email string format
         if (!email || checkEmail(email) == false) {
             req.session.loginmode = '3';
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
@@ -929,42 +929,56 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     req.session.error = '<b style=color:#8C001A>Account not found.</b>';
                     res.redirect(domain.url);
                 } else {
-                    var user = docs[0];
-                    if (checkUserOneTimePasswordRequired(domain, user) == true) {
-                        // Second factor setup, request it now.
-                        checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
-                            if (result == false) {
-                                // 2-step auth is required, but the token is not present or not valid.
-                                if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
-                                req.session.loginmode = '5';
-                                req.session.tokenemail = email;
-                                res.redirect(domain.url);
-                            } else {
-                                // Send email to perform recovery.
-                                delete req.session.tokenemail;
-                                if (obj.parent.mailserver != null) {
-                                    obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                    // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
+                    var responseSent = false;
+                    for (var i in docs) {
+                        var user = docs[i];
+                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                            // Second factor setup, request it now.
+                            checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
+                                if (result == false) {
+                                    if (i == 0) {
+                                        // 2-step auth is required, but the token is not present or not valid.
+                                        if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                                        req.session.loginmode = '5';
+                                        req.session.tokenemail = email;
+                                        res.redirect(domain.url);
+                                    }
+                                } else {
+                                    // Send email to perform recovery.
+                                    delete req.session.tokenemail;
+                                    if (obj.parent.mailserver != null) {
+                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                                        if (i == 0) {
+                                            req.session.loginmode = '1';
+                                            req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                                            res.redirect(domain.url);
+                                        }
+                                    } else {
+                                        if (i == 0) {
+                                            req.session.loginmode = '3';
+                                            req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                                            res.redirect(domain.url);
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            // No second factor, send email to perform recovery.
+                            if (obj.parent.mailserver != null) {
+                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                                if (i == 0) {
                                     req.session.loginmode = '1';
                                     req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
                                     res.redirect(domain.url);
-                                } else {
+                                }
+                            } else {
+                                if (i == 0) {
                                     req.session.loginmode = '3';
                                     req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
                                     res.redirect(domain.url);
                                 }
                             }
-                        });
-                    } else {
-                        // No second factor, send email to perform recovery.
-                        if (obj.parent.mailserver != null) {
-                            obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
-                            req.session.loginmode = '1';
-                            req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
-                            res.redirect(domain.url);
-                        } else {
-                            req.session.loginmode = '3';
-                            req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
-                            res.redirect(domain.url);
                         }
                     }
                 }
