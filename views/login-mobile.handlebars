@@ -72,6 +72,7 @@
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
                                     </div>
+                                    <input id=loginformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
                             <div id=createpanel style="display:none">
@@ -117,6 +118,7 @@
                                             </tr>
                                         </table>
                                         <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                        <input id=createformargs name="urlargs" type="hidden" value="" />
                                     </form>
                                 </div>
                             </div>
@@ -141,6 +143,7 @@
                                         </tr>
                                     </table>
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <input id=resetformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
                             <div id=tokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
@@ -163,6 +166,7 @@
                                         </tr>
                                     </table>
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <input id=tokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
 
@@ -186,6 +190,7 @@
                                         </tr>
                                     </table>
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <input id=resettokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
 
@@ -216,6 +221,7 @@
                                         </tr>
                                     </table>
                                     <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <input id=resetpasswordformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
 
@@ -263,6 +269,17 @@
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         var currentpanel = 0;
+
+        // If URL arguments are provided, add them to form posts
+        if (window.location.href.indexOf('?') > 0) {
+            var urlargs = window.location.href.substring(window.location.href.indexOf('?'));
+            Q('loginformargs').value = urlargs;
+            Q('createformargs').value = urlargs;
+            Q('resetformargs').value = urlargs;
+            Q('tokenformargs').value = urlargs;
+            Q('resettokenformargs').value = urlargs;
+            Q('resetpasswordformargs').value = urlargs;
+        }
 
         function startup() {
             if ((features & 32) == 0) {
