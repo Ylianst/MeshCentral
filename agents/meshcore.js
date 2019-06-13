@@ -1832,11 +1832,25 @@ function createMeshCore(agent) {
                 try {
                     if (meinfo == null) return;
                     var intelamt = {}, p = false;
-                    if (meinfo.Versions && meinfo.Versions.AMT) { intelamt.ver = meinfo.Versions.AMT; p = true; }
-                    if (meinfo.ProvisioningState) { intelamt.state = meinfo.ProvisioningState; p = true; }
-                    if (meinfo.Flags) { intelamt.flags = meinfo.Flags; p = true; }
-                    if (meinfo.OsHostname) { intelamt.host = meinfo.OsHostname; p = true; }
-                    if (meinfo.UUID) { intelamt.uuid = meinfo.UUID; p = true; }
+                    if ((meinfo.Versions != null) && (meinfo.Versions.AMT != null)) { intelamt.ver = meinfo.Versions.AMT; p = true; }
+                    if (meinfo.ProvisioningState != null) { intelamt.state = meinfo.ProvisioningState; p = true; }
+                    if (meinfo.Flags != null) { intelamt.flags = meinfo.Flags; p = true; }
+                    if (meinfo.OsHostname != null) { intelamt.host = meinfo.OsHostname; p = true; }
+                    if (meinfo.UUID != null) { intelamt.uuid = meinfo.UUID; p = true; }
+                    if ((meinfo.ProvisioningState == 0) && (meinfo.net0 != null) && (meinfo.net0.enabled == 1)) { // If not activated, look to see if we have wired net working.
+                        // Not activated and we have wired ethernet, look for the trusted DNS
+                        var dns = meinfo.dns;
+                        if (dns == null) {
+                            // Trusted DNS not set, let's look for the OS network DNS suffix
+                            var interfaces = require('os').networkInterfaces();
+                            for (var i in interfaces) {
+                                for (var j in interfaces[i]) {
+                                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { dns = interfaces[i][j].fqdn; }
+                                }
+                            }
+                        }
+                        if (intelamt.dns != dns) { intelamt.dns = dns; p = true; }
+                    } else { if (intelamt.dns != null) { delete intelamt.dns; p = true; } }
                     if (p == true) {
                         var meInfoStr = JSON.stringify(intelamt);
                         if (meInfoStr != lastMeInfo) {

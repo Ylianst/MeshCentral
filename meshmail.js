@@ -14,6 +14,8 @@
 /*jshint esversion: 6 */
 "use strict";
 
+// TODO: Add NTML support with "nodemailer-ntlm-auth" https://github.com/nodemailer/nodemailer-ntlm-auth
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshMail = function (parent) {
     var obj = {};

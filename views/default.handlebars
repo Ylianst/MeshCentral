@@ -1302,6 +1302,7 @@
         }
 
         function onMessage(server, message) {
+            if (args.trace == 1) { console.log('MSG:', message); }
             switch (message.action) {
                 case 'serverstats': {
                     updateGeneralServerStats(message);

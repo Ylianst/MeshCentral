@@ -1395,20 +1395,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
                     if ((command.meshtype == 1) || (command.meshtype == 2)) {
                         parent.crypto.randomBytes(48, function (err, buf) {
+                            // Create new device group identifier
                             meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+
+                            // Create the new device group
                             var links = {};
                             links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
                             mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
                             db.Set(common.escapeLinksFieldName(mesh));
                             parent.meshes[meshid] = mesh;
                             parent.parent.AddEventDispatch([meshid], ws);
+
+                            // Change the user to make him administration of the new device group
                             if (user.links == null) user.links = {};
                             user.links[meshid] = { rights: 0xFFFFFFFF };
                             user.subscriptions = parent.subscribe(user._id, ws);
                             db.SetUser(user);
+
+                            // Event the user change
+                            var targets = ['*', 'server-users', user._id];
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            var event = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+
+                            // Event the device group creation
                             var event = { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the mesh. Another event will come.
-                            parent.parent.DispatchEvent(['*', meshid, user._id], obj, event);
+                            parent.parent.DispatchEvent(['*', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
                         });
                     }
                     break;
@@ -1427,8 +1440,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Fire the removal event first, because after this, the event will not route
                         var event = { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the mesh. Another event will come.
-                        parent.parent.DispatchEvent(['*', command.meshid], obj, event);
+                        parent.parent.DispatchEvent(['*', command.meshid], obj, event); // Even if DB change stream is active, this event need to be acted on.
 
                         // Remove all user links to this mesh
                         for (i in meshes) {

@@ -516,6 +516,15 @@ function AmtManager(agent, db, isdebug) {
                 var wsmanQuery = ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP', 'AMT_PublicKeyCertificate', '*AMT_EnvironmentDetectionSettingData'];
                 if (amtpolicy.cirasetup == 2) { wsmanQuery.push("AMT_ManagementPresenceRemoteSAP", "AMT_RemoteAccessCredentialContext", "AMT_RemoteAccessPolicyAppliesToMPS", "AMT_RemoteAccessPolicyRule", "*AMT_UserInitiatedConnectionService", "AMT_MPSUsernamePassword"); }
                 try { amtstack.BatchEnum(null, wsmanQuery, wsmanPassTestResponse); } catch (ex) { debug(ex); }
+            } else if ((amtpolicy.type == 3) && (meinfo.ProvisioningState == 0)) {
+                // ACM Activation Policy
+                // TODO: Check that we have wired ethernet enabled and that the DNS domain suffix matches a server certificate...
+
+                // TODO: Check that a trusted hash matches the server cert root hash...
+
+                // TODO: Fetch Intel AMT Realm and Nonce and get ready to ACM activation...
+
+                //console.log(meinfo);
             } else {
                 // Other possible cases...
             }
