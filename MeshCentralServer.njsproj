@@ -24,8 +24,10 @@
     <Compile Include="agents\meshcmd.min.js" />
     <Compile Include="agents\meshcore.js" />
     <Compile Include="agents\meshcore.min.js" />
+    <Compile Include="agents\modules_meshcmd\amt-ider.js" />
     <Compile Include="agents\modules_meshcmd\amt-lme.js" />
     <Compile Include="agents\modules_meshcmd\amt-mei.js" />
+    <Compile Include="agents\modules_meshcmd\amt-redir-duk.js" />
     <Compile Include="agents\modules_meshcmd\amt-scanner.js" />
     <Compile Include="agents\modules_meshcmd\amt-script.js" />
     <Compile Include="agents\modules_meshcmd\amt-wsman-duk.js" />
