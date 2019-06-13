@@ -714,6 +714,30 @@ function CreateMeshCentralServer(config, args) {
 
         // Load any domain web certificates
         for (i in obj.config.domains) {
+            // Load any Intel AMT ACM activation certificates
+            if (obj.config.domains[i].amtacmactivation && obj.config.domains[i].amtacmactivation.certs) {
+                var badAcmConfigs = [], dnsmatch = [], amtAcmCertCount = 0;
+                for (var j in obj.config.domains[i].amtacmactivation.certs) {
+                    var acmconfig = obj.config.domains[i].amtacmactivation.certs[j];
+                    if (acmconfig.dnsmatch == null) { acmconfig.dnsmatch = [ j ]; }
+                    if (typeof acmconfig.dnsmatch == 'string') { acmconfig.dnsmatch = [ acmconfig.dnsmatch ]; }
+                    if (typeof acmconfig.dnsmatch.length == 0) { badAcmConfigs.push(j); continue; }
+                    if (typeof acmconfig.cert != 'string') { badAcmConfigs.push(j); continue; }
+                    var r = null;
+                    try { r = obj.certificateOperations.loadPfxCertificate(obj.path.join(obj.datapath, acmconfig.cert), acmconfig.certpass); } catch (ex) { console.log(ex); }
+                    if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length == 0)) { badAcmConfigs.push(j); continue; }
+                    delete acmconfig.cert;
+                    delete acmconfig.certpass;
+                    acmconfig.certs = r.certs;
+                    acmconfig.keys = r.keys;
+                    for (var k in acmconfig.dnsmatch) { if (dnsmatch.indexOf(acmconfig.dnsmatch[k]) == -1) { dnsmatch.push(acmconfig.dnsmatch[k]); } }
+                    amtAcmCertCount++;
+                }
+                // Remove all bad configurations
+                for (var j in badAcmConfigs) { console.log('WARNING: Incorrect Intel AMT ACM configuration "' + i + (i == '' ? '' : '/') + badAcmConfigs[j] + '".'); delete obj.config.domains[i].amtacmactivationcerts[j]; }
+                if (amtAcmCertCount == 0) { delete obj.config.domains[i].amtacmactivation; } else { obj.config.domains[i].amtacmactivation.dnsmatch = dnsmatch; }
+            }
+
             if (obj.config.domains[i].certurl != null) {
                 // Fix the URL and add 'https://' if needed
                 if (obj.config.domains[i].certurl.indexOf('://') < 0) { obj.config.domains[i].certurl = 'https://' + obj.config.domains[i].certurl; }

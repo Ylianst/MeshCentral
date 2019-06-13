@@ -27,6 +27,23 @@ module.exports.CertificateOperations = function (parent) {
     obj.getFilesizeInBytes = function (filename) { try { return obj.fs.statSync(filename).size; } catch (err) { return -1; } };
 
     // Return the certificate of the remote HTTPS server
+    obj.loadPfxCertificate = function (filename, password) {
+        var r = { certs: [], keys: [] };
+        var pfxbuf = obj.fs.readFileSync(filename);
+        var pfxb64 = Buffer.from(pfxbuf).toString('base64');
+        var pfxder = obj.forge.util.decode64(pfxb64);
+        var asn = obj.forge.asn1.fromDer(pfxder);
+        var pfx = obj.forge.pkcs12.pkcs12FromAsn1(asn, true, password);
+        // Get the certs from certbags
+        var bags = pfx.getBags({ bagType: obj.forge.pki.oids.certBag });
+        for (var i = 0; i < bags[obj.forge.pki.oids.certBag].length; i++) { r.certs.push(bags[obj.forge.pki.oids.certBag][i].cert); }
+        // Get shrouded key from key bags
+        bags = pfx.getBags({ bagType: obj.forge.pki.oids.pkcs8ShroudedKeyBag });
+        for (var i = 0; i < bags[obj.forge.pki.oids.pkcs8ShroudedKeyBag].length; i++) { r.keys.push(bags[obj.forge.pki.oids.pkcs8ShroudedKeyBag][i].key); }
+        return r;
+    }
+
+    // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, tag, func) {
         const u = require('url').parse(url);
         if (u.protocol == 'https:') {
