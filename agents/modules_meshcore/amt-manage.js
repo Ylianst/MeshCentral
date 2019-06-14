@@ -34,6 +34,7 @@ function AmtManager(agent, db, isdebug) {
     var osamtstack = null;
     var amtpolicy = null;
     var obj = this;
+    var mestate;
     obj.state = 0;
     obj.lmsstate = 0;
     obj.onStateChange = null;
@@ -92,7 +93,7 @@ function AmtManager(agent, db, isdebug) {
             amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } });
             amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
             amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
-            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.dns = result; } if (func != null) { func(amtMeiTmpState); } });
+            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DNS = result; } if (func != null) { func(amtMeiTmpState); } });
         } catch (e) { if (func != null) { func(null); } return; }
     }
 
@@ -167,7 +168,7 @@ function AmtManager(agent, db, isdebug) {
             var amtver = null;
             try { for (var i in amtGetVersionResult.Versions) { if (amtGetVersionResult.Versions[i].Description == 'AMT') amtver = parseInt(amtGetVersionResult.Versions[i].Version.split('.')[0]); } } catch (e) { }
             if ((amtver != null) && (amtver >= 12)) {
-                debug('KVM data channel setup');
+                //debug('KVM data channel setup');
                 kvmGetData('skip'); // Clear any previous data, this is a dummy read to about handling old data.
                 obj.kvmTempTimer = setInterval(function () { kvmGetData(); }, 2000); // Start polling for KVM data.
                 kvmSetData(JSON.stringify({ action: 'restart', ver: 1 })); // Send a restart command to advise the console if present that MicroLMS just started.
@@ -432,6 +433,60 @@ function AmtManager(agent, db, isdebug) {
     }
 
     //
+    // Activate Intel AMT to ACM
+    //
+
+    obj.activeToACM = function (mestate) {
+        //debug('ProvisioningState: ' + JSON.stringify(mestate.ProvisioningState));
+        if (mestate.ProvisioningState != 0) return; // Can't activate unless in "PRE" activation mode.
+        var trustedFqdn = null;
+        //debug('Wired Interface: ' + JSON.stringify(mestate.net0));
+        if ((mestate.net0 == null) && (mestate.net0.enabled != 0)) return; // Can't activate unless wired interface is active
+        if (mestate.DNS) { trustedFqdn = mestate.DNS; } // If Intel AMT has a trusted DNS suffix set, use that one.
+        else {
+            // Look for the DNS suffix for the Intel AMT Ethernet interface
+            var interfaces = require('os').networkInterfaces();
+            for (var i in interfaces) {
+                for (var j in interfaces[i]) {
+                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { trustedFqdn = interfaces[i][j].fqdn; }
+                }
+            }
+        }
+        if (trustedFqdn == null) return; // No trusted DNS suffix.
+        //debug('TrustedFqdn: ' + trustedFqdn);
+        
+        // Fetch Intel AMT realm and activation nonce and get ready to ACM activation...
+        if (osamtstack != null) {
+            //debug('Trying to get Intel AMT activation information...');
+            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, trustedFqdn);
+        } else {
+            //debug('ACM Activation: Trying to get local account info...');
+            amtMei.getLocalSystemAccount(function (x) {
+                if ((x != null) && x.user && x.pass) {
+                    //debug('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
+                    var transport = require('amt-wsman-duk');
+                    var wsman = require('amt-wsman');
+                    var amt = require('amt');
+                    oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
+                    osamtstack = new amt(oswsstack);
+                    //debug('Trying to get Intel AMT activation information...');
+                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, trustedFqdn);
+                } else {
+                    //debug('Unable to get $$OsAdmin password.');
+                }
+            });
+        }
+    }
+
+    function activeToACM2(stack, name, responses, status, trustedFqdn) {
+        debug('activeToACM2: ' + trustedFqdn);
+        if (status != 200) return;
+        var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
+        var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
+        agent.SendCommand({ "action": "acmactivate", "nonce": fwNonce, "realm": digestRealm, "fqdn": trustedFqdn });
+    }
+
+    //
     // Activate Intel AMT to CCM
     //
 
@@ -444,21 +499,25 @@ function AmtManager(agent, db, isdebug) {
     obj.activeToCCM = function (adminpass) {
         if ((adminpass == null) || (adminpass == '')) { adminpass = 'P@0s' + makePass(23); }
         intelAmtAdminPass = adminpass;
-        //debug('Trying to get local account info...');
-        amtMei.getLocalSystemAccount(function (x) {
-            if ((x != null) && x.user && x.pass) {
-                //debug('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
-                var transport = require('amt-wsman-duk');
-                var wsman = require('amt-wsman');
-                var amt = require('amt');
-                oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
-                osamtstack = new amt(oswsstack);
-                //debug('Trying to get Intel AMT activation information...');
-                osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
-            } else {
-                debug('Unable to get $$OsAdmin password.');
-            }
-        });
+        if (osamtstack != null) {
+            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
+        } else {
+            //debug('Trying to get local account info...');
+            amtMei.getLocalSystemAccount(function (x) {
+                if ((x != null) && x.user && x.pass) {
+                    //debug('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
+                    var transport = require('amt-wsman-duk');
+                    var wsman = require('amt-wsman');
+                    var amt = require('amt');
+                    oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
+                    osamtstack = new amt(oswsstack);
+                    //debug('Trying to get Intel AMT activation information...');
+                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);
+                } else {
+                    //debug('Unable to get $$OsAdmin password.');
+                }
+            });
+        }
     }
 
     var activeToCCMEx2 = function(stack, name, responses, status, adminpass) {
@@ -518,13 +577,7 @@ function AmtManager(agent, db, isdebug) {
                 try { amtstack.BatchEnum(null, wsmanQuery, wsmanPassTestResponse); } catch (ex) { debug(ex); }
             } else if ((amtpolicy.type == 3) && (meinfo.ProvisioningState == 0)) {
                 // ACM Activation Policy
-                // TODO: Check that we have wired ethernet enabled and that the DNS domain suffix matches a server certificate...
-
-                // TODO: Check that a trusted hash matches the server cert root hash...
-
-                // TODO: Fetch Intel AMT Realm and Nonce and get ready to ACM activation...
-
-                //console.log(meinfo);
+                obj.activeToACM(meinfo);
             } else {
                 // Other possible cases...
             }
