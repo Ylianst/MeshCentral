@@ -1200,6 +1200,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'acmactivate':
+                    {
+                        // Agent is asking the server to sign an Intel AMT ACM activation request
+                        //console.log(command);
+                        // TODO
+                        break;
+                    }
                 case 'diagnostic':
                     {
                         if (typeof command.value == 'object') {

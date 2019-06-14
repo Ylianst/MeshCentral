@@ -22,6 +22,7 @@ process.on('uncaughtException', function (ex) {
 //attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
 
 // Mesh Rights
+var MNG_ERROR = 65;
 var MESHRIGHT_EDITMESH = 1;
 var MESHRIGHT_MANAGEUSERS = 2;
 var MESHRIGHT_MANAGECOMPUTERS = 4;
@@ -36,10 +37,12 @@ var MESHRIGHT_NOFILES = 1024;
 var MESHRIGHT_NOAMT = 2048;
 var MESHRIGHT_LIMITEDINPUT = 4096;
 
-function createMeshCore(agent) {
+function createMeshCore(agent)
+{
     var obj = {};
 
-    if (process.platform == 'darwin' && !process.versions) {
+    if (process.platform == 'darwin' && !process.versions)
+    {
         // This is an older MacOS Agent, so we'll need to check the service definition so that Auto-Update will function correctly
         var child = require('child_process').execFile('/bin/sh', ['sh']);
         child.stdout.str = '';
@@ -48,18 +51,21 @@ function createMeshCore(agent) {
         child.stdin.write(" if(c[1]==\"dict\"){ split(a[2], d, \"</dict>\"); if(split(d[1], truval, \"<true/>\")>1) { split(truval[1], kn1, \"<key>\"); split(kn1[2], kn2, \"</key>\"); print kn2[1]; } }");
         child.stdin.write(" else { split(c[1], ka, \"/\"); if(ka[1]==\"true\") {print \"ALWAYS\";} } }'\nexit\n");
         child.waitExit();
-        if (child.stdout.str.trim() == 'Crashed') {
+        if (child.stdout.str.trim() == 'Crashed')
+        {
             child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = '';
             child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
             child.stdin.write("launchctl list | grep 'meshagent' | awk '{ if($3==\"meshagent\"){print $1;}}'\nexit\n");
             child.waitExit();
 
-            if (parseInt(child.stdout.str.trim()) == process.pid) {
+            if (parseInt(child.stdout.str.trim()) == process.pid)
+            {
                 // The currently running MeshAgent is us, so we can continue with the update
                 var plist = require('fs').readFileSync('/Library/LaunchDaemons/meshagent_osx64_LaunchDaemon.plist').toString();
                 var tokens = plist.split('<key>KeepAlive</key>');
-                if (tokens[1].split('>')[0].split('<')[1] == 'dict') {
+                if (tokens[1].split('>')[0].split('<')[1] == 'dict')
+                {
                     var tmp = tokens[1].split('</dict>');
                     tmp.shift();
                     tokens[1] = '\n    <true/>' + tmp.join('</dict>');
@@ -112,6 +118,133 @@ function createMeshCore(agent) {
                 }
             }
         }
+    }
+
+    // Create Secure IPC for Diagnostic Agent Communications
+    obj.DAIPC = require('net').createServer();
+    if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (ee) { } }
+    obj.DAIPC.IPCPATH = process.platform == 'win32' ? ('\\\\.\\pipe\\' + require('_agentNodeId')() + '-DAIPC') : (process.cwd() + '/DAIPC');
+    try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH }); } catch (e) { }
+    obj.DAIPC.on('connection', function (c)
+    {
+        c._send = function (j)
+        {
+            var data = JSON.stringify(j);
+            var packet = Buffer.alloc(data.length + 4);
+            packet.writeUInt32LE(data.length + 4, 0);
+            Buffer.from(data).copy(packet, 4);
+            this.end(packet);
+        };
+        this._daipc = c;
+        c.parent = this;
+        c.on('end', function () { console.log('Connection Closed'); this.parent._daipc = null; });
+        c.on('data', function (chunk)
+        {
+            if (chunk.length < 4) { this.unshift(chunk); return; }
+            var len = chunk.readUInt32LE(0);
+            if (len > 8192) { this.parent._daipc = null; this.end(); return; }
+            if (chunk.length < len) { this.unshift(chunk); return; }
+            
+            var data = chunk.slice(4, len);
+            try
+            {
+                data = JSON.parse(data.toString());
+            }
+            catch(de)
+            {
+                this.parent._daipc = null; this.end(); return;
+            }
+            
+            if (!data.cmd) { this.parent._daipc = null; this.end(); return; }
+
+            try
+            {
+                switch(data.cmd)
+                {
+                    case 'query':
+                        switch(data.value)
+                        {
+                            case 'connection':
+                                data.result = require('MeshAgent').ConnectedServer;
+                                this._send(data);
+                                break;
+                        }
+                        break;
+                    default:
+                        this.parent._daipc = null; this.end(); return;
+                        break;
+                }
+            }
+            catch(xe)
+            {
+                this.parent._daipc = null; this.end(); return;
+            }
+        });
+    });
+    function diagnosticAgent_uninstall()
+    {
+        require('service-manager').manager.uninstallService('meshagentDiagnostic');
+        require('task-scheduler').delete('meshagentDiagnostic/periodicStart');
+    };
+    function diagnosticAgent_installCheck(install)
+    {
+        try
+        {
+            var diag = require('service-manager').manager.getService('meshagentDiagnostic');
+            return (diag);
+        }
+        catch (e)
+        {
+        }
+        if (!install) { return (null); }
+
+        var svc = null;
+        try
+        {
+            require('service-manager').manager.installService(
+                {
+                    name: 'meshagentDiagnostic',
+                    displayName: 'Mesh Agent Diagnostic Service',
+                    description: 'Mesh Agent Diagnostic Service',
+                    servicePath: process.execPath,
+                    parameters: ['-recovery']
+                    //files: [{ newName: 'diagnostic.js', _buffer: Buffer.from('LyoNCkNvcHlyaWdodCAyMDE5IEludGVsIENvcnBvcmF0aW9uDQoNCkxpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSAiTGljZW5zZSIpOw0KeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLg0KWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0DQoNCiAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjANCg0KVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZQ0KZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywNCldJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLg0KU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZA0KbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuDQoqLw0KDQp2YXIgaG9zdCA9IHJlcXVpcmUoJ3NlcnZpY2UtaG9zdCcpLmNyZWF0ZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpOw0KdmFyIFJlY292ZXJ5QWdlbnQgPSByZXF1aXJlKCdNZXNoQWdlbnQnKTsNCg0KaG9zdC5vbignc2VydmljZVN0YXJ0JywgZnVuY3Rpb24gKCkNCnsNCiAgICBjb25zb2xlLnNldERlc3RpbmF0aW9uKGNvbnNvbGUuRGVzdGluYXRpb25zLkxPR0ZJTEUpOw0KICAgIGhvc3Quc3RvcCA9IGZ1bmN0aW9uKCkNCiAgICB7DQogICAgICAgIHJlcXVpcmUoJ3NlcnZpY2UtbWFuYWdlcicpLm1hbmFnZXIuZ2V0U2VydmljZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpLnN0b3AoKTsNCiAgICB9DQogICAgUmVjb3ZlcnlBZ2VudC5vbignQ29ubmVjdGVkJywgZnVuY3Rpb24gKHN0YXR1cykNCiAgICB7DQogICAgICAgIGlmIChzdGF0dXMgPT0gMCkNCiAgICAgICAgew0KICAgICAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IFNlcnZlciBjb25uZWN0aW9uIGxvc3QuLi4nKTsNCiAgICAgICAgICAgIHJldHVybjsNCiAgICAgICAgfQ0KICAgICAgICBjb25zb2xlLmxvZygnRGlhZ25vc3RpYyBBZ2VudDogQ29ubmVjdGlvbiBFc3RhYmxpc2hlZCB3aXRoIFNlcnZlcicpOw0KICAgICAgICBzdGFydCgpOw0KICAgIH0pOw0KfSk7DQpob3N0Lm9uKCdub3JtYWxTdGFydCcsIGZ1bmN0aW9uICgpDQp7DQogICAgaG9zdC5zdG9wID0gZnVuY3Rpb24gKCkNCiAgICB7DQogICAgICAgIHByb2Nlc3MuZXhpdCgpOw0KICAgIH0NCiAgICBjb25zb2xlLmxvZygnTm9uIFNlcnZpY2UgTW9kZScpOw0KICAgIFJlY292ZXJ5QWdlbnQub24oJ0Nvbm5lY3RlZCcsIGZ1bmN0aW9uIChzdGF0dXMpDQogICAgew0KICAgICAgICBpZiAoc3RhdHVzID09IDApDQogICAgICAgIHsNCiAgICAgICAgICAgIGNvbnNvbGUubG9nKCdEaWFnbm9zdGljIEFnZW50OiBTZXJ2ZXIgY29ubmVjdGlvbiBsb3N0Li4uJyk7DQogICAgICAgICAgICByZXR1cm47DQogICAgICAgIH0NCiAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IENvbm5lY3Rpb24gRXN0YWJsaXNoZWQgd2l0aCBTZXJ2ZXInKTsNCiAgICAgICAgc3RhcnQoKTsNCiAgICB9KTsNCn0pOw0KaG9zdC5vbignc2VydmljZVN0b3AnLCBmdW5jdGlvbiAoKSB7IHByb2Nlc3MuZXhpdCgpOyB9KTsNCmhvc3QucnVuKCk7DQoNCg0KZnVuY3Rpb24gc3RhcnQoKQ0Kew0KDQp9Ow0K', 'base64') }]
+                });
+            svc = require('service-manager').manager.getService('meshagentDiagnostic');
+        }
+        catch (e)
+        {
+            return (null);
+        }
+        var proxyConfig = require('global-tunnel').proxyConfig;
+        var cert = require('MeshAgent').GenerateAgentCertificate('CN=MeshNodeDiagnosticCertificate');
+        var nodeid = require('tls').loadCertificate(cert.root).getKeyHash().toString('base64');
+        ddb = require('SimpleDataStore').Create(svc.appWorkingDirectory().replace('\\', '/') + '/meshagentDiagnostic.db');
+        ddb.Put('disableUpdate', '1');
+        ddb.Put('MeshID', Buffer.from(require('MeshAgent').ServerInfo.MeshID, 'hex'));
+        ddb.Put('ServerID', require('MeshAgent').ServerInfo.ServerID);
+        ddb.Put('MeshServer', require('MeshAgent').ServerInfo.ServerUri);
+        if (cert.root.pfx) { ddb.Put('SelfNodeCert', cert.root.pfx); }
+        if (cert.tls) { ddb.Put('SelfNodeTlsCert', cert.tls.pfx); }
+        if (proxyConfig)
+        {
+            ddb.Put('WebProxy', proxyConfig.host + ':' + proxyConfig.port);
+        }
+        else
+        {
+            ddb.Put('ignoreProxyFile', '1');
+        }
+
+        require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'register', value: nodeid } });
+        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Diagnostic Agent Registered [' + nodeid.length + '/' + nodeid + ']' });
+
+        delete ddb;
+
+        // Set a recurrent task, to run the Diagnostic Agent every 2 days
+        require('task-scheduler').create({name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic'});
+        //require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: '1', time: '17:16', service: 'meshagentDiagnostic' });
+
+        return (svc);
     }
 
     /*
@@ -190,6 +323,8 @@ function createMeshCore(agent) {
         meshCoreObj.caps = 8;
         mesh = agent.getMeshApi();
     }
+
+    mesh.DAIPC = obj.DAIPC;
 
     /*
     var AMTScanner = require("AMTScanner");
@@ -815,39 +950,7 @@ function createMeshCore(agent) {
                         return;
                     }
 
-                    // Test the console messaging system
-                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote terminal...' })); // Send a console message back using the console channel, "\n" is supported.
-
-                    // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 2)) {
-                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
-                    }
-
-                    // Remote terminal using native pipes
-                    if (process.platform == "win32")
-                    {
-                        this.httprequest._term = require('win-terminal').Start(80, 25);
-                        this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
-                        this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
-                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
-                        //this.httprequest.process = childProcess.execFile("%windir%\\system32\\cmd.exe");
-                    } else {
-                        if (fs.existsSync("/bin/bash")) {
-                            this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
-                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
-                        } else {
-                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
-                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
-                        }
-                        //if (this.httprequest.process == null) {  }
-                        this.httprequest.process.tunnel = this;
-                        this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
-                        this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
-                        this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                        this.prependListener('end', function () { this.httprequest.process.kill(); });
-                    }
-
+                   
                     this.end = function () {
                         if (process.platform == "win32") {
                             // Unpipe the web socket
@@ -868,11 +971,75 @@ function createMeshCore(agent) {
                         }
                     };
 
+                    // Remote terminal using native pipes
+                    if (process.platform == "win32") {
+                        this.httprequest._term = require('win-terminal').Start(80, 25);
+                        this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
+                        this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
+                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
+                    } else {
+                        if (fs.existsSync("/bin/bash")) {
+                            this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
+                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
+                        } else {
+                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
+                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
+                        }
+                        this.httprequest.process.tunnel = this;
+                        this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
+                        this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
+                        this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                        this.prependListener('end', function () { this.httprequest.process.kill(); });
+                        this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n");
+                    }
+
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
+                    if (this.httprequest.consent && (this.httprequest.consent & 16)) {
+                        // User Consent Prompt is required
+
+                        // Send a console message back using the console channel, "\n" is supported.
+                        this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
+
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting Terminal Access. Grant access?', 10);
+                        pr.ws = this;
+                        this.pause();
+
+                        pr.then(
+                            function () {
+                                // Success!
+                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
+                                    // User Notifications is required
+                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
+                                }
+
+                                this.ws.resume();
+                            },
+                            function (e) {
+                                // User Consent Denied/Failed!
+                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
+                                this.ws.end();
+                            });
+                    }
+                    else {
+                        // User Consent Prompt is not required
+                        if (this.httprequest.consent && (this.httprequest.consent & 2)) {
+                            // User Notifications is required
+                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
+                        }
+                        this.resume();
+                    }
+
+
+
+
+
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore Terminal Hello');
-                } else if (this.httprequest.protocol == 2) {
-
+                } else if (this.httprequest.protocol == 2)
+                {
                     // Check user access rights for desktop
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -882,13 +1049,6 @@ function createMeshCore(agent) {
                         return;
                     }
 
-                    // Test the console messaging system
-                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote desktop...' })); // Send a console message back using the console channel, "\n" is supported.
-
-                    // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 1)) {
-                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
-                    }
 
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
@@ -926,7 +1086,56 @@ function createMeshCore(agent) {
                         // TODO!!!
                     }
 
-                    this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text. Pipe the KVM --> Browser images.
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
+                    if (this.httprequest.consent && (this.httprequest.consent & 8))
+                    {
+                        // User Consent Prompt is required
+
+                        // Send a console message back using the console channel, "\n" is supported.
+                        this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
+
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting KVM Access. Grant access?', 10);
+                        pr.ws = this;
+                        this.pause();
+
+                        pr.then(
+                            function ()
+                            {
+                                // Success!
+                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1))
+                                {
+                                    // User Notifications is required
+                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
+                                }
+
+                                this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
+                                this.ws.resume();
+                            },
+                            function (e)
+                            {
+                                // User Consent Denied/Failed!
+                                this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
+
+                                //var err = 'User consent: ' + e.toString();
+                                //var b = Buffer.alloc(5 + err.length);
+                                //b.writeUInt16BE(MNG_ERROR, 0);
+                                //b.writeUInt16BE(err.length + 4, 2);
+                                //Buffer.from(err).copy(b, 4);
+                                //this.ws.end(b);
+                            });
+                    }
+                    else
+                    {
+                        // User Consent Prompt is not required
+                        if (this.httprequest.consent && (this.httprequest.consent & 1))
+                        {
+                            // User Notifications is required
+                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
+                        }
+                        this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 });
+                    }
+
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
@@ -938,16 +1147,45 @@ function createMeshCore(agent) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
                         this.httprequest.s.end();
-                        sendConsoleText('Error: No Files Control Rights.');
+                        sendConsoleText('Error: No files control rights.');
                         return;
                     }
 
-                    // Test the console messaging system
-                    //this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'This is a sample test for remote files...' })); // Send a console message back using the console channel, "\n" is supported.
+                    // Perform notification if needed. Toast messages may not be supported on all platforms.
+                    if (this.httprequest.consent && (this.httprequest.consent & 32))
+                    {
+                        // User Consent Prompt is required
 
-                    // Perform notification if needed
-                    if (this.httprequest.consent && (this.httprequest.consent & 4)) {
-                        try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file access.'); } catch (ex) { }
+                        // Send a console message back using the console channel, "\n" is supported.
+                        this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
+
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting remote file access. Grant access?', 10);
+                        pr.ws = this;
+                        this.pause();
+
+                        pr.then(
+                            function () {
+                                // Success!
+                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4))
+                                {
+                                    // User Notifications is required
+                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote file session.'); } catch (ex) { }
+                                }
+                                this.ws.resume();
+                            },
+                            function (e) {
+                                // User Consent Denied/Failed!
+                                this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
+                            });
+                    }
+                    else {
+                        // User Consent Prompt is not required
+                        if (this.httprequest.consent && (this.httprequest.consent & 4)) {
+                            // User Notifications is required
+                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file session.'); } catch (ex) { }
+                        }
+                        this.resume();
                     }
 
                     // Setup files
@@ -1291,7 +1529,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtdeactivate,\r\namtpolicy, getscript, getclip, setclip.';
+                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm, amtdeactivate,\r\namtpolicy, getscript, getclip, setclip.';
                     break;
                 }
                     /*
@@ -1349,6 +1587,13 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                case 'amtacm': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
+                        amt.setPolicy({ type: 0 });
+                        amt.getAmtInfo(function (meinfo) { amt.activeToACM(meinfo); });
+                    }
+                    break;
+                }
                 case 'amtdeactivate': {
                     if (amt == null) { response = 'Intel AMT not supported.'; } else { amt.setPolicy({ type: 0 }); amt.deactivateCCM(); }
                     break;
@@ -1372,12 +1617,9 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'toast': {
-                    if (process.platform == 'win32') {
-                        if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
-                            try { require('toaster').Toast('MeshCentral', args['_'][0]); response = 'ok'; } catch (ex) { response = ex; }
-                        }
-                    } else {
-                        response = 'Only supported on Windows.';
+                    if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else
+                    {
+                        require('toaster').Toast('MeshCentral', args['_'][0]).then(sendConsoleText, sendConsoleText);
                     }
                     break;
                 }
@@ -1669,6 +1911,8 @@ function createMeshCore(agent) {
                             if (state != null) { resp = objToString(state, 0, ' ', true); }
                             sendConsoleText(resp, sessionid);
                         });
+                    } else {
+                        response = 'Intel AMT not detected.';
                     }
                     break;
                 }
@@ -1763,6 +2007,48 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                case 'diagnostic':
+                    {
+                        if (!mesh.DAIPC.listening)
+                        {
+                            response = 'Unable to bind to Diagnostic IPC, most likely because the path (' + process.cwd() + ') is not on a local file system';
+                            break;
+                        }
+                        var diag = diagnosticAgent_installCheck();
+                        if (diag)
+                        {
+                            if (args['_'].length == 1 && args['_'][0] == 'uninstall')
+                            {
+                                diagnosticAgent_uninstall();
+                                response = 'Diagnostic Agent uninstalled';
+                            }
+                            else
+                            {
+                                response = 'Diagnostic Agent installed at: ' + diag.appLocation();
+                            }
+                        }
+                        else
+                        {
+                            if (args['_'].length == 1 && args['_'][0] == 'install')
+                            {
+                                diag = diagnosticAgent_installCheck(true);
+                                if (diag)
+                                {
+                                    response = 'Diagnostic agent was installed at: ' + diag.appLocation();
+                                }
+                                else
+                                {
+                                    response = 'Diagnostic agent installation failed';
+                                }
+                            }
+                            else
+                            {
+                                response = 'Diagnostic Agent Not installed. To install: diagnostic install';
+                            }
+                        }
+                        if (diag) { diag.close(); diag = null; }
+                        break;
+                    }
                 default: { // This is an unknown command, return an error message
                     response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                     break;
@@ -1839,7 +2125,7 @@ function createMeshCore(agent) {
                     if (meinfo.UUID != null) { intelamt.uuid = meinfo.UUID; p = true; }
                     if ((meinfo.ProvisioningState == 0) && (meinfo.net0 != null) && (meinfo.net0.enabled == 1)) { // If not activated, look to see if we have wired net working.
                         // Not activated and we have wired ethernet, look for the trusted DNS
-                        var dns = meinfo.dns;
+                        var dns = meinfo.DNS;
                         if (dns == null) {
                             // Trusted DNS not set, let's look for the OS network DNS suffix
                             var interfaces = require('os').networkInterfaces();

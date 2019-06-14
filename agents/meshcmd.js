@@ -155,7 +155,7 @@ function run(argv) {
         console.log('  AmtVersions       - Show all Intel ME version information.');
         console.log('  AmtHashes         - Show all Intel AMT trusted activation hashes.');
         console.log('  AmtCCM            - Activate Intel AMT into Client Control Mode.');
-        //console.log('  AmtACM            - Activate Intel AMT into Admin Control Mode.'); // Not correcly implemented so not making this visible yet.
+        console.log('  AmtACM            - Activate Intel AMT into Admin Control Mode.');
         console.log('  AmtDeactivate     - Deactivate Intel AMT if activated in Client Control mode.');
         console.log('  AmtAcmDeactivate  - Deactivate Intel AMT if activated in Admin Control mode.');
         console.log('\r\nValid local or remote actions:');
@@ -449,7 +449,7 @@ function run(argv) {
         amtMei.getLanInterfaceSettings(0, function (result) { console.log('getLanInterfaceSettings0: ' + JSON.stringify(result)); });
         amtMei.getLanInterfaceSettings(1, function (result) { console.log('getLanInterfaceSettings1: ' + JSON.stringify(result)); });
         amtMei.getUuid(function (result) { console.log('getUuid: ' + JSON.stringify(result)); });
-        amtMei.getDnsSuffix(function (result) { console.log('getDnsSuffix: ' + JSON.stringify(result)); exit(1);});
+        amtMei.getDnsSuffix(function (result) { console.log('getDnsSuffix: ' + JSON.stringify(result)); exit(1); });
     } else if (settings.action == 'amtsavestate') {
         // Save the entire state of Intel AMT info a JSON file
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -519,6 +519,8 @@ function run(argv) {
         deactivateACM();
     } else if (settings.action == 'meshcommander') { // Start MeshCommander
         startMeshCommander();
+        //} else if (settings.action == 'amtdisable') { // Disable AMT Network Interface
+        //    amtDisable();
     } else if (settings.action == 'amtauditlog') { // Read the Intel AMT audit log
         if (settings.hostname != null) {
             if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -657,6 +659,21 @@ function readAmtAuditLogEx2(stack, response, status) {
     exit(1);
 }
 
+//
+// Disable AMT Network
+//
+
+//function amtDisable() {
+//    settings.noconsole = true;
+//    startLms(amtDisableEx);
+//}
+
+//function amtDisableEx(stack, response, status) {
+//    //console.log(osamtstack);
+//    osamtstack.Get('AMT_EthernetPortSettings', function (stack, name, response, status) {
+//        console.log(response.Body);
+//    });
+//}
 
 //
 // MeshCommander local web server
@@ -831,10 +848,10 @@ function deactivateACMEx() {
     });
 }
 
+
 //
 // Activate Intel AMT to ACM
 //
-
 
 function activeToACM() {
     // See if MicroLMS needs to be started and setup the $$OsAdmin wsman stack
@@ -855,12 +872,30 @@ function activeToACM() {
 
 // Gets the FWNonce from AMT and saves it to a file.  
 function getFwNonce() {
-    osamtstack.Get("IPS_HostBasedSetupService", function (obj, name, responses, status) {
-        var fwNonce = Buffer.from(responses["Body"]['ConfigurationNonce'], 'base64');
-        var amtMeiModule, amtMei;
+    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], function (stack, name, responses, status) {
+        var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
+        var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
+        var amtMeiModule, amtMei, str;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
+        amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
         amtMei.getDnsSuffix(function (result) {
-            activeToACMEx(fwNonce, result);
+            var fqdn = null;
+            if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
+            if (result) { fqdn = result; } // If Intel AMT has a trusted DNS suffix set, use that one.
+            else {
+                // Look for the DNS suffix for the Intel AMT Ethernet interface
+                var interfaces = require('os').networkInterfaces();
+                for (var i in interfaces) {
+                    for (var j in interfaces[i]) {
+                        if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+                    }
+                }
+            }
+            if (fqdn != null) {
+                activeToACMEx(fwNonce, fqdn, digestRealm);
+            } else {
+                console.log("Trusted DNS suffix not set, can't perform ACM activation."); exit(100); return;
+            }
         });
     });
 }
@@ -868,10 +903,10 @@ function getFwNonce() {
 // Sends a message to RCS server using RCS Message Protocol
 function sendRCSMessage(socket, status, event, message) {
     //console.log('Status: ' + status + '.  Event: ' + event + '.  Message: ' + message);
-    if (socket !== null) { socket.write({"status": status, "event": event, "data": message}); }
+    if (socket !== null) { socket.write({ "status": status, "event": event, "data": message }); }
 }
 
-function activeToACMEx(fwNonce, dnsSuffix) {
+function activeToACMEx(fwNonce, dnsSuffix, digestRealm) {
     // open connection to RCS
     console.log('Initializing WebSocket...');
     // Establish WebSocket connection to RCS server
@@ -890,8 +925,7 @@ function activeToACMEx(fwNonce, dnsSuffix) {
                         if (status == 2) {
                             console.log('AMT already provisioned.Exiting ' + status);
                             sendRCSMessage(socket, "error", "finish", "failed with status: " + status);
-                        }
-                        else {
+                        } else {
                             console.log('Failed to fetch activation status, status ' + status);
                             sendRCSMessage(socket, "error", "finish", "failed with status: " + status);
                         }
@@ -903,7 +937,7 @@ function activeToACMEx(fwNonce, dnsSuffix) {
                         socket.end();
                         exit(status);
                     } else {
-                        activeToACMEx2(message, responses, function (stack, name, responses, status, message) {
+                        activeToACMEx2(message, function (stack, name, responses, status, message) {
                             if (status != 200) {
                                 console.log('Failed to activate, status ' + status);
                                 sendRCSMessage(socket, "error", "finish", "failed to activate.  Status: " + status);
@@ -911,7 +945,7 @@ function activeToACMEx(fwNonce, dnsSuffix) {
                                 console.log('Admin control mode activation failed: ' + responses.Body.ReturnValueStr);
                                 sendRCSMessage(socket, "error", "finish", "failed to activate: " + responses.Body.ReturnValueStr);
                             } else {
-                                if (message.profileScript !== '') {
+                                if (message.profileScript !== null) {
                                     console.log("Running MEScript...");
                                     settings.scriptjson = message.profileScript;
                                     settings.password = message.amtPassword
@@ -928,7 +962,6 @@ function activeToACMEx(fwNonce, dnsSuffix) {
                                     exit(0);
                                 }
                                 console.log('AMT Provisioning Success');
-
                             }
                             //socket.end();
                             //exit(status);
@@ -940,10 +973,8 @@ function activeToACMEx(fwNonce, dnsSuffix) {
                 sendRCSMessage(socket, "ok", "message", JSON.stringify(fwNonce));
             }
         });
-        socket.on('end', function () {
-            console.log('WebSocket closed');
-        });
-        sendRCSMessage(socket, "ok", "cmd", { "cmd": "acm", "dnssuffix": dnsSuffix, "profile": settings.profile });
+        socket.on('end', function () { console.log('WebSocket closed'); });
+        sendRCSMessage(socket, "ok", "cmd", { "cmd": "acm", "dnssuffix": dnsSuffix, "profile": settings.profile, 'digestrealm': digestRealm, 'fwnonce': fwNonce });
     });
 }
 
@@ -980,8 +1011,8 @@ function injectCert(index, cert, callback, stack, name, responses, status) {
     var root = false;
     if (index == 0) { leaf = true; }
     if (index == cert.provCertObj.certChain.length - 1) { root = true; }
-    if (index < cert.provCertObj.certChain.length){
-        if (cert.provCertObj.certChain[index] !== undefined){
+    if (index < cert.provCertObj.certChain.length) {
+        if (cert.provCertObj.certChain[index] !== undefined) {
             osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert.provCertObj.certChain[index], leaf, root, function (stack, name, responses, status) {
                 if (status !== 200) { exit(status); return; }
                 else if (responses['Body']['ReturnValue'] !== 0) { exit(responses['Body']['ReturnValueStr']); return; }
@@ -995,11 +1026,11 @@ function injectCert(index, cert, callback, stack, name, responses, status) {
 }
 
 // Sends the password hash, mcnonce, and digital signature to complete the admin control mode provisioning
-function activeToACMEx2(data, responses, callback) {
-    var passwordhash = md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + data.amtPassword).substring(0, 32);
+function activeToACMEx2(data, callback) {
+    //var passwordhash = md5hex('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + data.passwordHash).substring(0, 32);
     //var debugreturn = {"Body": {"ReturnValue": 0}};
     //console.log("DEBUG: Everything up to activation works"); callback(null, null, debugreturn, 200, data);
-    osamtstack.IPS_HostBasedSetupService_AdminSetup(2, passwordhash, data.mcNonce, 2, data.digitalSignature, function (stack, name, responses, status) { callback(stack, name, responses, status, data); });
+    osamtstack.IPS_HostBasedSetupService_AdminSetup(2, data.passwordHash, data.mcNonce, 2, data.digitalSignature, function (stack, name, responses, status) { callback(stack, name, responses, status, data); });
 }
 
 //
@@ -1075,8 +1106,7 @@ function startMeScriptEx(callback, amtstack) {
 //
 
 
-function saveEntireAmtState2()
-{
+function saveEntireAmtState2() {
     console.log('Fetching all Intel AMT state, this may take a few minutes...');
     var transport = require('amt-wsman-duk');
     var wsman = require('amt-wsman');
@@ -1096,16 +1126,13 @@ function saveEntireAmtState2()
 }
 
 // Save the entire Intel AMT state
-function saveEntireAmtState()
-{
+function saveEntireAmtState() {
     // See if MicroLMS needs to be started
-    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost'))
-    {
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
         settings.noconsole = true;
         startLms().then(saveEntireAmtState2);
     }
-    else
-    {
+    else {
         saveEntireAmtState2();
     }
 }
@@ -1196,8 +1223,7 @@ var lmsNotifications = [];
 var amtLms = null;
 var promise = require('promise');
 
-function startLms(func, lmscommander)
-{
+function startLms(func, lmscommander) {
     var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     var lme_heci = null
     try { lme_heci = require('amt-lme'); } catch (ex) { }
@@ -1893,7 +1919,7 @@ function performIder() {
         var sfloppy = null, scdrom = null;
         if (settings.floppy) { try { if (sfloppy = fs.statSync(settings.floppy)) { sfloppy.file = fs.openSync(settings.floppy, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
         if (settings.cdrom) { try { scdrom = fs.statSync(settings.cdrom); if (scdrom) { scdrom.file = fs.openSync(settings.cdrom, 'rbN'); } } catch (ex) { console.log(ex); process.exit(1); return; } }
-        
+
         ider = require('amt-redir-duk')(require('amt-ider')());
         ider.onStateChanged = onIderStateChange;
         ider.m.floppy = sfloppy;
@@ -1903,11 +1929,11 @@ function performIder() {
         if (settings.timeout > 0) { ider.m.sectorStats = iderSectorStats; }
         //ider.digestRealmMatch = wsstack.comm.digestRealm;
         //ider.tlsv1only = amtstack.wsman.comm.tlsv1only;
-        ider.Start(settings.hostname, (settings.tls == true)?16995:16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
+        ider.Start(settings.hostname, (settings.tls == true) ? 16995 : 16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
     } catch (ex) { console.log(ex); }
 }
 
-function onIderStateChange(stack, state) { console.log(['Disconnected', 'Connecting...', 'Connected...', 'Started IDER...'][state]);}
+function onIderStateChange(stack, state) { console.log(['Disconnected', 'Connecting...', 'Connected...', 'Started IDER...'][state]); }
 
 function iderSectorStats(mode, dev, mediaBlocks, lba, len) {
     if (iderIdleTimer != null) { clearTimeout(iderIdleTimer); }

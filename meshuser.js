@@ -1600,7 +1600,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     }
-                    console.log('meshamtpolicy', command);
                     mesh = parent.meshes[command.meshid];
                     change = '';
                     if (mesh) {
