@@ -7350,6 +7350,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         }
 
         function onMessage(server, message) {
+            if (args.trace == 1) { console.log('MSG:', message); }
             switch (message.action) {
                 case 'serverstats': {
                     updateGeneralServerStats(message);
