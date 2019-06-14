@@ -268,7 +268,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (agentstats.agentMaxSessionHoldCount > 0) { errorCountersCount++; errorCounters["Max Sessions Reached"] = agentstats.agentMaxSessionHoldCount; }
                 if ((agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count) > 0) { errorCountersCount++; errorCounters["Unknown Device Group"] = (agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count); }
                 if ((agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count) > 0) { errorCountersCount++; errorCounters["Invalid Device Group Type"] = (agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count); }
-                if (agentstats.duplicateAgentCount > 0) { errorCountersCount++; errorCounters["Duplicate Agent"] = agentstats.duplicateAgentCount; }
+                //if (agentstats.duplicateAgentCount > 0) { errorCountersCount++; errorCounters["Duplicate Agent"] = agentstats.duplicateAgentCount; }
 
                 // Send out the stats
                 stats.values = { "Server State": serverStats }
