@@ -141,16 +141,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // We need to check if the core is current. Figure out what core we need.
-                var corename;
-                if (obj.agentCoreCheck == 1001) {
-                    // If the user asked, use the recovery core.
-                    corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore;
-                } else if (obj.agentInfo.capabilities & 0x40) {
-                    // If this is a recovery agent, use the agent recovery core.
-                    corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].arcore;
-                } else {
-                    // This is the normal core for this agent type.
-                    corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                var corename = null;
+                if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null) {
+                    if (obj.agentCoreCheck == 1001) {
+                        // If the user asked, use the recovery core.
+                        corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].rcore;
+                    } else if (obj.agentInfo.capabilities & 0x40) {
+                        // If this is a recovery agent, use the agent recovery core.
+                        corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].arcore;
+                    } else {
+                        // This is the normal core for this agent type.
+                        corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+                    }
                 }
 
                 // If we have a core, use it.

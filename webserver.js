@@ -1721,7 +1721,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split("?");
         if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
         if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
-        if ((urlName == null) || (domain.redirects[urlName] == null)) { res.sendStatus(404); return; }
+        if ((urlName == null) || (domain.redirects[urlName] == null) || (urlName[0] == '_')) { res.sendStatus(404); return; }
         res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
     }
 
@@ -2743,7 +2743,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
 
             // Server redirects
-            if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { obj.app.get(url + j, handleDomainRedirect); } }
+            if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, handleDomainRedirect); } } }
 
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
