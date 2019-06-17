@@ -29,7 +29,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
-    ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
+    //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
+    if (args.agentidletimeout != 0) { ws._socket.setTimeout(args.agentidletimeout, function () { obj.close(1); }); } // Inactivity timeout of 2:30 minutes, by default agent will WebSocket ping every 2 minutes and server will pong back.
     //obj.nodeid = null;
     //obj.meshid = null;
     //obj.dbNodeKey = null;
@@ -795,8 +796,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Check if we need to make an native update check
         obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-        const corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
-        if (corename == null) { obj.send(common.ShortToStr(10) + common.ShortToStr(0)); } // MeshCommand_CoreModule, ask mesh agent to clear the core
+        var corename = null;
+        if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null) {
+            corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
+        } else {
+            // MeshCommand_CoreModule, ask mesh agent to clear the core
+            obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+        }
 
         if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
             // Ask the agent for it's executable binary hash
