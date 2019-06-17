@@ -2861,16 +2861,23 @@
                 flag = Q('aginsSelect').value;
                 if (parseInt(flag) >= 5) { name = name.toLowerCase(); } else { name += '.exe'; }
             }
-            try { xdr = new XDomainRequest(); } catch (e) { }
-            if (!xdr) xdr = new XMLHttpRequest();
-            xdr.open("GET", window.location.href + path + flag);
-            xdr.timeout = 15000;
-            xdr.responseType = "blob";
-            xdr.onprogress = function (x) { /*console.log(x);*/ };
-            xdr.onload = function (e) { saveAs(new Blob([e.target.response], { type: "application/octet-stream" }), name); if (xxdialogTag == 'fileDownload') { setDialogMode(0); } };
-            xdr.onerror = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Agent downloads timeout.'); };
-            xdr.ontimeout = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Unable to download agent.'); };
-            xdr.send();
+
+            if (args.filedownloadtab == 1) {
+                // Open a new tab with download
+                window.open(window.location.origin + '/' + path + flag, '_blank');
+            } else {
+                // Background download & save
+                try { xdr = new XDomainRequest(); } catch (e) { }
+                if (!xdr) xdr = new XMLHttpRequest();
+                xdr.open("GET", window.location.origin + '/' + path + flag);
+                xdr.timeout = 15000;
+                xdr.responseType = "blob";
+                xdr.onprogress = function (x) { /*console.log(x);*/ };
+                xdr.onload = function (e) { saveAs(new Blob([e.target.response], { type: "application/octet-stream" }), name); if (xxdialogTag == 'fileDownload') { setDialogMode(0); } };
+                xdr.onerror = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Agent downloads timeout.'); };
+                xdr.ontimeout = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Unable to download agent.'); };
+                xdr.send();
+            }
         }
 
         function addAgentToMeshClick() {
@@ -3999,6 +4006,11 @@
 
                 // Update the web page title
                 if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
+
+                // Clear user consent status if present
+                p11clearConsoleMsg();
+                p12clearConsoleMsg();
+                p13clearConsoleMsg();
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -4481,6 +4493,7 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(connectDesktop, 100); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         function connectDesktop(e, contype) {
+            p11clearConsoleMsg();
             if (desktop == null) {
                 desktopNode = currentNode;
                 if (contype == 2) {
@@ -5074,6 +5087,7 @@
         function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
 
         function connectTerminal(e, contype) {
+            p12clearConsoleMsg();
             if (!terminal) {
                 if (contype == 2) {
                     // Setup the Intel AMT terminal
@@ -5108,7 +5122,6 @@
                     terminal.attemptWebRTC = attemptWebRTC;
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.onConsoleMessageChange = function () {
-                        console.log('terminal.consoleMessage', terminal.consoleMessage);
                         p12clearConsoleMsg();
                         if (terminal.consoleMessage) {
                             QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
@@ -5230,6 +5243,7 @@
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         function connectFiles(e) {
+            p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, domainUrl);

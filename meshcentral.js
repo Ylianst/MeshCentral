@@ -604,6 +604,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.mpsaliasport != null && (typeof obj.args.mpsaliasport != 'number')) obj.args.mpsaliasport = null;
         if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (obj.args.minifycore === 0) obj.args.minifycore = false;
+        if (typeof args.agentidletimeout != 'number') { args.agentidletimeout = 150000; } else { args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
 
         // Setup a site administrator
         if ((obj.args.admin) && (typeof obj.args.admin == 'string')) {

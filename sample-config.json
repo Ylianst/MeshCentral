@@ -23,6 +23,7 @@
     "_SelfUpdate": true,
     "_AgentPing": 60,
     "_AgentPong": 60,
+    "_AgentIdleTimeout": 150,
     "_AllowHighQualityDesktop": true,
     "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
     "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
