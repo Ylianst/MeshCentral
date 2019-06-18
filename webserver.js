@@ -1722,7 +1722,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
         if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
         if ((urlName == null) || (domain.redirects[urlName] == null) || (urlName[0] == '_')) { res.sendStatus(404); return; }
-        res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
+        if (domain.redirects[urlName] == '~showversion') {
+            // Show the current version
+            res.end('MeshCentral v' + obj.parent.currentVer);
+        } else {
+            // Perform redirection
+            res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
+        }
     }
 
     // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed

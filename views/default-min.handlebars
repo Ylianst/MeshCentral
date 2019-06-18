@@ -111,6 +111,7 @@ var MeshServerCreateControl = function (domain, authCookie) {
     obj.connectstate = 0;
     obj.pingTimer = null;
     obj.authCookie = authCookie;
+    obj.trace = false;
     
     obj.xxStateChange = function (newstate, errCode) {
         if (obj.State == newstate) return;
@@ -147,10 +148,16 @@ var MeshServerCreateControl = function (domain, authCookie) {
         try { message = JSON.parse(e.data); } catch (e) { return; }
         if ((typeof message != 'object') || (message.action == 'pong')) { return; }
         if (message.action == 'close') { if (message.msg) { console.log(message.msg); } obj.Stop(message.cause); return; }
+        if (obj.trace) { console.log('RECV', message); }
         if (obj.onMessage) obj.onMessage(obj, message);
     };
     
-    obj.send = function (x) { if (obj.socket != null && obj.connectstate == 1) { obj.socket.send(JSON.stringify(x)); } }
+    obj.send = function (x) {
+        if (obj.socket != null && obj.connectstate == 1) {
+            if (obj.trace) { console.log('SEND', x); }
+            obj.socket.send(JSON.stringify(x));
+        }
+    }
 
     return obj;    
 }
@@ -7061,6 +7068,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
+            meshserver.trace = (args.trace == 1);
             meshserver.Start();
 
             // Setup page controls
@@ -7076,7 +7084,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             masterUpdate(3)
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
-
 
             // Setup upload drag & drop
             Q('p5filetable').addEventListener("drop", p5fileDragDrop, false);
@@ -7350,7 +7357,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         }
 
         function onMessage(server, message) {
-            if (args.trace == 1) { console.log('MSG:', message); }
             switch (message.action) {
                 case 'serverstats': {
                     updateGeneralServerStats(message);
@@ -8771,8 +8777,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option><option value=0>Unlimited</option></select>');
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a id=agentInvitationLink target="_blank" href="" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="Copy link to clipboard" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
-            d2ChangedInviteType();
-            validateAgentInvite();
+            if (features & 64) { d2ChangedInviteType(); } else { validateAgentInvite(); }
             d2RequestInvitationLink();
         }
 
@@ -8783,7 +8788,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         function d2ChangedInviteType() {
             QV('urlInviteDiv', Q('d2InviteType').value == 0);
             QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
-            if (features & 64) { QV('emailInviteDiv', Q('d2InviteType').value == 1); }
+            QV('emailInviteDiv', Q('d2InviteType').value == 1);
             validateAgentInvite();
         }
 

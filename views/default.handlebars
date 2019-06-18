@@ -1013,6 +1013,7 @@
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
             meshserver.onStateChanged = onStateChanged;
             meshserver.onMessage = onMessage;
+            meshserver.trace = (args.trace == 1);
             meshserver.Start();
 
             // Setup page controls
@@ -1028,7 +1029,6 @@
             masterUpdate(3)
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
-
 
             // Setup upload drag & drop
             Q('p5filetable').addEventListener("drop", p5fileDragDrop, false);
@@ -1302,7 +1302,6 @@
         }
 
         function onMessage(server, message) {
-            if (args.trace == 1) { console.log('MSG:', message); }
             switch (message.action) {
                 case 'serverstats': {
                     updateGeneralServerStats(message);
@@ -2723,8 +2722,7 @@
             x += addHtmlValue('Link Expiration', '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>1 hour</option><option value=8>8 hours</option><option value=24>1 day</option><option value=168>1 week</option><option value=5040>1 month</option><option value=0>Unlimited</option></select>');
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a id=agentInvitationLink target="_blank" href="" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="Copy link to clipboard" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
-            d2ChangedInviteType();
-            validateAgentInvite();
+            if (features & 64) { d2ChangedInviteType(); } else { validateAgentInvite(); }
             d2RequestInvitationLink();
         }
 
@@ -2735,7 +2733,7 @@
         function d2ChangedInviteType() {
             QV('urlInviteDiv', Q('d2InviteType').value == 0);
             QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
-            if (features & 64) { QV('emailInviteDiv', Q('d2InviteType').value == 1); }
+            QV('emailInviteDiv', Q('d2InviteType').value == 1);
             validateAgentInvite();
         }
 
