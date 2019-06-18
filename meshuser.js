@@ -424,34 +424,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((err == null) && (docs != null) && (docs.length > 0)) {
                             var timeline = [], time = null, previousPower;
                             for (i in docs) {
-                                var doc = docs[i];
-
-                                // Skip all starting power 0 events.
-                                if ((time == null) && (doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) { continue; }
-
+                                var doc = docs[i], j = parseInt(i);
                                 doc.time = Date.parse(doc.time);
-                                if (time == null) {
-                                    // First element
+                                if (time == null) { // First element
+                                    // Skip all starting power 0 events.
+                                    if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
                                     time = doc.time;
-                                    if (doc.oldPower) { timeline.push(doc.oldPower); } else { timeline.push(0); }
-                                    timeline.push(time / 1000);
-                                    timeline.push(doc.power);
-                                    previousPower = doc.power;
-                                } else {
-                                    // Delta element
-                                    if ((previousPower != doc.power) && ((doc.time - time) > 60000)) { // To boost speed, small blocks get approximated.
-                                        // Create a new timeline
-                                        timeline.push((doc.time - time) / 1000);
-                                        timeline.push(doc.power);
-                                        time = doc.time;
-                                        previousPower = doc.power;
-                                    } else {
-                                        // Merge with previous timeline
-                                        timeline[timeline.length - 2] += ((doc.time - time) / 1000);
-                                        timeline[timeline.length - 1] = doc.power;
-                                        previousPower = doc.power;
-                                    }
+                                    if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
+                                } else if (previousPower != doc.power) { // Delta element
+                                    // If this event is of a short duration (2 minutes or less), skip it.
+                                    if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
+                                    timeline.push((doc.time - time) / 1000, doc.power);
+                                    time = doc.time;
                                 }
+                                previousPower = doc.power;
                             }
                             try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
                         } else {
