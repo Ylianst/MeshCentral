@@ -727,6 +727,31 @@ function CreateMeshCentralServer(config, args) {
                     var r = null;
                     try { r = obj.certificateOperations.loadPfxCertificate(obj.path.join(obj.datapath, acmconfig.cert), acmconfig.certpass); } catch (ex) { console.log(ex); }
                     if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length == 0)) { badAcmConfigs.push(j); continue; }
+
+                    // Check if the right OU or OID is present for Intel AMT activation
+                    var validActivationCert = false;
+                    for (var k in r.certs[0].extensions) { if (r.certs[0].extensions[k]['2.16.840.1.113741.1.2.3'] == true) { validActivationCert = true; } }
+                    var orgName = r.certs[0].subject.getField('OU');
+                    if ((orgName != null) && (orgName.value == 'Intel(R) Client Setup Certificate')) { validActivationCert = true; }
+                    if (validActivationCert == false) continue;
+
+                    // Compute the SHA256 and SHA1 hashes of the root certificate
+                    for (var k in r.certs) {
+                        if (r.certs[k].subject.hash != r.certs[k].issuer.hash) continue;
+                        const certdata = obj.certificateOperations.forge.asn1.toDer(obj.certificateOperations.pki.certificateToAsn1(r.certs[k])).data;
+                        var md = obj.certificateOperations.forge.md.sha256.create();
+                        md.update(certdata);
+                        acmconfig.sha256 = Buffer.from(md.digest().getBytes(), 'binary').toString('hex');
+                        md = obj.certificateOperations.forge.md.sha1.create();
+                        md.update(certdata);
+                        acmconfig.sha1 = Buffer.from(md.digest().getBytes(), 'binary').toString('hex');
+                    }
+                    if ((acmconfig.sha1 == null) || (acmconfig.sha256 == null)) continue;
+
+                    // Get the certificate common name
+                    var certCommonName = r.certs[0].subject.getField('CN');
+                    if (certCommonName != null) { acmconfig.cn = certCommonName.value; }
+
                     delete acmconfig.cert;
                     delete acmconfig.certpass;
                     acmconfig.certs = r.certs;
@@ -734,9 +759,12 @@ function CreateMeshCentralServer(config, args) {
                     for (var k in acmconfig.dnsmatch) { if (dnsmatch.indexOf(acmconfig.dnsmatch[k]) == -1) { dnsmatch.push(acmconfig.dnsmatch[k]); } }
                     amtAcmCertCount++;
                 }
+
                 // Remove all bad configurations
                 for (var j in badAcmConfigs) { console.log('WARNING: Incorrect Intel AMT ACM configuration "' + i + (i == '' ? '' : '/') + badAcmConfigs[j] + '".'); delete obj.config.domains[i].amtacmactivationcerts[j]; }
                 if (amtAcmCertCount == 0) { delete obj.config.domains[i].amtacmactivation; } else { obj.config.domains[i].amtacmactivation.dnsmatch = dnsmatch; }
+
+                //console.log(obj.config.domains[''].amtacmactivation);
             }
 
             if (obj.config.domains[i].certurl != null) {
