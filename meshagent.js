@@ -1210,10 +1210,30 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'acmactivate':
                     {
+                        if (obj.agentInfo.capabilities & 0x20) return; // If this is a temporary device, don't do ACM activation.
+
+                        // Get the current Intel AMT policy
+                        var mesh = parent.meshes[obj.dbMeshKey];
+                        if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 3) || (domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (mesh.amt.password == null)) break; // If this is not the right policy, ignore this.
+
+                        // Get the Intel AMT admin password, randomize if needed.
+                        var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
+                        if (checkAmtPassword(amtpassword) == false) return; // Invalid Intel AMT password, this should never happen.
+
                         // Agent is asking the server to sign an Intel AMT ACM activation request
-                        //console.log(command);
-                        var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', 'P@ssw0rd'); // TODO: Place account credentials!!!
-                        if (signResponse != null) { obj.send(JSON.stringify(signResponse)); }
+                        var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', amtpassword, obj.remoteaddrport, obj.dbNodeKey, obj.dbMeshKey, obj.agentInfo.computerName, obj.agentInfo.agentId); // TODO: Place account credentials!!!
+                        if (signResponse != null) {
+                            // Log this activation event
+                            var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Device requested Intel AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
+
+                            // Update the device Intel AMT information
+                            ChangeAgentCoreInfo({ "intelamt": { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
+
+                            // Send the activation response
+                            //obj.send(JSON.stringify(signResponse));
+                        }
                         break;
                     }
                 case 'diagnostic':
@@ -1307,6 +1327,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (device.intelamt.flags) { changes.push('AMT flags (' + device.intelamt.flags + ' --> ' + command.intelamt.flags + ')'); } else { changes.push('AMT flags (' + command.intelamt.flags + ')'); }
                         device.intelamt.flags = command.intelamt.flags; change = 1; log = 1;
                     }
+                    if ((command.intelamt.realm != null) && (device.intelamt.realm != command.intelamt.realm)) { changes.push('AMT realm'); device.intelamt.realm = command.intelamt.realm; change = 1; log = 1; }
                     if ((command.intelamt.host != null) && (device.intelamt.host != command.intelamt.host)) { changes.push('AMT host'); device.intelamt.host = command.intelamt.host; change = 1; log = 1; }
                     if ((command.intelamt.uuid != null) && (device.intelamt.uuid != command.intelamt.uuid)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.uuid; change = 1; log = 1; }
                     if ((command.intelamt.user != null) && (device.intelamt.user != command.intelamt.user)) { changes.push('AMT user'); device.intelamt.user = command.intelamt.user; change = 1; log = 1; }
@@ -1419,6 +1440,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         });
     }
+
+    // Generate a random Intel AMT password
+    function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
+    function getRandomAmtPassword() { var p; do { p = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
 
     return obj;
 };

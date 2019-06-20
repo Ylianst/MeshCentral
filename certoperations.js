@@ -29,12 +29,13 @@ module.exports.CertificateOperations = function (parent) {
     const TopLevelDomainExtendedSupport = { 'net': 2, 'com': 2, 'arpa': 3, 'org': 2, 'gov': 2, 'edu': 2, 'de': 2, 'fr': 3, 'cn': 3, 'nl': 3, 'br': 3, 'mx': 3, 'uk': 3, 'pl': 3, 'tw': 3, 'ca': 3, 'fi': 3, 'be': 3, 'ru': 3, 'se': 3, 'ch': 2, 'dk': 2, 'ar': 3, 'es': 3, 'no': 3, 'at': 3, 'in': 3, 'tr': 3, 'cz': 2, 'ro': 3, 'hu': 3, 'nz': 3, 'pt': 3, 'il': 3, 'gr': 3, 'co': 3, 'ie': 3, 'za': 3, 'th': 3, 'sg': 3, 'hk': 3, 'cl': 2, 'lt': 3, 'id': 3, 'hr': 3, 'ee': 3, 'bg': 3, 'ua': 2 };
 
     // Sign a Intel AMT ACM activation request
-    obj.signAcmRequest = function (domain, request, user, pass) {
+    obj.signAcmRequest = function (domain, request, user, pass, ipport, nodeid, meshid, computerName, agentId) {
         if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (request == null) || (request.nonce == null) || (request.realm == null) || (request.fqdn == null) || (request.hash == null)) return null;
         if (parent.common.validateString(request.nonce, 16, 256) == false) return null;
         if (parent.common.validateString(request.realm, 16, 256) == false) return null;
         if (parent.common.validateString(request.fqdn, 4, 256) == false) return null;
         if (parent.common.validateString(request.hash, 16, 256) == false) return null;
+        if (parent.common.validateString(request.uuid, 36, 36) == false) return null;
 
         // Look for the signing certificate
         var signkey = null, certChain = null, hashAlgo = null, certIndex = null;
@@ -60,8 +61,20 @@ module.exports.CertificateOperations = function (parent) {
             signature = signer.sign(signkey, 'base64');
         } catch (ex) { return null; }
 
+        // Log the activation request, logging is a required step for activation.
+        if (obj.logAmtActivation(domain, { time: new Date(), domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId }) == false) return null;
+
         // Return the signature with the computed account password hash
         return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };
+    }
+
+    // Log the Intel AMT activation operation
+    obj.logAmtActivation = function (domain, x) {
+        if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string') || (x == null)) return true;
+        var logpath = null;
+        if ((domain.amtacmactivation.log.length >= 2) && ((domain.amtacmactivation.log[0] == '/') || (domain.amtacmactivation.log[1] == ':'))) { logpath = domain.amtacmactivation.log; } else { logpath = parent.path.join(obj.parent.datapath, domain.amtacmactivation.log); }
+        try { obj.fs.appendFileSync(logpath, JSON.stringify(x) + '\r\n'); } catch (ex) { console.log(ex); return false; }
+        return true;
     }
 
     // Load Intel AMT ACM activation certificates
