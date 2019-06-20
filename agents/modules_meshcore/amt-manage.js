@@ -531,7 +531,7 @@ function AmtManager(agent, db, isdebug) {
                 else { acmdata.index++; performAcmActivation(acmdata); }
             });
         } else {
-            //debug('Calling AdminSetup()');
+            debug('Calling AdminSetup() ' + JSON.stringify(acmdata));
             osamtstack.IPS_HostBasedSetupService_AdminSetup(2, acmdata.password, acmdata.nonce, 2, acmdata.signature,
                 function (stack, name, responses, status) {
                     debug('AdminSetup Status: ' + status);
