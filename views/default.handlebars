@@ -6362,7 +6362,8 @@
         function p20editMeshAmtChange() {
             var ptype = Q('dp20amtpolicy').value, x = '';
             if (ptype >= 2) {
-                x = addHtmlValue('Password*', '<input id=dp20amtpolicypass style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() />')
+                x = addHtmlValue('Password*', '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() />')
+                x += addHtmlValue('Password*', '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() />')
                 if (ptype == 2) { x += addHtmlValue('Password mismatch', "<select id=dp20amtbadpass style=width:230px><option value=0>Do nothing</option><option value=1>Reactivate Intel&reg; AMT</option></select>"); }
                 if ((features & 0x400) == 0) {
                     if (ptype == 2) {
@@ -6384,7 +6385,10 @@
 
         function dp20amtValidatePolicy() {
             var ok = true, ptype = Q('dp20amtpolicy').value;
-            if (ptype == 2) { var pass = Q('dp20amtpolicypass').value; ok = (pass == '') ? true : passwordcheck(pass); }
+            if ((ptype == 2) || (ptype == 3)) {
+                var pass = Q('dp20amtpolicypass').value, pass2 = Q('dp20amtpolicypass2').value;
+                ok = ((pass === pass2) && ((pass === '') ? true : passwordcheck(pass)));
+            }
             QE('idx_dlgOkButton', ok);
         }
 
