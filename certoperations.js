@@ -30,34 +30,43 @@ module.exports.CertificateOperations = function (parent) {
 
     // Sign a Intel AMT ACM activation request
     obj.signAcmRequest = function (domain, request, user, pass) {
+        console.log('signAcmRequest', request);
         if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (request == null) || (request.nonce == null) || (request.realm == null) || (request.fqdn == null) || (request.hash == null)) return null;
         if (parent.common.validateString(request.nonce, 16, 256) == false) return null;
         if (parent.common.validateString(request.realm, 16, 256) == false) return null;
         if (parent.common.validateString(request.fqdn, 4, 256) == false) return null;
         if (parent.common.validateString(request.hash, 16, 256) == false) return null;
 
+        console.log('a1');
         // Look for the signing certificate
-        var signkey = null, certChain = null, hashAlgo = null;
+        var signkey = null, certChain = null, hashAlgo = null, certIndex = null;
         for (var i in domain.amtacmactivation.certs) {
             const certEntry = domain.amtacmactivation.certs[i];
-            if ((certEntry.sha256 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; break; }
-            if ((certEntry.sha1 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; break; }
+            if ((certEntry.sha256 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
+            if ((certEntry.sha1 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
         }
+        console.log('as', signkey);
         if (signkey == null) return null; // Did not find a match.
 
-        // Create the signature message
-        var mcNonce = Buffer.from(obj.crypto.randomBytes(20), 0, 20).toString('base64');
+        console.log('aa');
+        // If the matching certificate is a root cert, issue a leaf cert that matches the fqdn
+        if (domain.amtacmactivation.certs[certIndex].cn == '*') return; // TODO: Add support for this mode
+        console.log('ab');
+
+        // Setup both nonces, ready to be signed
+        const mcNonce = Buffer.from(obj.crypto.randomBytes(32), 'binary');
+        const fwNonce = Buffer.from(request.nonce, 'base64');
 
         // Sign the request
         var signature = null;
         try {
             var signer = obj.crypto.createSign(hashAlgo);
-            signer.update(request.nonce + mcNonce);
+            signer.update(Buffer.concat([fwNonce, mcNonce]));
             signature = signer.sign(signkey, 'base64');
         } catch (ex) { return null; }
 
         // Return the signature with the computed account password hash
-        return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce, 'certs': certChain };
+        return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };
     }
 
     // Load Intel AMT ACM activation certificates
@@ -112,7 +121,7 @@ module.exports.CertificateOperations = function (parent) {
                     for (var k in r.certs) {
                         if (((currenthash == null) && (r.certs[k].subject.hash == r.certs[k].issuer.hash)) || ((r.certs[k].issuer.hash == currenthash) && (r.certs[k].subject.hash != r.certs[k].issuer.hash))) {
                             currenthash = r.certs[k].subject.hash;
-                            orderedCerts.push(Buffer.from(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data, 'binary').toString('base64'));
+                            orderedCerts.unshift(Buffer.from(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data, 'binary').toString('base64'));
                             orderingError = false;
                         }
                     }
