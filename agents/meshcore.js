@@ -710,6 +710,10 @@ function createMeshCore(agent)
                     }
                     break;
                 }
+                case 'acmactivate': {
+                    if (amt != null) { amt.setAcmResponse(data); }
+                    break;
+                }
                 case 'wakeonlan': {
                     // Send wake-on-lan on all interfaces for all MAC addresses in data.macs array. The array is a list of HEX MAC addresses.
                     sendConsoleText('Server requesting wake-on-lan for: ' + data.macs.join(', '));

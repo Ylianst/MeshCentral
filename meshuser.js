@@ -734,6 +734,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r = parent.db.getBackupConfig();
                             break;
                         }
+                        case 'acm': {
+                            var acmrequest = { action: 'acmactivate', nonce: 'H9e099o2wIhnRkjd5vXJWBceqIY=', realm: 'Digest:4DCA0000000000000000000000000000', fqdn: 'vprodemo.com', hash: 'c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4' };
+                            var response = parent.parent.certificateOperations.signAcmRequest(domain, acmrequest, 'admin', 'P@ssw0rd');
+                            r = 'ACM Response: ' + JSON.stringify(response);
+                            break;
+                        }
                         default: { // This is an unknown command, return an error message
                             r = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                             break;

@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
+  <asmv1:assemblyIdentity name="MeshMiniRouter.exe" version="2.0.0.29" publicKeyToken="2e8c763d6917d840" language="neutral" processorArchitecture="msil" type="win32" />
+  <description asmv2:iconFile="MeshMiniRouter.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
+  <application />
+  <entryPoint>
+    <assemblyIdentity name="MeshMiniRouter" version="1.0.7109.17443" language="neutral" processorArchitecture="msil" />
+    <commandLine file="MeshMiniRouter.exe" parameters="" />
+  </entryPoint>
+  <trustInfo>
+    <security>
+      <applicationRequestMinimum>
+        <PermissionSet version="1" class="System.Security.NamedPermissionSet" Name="Internet" Description="Default rights given to Internet applications" Unrestricted="true" ID="Custom" SameSite="site" />
+        <defaultAssemblyRequest permissionSetReference="Custom" />
+      </applicationRequestMinimum>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!-- UAC Manifest Options
+            If you want to change the Windows User Account Control level replace the 
+            requestedExecutionLevel node with one of the following.
+
+        <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
+        <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
+        <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
+
+            Specifying requestedExecutionLevel node will disable file and registry virtualization.
+            If you want to utilize File and Registry Virtualization for backward 
+            compatibility then delete the requestedExecutionLevel node.
+        -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <dependency>
+    <dependentOS>
+      <osVersionInfo>
+        <os majorVersion="5" minorVersion="1" buildNumber="2600" servicePackMajor="0" />
+      </osVersionInfo>
+    </dependentOS>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="Microsoft.Windows.CommonLanguageRuntime" version="4.0.30319.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MeshMiniRouter.exe" size="195568">
+      <assemblyIdentity name="MeshMiniRouter" version="1.0.7109.17443" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>pjiT63g9OFJUGKkmY1qgx3fG5nZ4aJF6VW2rqftTu4w=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <file name="MeshMiniRouter.exe.config" size="2397">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>UylUFD4/o0KBti+5/eodTDgq4BkUJD0J0aUXNd3yHbY=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="MeshMiniRouter.ico" size="1078">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>mkjbDQuo7YXa8wZxdKEu/ECXrORwwtpRgNj8NBKbzHo=</dsig:DigestValue>
+    </hash>
+  </file>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- A list of all Windows versions that this application is designed to work with. Windows will automatically select the most compatible environment.-->
+      <!-- If your application is designed to work with Windows 7, uncomment the following supportedOS node-->
+      <!--<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>-->
+    </application>
+  </compatibility>
+<publisherIdentity name="CN=meshcommander.com, O=Open Source, C=US" issuerKeyHash="a5ce27af64fc8ff59400eb5bfb629fbe55a295ec" /><Signature Id="StrongNameSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>rdudBjT8d/St+qhe7mR9ZBW9kwQ=</DigestValue></Reference></SignedInfo><SignatureValue>viMGsfeyoE91nA17ahh/J6R0+Yo3a1QiIsZguo1xY39K2u2Xfs9+RBBMdS1tFmsIAJXDeM8Us1WuZKZPQ87SmzNA/jow/8Z95WXAzjLIe7kgc0oductj0PuKoF2m/LJpXB/zxTspvQfC5i7wKv7rz9YBXXP6PZkJB3yfUYFHFj9gGuF43SLi6ZvO6qsd196ED0XmYK0mX0vv9ffduOAzSE/EI7jlDv2rfcILKnDvCfvQjQtA24qGENdMHFqvwFk+WqLKKJHKCAD2NOLRhBGgg68MvwVeOBqQYvEL8DczRuIKWv6TdPSY4aCWbXRmkYypGJTO0clRkiuDZGSVkdgL/Q==</SignatureValue><KeyInfo Id="StrongNameKeyInfo"><KeyValue><RSAKeyValue><Modulus>wroCIKvsY8JniSorSgYaU48PzB9id1png9IjbcLAPGGNJDT57ML8N8+OGCR/XNZlpFgAduA5SZlgeLuUO3DGk6XdxEEi+7i85YyC9BHlmVNi82GMJKN9hdcNE6nxf0mrXJRpR2X8j11UzD0ckpVbFZPq/3YnYIB7ZAkmDUsUgA/uWuhodrMp3DMePzGGA5Bhv3J/Cxh8N/1eCS9z8Ou8Fo/TWTsnWqhU3oaqJ63UHQ4GFiTY4NnQTp7124PT/MWI+mMxEDczi2cTkGklBwzBmCcu42AOkEY4lfrbILKPX12fnBILNttJQYol+pFiIzTdFa57uXaLTlDZ6m+4SjhT6w==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><msrel:RelData xmlns:msrel="http://schemas.microsoft.com/windows/rel/2005/reldata"><r:license xmlns:r="urn:mpeg:mpeg21:2003:01-REL-R-NS" xmlns:as="http://schemas.microsoft.com/windows/pki/2005/Authenticode"><r:grant><as:ManifestInformation Hash="0493bd15647d64ee5ea8faadf477fc34069ddbad" Description="" Url=""><as:assemblyIdentity name="MeshMiniRouter.exe" version="2.0.0.29" publicKeyToken="2e8c763d6917d840" language="neutral" processorArchitecture="msil" type="win32" /></as:ManifestInformation><as:SignedBy /><as:AuthenticodePublisher><as:X509SubjectName>CN=meshcommander.com, O=Open Source, C=US</as:X509SubjectName></as:AuthenticodePublisher></r:grant><r:issuer><Signature Id="AuthenticodeSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>/qnG2T8hvj5RjyxbDwZGHtTo3Ys=</DigestValue></Reference></SignedInfo><SignatureValue>lj6ZZ4ORr5bQCJsnKvHEml8AhDiLeJ8J/QjhrZlse8pKrurX16XuT2IH/z9Ov7qJfkvXDVblqIbKkr5P+eQUN69KcFkuUFGyUzNe2LGX8K5KC9S9AbTTGl2qw+GfLTNF6em8QWLz2Ul2CMyhv2Oz4Al/odJ59Dhf240iKf7CIonCWedShJoHrOrOPnCNg3Y/+/8yUVd6Obur7CoZ8V5C38fjlcJZO061CJ9z4qkWIf6oFh7B4ebxpX7ykjDJvIoMTJ55MirPw6eCg/b+zIFXBkqBmWp3eq1JDyW7dG9+kYfxiqE70BZTIn0GgN2tcsv5+a4F3zJN0n7RXQ2cQf4eQw==</SignatureValue><KeyInfo><KeyValue><RSAKeyValue><Modulus>wroCIKvsY8JniSorSgYaU48PzB9id1png9IjbcLAPGGNJDT57ML8N8+OGCR/XNZlpFgAduA5SZlgeLuUO3DGk6XdxEEi+7i85YyC9BHlmVNi82GMJKN9hdcNE6nxf0mrXJRpR2X8j11UzD0ckpVbFZPq/3YnYIB7ZAkmDUsUgA/uWuhodrMp3DMePzGGA5Bhv3J/Cxh8N/1eCS9z8Ou8Fo/TWTsnWqhU3oaqJ63UHQ4GFiTY4NnQTp7124PT/MWI+mMxEDczi2cTkGklBwzBmCcu42AOkEY4lfrbILKPX12fnBILNttJQYol+pFiIzTdFa57uXaLTlDZ6m+4SjhT6w==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><X509Data><X509Certificate>MIIC+jCCAeICCQDiTk4zPcm5fTANBgkqhkiG9w0BAQUFADA/MQswCQYDVQQGEwJVUzEUMBIGA1UECgwLT3BlbiBTb3VyY2UxGjAYBgNVBAMMEW1lc2hjb21tYW5kZXIuY29tMB4XDTE5MDUyOTIxNDIwMloXDTM5MDUyNDIxNDIwMlowPzELMAkGA1UEBhMCVVMxFDASBgNVBAoMC09wZW4gU291cmNlMRowGAYDVQQDDBFtZXNoY29tbWFuZGVyLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMK6AiCr7GPCZ4kqK0oGGlOPD8wfYndaZ4PSI23CwDxhjSQ0+ezC/DfPjhgkf1zWZaRYAHbgOUmZYHi7lDtwxpOl3cRBIvu4vOWMgvQR5ZlTYvNhjCSjfYXXDROp8X9Jq1yUaUdl/I9dVMw9HJKVWxWT6v92J2CAe2QJJg1LFIAP7lroaHazKdwzHj8xhgOQYb9yfwsYfDf9Xgkvc/DrvBaP01k7J1qoVN6Gqiet1B0OBhYk2ODZ0E6e9duD0/zFiPpjMRA3M4tnE5BpJQcMwZgnLuNgDpBGOJX62yCyj19dn5wSCzbbSUGKJfqRYiM03RWue7l2i05Q2epvuEo4U+sCAwEAATANBgkqhkiG9w0BAQUFAAOCAQEANBww5pVulxefbTTvqe1O64kExXbcv2WsVU98o2zDZgw2wsYvbeHXeRGNvtjFllIewrGQbyfDxGgY5Nqo2H1xD6/T8VksOLTbMfj8Qc5gtCu/DuW0JhdnLOwlXyoFqG83Ym9vaIfMd8J/5EkuvmAUvxoFw4uv+UYu+HUSQM2+1zdexn+rzNR8co/IOGNx2bDxQ1XYa7P3myhhM6/jdH40eSmJhvJxDH3nYxfV8CLNYPgj0DX335Tc28k9GHa8h9tNr0hPRoV/2jSpi9EE+x2lDENZrCCMw8D73UUq55OR+KSu4YbxyfvPrZmsFkft/Xeihay8IT1QYyWgWG0dbCHm4Q==</X509Certificate></X509Data></KeyInfo><Object><as:Timestamp>MIIRywYJKoZIhvcNAQcCoIIRvDCCEbgCAQExCzAJBgUrDgMCGgUAMIIBEwYJKoZI
+hvcNAQcBoIIBBASCAQCWPplng5GvltAImycq8cSaXwCEOIt4nwn9COGtmWx7ykqu
+6tfXpe5PYgf/P06/uol+S9cNVuWohsqSvk/55BQ3r0pwWS5QUbJTM17YsZfwrkoL
+1L0BtNMaXarD4Z8tM0Xp6bxBYvPZSXYIzKG/Y7PgCX+h0nn0OF/bjSIp/sIiicJZ
+51KEmges6s4+cI2Ddj/7/zJRV3o5u6vsKhnxXkLfx+OVwlk7TrUIn3PiqRYh/qgW
+HsHh5vGlfvKSMMm8igxMnnkyKs/Dp4KD9v7MgVcGSoGZand6rUkPJbt0b36Rh/GK
+oTvQFlMifQaA3a1yy/n5rgXfMk3SftFdDZxB/h5DoIIOdDCCBP4wggPmoAMCAQIC
+ECtz23RjEUxaWzJK8jBXckkwDQYJKoZIhvcNAQEFBQAwejELMAkGA1UEBhMCR0Ix
+GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEa
+MBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxIDAeBgNVBAMTF0NPTU9ETyBUaW1l
+IFN0YW1waW5nIENBMB4XDTE5MDUwMjAwMDAwMFoXDTIwMDUzMDEwNDgzOFowgYMx
+CzAJBgNVBAYTAkdCMRswGQYDVQQIDBJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNV
+BAcMB1NhbGZvcmQxGDAWBgNVBAoMD1NlY3RpZ28gTGltaXRlZDErMCkGA1UEAwwi
+U2VjdGlnbyBTSEEtMSBUaW1lIFN0YW1waW5nIFNpZ25lcjCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBAL9SNoI63HQ3DXjVfxZQGWbtuhqZ0WM4mgxmskDb
+p4BQv2kuNi8KZz9AoUqKYzWb0BnMdKoXGZErtVUgGfvAGjptyjmbgvK6laEa2DTH
+uIl7cIhwUWZp7Hf+xpRyes8lge00gprfCBU3MbRtrhy/GNUNz/614cT7sUdx6fru
+Y5Hs8ezOWQQRfK4LYFPqKvO+LwIP0ExdMRMvHmkPhZtFlsKNEotnrh+vaasGloEA
+35F8lRzmnhlk33bIYEQvSeOPf2BqRTkTRCGluvuR+kFA7U0CtEt/3+LgPbiq8xrY
+QYOPfzPtQQbifZ4/U4SNKNrddsa9944eOM3Ay2AkA956TKsCAwEAAaOCAXQwggFw
+MB8GA1UdIwQYMBaAFGQihrZKickED9AEWJIrs249HidsMB0GA1UdDgQWBBSu7tlg
+ul71LAES/Y6NslVyNUZv8TAOBgNVHQ8BAf8EBAMCBsAwDAYDVR0TAQH/BAIwADAW
+BgNVHSUBAf8EDDAKBggrBgEFBQcDCDBABgNVHSAEOTA3MDUGDCsGAQQBsjEBAgED
+CDAlMCMGCCsGAQUFBwIBFhdodHRwczovL3NlY3RpZ28uY29tL0NQUzBCBgNVHR8E
+OzA5MDegNaAzhjFodHRwOi8vY3JsLnNlY3RpZ28uY29tL0NPTU9ET1RpbWVTdGFt
+cGluZ0NBXzIuY3JsMHIGCCsGAQUFBwEBBGYwZDA9BggrBgEFBQcwAoYxaHR0cDov
+L2NydC5zZWN0aWdvLmNvbS9DT01PRE9UaW1lU3RhbXBpbmdDQV8yLmNydDAjBggr
+BgEFBQcwAYYXaHR0cDovL29jc3Auc2VjdGlnby5jb20wDQYJKoZIhvcNAQEFBQAD
+ggEBAHp/qUrSsKQcHQ2dLVzGrlrdj0Ud8J5ckPZerHD+09nN5BmkCkN1YGqDpMOZ
+hCAxutb+TM8T+BD3VAl+6tzSLnnXB0xUt7XJnbLw8h4kFNCcx8hnqgtit7TxBuTn
+5CFLGTKZNLkZYXcKM5BnbMCISpL1oUMB866ib8mVvZY494P3rXwoH/M4344hyHFo
+Uy3LrqriMBeDIikYteGMietu+H44u5BPuV8HNBJrl9XmO5G+ABchbuJt/FJ574El
+us8T0PvdK82BtleJTvDd8wtKNMqF/wi5ll/rERPg4cUDrVcc4V2SBr4byDw/pSCf
+adBpwcXCyT7nxXL36huW4pSvhi4wggTmMIIDzqADAgECAhBiXE2QjNVC+6supXM/
+8VQZMA0GCSqGSIb3DQEBBQUAMIGVMQswCQYDVQQGEwJVUzELMAkGA1UECBMCVVQx
+FzAVBgNVBAcTDlNhbHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNU
+IE5ldHdvcmsxITAfBgNVBAsTGGh0dHA6Ly93d3cudXNlcnRydXN0LmNvbTEdMBsG
+A1UEAxMUVVROLVVTRVJGaXJzdC1PYmplY3QwHhcNMTEwNDI3MDAwMDAwWhcNMjAw
+NTMwMTA0ODM4WjB6MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5j
+aGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRowGAYDVQQKExFDT01PRE8gQ0EgTGlt
+aXRlZDEgMB4GA1UEAxMXQ09NT0RPIFRpbWUgU3RhbXBpbmcgQ0EwggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCqgvGEqVvYcbXSXSvt9BMgDPmb6dGPdF5u
+7uspSNjIvizrCmFgzL2SjXzddLsKnmhOqnUkcyeuN/MagqVtuMgJRkx+oYPp4gNg
+pCEQJ0CaWeFtrz6CryFpWW1jzM6x9haaeYOXOh0Mr8l90U7Yw0ahpZiqYM5V1BIR
+8zsLbMaIupUu76BGRTl8rOnjrehXl1/++8IJjf6OmqU/WUb8xy1dhIfwb1gmw/BC
+/FXeZb5nOGOzEbGhJe2pm75I30x3wKoZC7b9So8seVWx/llaWm1VixxD9rFVcimJ
+TUA/vn9JAV08m1wI+8ridRUFk50IYv+6Dduq+LW/EDLKcuoIJs0ZAgMBAAGjggFK
+MIIBRjAfBgNVHSMEGDAWgBTa7WR0FJwUPKvdmam9WyhNizzJ2DAdBgNVHQ4EFgQU
+ZCKGtkqJyQQP0ARYkiuzbj0eJ2wwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQI
+MAYBAf8CAQAwEwYDVR0lBAwwCgYIKwYBBQUHAwgwEQYDVR0gBAowCDAGBgRVHSAA
+MEIGA1UdHwQ7MDkwN6A1oDOGMWh0dHA6Ly9jcmwudXNlcnRydXN0LmNvbS9VVE4t
+VVNFUkZpcnN0LU9iamVjdC5jcmwwdAYIKwYBBQUHAQEEaDBmMD0GCCsGAQUFBzAC
+hjFodHRwOi8vY3J0LnVzZXJ0cnVzdC5jb20vVVROQWRkVHJ1c3RPYmplY3RfQ0Eu
+Y3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0GCSqG
+SIb3DQEBBQUAA4IBAQARyT3hBeg7ZazJdDEDt9qDOMaSuv3N+Ntjm30ekKSYyNlY
+aDS18AshU55ZRv1jhd/+R6pw5D9eCJUoXxTx/SKucOS38bC2Vp+xZ7hog16oYNuY
+OfbcSV4Tp5BnS+Nu5+vwQ8fQL33/llqnA9abVKAj06XCoI75T9GyBiH+IV0njKCv
+2bBS7vzI7bec8ckmONalMu1Il5RePeA9NbSwyVivx1j/YnQWkmRB2sqo64sDvcFO
+rh+RMrjhJDt77RRoCYaWKMk7yWwowiVp9UphreAn+FOndRWwUTGw8UH/PlomHmB+
+4uNqOZrE6u4/5rITP1UDBE0LkHLU6/u8h5BRsjgZMIIEhDCCA2ygAwIBAgIQQhry
+lAmEGR9SCkvGJCanSzANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEUMBIG
+A1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFsIFRU
+UCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290MB4X
+DTA1MDYwNzA4MDkxMFoXDTIwMDUzMDEwNDgzOFowgZUxCzAJBgNVBAYTAlVTMQsw
+CQYDVQQIEwJVVDEXMBUGA1UEBxMOU2FsdCBMYWtlIENpdHkxHjAcBgNVBAoTFVRo
+ZSBVU0VSVFJVU1QgTmV0d29yazEhMB8GA1UECxMYaHR0cDovL3d3dy51c2VydHJ1
+c3QuY29tMR0wGwYDVQQDExRVVE4tVVNFUkZpcnN0LU9iamVjdDCCASIwDQYJKoZI
+hvcNAQEBBQADggEPADCCAQoCggEBAM6qgT+jo2F4qjEAVZURnicPHxzfOpuCaDDA
+SmEd8S8O+r5596Uj71VRloTN2+O5bj4x2AogZ8f02b+U60cEPgLOKqJdhwQJ9jCd
+GIqXsqoc/EHSoTbL+z2RuufZcDX65OeQw5ujm9M89RKZd7G3CeBo5hy485RjiGpq
+/gt2yb70IuRnuasaXnfBhQfdDWy/7gbHd2pBnqcP1/vulBe3/IW+pKvEHDHd17bR
+5PDv3xaPslKT16HUiaEHLr/hARJCHhrh2JU022R5KP+6LhHC5ehbkkj7RwvCbNqt
+MoNB86XlQXD9ZZBt+vpRxPm9lisZBCzTbafc8H9vg2XiaquHhnUCAwEAAaOB9DCB
+8TAfBgNVHSMEGDAWgBStvZh6NLQm9/rEJlTvA73gJMtUGjAdBgNVHQ4EFgQU2u1k
+dBScFDyr3ZmpvVsoTYs8ydgwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMB
+Af8wEQYDVR0gBAowCDAGBgRVHSAAMEQGA1UdHwQ9MDswOaA3oDWGM2h0dHA6Ly9j
+cmwudXNlcnRydXN0LmNvbS9BZGRUcnVzdEV4dGVybmFsQ0FSb290LmNybDA1Bggr
+BgEFBQcBAQQpMCcwJQYIKwYBBQUHMAGGGWh0dHA6Ly9vY3NwLnVzZXJ0cnVzdC5j
+b20wDQYJKoZIhvcNAQEFBQADggEBAE1CL6bBiusHgJBYRoz4GTlmKjxaLG3P1NmH
+VY15CxKIe0CP1cf4S41VFmOtt1fcOyu908FPHgOHS0Sb4+JARSbzJkkraoTxVHrU
+Qtr802q7Zn7Knurpu9wHx8OSToM8gUmfktUyCepJLqERcZo20sVOaLbLDhslFq9s
+3l122B9ysZMmhhfbGN6vRenf+5ivFBjtpF72iZRF8FUESt3/J90GSkD2tLzx5A+Z
+Arv9XQ4uKMG+O18aP5cQhLwWPtijnGMdZstcX9o+8w8KCTUi29vAPwD55g1dZ9H9
+oB4DK9lA977Mh2ZUgKajuPUZYtXSJrGYJu6ay0SnRVqBlRUa9VExggIVMIICEQIB
+ATCBjjB6MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
+MRAwDgYDVQQHEwdTYWxmb3JkMRowGAYDVQQKExFDT01PRE8gQ0EgTGltaXRlZDEg
+MB4GA1UEAxMXQ09NT0RPIFRpbWUgU3RhbXBpbmcgQ0ECECtz23RjEUxaWzJK8jBX
+ckkwCQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZI
+hvcNAQkFMQ8XDTE5MDYxOTE2Mzk0N1owIwYJKoZIhvcNAQkEMRYEFBNH2dqKIc3O
+d9nu4yVZyVqrZBgsMA0GCSqGSIb3DQEBAQUABIIBABCzYCfVxz++o2+2UNWUqi4k
+Hzoc4tfnKC5WRQl0lxrw5dSINQv3Zf/4GmZCXc8cXo0aRTSsj+zMhipypc5aN5Ny
+KKP9HWp7v8xwr/xQvu+3Uwj3C1s2sRNER6NPh3t2SMbK/QXgkneVYo+5gM8qJprV
+0Z8Mx4sx0s5nOC+abT/kA1s9pRgQWMY3RfiQLE8y5GcQzed0VqkkcGejlvTTiSlf
+Wd6z9dPoOpuRBzrpBWQhpPsJ9XGlYPeB+VVsqrg7E6Wt/CcmMV/ed5e+iM0fcqW1
+ngbNX3oSQOpRvxNNxjHga3igYKBZtf4/idoBkTxrRHe56Ah4eMTJjc8luAy8S+0=
+</as:Timestamp></Object></Signature></r:issuer></r:license></msrel:RelData></KeyInfo></Signature></asmv1:assembly>
