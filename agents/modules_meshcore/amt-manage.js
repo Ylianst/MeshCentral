@@ -484,7 +484,7 @@ function AmtManager(agent, db, isdebug) {
         // Fetch Intel AMT realm and activation nonce and get ready to ACM activation...
         if (osamtstack != null) {
             //debug('Trying to get Intel AMT activation information (1)...');
-            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch });
+            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch, uuid: mestate.UUID });
         } else {
             //debug('ACM Activation: Trying to get local account info...');
             amtMei.getLocalSystemAccount(function (x) {
@@ -496,7 +496,7 @@ function AmtManager(agent, db, isdebug) {
                     oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
                     osamtstack = new amt(oswsstack);
                     //debug('Trying to get Intel AMT activation information (2)...');
-                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch });
+                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch, uuid: mestate.UUID });
                 } else {
                     //debug('Unable to get $$OsAdmin password.');
                 }
@@ -509,7 +509,7 @@ function AmtManager(agent, db, isdebug) {
         if (status != 200) return;
         var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
         var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
-        agent.SendCommand({ "action": "acmactivate", "nonce": fwNonce, "realm": digestRealm, "fqdn": tag.fqdn, "hash": tag.hash });
+        agent.SendCommand({ "action": "acmactivate", "nonce": fwNonce, "realm": digestRealm, "fqdn": tag.fqdn, "hash": tag.hash, "uuid": tag.uuid });
     }
 
     // Called when the server responds with a ACM activation signature.
