@@ -754,7 +754,7 @@ function createMeshCore(agent)
                     // Store the latest Intel AMT policy
                     amtPolicy = data.amtPolicy;
                     if (data.amtPolicy != null) { db.Put('amtPolicy', JSON.stringify(data.amtPolicy)); } else { db.Put('amtPolicy', null); }
-                    if (amt != null) { amt.setPolicy(amtPolicy); }
+                    if (amt != null) { amt.setPolicy(amtPolicy, true); }
                     break;
                 }
                 case 'getScript': {
@@ -1533,7 +1533,7 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo,args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm, amtdeactivate,\r\namtpolicy, getscript, getclip, setclip.';
+                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip.';
                     break;
                 }
                     /*
@@ -2067,7 +2067,7 @@ function createMeshCore(agent)
         if (typeof text == 'object') { text = JSON.stringify(text); }
         mesh.SendCommand({ "action": "msg", "type": "console", "value": text, "sessionid": sessionid });
     }
-    
+
     // Called before the process exits
     //process.exit = function (code) { console.log("Exit with code: " + code.toString()); }
     
