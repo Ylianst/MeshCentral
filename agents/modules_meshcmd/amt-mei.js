@@ -20,6 +20,7 @@ function amt_heci() {
     emitterUtils.createEvent('error');
 
     var heci = require('heci');
+    var sendConsole = function (msg) { try { require('MeshAgent').SendCommand({ "action": "msg", "type": "console", "value": msg }); } catch (ex) { } }
 
     this._ObjectID = "pthi";
     this._rq = new Q();

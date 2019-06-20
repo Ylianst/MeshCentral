@@ -35,6 +35,7 @@ function AmtManager(agent, db, isdebug) {
     var amtpolicy = null;
     var obj = this;
     var mestate;
+    var trustedHashes = null;;
     obj.state = 0;
     obj.lmsstate = 0;
     obj.onStateChange = null;
@@ -433,12 +434,30 @@ function AmtManager(agent, db, isdebug) {
     }
 
     //
+    // Get Intel AMT activation hashes
+    //
+    obj.getTrustedHashes = function (func, tag) {
+        if (trustedHashes != null) { func(tag); }
+        trustedHashes = [];
+        amtMei.getHashHandles(function (handles) {
+            var exitOnCount = handles.length;
+            for (var i = 0; i < handles.length; ++i) {
+                this.getCertHashEntry(handles[i], function (result) {
+                    if (result.isActive == 1) { trustedHashes.push(result.certificateHash.toLowerCase()); }
+                    if (--exitOnCount == 0) { func(tag); }
+                });
+            }
+        });
+    }
+
+    //
     // Activate Intel AMT to ACM
     //
 
     obj.activeToACM = function (mestate) {
+        //debug('TrustedHashes: ' + JSON.stringify(trustedHashes));
         //debug('ProvisioningState: ' + JSON.stringify(mestate.ProvisioningState));
-        if (mestate.ProvisioningState != 0) return; // Can't activate unless in "PRE" activation mode.
+        if ((mestate.ProvisioningState != 0) || (amtpolicy == null) || (amtpolicy.match == null)) return; // Can't activate unless in "PRE" activation mode & policy is present.
         var trustedFqdn = null;
         //debug('Wired Interface: ' + JSON.stringify(mestate.net0));
         if ((mestate.net0 == null) && (mestate.net0.enabled != 0)) return; // Can't activate unless wired interface is active
@@ -448,19 +467,26 @@ function AmtManager(agent, db, isdebug) {
             var interfaces = require('os').networkInterfaces();
             for (var i in interfaces) {
                 for (var j in interfaces[i]) {
-                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { trustedFqdn = interfaces[i][j].fqdn; }
+                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { trustedFqdn = interfaces[i][j].fqdn.toLowerCase(); }
                 }
             }
         }
         if (trustedFqdn == null) return; // No trusted DNS suffix.
         //debug('TrustedFqdn: ' + trustedFqdn);
-        
+
+        // Check if we have a ACM policy match
+        var hashMatch = false;
+        for (var i in amtpolicy.match) { var m = amtpolicy.match[i]; if (m.cn == trustedFqdn) { for (var j in trustedHashes) { if ((trustedHashes[j] == m.sha256) || (trustedHashes[j] == m.sha1)) { hashMatch = trustedHashes[j]; } } } }
+        if (hashMatch == null) return; // No certificate / FQDN match
+        debug('Policy: ' + JSON.stringify(amtpolicy));
+        debug('HashMatch: ' + hashMatch);
+
         // Fetch Intel AMT realm and activation nonce and get ready to ACM activation...
         if (osamtstack != null) {
-            //debug('Trying to get Intel AMT activation information...');
-            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, trustedFqdn);
+            debug('Trying to get Intel AMT activation information (1)...');
+            osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch });
         } else {
-            //debug('ACM Activation: Trying to get local account info...');
+            debug('ACM Activation: Trying to get local account info...');
             amtMei.getLocalSystemAccount(function (x) {
                 if ((x != null) && x.user && x.pass) {
                     //debug('Intel AMT local account info: User=' + x.user + ', Pass=' + x.pass + '.');
@@ -469,21 +495,48 @@ function AmtManager(agent, db, isdebug) {
                     var amt = require('amt');
                     oswsstack = new wsman(transport, '127.0.0.1', 16992, x.user, x.pass, false);
                     osamtstack = new amt(oswsstack);
-                    //debug('Trying to get Intel AMT activation information...');
-                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, trustedFqdn);
+                    debug('Trying to get Intel AMT activation information (2)...');
+                    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToACM2, { fqdn: trustedFqdn, hash: hashMatch });
                 } else {
-                    //debug('Unable to get $$OsAdmin password.');
+                    debug('Unable to get $$OsAdmin password.');
                 }
             });
         }
     }
 
-    function activeToACM2(stack, name, responses, status, trustedFqdn) {
-        debug('activeToACM2: ' + trustedFqdn);
+    function activeToACM2(stack, name, responses, status, tag) {
+        debug('activeToACM2 status=' + status);
         if (status != 200) return;
         var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
         var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
-        agent.SendCommand({ "action": "acmactivate", "nonce": fwNonce, "realm": digestRealm, "fqdn": trustedFqdn });
+        agent.SendCommand({ "action": "acmactivate", "nonce": fwNonce, "realm": digestRealm, "fqdn": tag.fqdn, "hash": tag.hash });
+    }
+
+    // Called when the server responds with a ACM activation signature.
+    obj.setAcmResponse = function (acmdata) {
+        debug('setAcmResponse=' + JSON.stringify(acmdata));
+        acmdata.index = 0;
+        //performAcmActivation(acmdata);
+    }
+
+    // Recursive function to inject the provisioning certificates into AMT in the proper order and completes ACM activation
+    function performAcmActivation(acmdata) {
+        var leaf = (acmdata.index == 0), root = (acmdata.index == (acmdata.certChain.length - 1));
+        if (acmdata.index < acmdata.certChain.length) {
+            if (acmdata.certChain[acmdata.index] != null) {
+                debug('Calling AddNextCertInChain(' + acmdata.index + ')');
+                osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(acmdata.certChain[acmdata.index], leaf, root, function (stack, name, responses, status) {
+                    if (status !== 200) { debug('AddNextCertInChain status=' + status); return; }
+                    else if (responses['Body']['ReturnValue'] !== 0) { debug('AddNextCertInChain error=' + responses['Body']['ReturnValue']); return; }
+                    else { acmdata.index++; performAcmActivation(acmdata); }
+                });
+            }
+        } else {
+            debug('Calling AdminSetup()');
+            osamtstack.IPS_HostBasedSetupService_AdminSetup(2, acmdata.password, acmdata.nonce, 2, acmdata.signature,
+                function (stack, name, responses, status) { debug('DONE: ' + status); }
+            );
+        }
     }
 
     //
@@ -556,13 +609,11 @@ function AmtManager(agent, db, isdebug) {
         obj.getAmtInfo(function (meinfo) {
             if ((amtpolicy.type == 1) && (meinfo.ProvisioningState == 2) && ((meinfo.Flags & 2) != 0)) {
                 // CCM Deactivation Policy.
-                wsstack = null;
-                amtstack = null;
+                wsstack = amtstack = null;
                 obj.deactivateCCM();
             } else if ((amtpolicy.type == 2) && (meinfo.ProvisioningState == 0)) {
                 // CCM Activation Policy
-                wsstack = null;
-                amtstack = null;
+                wsstack = amtstack = null;
                 if ((amtpolicy.password == null) || (amtpolicy.password == '')) { intelAmtAdminPass = null; }
                 obj.activeToCCM(intelAmtAdminPass);
             } else if ((amtpolicy.type == 2) && (meinfo.ProvisioningState == 2) && (intelAmtAdminPass != null) && ((meinfo.Flags & 2) != 0)) {
@@ -577,7 +628,7 @@ function AmtManager(agent, db, isdebug) {
                 try { amtstack.BatchEnum(null, wsmanQuery, wsmanPassTestResponse); } catch (ex) { debug(ex); }
             } else if ((amtpolicy.type == 3) && (meinfo.ProvisioningState == 0)) {
                 // ACM Activation Policy
-                obj.activeToACM(meinfo);
+                obj.getTrustedHashes(obj.activeToACM, meinfo);
             } else {
                 // Other possible cases...
             }

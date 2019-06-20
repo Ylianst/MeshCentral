@@ -169,20 +169,23 @@ function lme_heci(options) {
                                 }
                             }
                             if (this[name][port] == null)
-                            { // Bind a new server socket if not already present
-                                this[name][port] = require('net').createServer();
-                                this[name][port].HECI = this;
-                                if (lme_port_offset == 0) {
-                                    this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
-                                } else {
-                                    this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
-                                }
-                                this[name][port].on('connection', function (socket) {
-                                    //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
-                                    this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);
-                                });
-                                this._binded[port] = true;
-                                this.LMS.emit('bind', this._binded);
+                            {
+                                try {
+                                    // Bind a new server socket if not already present
+                                    this[name][port] = require('net').createServer();
+                                    this[name][port].HECI = this;
+                                    if (lme_port_offset == 0) {
+                                        this[name][port].listen({ port: port, host: '127.0.0.1' }); // Normal mode
+                                    } else {
+                                        this[name][port].listen({ port: (port + lme_port_offset) }); // Debug mode
+                                    }
+                                    this[name][port].on('connection', function (socket) {
+                                        //console.log('New [' + socket.remoteFamily + '] TCP Connection on: ' + socket.remoteAddress + ' :' + socket.localPort);
+                                        this.HECI.LMS.bindDuplexStream(socket, socket.remoteFamily, socket.localPort - lme_port_offset);
+                                    });
+                                    this._binded[port] = true;
+                                    this.LMS.emit('bind', this._binded);
+                                } catch (ex) { console.log(ex, 'Port ' + port); }
                             }
                             var outBuffer = Buffer.alloc(5);
                             outBuffer.writeUInt8(81, 0);

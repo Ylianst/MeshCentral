@@ -63,7 +63,6 @@
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
     <Compile Include="agents\modules_meshcore\power-monitor.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
-    <Compile Include="agents\modules_meshcore\toaster.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\modules_meshcore\win-console.js" />

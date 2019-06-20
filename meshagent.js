@@ -827,20 +827,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // CCM - Add server root certificate
             if (parent.parent.certificates.rootex == null) { parent.parent.certificates.rootex = parent.parent.certificates.root.cert.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r').join('').split('\n').join(''); }
             r.rootcert = parent.parent.certificates.rootex;
-        } else if ((amtPolicy.type == 3) && (domain.amtacmactivation.dnsmatch)) {
+            if ((amtPolicy.cirasetup == 2) && (parent.parent.mpsserver != null) && (parent.parent.certificates.AmtMpsName != null) && (args.lanonly != true) && (args.mpsport != 0)) {
+                // Add server CIRA settings
+                r.ciraserver = {
+                    name: parent.parent.certificates.AmtMpsName,
+                    port: (typeof args.mpsaliasport == 'number' ? args.mpsaliasport : args.mpsport),
+                    user: obj.meshid.replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16),
+                    pass: args.mpspass ? args.mpspass : 'A@xew9rt', // If the MPS password is not set, just use anything. TODO: Use the password as an agent identifier?
+                    home: ['sdlwerulis3wpj95dfj'] // Use a random FQDN to not have any home network.
+                };
+                if (Array.isArray(args.ciralocalfqdn)) { r.ciraserver.home = args.ciralocalfqdn; }
+            }
+        } else if ((amtPolicy.type == 3) && (domain.amtacmactivation.acmmatch)) {
             // ACM - In this mode, don't send much to Intel AMT. Just indicate ACM policy and let the agent try activation when possible.
-            r = { type: 3, dnsmatch: domain.amtacmactivation.dnsmatch };
-        }
-        if (((amtPolicy.cirasetup == 2) || (amtPolicy.cirasetup == 3)) && (parent.parent.mpsserver != null) && (parent.parent.certificates.AmtMpsName != null) && (args.lanonly != true) && (args.mpsport != 0)) {
-            // Add server CIRA settings
-            r.ciraserver = {
-                name: parent.parent.certificates.AmtMpsName,
-                port: (typeof args.mpsaliasport == 'number' ? args.mpsaliasport : args.mpsport),
-                user: obj.meshid.replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16),
-                pass: args.mpspass ? args.mpspass : 'A@xew9rt', // If the MPS password is not set, just use anything. TODO: Use the password as an agent identifier?
-                home: ['sdlwerulis3wpj95dfj'] // Use a random FQDN to not have any home network.
-            };
-            if (Array.isArray(args.ciralocalfqdn)) { r.ciraserver.home = args.ciralocalfqdn; }
+            r = { type: 3, match: domain.amtacmactivation.acmmatch };
         }
         return r;
     }
@@ -1212,7 +1212,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     {
                         // Agent is asking the server to sign an Intel AMT ACM activation request
                         //console.log(command);
-                        // TODO
+                        var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', 'P@ssw0rd'); // TODO: Place account credentials!!!
+                        if (signResponse != null) { obj.send(JSON.stringify(signResponse)); }
                         break;
                     }
                 case 'diagnostic':
