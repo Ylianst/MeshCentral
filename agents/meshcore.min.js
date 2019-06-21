@@ -1696,7 +1696,7 @@ function createMeshCore(agent)
                     response += '\r\lastMeInfo: ' + lastMeInfo + '.';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
-                    if (process.platform != 'win32') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
+                    if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
                     break;
                 }
                 case 'osinfo': { // Return the operating system information
