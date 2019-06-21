@@ -82,6 +82,15 @@
         "_MaxAgentSessions": 100,
         "MaxSingleUserSessions": 10
       },
+      "_AmtAcmActivation": {
+        "log": "amtactivation.log",
+        "certs": {
+          "mycertname": {
+            "certfiles": [ "amtacm-leafcert.crt", "amtacm-intermediate1.crt", "amtacm-intermediate2.crt", "amtacm-rootcert.crt" ],
+            "keyfile": "amtacm-leafcert.key"
+          }
+        }
+      },
       "_Redirects": {
         "meshcommander": "https://www.meshcommander.com/"
       },

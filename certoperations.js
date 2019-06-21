@@ -83,11 +83,28 @@ module.exports.CertificateOperations = function (parent) {
         var acmCerts = [], acmmatch = [];
         if (amtacmactivation.certs != null) {
             for (var j in amtacmactivation.certs) {
-                var acmconfig = amtacmactivation.certs[j];
-                if (typeof acmconfig.cert != 'string') continue;
-                var r = null;
-                try { r = obj.loadPfxCertificate(obj.parent.path.join(obj.parent.datapath, acmconfig.cert), acmconfig.certpass); } catch (ex) { console.log(ex); }
-                if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length != 1)) continue;
+                var acmconfig = amtacmactivation.certs[j], r = null;
+
+                if ((typeof acmconfig.certpfx == 'string') && (typeof acmconfig.certpfxpass == 'string')) {
+                    // P12 format, certpfx and certpfxpass
+                    try { r = obj.loadPfxCertificate(obj.parent.path.join(obj.parent.datapath, acmconfig.certpfx), acmconfig.certpfxpass); } catch (ex) { console.log(ex); }
+                    if ((r == null) || (r.certs == null) || (r.keys == null) || (r.certs.length < 2) || (r.keys.length != 1)) continue;
+                } else if ((typeof acmconfig.certfiles == 'object') && (typeof acmconfig.keyfile == 'string')) {
+                    // PEM format, certfiles and keyfile
+                    r = { certs: [], keys: [] };
+                    for (var k in acmconfig.certfiles) { r.certs.push(obj.pki.certificateFromPem(obj.fs.readFileSync(obj.parent.path.join(obj.parent.datapath, acmconfig.certfiles[k])))); }
+                    r.keys.push(obj.pki.privateKeyFromPem(obj.fs.readFileSync(obj.parent.path.join(obj.parent.datapath, acmconfig.keyfile))));
+                    if ((r.certs.length < 2) || (r.keys.length != 1)) continue;
+                }
+
+                /*
+                // Debug: Display all certs & key as PEM
+                for (var k in r.certs) {
+                    var cn = r.certs[k].subject.getField('CN');
+                    if (cn != null) { console.log(cn.value + '\r\n' + obj.pki.certificateToPem(r.certs[k])); } else { console.log(obj.pki.certificateToPem(r.certs[k])); }
+                }
+                console.log(obj.pki.privateKeyToPem(r.keys[0]));
+                */
 
                 // Check if the right OU or OID is present for Intel AMT activation
                 var validActivationCert = false;
@@ -164,14 +181,13 @@ module.exports.CertificateOperations = function (parent) {
     // Return the certificate of the remote HTTPS server
     obj.loadPfxCertificate = function (filename, password) {
         var r = { certs: [], keys: [] };
-        var pfxbuf = obj.fs.readFileSync(filename);
-        var pfxb64 = Buffer.from(pfxbuf).toString('base64');
-        var pfxder = obj.forge.util.decode64(pfxb64);
-        var asn = obj.forge.asn1.fromDer(pfxder);
-        var pfx = obj.forge.pkcs12.pkcs12FromAsn1(asn, true, password);
+        var pfxb64 = Buffer.from(obj.fs.readFileSync(filename)).toString('base64');
+        var pfx = obj.forge.pkcs12.pkcs12FromAsn1(obj.forge.asn1.fromDer(obj.forge.util.decode64(pfxb64)), true, password);
+
         // Get the certs from certbags
         var bags = pfx.getBags({ bagType: obj.forge.pki.oids.certBag });
         for (var i = 0; i < bags[obj.forge.pki.oids.certBag].length; i++) { r.certs.push(bags[obj.forge.pki.oids.certBag][i].cert); }
+
         // Get shrouded key from key bags
         bags = pfx.getBags({ bagType: obj.forge.pki.oids.pkcs8ShroudedKeyBag });
         for (var i = 0; i < bags[obj.forge.pki.oids.pkcs8ShroudedKeyBag].length; i++) { r.keys.push(bags[obj.forge.pki.oids.pkcs8ShroudedKeyBag][i].key); }
