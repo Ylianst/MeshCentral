@@ -2355,6 +2355,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
+                // Prepare a mesh agent file name using the device group name.
+                var meshfilename = mesh.name
+                meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+                if (argentInfo.rname.endsWith('.exe')) { meshfilename = argentInfo.rname.substring(0, argentInfo.rname.length - 4) + '-' + meshfilename + '.exe'; } else { meshfilename = argentInfo.rname + '-' + meshfilename; }
+
                 // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += "/";
@@ -2366,7 +2371,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
+                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + meshfilename + '"' });
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
         } else if (req.query.script != null) {
@@ -2446,7 +2451,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else if (req.query.meshaction == 'winrouter') {
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
                 if (obj.fs.existsSync(p)) {
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="MeshCentralRouter.exe"' });
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="MeshCentralRouter.exe"' });
                     try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else {
@@ -2459,9 +2464,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var agentid in obj.parent.meshAgentBinaries) {
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
-                response += '<td><a rel="noreferrer noopener" target=_blank href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
+                response += '<td><a download href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hash + '</td>';
-                response += '<td><a rel="noreferrer noopener" target=_blank href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
+                response += '<td><a download href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table></body></html>';
             res.send(response);

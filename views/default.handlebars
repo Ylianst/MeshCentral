@@ -2658,17 +2658,14 @@
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
             x += "<div id=dlgAddCira0>To add a new Intel&reg; AMT device to device group \"" + EscapeHtml(mesh.name) + "\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.<br /><br />";
-            //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" rel="noreferrer noopener" target="_blank">cira_setup.mescript</a>');
-            //x += addHtmlValue('Cleanup CIRA', '<a href="mescript.ashx?type=2" rel="noreferrer noopener" target="_blank">cira_clean.mescript</a>');
-            x += addHtmlValue('Setup CIRA', '<a style=cursor:pointer onclick=fileDownload("mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '","cira_setup.mescript")>cira_setup.mescript</a>');
-            x += addHtmlValue('Cleanup CIRA', '<a style=cursor:pointer onclick=fileDownload("mescript.ashx?type=2","cira_clean.mescript")>cira_clean.mescript</a>');
+            x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
+            x += addHtmlValue('Cleanup CIRA', '<a href="mescript.ashx?type=2" download>cira_clean.mescript</a>');
             x += "</div>";
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
             x += "<div id=dlgAddCira1 style=display:none>To add a new Intel&reg; AMT device to device group \"" + EscapeHtml(mesh.name) + "\" with CIRA, load the following certificate as trusted root within Intel AMT";
             if (serverinfo.mpspass) { x += " and authenticate to the server using this username and password.<br /><br />"; } else { x += " and authenticate to the server using this username and any password.<br /><br />"; }
-            //x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" rel="noreferrer noopener" target="_blank">Root Certificate File</a>');
-            x += addHtmlValue('Root Certificate', '<a style=cursor:pointer onclick=fileDownload("MeshServerRootCert.cer","MeshServerRootCert.cer")>Root Certificate File</a>');
+            x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" download>Root Certificate File</a>');
             x += addHtmlValue('Username', '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
             if (serverinfo.mpspass) { x += addHtmlValue('Password', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
             if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
@@ -2677,8 +2674,7 @@
             // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
                 x += "<div id=dlgAddCira2 style=display:none>To add a new Intel&reg; AMT device to device group \"" + EscapeHtml(mesh.name) + "\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.<br /><br />";
-                //x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" rel="noreferrer noopener" target="_blank">Root Certificate File</a>');
-                x += addHtmlValue('Root Certificate', '<a style=cursor:pointer onclick=fileDownload("MeshServerRootCert.cer","MeshServerRootCert.cer")>Root Certificate File</a>');
+                x += addHtmlValue('Root Certificate', '<a href="MeshServerRootCert.cer" download>Root Certificate File</a>');
                 x += addHtmlValue('Organization', '<input style=width:230px readonly value="' + meshidx + '" />');
                 if (serverinfo != null) { x += addHtmlValue('MPS Server', '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
                 x += "</div>";
@@ -2770,10 +2766,8 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.<br /><br />";
-            //x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            //x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk style=cursor:pointer onclick=fileDownload("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk style=cursor:pointer onclick=fileDownload("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=","MeshAgent-' + meshfilename + '.exe",1) title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2789,10 +2783,8 @@
 
             // Windows agent uninstall
             x += "<div id=agins_windows_un style=display:none>To remove a mesh agent, download the file below, run it and click \"uninstall\".<br /><br />";
-            //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" rel="noreferrer noopener" target="_blank" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            //x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" rel="noreferrer noopener" target="_blank" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=3","MeshAgent.exe") title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3",0)>');
-            x += addHtmlValue('Mesh Agent', '<a style=cursor:pointer onclick=fileDownload("meshagents?id=4","MeshAgent.exe") title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4",0)>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" download title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" download title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             x += "</div>";
 
             // Linux agent uninstall
@@ -2847,35 +2839,6 @@
             var c = "https://" + servername + portStr + domainUrl + url;
             if (addflag == 1) c += Q('aginsType').value;
             copyTextToClip(c);
-        }
-
-        function fileDownload(path, name, appendFlag) {
-            var xdr = null, flag = '';
-            if (appendFlag == 1) {
-                // Download a agent
-                flag = Q('aginsType').value;
-            } else if (appendFlag == 2) {
-                // Download meshcmd
-                flag = Q('aginsSelect').value;
-                if (parseInt(flag) >= 5) { name = name.toLowerCase(); } else { name += '.exe'; }
-            }
-
-            if (args.filedownloadtab == 1) {
-                // Open a new tab with download
-                window.open(window.location.origin + '/' + path + flag, '_blank');
-            } else {
-                // Background download & save
-                try { xdr = new XDomainRequest(); } catch (e) { }
-                if (!xdr) xdr = new XMLHttpRequest();
-                xdr.open("GET", window.location.origin + '/' + path + flag);
-                xdr.timeout = 15000;
-                xdr.responseType = "blob";
-                xdr.onprogress = function (x) { /*console.log(x);*/ };
-                xdr.onload = function (e) { saveAs(new Blob([e.target.response], { type: "application/octet-stream" }), name); if (xxdialogTag == 'fileDownload') { setDialogMode(0); } };
-                xdr.onerror = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Agent downloads timeout.'); };
-                xdr.ontimeout = function () { if (xxdialogTag == 'fileDownload') { setDialogMode(0); } alert('Unable to download agent.'); };
-                xdr.send();
-            }
         }
 
         function addAgentToMeshClick() {
@@ -4143,13 +4106,7 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><img onclick=p10downloadPowerEvents() title="Download power events" src="images/link4.png" />7 Day Power State</th></tr></thead><tbody>' + x + '</tbody></table>');
-        }
-
-        // Download the power events for the current device
-        function p10downloadPowerEvents() {
-            console.log("devicepowerevents?id=" + currentNode._id);
-            fileDownload("devicepowerevents.ashx?id=" + currentNode._id, "powerevents-" + currentNode.name + ".csv");
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + '"><img title="Download power events" src="images/link4.png" /></a>7 Day Power State</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -4304,7 +4261,7 @@
         function p10showMeshRouterDialog() {
             if (xxdialogMode) return;
             var x = "<div>MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.</div><br />";
-            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer onclick=fileDownload("meshagents?meshaction=winrouter","MeshCentralRouter.exe")>MeshCentralRouter.exe</a>');
+            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer download href="meshagents?meshaction=winrouter">MeshCentralRouter.exe</a>');
             setDialogMode(2, "MeshCentral Router", 1, null, x, "fileDownload");
         }
 
@@ -4324,12 +4281,9 @@
             if (mode == 0) { x += '<div>MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials.<br /><br />'; }
             if (mode == 1) { x += '<div>Download "meshcmd" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />'; }
             x += addHtmlValue('Operating System', y);
-            //x += addHtmlValue('MeshCmd', '<a id=meshcmddownloadid href="meshagents?meshcmd=3" rel="noreferrer noopener" target="_blank"></a>');
-            //if (mode == 0) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=generic" rel="noreferrer noopener" target="_blank">MeshAction (.txt)</a>'); }
-            //if (mode == 1) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" rel="noreferrer noopener" target="_blank">MeshAction (.txt)</a>'); }
-            x += addHtmlValue('MeshCmd', '<a id=meshcmddownloadid style=cursor:pointer onclick=fileDownload("meshagents?meshcmd=","MeshCmd",2)></a>');
-            if (mode == 0) { x += addHtmlValue('Action File', '<a style=cursor:pointer onclick=fileDownload("meshagents?meshaction=generic","MeshAction.txt")>MeshAction (.txt)</a>'); }
-            if (mode == 1) { x += addHtmlValue('Action File', '<a style=cursor:pointer onclick=fileDownload("meshagents?meshaction=route&nodeid=' + nodeid + '","MeshAction.txt")>MeshAction (.txt)</a>'); }
+            x += addHtmlValue('MeshCmd', '<a id=meshcmddownloadid href="meshagents?meshcmd=3" download></a>');
+            if (mode == 0) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=generic" download>MeshAction (.txt)</a>'); }
+            if (mode == 1) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" download>MeshAction (.txt)</a>'); }
             x += "</div>";
             setDialogMode(2, ["Download MeshCmd","Network Router"][mode], 9, null, x, "fileDownload");
             meshCmdOsClick();
