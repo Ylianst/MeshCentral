@@ -1222,7 +1222,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         // Agent is asking the server to sign an Intel AMT ACM activation request
                         var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', amtpassword, obj.remoteaddrport, obj.dbNodeKey, obj.dbMeshKey, obj.agentInfo.computerName, obj.agentInfo.agentId); // TODO: Place account credentials!!!
-                        if (signResponse != null) {
+                        if ((signResponse != null) && (signResponse.error == null)) {
                             // Log this activation event
                             var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Device requested Intel AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
@@ -1232,7 +1232,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             ChangeAgentCoreInfo({ "intelamt": { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
 
                             // Send the activation response
-                            obj.send(JSON.stringify(signResponse));
+                            //obj.send(JSON.stringify(signResponse)); // DEBUG****************************
                         }
                         break;
                     }
