@@ -30,12 +30,12 @@ module.exports.CertificateOperations = function (parent) {
 
     // Sign a Intel AMT ACM activation request
     obj.signAcmRequest = function (domain, request, user, pass, ipport, nodeid, meshid, computerName, agentId) {
-        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (request == null) || (request.nonce == null) || (request.realm == null) || (request.fqdn == null) || (request.hash == null)) return null;
-        if (parent.common.validateString(request.nonce, 16, 256) == false) return null;
-        if (parent.common.validateString(request.realm, 16, 256) == false) return null;
-        if (parent.common.validateString(request.fqdn, 4, 256) == false) return null;
-        if (parent.common.validateString(request.hash, 16, 256) == false) return null;
-        if (parent.common.validateString(request.uuid, 36, 36) == false) return null;
+        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (request == null) || (request.nonce == null) || (request.realm == null) || (request.fqdn == null) || (request.hash == null)) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid arguments' };
+        if (parent.common.validateString(request.nonce, 16, 256) == false) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid nonce argument' };
+        if (parent.common.validateString(request.realm, 16, 256) == false) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid realm argument' };
+        if (parent.common.validateString(request.fqdn, 4, 256) == false) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid FQDN argument' };
+        if (parent.common.validateString(request.hash, 16, 256) == false) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid hash argument' };
+        if (parent.common.validateString(request.uuid, 36, 36) == false) return { 'action': 'acmactivate', 'error': 1, 'errorText': 'Invalid UUID argument' };
 
         // Look for the signing certificate
         var signkey = null, certChain = null, hashAlgo = null, certIndex = null;
@@ -44,10 +44,10 @@ module.exports.CertificateOperations = function (parent) {
             if ((certEntry.sha256 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha256'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
             if ((certEntry.sha1 == request.hash) && ((certEntry.cn == '*') || (certEntry.cn == request.fqdn))) { hashAlgo = 'sha1'; signkey = certEntry.key; certChain = certEntry.certs; certIndex = i; break; }
         }
-        if (signkey == null) return null; // Did not find a match.
+        if (signkey == null) return { 'action': 'acmactivate', 'error': 2, 'errorText': 'No signing certificate found' }; // Did not find a match.
 
         // If the matching certificate is a root cert, issue a leaf cert that matches the fqdn
-        if (domain.amtacmactivation.certs[certIndex].cn == '*') return; // TODO: Add support for this mode
+        if (domain.amtacmactivation.certs[certIndex].cn == '*') return { 'action': 'acmactivate', 'error': 3, 'errorText': 'Unsupported activation' }; // TODO: Add support for this mode
 
         // Setup both nonces, ready to be signed
         const mcNonce = Buffer.from(obj.crypto.randomBytes(20), 'binary');
@@ -59,10 +59,10 @@ module.exports.CertificateOperations = function (parent) {
             var signer = obj.crypto.createSign(hashAlgo);
             signer.update(Buffer.concat([fwNonce, mcNonce]));
             signature = signer.sign(signkey, 'base64');
-        } catch (ex) { return null; }
+        } catch (ex) { return { 'action': 'acmactivate', 'error': 4, 'errorText': 'Unable to perform signature' }; }
 
         // Log the activation request, logging is a required step for activation.
-        if (obj.logAmtActivation(domain, { time: new Date(), domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId }) == false) return null;
+        if (obj.logAmtActivation(domain, { time: new Date(), domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId }) == false) return { 'action': 'acmactivate', 'error': 5, 'errorText': 'Unable to log operation' };
 
         // Return the signature with the computed account password hash
         return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };

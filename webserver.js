@@ -2153,6 +2153,83 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Handle a Intel AMT activation request
+    function handleAmtActivateWebSocket(ws, req) {
+        const domain = checkUserIpAddress(ws, req);
+        if (domain == null) { ws.send(JSON.stringify({ errorText: 'Invalid domain' })); ws.close(); return; }
+        if (req.query.id == null) { ws.send(JSON.stringify({ errorText: 'Missing group identifier' })); ws.close(); return; }
+
+        // Fetch the mesh object
+        ws.meshid = 'mesh/' + domain.id + '/' + req.query.id;
+        const mesh = obj.meshes[ws.meshid];
+        if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group' })); ws.close(); return; }
+        if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
+
+        // Fetch the remote IP:Port for logging
+        const remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
+        ws.remoteaddrport = remoteaddr + ':' + ws._socket.remotePort;
+
+        // When data is received from the web socket, echo it back
+        ws.on('message', function (data) {
+            // Parse the incoming command
+            var cmd = null;
+            try { cmd = JSON.parse(data); } catch (ex) { };
+            if (cmd == null) return;
+
+            // Process the command
+            switch (cmd.action) {
+                case 'acmactivate': {
+                    // Check the command
+                    if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
+                    if (typeof cmd.hashes != 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
+                    if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
+
+                    // Get the current Intel AMT policy
+                    var mesh = obj.meshes[ws.meshid];
+                    if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 3) || (domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (mesh.amt.password == null)) { ws.send(JSON.stringify({ errorText: 'Unable to activate' })); ws.close(); return; }
+
+                    // Check if we have a FQDN/Hash match
+                    var matchingHash = null, matchingCN = null;
+                    for (var i in domain.amtacmactivation.acmmatch) {
+                        // Check for a matching FQDN
+                        if ((domain.amtacmactivation.acmmatch[i].cn == '*') || (domain.amtacmactivation.acmmatch[i].cn.toLowerCase() == cmd.fqdn)) {
+                            // Check for a matching certificate
+                            if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha256) >= 0) {
+                                matchingCN = domain.amtacmactivation.acmmatch[i].cn;
+                                matchingHash = domain.amtacmactivation.acmmatch[i].sha256;
+                                continue;
+                            } else if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha1) >= 0) {
+                                matchingCN = domain.amtacmactivation.acmmatch[i].cn;
+                                matchingHash = domain.amtacmactivation.acmmatch[i].sha1;
+                                continue;
+                            }
+                        }
+                    }
+                    if (matchingHash == null) { ws.send(JSON.stringify({ errorText: 'No matching activation certificates' })); ws.close(); return; }
+                    if (matchingCN == '*') { ws.send(JSON.stringify({ errorText: 'Wildcard certificate activation not yet supported' })); ws.close(); return; }
+                    cmd.hash = matchingHash;
+
+                    // Get the Intel AMT admin password, randomize if needed.
+                    var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
+                    if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
+
+                    // Agent is asking the server to sign an Intel AMT ACM activation request
+                    var signResponse = parent.certificateOperations.signAcmRequest(domain, cmd, 'admin', amtpassword, ws.remoteaddrport, null, ws.meshid, null, null);
+                    ws.send(JSON.stringify(signResponse));
+                    break;
+                }
+                default: {
+                    // This is not a known command
+                    ws.send(JSON.stringify({ errorText: 'Invalid command' })); ws.close(); return;
+                }
+            }
+        });
+
+        // If close or error, do nothing.
+        ws.on('error', function (err) { });
+        ws.on('close', function (req) { });
+    }
+
     // Handle the web socket echo request, just echo back the data sent
     function handleEchoWebSocket(ws, req) {
         const domain = checkUserIpAddress(ws, req);
@@ -2790,6 +2867,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             }
 
+            // Intel AMT ACM activation
+            if ((parent.config.domains[i].amtacmactivation != null) && (parent.config.domains[i].amtacmactivation.acmmatch != null)) {
+                obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
+            }
+
             // Creates a login token using the user/pass that is passed in as URL arguments.
             // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
             // It's not advised to use this to create login tokens since the URL is often logged and you got credentials in the URL.
@@ -3164,6 +3246,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return the query string portion of the URL, the ? and anything after.
     function getQueryPortion(req) { var s = req.url.indexOf('?'); if (s == -1) { if (req.body && req.body.urlargs) { return req.body.urlargs; } return ''; } return req.url.substring(s); }
+
+    // Generate a random Intel AMT password
+    function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
+    function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
 
     return obj;
 };
