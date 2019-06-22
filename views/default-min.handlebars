@@ -8821,8 +8821,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -8838,8 +8838,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
             // Windows agent uninstall
             x += "<div id=agins_windows_un style=display:none>To remove a mesh agent, download the file below, run it and click \"uninstall\".<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" download title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" download title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=3" download onclick="setDialogMode(0)" title="32bit version of the MeshAgent">Windows (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a href="meshagents?id=4" download onclick="setDialogMode(0)" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
             x += "</div>";
 
             // Linux agent uninstall
@@ -10161,7 +10161,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + '"><img title="Download power events" src="images/link4.png" /></a>7 Day Power State</th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + '" onclick="setDialogMode(0)"><img title="Download power events" src="images/link4.png" /></a>7 Day Power State</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -10316,7 +10316,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         function p10showMeshRouterDialog() {
             if (xxdialogMode) return;
             var x = "<div>MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.</div><br />";
-            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer download href="meshagents?meshaction=winrouter">MeshCentralRouter.exe</a>');
+            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer download href="meshagents?meshaction=winrouter" onclick="setDialogMode(0)">MeshCentralRouter.exe</a>');
             setDialogMode(2, "MeshCentral Router", 1, null, x, "fileDownload");
         }
 

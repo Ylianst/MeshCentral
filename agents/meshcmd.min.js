@@ -112,7 +112,7 @@ function run(argv) {
     if ((typeof args.remotenodeid) == 'string') { settings.remotenodeid = args.remotenodeid; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
-    if ((typeof args.wss) == 'string') { settings.wss = args.wss; }
+    if ((typeof args.url) == 'string') { settings.url = args.url; }
     if ((typeof args.profile) == 'string') { settings.profile = args.profile; }
     if ((typeof args.type) == 'string') { settings.type = args.type; }
     if ((typeof args.user) == 'string') { settings.username = args.user; }
@@ -205,10 +205,10 @@ function run(argv) {
         } else if (action == 'amtccm') {
             console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided. Example usage:\r\n\r\n  meshcmd amtccm --pass mypassword');
         } else if (action == 'amtacm') {
-            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password and provisioning certificate must be provided via RCS. Example usage:\r\n\r\n  meshcmd amtacm --wss servername:port');
+            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work. Example usage:\r\n\r\n  meshcmd amtacm --url [url]');
             console.log('\r\nPossible arguments:\r\n');
-            console.log('  --wss [server:port]    The address of the AMT remote configuration server.');
-            console.log('  --profile [name]       The name of the AMT profile stored on the AMT remote configuration server.');
+            console.log('  --url wss://server/    The address of the Intel AMT activation server.');
+            console.log('  --profile [name]       Optional name of the Intel AMT profile stored on the activation server.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
         } else if (action == 'amtacmdeactivate') {
@@ -498,11 +498,8 @@ function run(argv) {
         activeToCCM();
     } else if (settings.action == 'amtacm') {
         // Start activation to ACM 
-        if ((settings.wss == null) || (typeof settings.wss != 'string') || (settings.wss == '')) { console.log('No server URL specified, use --wss [url].'); exit(1); return; }
-        //if ((settings.profile == null) || (typeof settings.profile != 'string') || (settings.profile == '')) { console.log('No or invalid \"profile name\" specified, use --profile [name].'); exit(1); return; }
+        if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No activation server URL specified, use --url [url].'); exit(1); return; }
         if ((typeof settings.profile != 'string') || (settings.profile == '')) { settings.profile = null; }
-        //settings.protocol = 'http:';
-        settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
         activeToACM();
     } else if (settings.action == 'amtdeactivate') {
@@ -926,10 +923,10 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid) {
     console.log('UUID:   ' + uuid);
     console.log('Realm:  ' + digestRealm);
     console.log('Nonce:  ' + fwNonce);
-    console.log('Connecting to ' + settings.wss);
+    console.log('Connecting to ' + settings.url);
 
     // Establish WebSocket connection to activation server
-    var options = http.parseUri(settings.wss);
+    var options = http.parseUri(settings.url);
     options.checkServerIdentity = function (clientName, certs) { }; // TODO
     options.rejectUnauthorized = false;
     var connection = http.request(options);
