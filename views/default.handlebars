@@ -2577,6 +2577,9 @@
                     r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the local network." onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
                     r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer by scanning the local network." onclick=addAmtScanToMesh(\"' + mesh._id + '\")>Scan Network</a>';
                 }
+                if ((features & 0x00100000) != 0) { // ACM activation
+                    r += ' <a style=cursor:pointer;font-size:10px title="Perform Intel AMT admin control mode (ACM) activation." onclick=showAcmActivation(\"' + mesh._id + '\")>Activation</a>';
+                }
             }
             if (mesh.mtype == 2) {
                 r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
@@ -2597,6 +2600,27 @@
             setDialogMode(2, "Add Intel&reg; AMT device", 3, addDeviceToMeshEx, x, meshid);
             validateDeviceToMesh();
             Q('dp1devicename').focus();
+        }
+
+        // Intel AMT Activation
+        function showAcmActivation(meshid) {
+            if (xxdialogMode) return;
+            var servername = serverinfo.name, mesh = meshes[meshid];
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var url, domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+            if (serverinfo.https == true) {
+                var portStr = (serverinfo.port == 443) ? '' : (":" + serverinfo.port);
+                url = "wss://" + servername + portStr + domainUrl;
+            } else {
+                var portStr = (serverinfo.port == 80) ? '' : (":" + serverinfo.port);
+                url = "ws://" + servername + portStr + domainUrl;
+            }
+            var x = "Perform Intel AMT admin control mode (ACM) activation to group \"" + EscapeHtml(mesh.name) + "\" by downloading the MeshCMD tool and running it like this:<br /><br />";
+            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtacm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
+            if (serverinfo.amtAcmFqdn != null) {
+                x += '<div style=margin-top:8px>Intel AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network: <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>';
+            }
+            setDialogMode(2, "Intel&reg; AMT activation", 9, null, x);
         }
 
         // Display the Intel AMT scanning dialog box

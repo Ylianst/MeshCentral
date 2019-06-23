@@ -57,7 +57,13 @@ var Small_IntelAmtWebApp = "H4sIAAAAAAAEAHq/e7+Noou/c0hkgCuA0+pcchQHwq9CeXNgFzwZ
 function onVerifyServer(clientName, certs) {
     if (certs == null) { certs = clientName; } // Temporary thing until we fix duktape
     try { for (var i in certs) { if (certs[i].fingerprint.replace(/:/g, '') == settings.serverhttpshash) { return; } } } catch (e) { }
-    if (serverhash != null) { console.log('Error: Failed to verify server certificate.'); throw 'Invalid server certificate'; }
+    console.log(settings.serverhttpshash);
+    if (settings.serverhttpshash != null) {
+        console.log('Error: Failed to verify server certificate.');
+        console.log('Server TLS hash: ' + certs[i].fingerprint.replace(/:/g, ''));
+        exit(255);
+        throw 'Invalid server certificate';
+    }
 }
 
 // Various utility functions
@@ -927,7 +933,8 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid) {
 
     // Establish WebSocket connection to activation server
     var options = http.parseUri(settings.url);
-    options.checkServerIdentity = function (clientName, certs) { }; // TODO
+    //options.checkServerIdentity = function (clientName, certs) { }; // TODO
+    options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     var connection = http.request(options);
     connection.on('upgrade', function (response, socket) {

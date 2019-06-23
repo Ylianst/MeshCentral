@@ -2164,7 +2164,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const mesh = obj.meshes[ws.meshid];
         if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group' })); ws.close(); return; }
         if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
-
+        
         // Fetch the remote IP:Port for logging
         const remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
         ws.remoteaddrport = remoteaddr + ':' + ws._socket.remotePort;
@@ -2215,7 +2215,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // Agent is asking the server to sign an Intel AMT ACM activation request
                     var signResponse = parent.certificateOperations.signAcmRequest(domain, cmd, 'admin', amtpassword, ws.remoteaddrport, null, ws.meshid, null, null);
-                    ws.send(JSON.stringify(signResponse));
+                    //ws.send(JSON.stringify(signResponse)); // DEBUG***************************
                     break;
                 }
                 default: {
