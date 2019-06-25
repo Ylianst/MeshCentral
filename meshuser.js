@@ -363,7 +363,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Request a list of all meshes this user as rights to
                     var docs = [];
-                    for (i in user.links) { if ((parent.meshes[i]) && (parent.meshes[i].deleted == null)) { docs.push(parent.meshes[i]); } }
+                    for (i in user.links) {
+                        if ((parent.meshes[i]) && (parent.meshes[i].deleted == null)) {
+                            if (parent.meshes[i].amt && parent.meshes[i].amt.password) {
+                                // Remove the Intel AMT password if present
+                                var m = common.Clone(parent.meshes[i]); delete m.amt.password; docs.push(m);
+                            } else {
+                                docs.push(parent.meshes[i]);
+                            }
+                        }
+                    }
                     try { ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag })); } catch (ex) { }
                     break;
                 }
@@ -1589,7 +1598,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateInt(command.amtpolicy.type, 0, 3) == false) break; // Check the amtpolicy.type
                     if (command.amtpolicy.type === 2) {
                         if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
-                        if (common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
+                        if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     } else if (command.amtpolicy.type === 3) {
                         if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
@@ -1611,7 +1620,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (command.amtpolicy.type === 3) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, cirasetup: command.amtpolicy.cirasetup }; }
                         mesh.amt = amtpolicy;
                         db.Set(common.escapeLinksFieldName(mesh));
-                        var event = { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id };
+                        var amtpolicy2 = common.Clone(amtpolicy);
+                        delete amtpolicy2.password;
+                        var event = { etype: 'mesh', username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, event);
 
@@ -1653,7 +1664,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.crypto.randomBytes(48, function (err, buf) {
                             // create the new node
                             nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            var device = { type: 'node', mtype: 1, _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
+                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
                             db.Set(device);
 
                             // Event the new node

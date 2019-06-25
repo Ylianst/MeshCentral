@@ -1232,7 +1232,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             ChangeAgentCoreInfo({ "intelamt": { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
 
                             // Send the activation response
-                            //obj.send(JSON.stringify(signResponse)); // DEBUG****************************
+                            obj.send(JSON.stringify(signResponse));
                         }
                         break;
                     }

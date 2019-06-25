@@ -62,7 +62,7 @@ module.exports.CertificateOperations = function (parent) {
         } catch (ex) { return { 'action': 'acmactivate', 'error': 4, 'errorText': 'Unable to perform signature' }; }
 
         // Log the activation request, logging is a required step for activation.
-        if (obj.logAmtActivation(domain, { time: new Date(), domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId }) == false) return { 'action': 'acmactivate', 'error': 5, 'errorText': 'Unable to log operation' };
+        if (obj.logAmtActivation(domain, { time: new Date(), action: 'acmactivate', domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId, tag: request.tag, name: request.name }) == false) return { 'action': 'acmactivate', 'error': 5, 'errorText': 'Unable to log operation' };
 
         // Return the signature with the computed account password hash
         return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };

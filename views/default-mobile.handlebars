@@ -943,11 +943,14 @@
                                 }
                                 if (message.event.node.intelamt != null) {
                                     if (node.intelamt == null) node.intelamt = {};
+                                    if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                     if (message.event.node.intelamt.host != null) { node.intelamt.user = message.event.node.intelamt.host; }
                                     if (message.event.node.intelamt.user != null) { node.intelamt.user = message.event.node.intelamt.user; }
                                     if (message.event.node.intelamt.tls != null) { node.intelamt.tls = message.event.node.intelamt.tls; }
                                     if (message.event.node.intelamt.ver != null) { node.intelamt.ver = message.event.node.intelamt.ver; }
-                                    if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
+                                    if (message.event.node.intelamt.tag != null) { node.intelamt.tag = message.event.node.intelamt.tag; }
+                                    if (message.event.node.intelamt.uuid != null) { node.intelamt.uuid = message.event.node.intelamt.uuid; }
+                                    if (message.event.node.intelamt.realm != null) { node.intelamt.realm = message.event.node.intelamt.realm; }
                                 }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }

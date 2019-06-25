@@ -864,6 +864,7 @@ module.exports.CreateDB = function (parent, func) {
         mesh.nolog = 1;
         delete mesh.type;
         delete mesh._id;
+        if (mesh.amt) { delete mesh.amt.password; } // Remove the Intel AMT password if present
         parent.DispatchEvent(['*', mesh._id], obj, mesh);
     }
 
