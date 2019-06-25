@@ -1554,7 +1554,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + certificates.RootName + '.cer"' });
+        try {
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + certificates.RootName + '.cer"' });
+        } catch (ex) {
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="rootcert.cer"' });
+        }
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
@@ -1662,7 +1666,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try { stat = obj.fs.statSync(path); } catch (e) { }
         if ((stat != null) && ((stat.mode & 0x004000) == 0)) {
             if (req.query.download == 1) {
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + filename + '\"' });
+                try {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + filename + '\"' });
+                } catch (ex) {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"file.bin\"' });
+                }
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
                 res.render(obj.path.join(obj.parent.webViewsPath, 'download'), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, domainurl: domain.url, message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." });
@@ -1773,7 +1781,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (user == null) { res.sendStatus(404); return; }
         const file = obj.getServerFilePath(user, domain, req.query.link);
         if (file == null) { res.sendStatus(404); return; }
-        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + file.name + '\"' });
+        try {
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + file.name + '\"' });
+        } catch (ex) {
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"file.bin\"' });
+        }
         try { res.sendFile(file.fullpath); } catch (e) { res.sendStatus(404); }
     }
 
@@ -2166,8 +2178,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
         
         // Fetch the remote IP:Port for logging
-        const remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
-        ws.remoteaddrport = remoteaddr + ':' + ws._socket.remotePort;
+        ws.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
+        ws.remoteaddrport = ws.remoteaddr + ':' + ws._socket.remotePort;
 
         // When data is received from the web socket, echo it back
         ws.on('message', function (data) {
@@ -2178,11 +2190,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Process the command
             switch (cmd.action) {
+                case 'ccmactivate': {
+                    // Check the command
+                    if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
+                    if (obj.common.validateString(cmd.realm, 16, 256) == false) { ws.send(JSON.stringify({ errorText: 'Invalid realm argument' })); ws.close(); return; }
+                    if (obj.common.validateString(cmd.uuid, 36, 36) == false) { ws.send(JSON.stringify({ errorText: 'Invalid UUID argument' })); ws.close(); return; }
+                    if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
+
+                    // Get the current Intel AMT policy
+                    var mesh = obj.meshes[ws.meshid];
+                    if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 2) || (mesh.amt.password == null)) { ws.send(JSON.stringify({ errorText: 'Unable to activate' })); ws.close(); return; }
+
+                    // Get the Intel AMT admin password, randomize if needed.
+                    var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
+                    if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
+
+                    // Log the activation request, logging is a required step for activation.
+                    if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'ccmactivate', domain: domain.id, amtUuid: cmd.uuid, amtRealm: cmd.realm, user: 'admin', password: amtpassword, ipport: ws.remoteaddrport, meshid: ws.meshid, tag: cmd.tag, name: cmd.name }) == false) return { errorText: 'Unable to log operation' };
+
+                    // Save some state, if activation is succesful, we need this to add the device
+                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: 2, ver: cmd.ver }; // Flags 2 = CCM
+
+                    // Compute the HTTP digest hash and send the response 
+                    ws.send(JSON.stringify({ action: 'ccmactivate', password: obj.crypto.createHash('md5').update('admin:' + cmd.realm + ':' + amtpassword).digest('hex') }));
+                    break;
+                }
                 case 'acmactivate': {
                     // Check the command
                     if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
                     if (typeof cmd.hashes != 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
                     if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
+                    if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
 
                     // Get the current Intel AMT policy
                     var mesh = obj.meshes[ws.meshid];
@@ -2213,9 +2251,67 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
                     if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
 
+                    // Save some state, if activation is succesful, we need this to add the device
+                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: 4, ver: cmd.ver }; // Flags 4 = ACM
+
                     // Agent is asking the server to sign an Intel AMT ACM activation request
                     var signResponse = parent.certificateOperations.signAcmRequest(domain, cmd, 'admin', amtpassword, ws.remoteaddrport, null, ws.meshid, null, null);
-                    //ws.send(JSON.stringify(signResponse)); // DEBUG***************************
+                    ws.send(JSON.stringify(signResponse));
+                    break;
+                }
+                case 'ccmactivate-failed':
+                case 'acmactivate-failed': {
+                    // Log the activation response
+                    parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: cmd.action, domain: domain.id, amtUuid: cmd.uuid, ipport: ws.remoteaddrport, meshid: ws.meshid });
+                    break;
+                }
+                case 'ccmactivate-success':
+                case 'acmactivate-success': {
+                    // Log the activation response
+                    parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: cmd.action, domain: domain.id, amtUuid: cmd.uuid, ipport: ws.remoteaddrport, meshid: ws.meshid });
+
+                    // Get the current Intel AMT policy
+                    var mesh = obj.meshes[ws.meshid];
+                    if (mesh == null) { ws.send(JSON.stringify({ errorText: 'Unknown device group' })); ws.close(); return; }
+
+                    // Fix the computer name if needed
+                    if ((ws.xxstate.name == null) || (ws.xxstate.name.length == 0)) { ws.xxstate.name = ws.xxstate.uuid; }
+
+                    db.getAmtUuidNode(ws.meshid, ws.xxstate.uuid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length == 0)) {
+                            // Create a new nodeid
+                            parent.crypto.randomBytes(48, function (err, buf) {
+                                // Create the new node
+                                var xxnodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                                var device = { type: 'node', _id: xxnodeid, meshid: ws.meshid, name: ws.xxstate.name, host: ws.remoteaddr, domain: domain.id, intelamt: { state: 2, flags: ws.xxstate.flags, user: 'admin', pass: ws.xxstate.pass, tls: 0, uuid: ws.xxstate.uuid, realm: ws.xxstate.realm, tag: ws.xxstate.tag, ver: ws.xxstate.ver } };
+                                db.Set(device);
+
+                                // Event the new node
+                                var device2 = obj.common.Clone(device);
+                                delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                parent.DispatchEvent(['*', ws.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: 'Added device ' + ws.xxstate.name + ' to mesh ' + mesh.name, domain: domain.id });
+                            });
+                        } else {
+                            // Change an existing device
+                            var device = nodes[0];
+                            if (device.host != ws.remoteaddr) { device.host = ws.remoteaddr; }
+                            if (device.intelamt.state != 2) { device.intelamt.state = 2; }
+                            if (device.intelamt.flags != ws.xxstate.flags) { device.intelamt.state = ws.xxstate.flags; }
+                            if (device.intelamt.user != 'admin') { device.intelamt.user = 'admin'; }
+                            if (device.intelamt.pass != ws.xxstate.pass) { device.intelamt.pass = ws.xxstate.pass; }
+                            if (device.intelamt.realm != ws.xxstate.realm) { device.intelamt.realm = ws.xxstate.realm; }
+                            if (ws.xxstate.realm == null) { delete device.intelamt.tag; }
+                            else if (device.intelamt.tag != ws.xxstate.tag) { device.intelamt.tag = ws.xxstate.tag; }
+                            if (device.intelamt.ver != ws.xxstate.ver) { device.intelamt.ver = ws.xxstate.ver; }
+                            db.Set(device);
+
+                            // Event the new node
+                            var device2 = obj.common.Clone(device);
+                            delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.DispatchEvent(['*', ws.meshid], obj, { etype: 'node', action: 'changenode', nodeid: device2._id, node: device2, msg: 'Changed device ' + device.name + ' in mesh ' + mesh.name, domain: domain.id });
+                        }
+                    });
                     break;
                 }
                 default: {
@@ -2448,7 +2544,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
 
-                res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + meshfilename + '"' });
+                try {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + meshfilename + '"' });
+                } catch (ex) {
+                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
+                }
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
         } else if (req.query.script != null) {
