@@ -575,7 +575,7 @@ function CreateMeshCentralServer(config, args) {
                 var newAccRights = 0;
                 for (var j in obj.config.domains[i].newaccountsrights) {
                     var r = obj.config.domains[i].newaccountsrights[j].toLowerCase();
-                    if (r == 'fulladmin') { newAccRights = 0xFFFFFFFF; }
+                    if (r == 'fulladmin') { newAccRights = 4294967295; } // 0xFFFFFFFF
                     if (r == 'serverbackup') { newAccRights |= 1; }
                     if (r == 'manageusers') { newAccRights |= 2; }
                     if (r == 'serverrestore') { newAccRights |= 4; }
@@ -614,7 +614,7 @@ function CreateMeshCentralServer(config, args) {
             else { console.log('Invalid administrator name.'); process.exit(); return; }
             obj.db.Get(adminname, function (err, user) {
                 if (user.length != 1) { console.log('Invalid user name.'); process.exit(); return; }
-                user[0].siteadmin = 4294967295;
+                user[0].siteadmin = 4294967295; // 0xFFFFFFFF
                 obj.db.Set(user[0], function () {
                     if (user[0].domain == '') { console.log('User ' + user[0].name + ' set to site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' set to site administrator.'); }
                     process.exit();

@@ -395,6 +395,11 @@ function run(argv) {
                 });
             }
         });
+    } else if (settings.action == 'netinfo') {
+        // Display network information
+        var interfaces = require('os').networkInterfaces();
+        console.log(JSON.stringify(interfaces, 2, ' '));
+        exit(0); return;
     } else if (settings.action == 'amtinfo') {
         // Display Intel AMT version and activation state
         mestate = {};
