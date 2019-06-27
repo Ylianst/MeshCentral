@@ -982,6 +982,8 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
                     if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
                     if (typeof cmd.nonce != 'string') { console.log('Invalid server nonce'); exit(100); return; }
                     if (typeof cmd.certs != 'object') { console.log('Invalid server certificates'); exit(100); return; }
+                    settings.xxprofileScript = cmd.profileScript;
+                    settings.xxrawpassword = cmd.rawpassword;
 
                     cmd.index = 0;
                     // If we are in CCM mode, deactivate.
@@ -1078,10 +1080,10 @@ function AcmActivationCompleted(result) {
         settings.xxsocket.end();
         exit(1);
     } else {
-        if ((cmd.profileScript !== null) && (cmd.rawpassword != null)) {
+        if ((settings.xxprofileScript !== null) && (settings.xxrawpassword != null)) {
             console.log('Intel AMT ACM activation success, applying profile...');
-            settings.scriptjson = cmd.profileScript;
-            settings.password = cmd.rawpassword; // This is only going to work if the server sends the raw password
+            settings.scriptjson = settings.xxprofileScript;
+            settings.password = settings.xxrawpassword; // This is only going to work if the server sends the raw password
             settings.username = 'admin';
             startMeScriptEx(function () { console.log('Intel AMT profile applied.'); settings.xxsocket.end(); exit(0); }, stack);
         } else {
