@@ -614,7 +614,7 @@ function CreateMeshCentralServer(config, args) {
             else { console.log('Invalid administrator name.'); process.exit(); return; }
             obj.db.Get(adminname, function (err, user) {
                 if (user.length != 1) { console.log('Invalid user name.'); process.exit(); return; }
-                user[0].siteadmin = 0xFFFFFFFF;
+                user[0].siteadmin = 4294967295;
                 obj.db.Set(user[0], function () {
                     if (user[0].domain == '') { console.log('User ' + user[0].name + ' set to site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' set to site administrator.'); }
                     process.exit();
