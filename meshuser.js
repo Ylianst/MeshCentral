@@ -1404,7 +1404,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Create the new device group
                             var links = {};
-                            links[user._id] = { name: user.name, rights: 0xFFFFFFFF };
+                            links[user._id] = { name: user.name, rights: 4294967295 };
                             mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
                             db.Set(common.escapeLinksFieldName(mesh));
                             parent.meshes[meshid] = mesh;
@@ -1412,7 +1412,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Change the user to make him administration of the new device group
                             if (user.links == null) user.links = {};
-                            user.links[meshid] = { rights: 0xFFFFFFFF };
+                            user.links[meshid] = { rights: 4294967295 };
                             user.subscriptions = parent.subscribe(user._id, ws);
                             db.SetUser(user);
 
