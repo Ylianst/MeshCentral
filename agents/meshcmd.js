@@ -517,11 +517,16 @@ function run(argv) {
         settings.protocol = 'http:';
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
-        if (settings.password != null) { activeToCCM(); } else { activeServerCCM(); }
+        if (settings.password != null) { activeToCCM(); } else { activeToACM(); }
     } else if (settings.action == 'amtacm') {
         // Start activation to ACM 
         if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No activation server URL specified, use --url [url].'); exit(1); return; }
         if ((typeof settings.profile != 'string') || (settings.profile == '')) { settings.profile = null; }
+        debug(1, "Settings: " + JSON.stringify(settings));
+        activeToACM();
+    } else if (settings.action == 'amtdiscover') {
+        // Intel AMT server discovery, tell the server the state of Intel AMT.
+        if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No activation server URL specified, use --url [url].'); exit(1); return; }
         debug(1, "Settings: " + JSON.stringify(settings));
         activeToACM();
     } else if (settings.action == 'amtdeactivate') {
@@ -823,91 +828,6 @@ function activeToCCMEx3(stack, name, responses, status) {
 }
 
 
-//
-// Activate Intel AMT to CCM with server activation
-//
-
-function activeServerCCM() {
-    settings.noconsole = true;
-    mestate = {};
-    var amtMeiModule, amtMei;
-    try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-    amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
-    amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
-    amtMei.getUuid(function (result) {
-        if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; }
-        if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
-        if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
-        if (mestate.ProvisioningState.state !== 0) { console.log("Intel AMT is not in pre-provisioning state: " + mestate.ProvisioningState.stateStr); exit(100); return; }
-        if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
-        startLms(activeServerCCMEx);
-    });
-}
-
-function activeServerCCMEx(state) {
-    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeServerCCMEx2);
-}
-
-function activeServerCCMEx2(stack, name, responses, status) {
-    if (status != 200) { console.log('Failed to fetch activation status, status ' + status); exit(1); }
-    else if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { console.log('Client control mode activation not allowed'); exit(1); }
-
-    // Establish WebSocket connection to activation server
-    var options = http.parseUri(settings.url);
-    options.checkServerIdentity = onVerifyServer;
-    options.rejectUnauthorized = false;
-    var connection = http.request(options);
-    connection.on('upgrade', function (response, socket) {
-        console.log('Connected, requesting activation...');
-        settings.xxsocket = socket;
-        socket.on('end', function () { console.log('Connection closed'); exit(0); });
-        socket.on('error', function () { console.log('Connection error'); exit(100); });
-        socket.on('data', function (data) {
-            // Parse and check the response
-            var cmd = null;
-            try { cmd = JSON.parse(data); } catch (ex) { console.log('Unable to parse server response: ' + data); exit(100); return; }
-            if (typeof cmd != 'object') { console.log('Invalid server response: ' + cmd); exit(100); return; }
-            if (typeof cmd.errorText == 'string') { console.log('Server error: ' + cmd.errorText); exit(100); return; }
-            if (cmd.action != 'ccmactivate') { console.log('Invalid server response, command: ' + cmd.cmd); exit(100); return; }
-            if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
-            settings.xxprofileScript = cmd.profileScript;
-            settings.xxrawpassword = cmd.rawpassword;
-
-            // We are ready to go, perform CCM activation.
-            osamtstack.IPS_HostBasedSetupService_Setup(2, cmd.password, null, null, null, null, activeServerCCMEx3);
-        });
-        socket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate', realm: responses['AMT_GeneralSettings'].response['DigestRealm'], uuid: mestate.uuid, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'] });
-    });
-    connection.end();
-}
-
-function activeServerCCMEx3(stack, name, responses, status) {
-    if (status != 200) {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
-        console.log('Failed to activate, status ' + status);
-    } else if (responses.Body.ReturnValue != 0) {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
-        console.log('Client control mode activation failed: ' + responses.Body.ReturnValueStr);
-    } else {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-success', uuid: mestate.uuid });
-        if ((settings.xxprofileScript !== null) && (settings.xxrawpassword != null)) {
-            console.log("Intel AMT ACM activation success, applying profile...");
-            settings.scriptjson = settings.xxprofileScript;
-            settings.password = settings.xxrawpassword; // This is only going to work if the server sends the raw password
-            settings.username = 'admin';
-            startMeScriptEx(function () { console.log('Intel AMT profile applied.'); socket.end(); exit(0); }, stack);
-            return;
-        } else {
-            console.log('Success');
-            settings.xxsocket.end();
-            exit(0);
-            return;
-        }
-    }
-    settings.xxsocket.end();
-    exit(1);
-}
 
 
 //
@@ -976,11 +896,11 @@ function getTrustedHashes(amtMei, func, tag) {
 }
 
 //
-// Activate Intel AMT to ACM
+// Activate Intel AMT to with server (ACM or CCM)
 //
 
 function activeToACM() {
-    console.log('Starting Intel AMT provisioning to Admin Control Mode (ACM) attempt...');
+    console.log('Starting Intel AMT activation attempt...');
     settings.noconsole = true;
 
     // Display Intel AMT version and activation state
@@ -992,10 +912,11 @@ function activeToACM() {
     amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
     amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
     amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
+    amtMei.getControlMode(function (result) { if (result != null) { mestate.controlMode = result.controlMode; } }); // controlMode: 0 = NoActivated, 1 = CCM, 2 = ACM
     amtMei.getDnsSuffix(function (result) {
         if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
         if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
-        if (mestate.ProvisioningState.state !== 0) { console.log("Intel AMT is not in pre-provisioning state: " + mestate.ProvisioningState.stateStr); exit(100); return; }
+        if ((settings.action != 'amtdiscover') && (mestate.controlMode == 2)) { console.log("Intel AMT already activation in admin control mode."); exit(100); return; }
         if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
         var fqdn = null;
         if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
@@ -1025,12 +946,13 @@ function getFwNonce() {
         if (status != 200) { console.log("Unable to get firmware activation nonce, status=" + status); exit(100); return; }
         var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
         var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
-        activeToACMEx(fwNonce, settings.fqdn, digestRealm, settings.uuid);
+        var allowedModes = responses['IPS_HostBasedSetupService'].response['AllowedControlModes']; // 1 = CCM, 2 = ACM
+        activeToACMEx(fwNonce, settings.fqdn, digestRealm, settings.uuid, allowedModes);
     });
 }
 
 // Connect to the activation server and perform ACM activation
-function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid) {
+function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
     console.log('FQDN:   ' + dnsSuffix);
     console.log('UUID:   ' + uuid);
     console.log('Realm:  ' + digestRealm);
@@ -1039,11 +961,11 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid) {
 
     // Establish WebSocket connection to activation server
     var options = http.parseUri(settings.url);
-    //options.checkServerIdentity = function (clientName, certs) { }; // TODO
     options.checkServerIdentity = onVerifyServer;
     options.rejectUnauthorized = false;
     var connection = http.request(options);
     connection.on('upgrade', function (response, socket) {
+        settings.xxsocket = socket;
         console.log('Connected, requesting activation...');
         socket.on('end', function () { console.log('Connection closed'); exit(0); });
         socket.on('error', function () { console.log('Connection error'); exit(100); });
@@ -1053,39 +975,122 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid) {
             try { cmd = JSON.parse(data); } catch (ex) { console.log('Unable to parse server response: ' + data); exit(100); return; }
             if (typeof cmd != 'object') { console.log('Invalid server response: ' + cmd); exit(100); return; }
             if (typeof cmd.errorText == 'string') { console.log('Server error: ' + cmd.errorText); exit(100); return; }
-            if (cmd.action != 'acmactivate') { console.log('Invalid server response, command: ' + cmd.cmd); exit(100); return; }
-            if (typeof cmd.signature != 'string') { console.log('Invalid server signature'); exit(100); return; }
-            if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
-            if (typeof cmd.nonce != 'string') { console.log('Invalid server nonce'); exit(100); return; }
-            if (typeof cmd.certs != 'object') { console.log('Invalid server certificates'); exit(100); return; }
+            switch (cmd.action) {
+                case 'acmactivate': {
+                    // Server responded with ACM activation response
+                    if (typeof cmd.signature != 'string') { console.log('Invalid server signature'); exit(100); return; }
+                    if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
+                    if (typeof cmd.nonce != 'string') { console.log('Invalid server nonce'); exit(100); return; }
+                    if (typeof cmd.certs != 'object') { console.log('Invalid server certificates'); exit(100); return; }
 
-            // We are ready to go, perform activation.
-            cmd.index = 0;
-            performAcmActivation(cmd, function (result) {
-                if (result == false) {
-                    console.log('Intel AMT ACM activation failed.');
-                    socket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-failed', uuid: mestate.uuid });
-                    socket.end();
-                    exit(1);
-                } else {
-                    if ((cmd.profileScript !== null) && (cmd.rawpassword != null)) {
-                        console.log('Intel AMT ACM activation success, applying profile...');
-                        settings.scriptjson = cmd.profileScript;
-                        settings.password = cmd.rawpassword; // This is only going to work if the server sends the raw password
-                        settings.username = 'admin';
-                        startMeScriptEx(function () { console.log('Intel AMT profile applied.'); socket.end(); exit(0); }, stack);
+                    cmd.index = 0;
+                    // If we are in CCM mode, deactivate.
+                    if (mestate.controlMode == 1) {
+                        amtMei.unprovision(1, function (status) {
+                            if (status == 0) {
+                                console.log('Intel AMT CCM deactivated, holding 10 seconds...');
+                                // We are ready to go, perform ACM activation.
+                                settings.xxTimer = setTimeout(function () { performAcmActivation(cmd, AcmActivationCompleted); }, 10000);
+                            } else {
+                                console.log('Intel AMT CCM deactivation error ' + status); exit(1); return;
+                            }
+                        });
                     } else {
-                        console.log('Intel AMT ACM activation success.');
-                        socket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-success', uuid: mestate.uuid });
-                        socket.end();
-                        exit(0);
+                        // We are ready to go, perform ACM activation.
+                        performAcmActivation(cmd, AcmActivationCompleted);
                     }
+                    break;
                 }
-            });
+                case 'ccmactivate': {
+                    // Server responded with CCM activation response
+                    if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
+                    settings.xxprofileScript = cmd.profileScript;
+                    settings.xxrawpassword = cmd.rawpassword;
+
+                    // If we are already in CCM mode, deactivate.
+                    if (mestate.controlMode == 1) {
+                        amtMei.unprovision(1, function (status) {
+                            if (status == 0) {
+                                console.log('Intel AMT CCM deactivated, holding 10 seconds...');
+                                // We are ready to go, perform CCM activation.
+                                settings.xxTimer = setTimeout(function () { osamtstack.IPS_HostBasedSetupService_Setup(2, cmd.password, null, null, null, null, performCcmActivation); }, 10000);
+                            } else {
+                                console.log('Intel AMT CCM deactivation error ' + status); exit(1); return;
+                            }
+                        });
+                    } else {
+                        // We are ready to go, perform CCM activation.
+                        osamtstack.IPS_HostBasedSetupService_Setup(2, cmd.password, null, null, null, null, performCcmActivation);
+                    }
+                    break;
+                }
+                case 'amtdiscover': {
+                    console.log('Done.');
+                    exit(0);
+                    break;
+                }
+                default: {
+                    console.log('Invalid server response, command: ' + cmd.action); exit(100);
+                    break;
+                }
+            }
         });
-        socket.write({ client: 'meshcmd', version: 1, action: 'acmactivate', fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'] });
+
+        var action = 'acmactivate';
+        if (settings.action == 'amtccm') { action = 'ccmactivate'; }
+        if (settings.action == 'amtdiscover') { action = 'amtdiscover'; }
+        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], modes: allowedModes, currentMode: mestate.controlMode });
     });
     connection.end();
+}
+
+function performCcmActivation(stack, name, responses, status) {
+    if (status != 200) {
+        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
+        console.log('Failed to activate, status ' + status);
+    } else if (responses.Body.ReturnValue != 0) {
+        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
+        console.log('Intel AMT CCM activation failed: ' + responses.Body.ReturnValueStr);
+    } else {
+        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-success', uuid: mestate.uuid });
+        if ((settings.xxprofileScript !== null) && (settings.xxrawpassword != null)) {
+            console.log("Intel AMT CCM activation success, applying profile...");
+            settings.scriptjson = settings.xxprofileScript;
+            settings.password = settings.xxrawpassword; // This is only going to work if the server sends the raw password
+            settings.username = 'admin';
+            startMeScriptEx(function () { console.log('Intel AMT profile applied.'); socket.end(); exit(0); }, stack);
+            return;
+        } else {
+            console.log('Intel AMT CCM activation success.');
+            settings.xxsocket.end();
+            exit(0);
+            return;
+        }
+    }
+    settings.xxsocket.end();
+    exit(1);
+}
+
+function AcmActivationCompleted(result) {
+    if (result == false) {
+        console.log('Intel AMT ACM activation failed.');
+        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-failed', uuid: mestate.uuid });
+        settings.xxsocket.end();
+        exit(1);
+    } else {
+        if ((cmd.profileScript !== null) && (cmd.rawpassword != null)) {
+            console.log('Intel AMT ACM activation success, applying profile...');
+            settings.scriptjson = cmd.profileScript;
+            settings.password = cmd.rawpassword; // This is only going to work if the server sends the raw password
+            settings.username = 'admin';
+            startMeScriptEx(function () { console.log('Intel AMT profile applied.'); settings.xxsocket.end(); exit(0); }, stack);
+        } else {
+            console.log('Intel AMT ACM activation success.');
+            settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-success', uuid: mestate.uuid });
+            settings.xxsocket.end();
+            exit(0);
+        }
+    }
 }
 
 // Recursive function to inject the provisioning certificates into AMT in the proper order and completes ACM activation
@@ -1093,12 +1098,12 @@ function performAcmActivation(acmdata, func) {
     var leaf = (acmdata.index == 0), root = (acmdata.index == (acmdata.certs.length - 1));
     if ((acmdata.index < acmdata.certs.length) && (acmdata.certs[acmdata.index] != null)) {
         osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(acmdata.certs[acmdata.index], leaf, root, function (stack, name, responses, status) {
-            if (status !== 200) { debug('AddNextCertInChain status: ' + status); return; }
-            else if (responses['Body']['ReturnValue'] !== 0) { console.log('AddNextCertInChain error: ' + responses['Body']['ReturnValue']); return; }
+            if (status !== 200) { console.log('AddNextCertInChain error, status=' + status); exit(1); return; }
+            else if (responses['Body']['ReturnValue'] !== 0) { console.log('AddNextCertInChain error: ' + responses['Body']['ReturnValue']); exit(1); return; }
             else { acmdata.index++; performAcmActivation(acmdata, func); }
         });
     } else {
-        console.log(acmdata.password, acmdata.nonce, acmdata.signature);
+        //console.log(acmdata.password, acmdata.nonce, acmdata.signature);
         osamtstack.IPS_HostBasedSetupService_AdminSetup(2, acmdata.password, acmdata.nonce, 2, acmdata.signature,
             function (stack, name, responses, status) {
                 if (status !== 200) { console.log('Error, AdminSetup status: ' + status); }
@@ -1180,7 +1185,6 @@ function startMeScriptEx(callback, amtstack) {
 //
 // FETCH ALL INTEL AMT STATE
 //
-
 
 function saveEntireAmtState2() {
     console.log('Fetching all Intel AMT state, this may take a few minutes...');

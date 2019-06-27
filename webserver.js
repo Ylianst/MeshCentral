@@ -2190,73 +2190,74 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Process the command
             switch (cmd.action) {
-                case 'ccmactivate': {
+                case 'amtdiscover': {
+                    console.log(cmd);
+                    ws.send(JSON.stringify({ action: 'amtdiscover' }));
+                    ws.close();
+                    return;
+                }
+                case 'ccmactivate':
+                case 'acmactivate': {
                     // Check the command
                     if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
                     if (obj.common.validateString(cmd.realm, 16, 256) == false) { ws.send(JSON.stringify({ errorText: 'Invalid realm argument' })); ws.close(); return; }
                     if (obj.common.validateString(cmd.uuid, 36, 36) == false) { ws.send(JSON.stringify({ errorText: 'Invalid UUID argument' })); ws.close(); return; }
-                    if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
-
-                    // Get the current Intel AMT policy
-                    var mesh = obj.meshes[ws.meshid];
-                    if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 2) || (mesh.amt.password == null)) { ws.send(JSON.stringify({ errorText: 'Unable to activate' })); ws.close(); return; }
-
-                    // Get the Intel AMT admin password, randomize if needed.
-                    var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
-                    if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
-
-                    // Log the activation request, logging is a required step for activation.
-                    if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'ccmactivate', domain: domain.id, amtUuid: cmd.uuid, amtRealm: cmd.realm, user: 'admin', password: amtpassword, ipport: ws.remoteaddrport, meshid: ws.meshid, tag: cmd.tag, name: cmd.name }) == false) return { errorText: 'Unable to log operation' };
-
-                    // Save some state, if activation is succesful, we need this to add the device
-                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: 2, ver: cmd.ver }; // Flags 2 = CCM
-
-                    // Compute the HTTP digest hash and send the response 
-                    ws.send(JSON.stringify({ action: 'ccmactivate', password: obj.crypto.createHash('md5').update('admin:' + cmd.realm + ':' + amtpassword).digest('hex') }));
-                    break;
-                }
-                case 'acmactivate': {
-                    // Check the command
-                    if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
                     if (typeof cmd.hashes != 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
                     if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
                     if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
+                    if (obj.common.validateArray(cmd.modes, 1, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid activation modes' })); ws.close(); return; }
 
                     // Get the current Intel AMT policy
-                    var mesh = obj.meshes[ws.meshid];
-                    if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 3) || (domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (mesh.amt.password == null)) { ws.send(JSON.stringify({ errorText: 'Unable to activate' })); ws.close(); return; }
+                    var mesh = obj.meshes[ws.meshid], activationMode = 4; // activationMode: 2 = CCM, 4 = ACM
+                    if ((mesh == null) || (mesh.amt == null) || (mesh.amt.password == null) || ((mesh.amt.type != 2) && (mesh.amt.type != 3))) { ws.send(JSON.stringify({ errorText: 'Unable to activate' })); ws.close(); return; }
+                    if ((mesh.amt.type != 3) || (domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null)) { activationMode = 2; }
 
-                    // Check if we have a FQDN/Hash match
-                    var matchingHash = null, matchingCN = null;
-                    for (var i in domain.amtacmactivation.acmmatch) {
-                        // Check for a matching FQDN
-                        if ((domain.amtacmactivation.acmmatch[i].cn == '*') || (domain.amtacmactivation.acmmatch[i].cn.toLowerCase() == cmd.fqdn)) {
-                            // Check for a matching certificate
-                            if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha256) >= 0) {
-                                matchingCN = domain.amtacmactivation.acmmatch[i].cn;
-                                matchingHash = domain.amtacmactivation.acmmatch[i].sha256;
-                                continue;
-                            } else if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha1) >= 0) {
-                                matchingCN = domain.amtacmactivation.acmmatch[i].cn;
-                                matchingHash = domain.amtacmactivation.acmmatch[i].sha1;
-                                continue;
+                    if (activationMode == 4) {
+                        // Check if we have a FQDN/Hash match
+                        var matchingHash = null, matchingCN = null;
+                        for (var i in domain.amtacmactivation.acmmatch) {
+                            // Check for a matching FQDN
+                            if ((domain.amtacmactivation.acmmatch[i].cn == '*') || (domain.amtacmactivation.acmmatch[i].cn.toLowerCase() == cmd.fqdn)) {
+                                // Check for a matching certificate
+                                if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha256) >= 0) {
+                                    matchingCN = domain.amtacmactivation.acmmatch[i].cn;
+                                    matchingHash = domain.amtacmactivation.acmmatch[i].sha256;
+                                    continue;
+                                } else if (cmd.hashes.indexOf(domain.amtacmactivation.acmmatch[i].sha1) >= 0) {
+                                    matchingCN = domain.amtacmactivation.acmmatch[i].cn;
+                                    matchingHash = domain.amtacmactivation.acmmatch[i].sha1;
+                                    continue;
+                                }
                             }
                         }
+                        // If no cert match or wildcard match which is not yet supported, do CCM activation.
+                        if ((matchingHash == null) || (matchingCN == '*')) { activationMode = 2; } else { cmd.hash = matchingHash; }
                     }
-                    if (matchingHash == null) { ws.send(JSON.stringify({ errorText: 'No matching activation certificates' })); ws.close(); return; }
-                    if (matchingCN == '*') { ws.send(JSON.stringify({ errorText: 'Wildcard certificate activation not yet supported' })); ws.close(); return; }
-                    cmd.hash = matchingHash;
+
+                    // Check if we are going to activate in an allowed mode. cmd.modes: 1 = CCM, 2 = ACM
+                    if ((activationMode == 4) && (cmd.modes.indexOf(2) == -1)) { activationMode = 2; } // We want to do ACM, but mode is not allowed. Change to CCM.
+
+                    // If we want to do CCM, but mode is not allowed. Error out.
+                    if ((activationMode == 2) && (cmd.modes.indexOf(1) == -1)) { ws.send(JSON.stringify({ errorText: 'Unsupported activation mode' })); ws.close(); return; } 
 
                     // Get the Intel AMT admin password, randomize if needed.
                     var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
                     if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
 
                     // Save some state, if activation is succesful, we need this to add the device
-                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: 4, ver: cmd.ver }; // Flags 4 = ACM
+                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: activationMode, ver: cmd.ver }; // Flags: 2 = CCM, 4 = ACM
 
-                    // Agent is asking the server to sign an Intel AMT ACM activation request
-                    var signResponse = parent.certificateOperations.signAcmRequest(domain, cmd, 'admin', amtpassword, ws.remoteaddrport, null, ws.meshid, null, null);
-                    ws.send(JSON.stringify(signResponse));
+                    if (activationMode == 4) {
+                        // ACM: Agent is asking the server to sign an Intel AMT ACM activation request
+                        var signResponse = parent.certificateOperations.signAcmRequest(domain, cmd, 'admin', amtpassword, ws.remoteaddrport, null, ws.meshid, null, null);
+                        ws.send(JSON.stringify(signResponse));
+                    } else {
+                        // CCM: Log the activation request, logging is a required step for activation.
+                        if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'ccmactivate', domain: domain.id, amtUuid: cmd.uuid, amtRealm: cmd.realm, user: 'admin', password: amtpassword, ipport: ws.remoteaddrport, meshid: ws.meshid, tag: cmd.tag, name: cmd.name }) == false) return { errorText: 'Unable to log operation' };
+
+                        // Compute the HTTP digest hash and send the response for CCM activation
+                        ws.send(JSON.stringify({ action: 'ccmactivate', password: obj.crypto.createHash('md5').update('admin:' + cmd.realm + ':' + amtpassword).digest('hex') }));
+                    }
                     break;
                 }
                 case 'ccmactivate-failed':
@@ -2929,6 +2930,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
+            obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
 
             // Server redirects
             if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, handleDomainRedirect); } } }
@@ -2965,11 +2967,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.get(url + 'memorytracking.csv', function (req, res) {
                     try { res.sendFile(obj.parent.getConfigFilePath('memorytracking.csv')); } catch (e) { res.sendStatus(404); }
                 });
-            }
-
-            // Intel AMT ACM activation
-            if ((parent.config.domains[i].amtacmactivation != null) && (parent.config.domains[i].amtacmactivation.acmmatch != null)) {
-                obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
             }
 
             // Creates a login token using the user/pass that is passed in as URL arguments.
