@@ -2190,12 +2190,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Process the command
             switch (cmd.action) {
-                case 'amtdiscover': {
-                    console.log(cmd);
-                    ws.send(JSON.stringify({ action: 'amtdiscover' }));
-                    ws.close();
-                    return;
-                }
                 case 'ccmactivate':
                 case 'acmactivate': {
                     // Check the command
@@ -2206,6 +2200,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
                     if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
                     if (obj.common.validateArray(cmd.modes, 1, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid activation modes' })); ws.close(); return; }
+                    if (obj.common.validateInt(cmd.currentMode, 0, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid current mode' })); ws.close(); return; }
 
                     // Get the current Intel AMT policy
                     var mesh = obj.meshes[ws.meshid], activationMode = 4; // activationMode: 2 = CCM, 4 = ACM
@@ -2266,8 +2261,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: cmd.action, domain: domain.id, amtUuid: cmd.uuid, ipport: ws.remoteaddrport, meshid: ws.meshid });
                     break;
                 }
+                case 'amtdiscover':
                 case 'ccmactivate-success':
                 case 'acmactivate-success': {
+                    // If this is a discovery command, set the state.
+                    if (cmd.action == 'amtdiscover') {
+                        if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
+                        if (obj.common.validateString(cmd.realm, 16, 256) == false) { ws.send(JSON.stringify({ errorText: 'Invalid realm argument' })); ws.close(); return; }
+                        if (obj.common.validateString(cmd.uuid, 36, 36) == false) { ws.send(JSON.stringify({ errorText: 'Invalid UUID argument' })); ws.close(); return; }
+                        if (typeof cmd.hashes != 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
+                        if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
+                        if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
+                        if (obj.common.validateArray(cmd.modes, 1, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid activation modes' })); ws.close(); return; }
+                        if (obj.common.validateInt(cmd.currentMode, 0, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid current mode' })); ws.close(); return; }
+                        var activationMode = 0; if (cmd.currentMode == 1) { activationMode = 2; } else if (cmd.currentMode == 2) { activationMode = 4; }
+                        ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, flags: activationMode, ver: cmd.ver }; // Flags: 2 = CCM, 4 = ACM
+                    } else {
+                        // If this is an activation success, check that state was set already.
+                        if (ws.xxstate == null) { ws.send(JSON.stringify({ errorText: 'Invalid command' })); ws.close(); return; }
+                    }
+
                     // Log the activation response
                     parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: cmd.action, domain: domain.id, amtUuid: cmd.uuid, ipport: ws.remoteaddrport, meshid: ws.meshid });
 
@@ -2284,7 +2297,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.crypto.randomBytes(48, function (err, buf) {
                                 // Create the new node
                                 var xxnodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                                var device = { type: 'node', _id: xxnodeid, meshid: ws.meshid, name: ws.xxstate.name, host: ws.remoteaddr, domain: domain.id, intelamt: { state: 2, flags: ws.xxstate.flags, user: 'admin', pass: ws.xxstate.pass, tls: 0, uuid: ws.xxstate.uuid, realm: ws.xxstate.realm, tag: ws.xxstate.tag, ver: ws.xxstate.ver } };
+                                var device = { type: 'node', _id: xxnodeid, meshid: ws.meshid, name: ws.xxstate.name, rname: ws.xxstate.name, host: ws.remoteaddr, domain: domain.id, intelamt: { state: 2, flags: ws.xxstate.flags, tls: 0, uuid: ws.xxstate.uuid, realm: ws.xxstate.realm, tag: ws.xxstate.tag, ver: ws.xxstate.ver } };
+                                if (ws.xxstate.pass != null) { device.intelamt.user = 'admin'; device.intelamt.pass = ws.xxstate.pass; }
+                                if (device.intelamt.flags != 0) { device.intelamt.state = 2; } else { device.intelamt.state = 0; }
                                 db.Set(device);
 
                                 // Event the new node
@@ -2296,10 +2311,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Change an existing device
                             var device = nodes[0];
                             if (device.host != ws.remoteaddr) { device.host = ws.remoteaddr; }
-                            if (device.intelamt.state != 2) { device.intelamt.state = 2; }
+                            if ((ws.xxstate.name != null) && (device.rname != ws.xxstate.name)) { device.rname = ws.xxstate.name; }
+                            if (device.intelamt.flags != 0) {
+                                if (device.intelamt.state != 2) { device.intelamt.state = 2; }
+                            }
                             if (device.intelamt.flags != ws.xxstate.flags) { device.intelamt.state = ws.xxstate.flags; }
-                            if (device.intelamt.user != 'admin') { device.intelamt.user = 'admin'; }
-                            if (device.intelamt.pass != ws.xxstate.pass) { device.intelamt.pass = ws.xxstate.pass; }
+                            if (ws.xxstate.pass != null) {
+                                if (device.intelamt.user != 'admin') { device.intelamt.user = 'admin'; }
+                                if (device.intelamt.pass != ws.xxstate.pass) { device.intelamt.pass = ws.xxstate.pass; }
+                            }
                             if (device.intelamt.realm != ws.xxstate.realm) { device.intelamt.realm = ws.xxstate.realm; }
                             if (ws.xxstate.realm == null) { delete device.intelamt.tag; }
                             else if (device.intelamt.tag != ws.xxstate.tag) { device.intelamt.tag = ws.xxstate.tag; }
@@ -2313,6 +2333,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.DispatchEvent(['*', ws.meshid], obj, { etype: 'node', action: 'changenode', nodeid: device2._id, node: device2, msg: 'Changed device ' + device.name + ' in mesh ' + mesh.name, domain: domain.id });
                         }
                     });
+
+                    if (cmd.action == 'amtdiscover') { ws.send(JSON.stringify({ action: 'amtdiscover' })); }
                     break;
                 }
                 default: {
