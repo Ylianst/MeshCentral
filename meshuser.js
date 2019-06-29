@@ -1115,7 +1115,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var event, targets = ['*', 'server-users'];
                                 if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
                                 if (command.email == null) {
-                                    event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.user, domain: domain.id };
+                                    event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: domain.id };
                                 } else {
                                     event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id };
                                 }
