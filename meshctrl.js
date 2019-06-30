@@ -40,7 +40,7 @@ if (args['_'].length == 0) {
         case 'serverinfo': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
-        case 'listgroups': { ok = true; break; }
+        case 'listdevicegroups': { ok = true; break; }
         case 'adddevicegroup': {
             if (args.name == null) { console.log("Message group name, use --name [name]"); }
             else { ok = true; }
