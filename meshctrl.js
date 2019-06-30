@@ -1,23 +1,28 @@
 #!/usr/bin/env node
 
+const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listgroups', 'serverinfo', 'userinfo','adduser','removeuser'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast'];
 //console.log(args);
 
-if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
-    console.log("MeshCtrl perform command line actions on a MeshCentral server.");
+if (args['_'].length == 0) {
+    console.log("MeshCtrl performs command line actions on a MeshCentral server.");
+    console.log("Information at: https://meshcommander.com/meshcentral");
     console.log("No action specified, use MeshCtrl like this:\r\n\r\n  meshctrl [action] [arguments]\r\n");
     console.log("Supported actions:");
     console.log("  Help [action]          - Get help on an action.");
     console.log("  ServerInfo             - Show server information.");
     console.log("  UserInfo               - Show user information.");
     console.log("  ListUsers              - List user accounts.");
-    console.log("  ListGroups             - List device groups.");
+    console.log("  ListDeviceGroups       - List device groups.");
     console.log("  AddUser                - Create a new user account.");
     console.log("  RemoveUser             - Delete a user account.");
+    console.log("  AddDeviceGroup         - Create a new device group.");
+    console.log("  RemoveDeviceGroup      - Delete a device group.");
+    console.log("  Broadcast              - Display a message to all online users.");
     console.log("\r\nSupported login arguments:");
-    console.log("  --url [wss://server]  - Server url, wss://localhost:443 is default.");
+    console.log("  --url [wss://server]   - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username] - Login username, admin is default.");
     console.log("  --loginpass [password] - Login password.");
     console.log("  --token [number]       - 2nd factor authentication token.");
@@ -36,9 +41,24 @@ if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listgroups': { ok = true; break; }
+        case 'adddevicegroup': {
+            if (args.name == null) { console.log("Message group name, use --name [name]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'removedevicegroup': {
+            if (args.id == null) { console.log("Message group identifier, use --id [identifier]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'broadcast': {
+            if (args.msg == null) { console.log("Message missing, use --msg [message]"); }
+            else { ok = true; }
+            break;
+        }
         case 'adduser': {
             if (args.user == null) { console.log("New account name missing, use --user [name]"); }
-            else if (args.pass == null) { console.log("New account password missing, use --pass [password]"); }
+            else if ((args.pass == null) && (args.randompass == null)) { console.log("New account password missing, use --pass [password] or --randompass"); }
             else { ok = true; }
             break;
         }
@@ -79,10 +99,10 @@ if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
                         console.log("  --json                - Show result as JSON.");
                         break;
                     }
-                    case 'listgroups': {
+                    case 'listdevicegroups': {
                         console.log("List the device groups for this account, Example usages:\r\n");
-                        console.log("  MeshCtrl ListGroups ");
-                        console.log("  MeshCtrl ListGroups --json");
+                        console.log("  MeshCtrl ListDeviceGroups ");
+                        console.log("  MeshCtrl ListDeviceGroups --json");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --idexists [id]       - Return 1 if id exists, 0 if not.");
                         console.log("  --nameexists [name]   - Return id if name exists.");
@@ -96,9 +116,17 @@ if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --user [name]         - New account name.");
                         console.log("  --pass [password]     - New account password.");
+                        console.log("  --randompass          - Create account with a random password.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --email [email]       - New account email address.");
                         console.log("  --resetpass           - Request password reset on next login.");
+                        console.log("  --siteadmin           - Create the account as full site administrator.");
+                        console.log("  --manageusers         - Allow this account to manage server users.");
+                        console.log("  --fileaccess          - Allow this account to store server files.");
+                        console.log("  --serverupdate        - Allow this account to update the server.");
+                        console.log("  --locked              - This account will be locked.");
+                        console.log("  --nonewgroups         - Account will not be allowed to create device groups.");
+                        console.log("  --notools             - Account not see MeshCMD download links.");
                         break;
                     }
                     case 'removeuser': {
@@ -106,6 +134,31 @@ if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
                         console.log("  MeshCtrl RemoveUser --userid accountid");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --userid [id]         - Account identifier.");
+                        break;
+                    }
+                    case 'adddevicegroup': {
+                        console.log("Add a device group, Example usages:\r\n");
+                        console.log("  MeshCtrl AddDeviceGroup --name newgroupname");
+                        console.log("  MeshCtrl AddDeviceGroup --name newgroupname --desc description --amtonly");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --name [name]         - Name of the new group.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --desc [description]  - New group description.");
+                        console.log("  --amtonly             - New group is agent-less, Intel AMT only.");
+                        break;
+                    }
+                    case 'removedevicegroup': {
+                        console.log("Remove a device group, Example usages:\r\n");
+                        console.log("  MeshCtrl RemoteDeviceGroup --id groupid");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - The group identifier.");
+                        break;
+                    }
+                    case 'broadcast': {
+                        console.log("Display a message to all logged in users, Example usages:\r\n");
+                        console.log("  MeshCtrl Broadcast --msg \"This is a test\"");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --msg [message]         - Message to display.");
                         break;
                     }
                     default: {
@@ -120,10 +173,11 @@ if ((args['_'].length != 1) && (args['_'][0].toLowerCase() != 'help')) {
     if (ok) { serverConnect(); }
 }
 
+function onVerifyServer(clientName, certs) { return null; }
+
 function serverConnect() {
     const WebSocket = require('ws');
 
-    function onVerifyServer(clientName, certs) { console.log('onVerifyServer', clientName); }
     var url = 'wss://localhost/control.ashx';
     if (args.url) {
         url = args.url;
@@ -133,6 +187,7 @@ function serverConnect() {
         url += 'control.ashx';
     }
 
+    // TODO: checkServerIdentity does not work???
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
     // Password authentication
@@ -177,16 +232,43 @@ function serverConnect() {
             case 'serverinfo': { break; }
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users' })); break; }
-            case 'listgroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
+            case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'adduser': {
-                var op = { action: 'adduser', username: args.user, pass: args.pass };
+                var siteadmin = 0;
+                if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }
+                if (args.manageusers) { siteadmin |= 2; }
+                if (args.fileaccess) { siteadmin |= 8; }
+                if (args.serverupdate) { siteadmin |= 16; }
+                if (args.locked) { siteadmin |= 32; }
+                if (args.nonewgroups) { siteadmin |= 64; }
+                if (args.notools) { siteadmin |= 128; }
+                if (args.randompass) { args.pass = getRandomAmtPassword(); }
+                var op = { action: 'adduser', username: args.user, pass: args.pass, responseid: 'meshctrl' };
                 if (args.email) { op.email = args.email; }
                 if (args.resetpass) { op.resetNextLogin = true; }
+                if (siteadmin != 0) { op.siteadmin = siteadmin; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'removeuser': {
-                var op = { action: 'deleteuser', userid: args.userid };
+                var op = { action: 'deleteuser', userid: args.userid, responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'adddevicegroup': {
+                var op = { action: 'createmesh', meshname: args.name, meshtype: 2, responseid: 'meshctrl' };
+                if (args.desc) { op.desc = args.desc; }
+                if (args.amtonly) { op.meshtype = 1; }
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'removedevicegroup': {
+                var op = { action: 'deletemesh', meshid: args.id, responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'broadcast': {
+                var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
                 break;
             }
@@ -223,6 +305,19 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'adduser': // ADDUSER
+            case 'deleteuser': // REMOVEUSER
+            case 'createmesh': // ADDDEVICEGROUP
+            case 'deletemesh': // REMOVEDEVICEGROUP
+            case 'userbroadcast': { // BROADCAST
+                if (data.responseid == 'meshctrl') {
+                    if (data.meshid) { console.log(data.result, data.meshid); }
+                    else if (data.userid) { console.log(data.result, data.userid); }
+                    else console.log(data.result);
+                    process.exit();
+                }
+                break;
+            }
             case 'users': { // LISTUSERS
                 if (args.json) {
                     console.log(JSON.stringify(data.users, ' ', 2));
@@ -241,7 +336,7 @@ function serverConnect() {
                 process.exit();
                 break;
             }
-            case 'meshes': { // LISTGROUPS
+            case 'meshes': { // LISTDEVICEGROUPS
                 if (args.json) {
                     console.log(JSON.stringify(data.meshes, ' ', 2));
                 } else {
@@ -269,29 +364,7 @@ function serverConnect() {
                 process.exit();
                 break;
             }
-            case 'event': {
-                switch (data.event.action) {
-                    case 'accountcreate': {
-                        if ((settings.cmd == 'adduser') && (data.event.account.name == args.user)) {
-                            console.log('Account created, id: ' + data.event.account._id);
-                            process.exit();
-                        }
-                        break;
-                    }
-                    case 'accountremove': {
-                        if ((settings.cmd == 'removeuser') && (data.event.userid == args.userid)) {
-                            console.log('Account removed');
-                            process.exit();
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-            default: {
-                console.log('Unknown action: ' + data.action);
-                break;
-            }
+            default: { break; }
         }
         //console.log('Data', data);
         //setTimeout(function timeout() { ws.send(Date.now()); }, 500);
@@ -300,7 +373,6 @@ function serverConnect() {
 
 // Encode an object as a cookie using a key using AES-GCM. (key must be 32 bytes or more)
 function encodeCookie(o, key) {
-    var crypto = require('crypto');
     try {
         if (key == null) { return null; }
         o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
@@ -309,3 +381,7 @@ function encodeCookie(o, key) {
         return Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     } catch (e) { return null; }
 }
+
+// Generate a random Intel AMT password
+function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
+function getRandomAmtPassword() { var p; do { p = Buffer.from(crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }

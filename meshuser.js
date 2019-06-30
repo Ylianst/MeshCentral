@@ -40,9 +40,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_SERVERRESTORE = 4;
     const SITERIGHT_FILEACCESS = 8;
     const SITERIGHT_SERVERUPDATE = 16;
-    const SITERIGHT_LOCKED = 32;
-    const SITERIGHT_NONEWGROUPS = 64;
-    const SITERIGHT_NOMESHCMD = 128;
+    const SITERIGHT_LOCKED = 32;            // 0x00000020
+    const SITERIGHT_NONEWGROUPS = 64;       // 0x00000040
+    const SITERIGHT_NOMESHCMD = 128;        // 0x00000080
 
     var obj = {};
     obj.user = user;
@@ -932,12 +932,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'deleteuser':
                 {
                     // Delete a user account
-                    if ((user.siteadmin & 2) == 0) break;
-                    if (common.validateString(command.userid, 1, 2048) == false) break;
-                    var delusersplit = command.userid.split('/'), deluserid = command.userid, deluser = parent.users[deluserid];
-                    if ((deluser == null) || (delusersplit.length != 3) || (delusersplit[1] != domain.id)) break; // Invalid domain, operation only valid for current domain
-                    if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) break; // Need full admin to remote another administrator
-                    if ((user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) break; // Can only perform this operation on other users of our group.
+                    var err = null, delusersplit, deluserid, deluser;
+                    try {
+                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
+                        else if (common.validateString(command.userid, 1, 2048) == false) { err = 'Invalid userid'; }
+                        else {
+                            delusersplit = command.userid.split('/');
+                            deluserid = command.userid;
+                            deluser = parent.users[deluserid];
+                            if (deluser == null) { err = 'User does not exists'; }
+                            else if ((delusersplit.length != 3) || (delusersplit[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                            else if ((deluser.siteadmin != null) && (deluser.siteadmin > 0) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Permission denied'; } // Need full admin to remote another administrator
+                            else if ((user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) { err = 'Invalid user group'; } // Can only perform this operation on other users of our group.
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deleteuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // Remove all the mesh links to this user
                     if (deluser.links != null) {
@@ -973,13 +987,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
                     parent.parent.DispatchEvent([deluserid], obj, 'close');
 
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deleteuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+
                     break;
                 }
             case 'userbroadcast':
                 {
-                    // Broadcast a message to all currently connected users.
-                    if ((user.siteadmin & 2) == 0) break;
-                    if (common.validateString(command.msg, 1, 256) == false) break; // Notification message is between 1 and 256 characters
+                    var err = null;
+                    try {
+                        // Broadcast a message to all currently connected users.
+                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
+                        else if (common.validateString(command.msg, 1, 512) == false) { err = 'Message is too long'; } // Notification message is between 1 and 256 characters
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'userbroadcast', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // Create the notification message
                     var notification = { action: "msg", type: "notify", domain: domain.id, "value": command.msg, "title": user.name, icon: 0, tag: "broadcast" };
@@ -1004,6 +1029,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // TODO: Notify all sessions on other peers.
 
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'userbroadcast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'adduserbatch':
@@ -1074,32 +1100,53 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'adduser':
                 {
                     // Add a new user account
-                    if ((user.siteadmin & 2) == 0) break;
-                    if (common.validateUsername(command.username, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
-                    if (common.validateString(command.pass, 1, 256) == false) break; // Password is between 1 and 256 characters
-                    if (command.username.indexOf('/') >= 0) break; // Usernames can't have '/'
-                    if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
-                    if ((command.email != null) && (common.validateEmail(command.email, 1, 256) == false)) break; // Check if this is a valid email address
-                    var newusername = command.username, newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
-                    if (newusername == '~') break; // This is a reserved user name
-                    if (parent.users[newuserid]) break; // Account already exists
+                    var err = null, newusername, newuserid;
+                    try {
+                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
+                        else if (common.validateUsername(command.username, 1, 64) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
+                        else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
+                        else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
+                        else if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) { err = 'Invalid password'; } // Password does not meet requirements
+                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 256) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
+                        else {
+                            newusername = command.username;
+                            newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
+                            if (newusername == '~') { err = 'Invalid username'; } // This is a reserved user name
+                            else if (command.siteadmin != null) {
+                                if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = 'Invalid site permissions'; } // Check permissions
+                                else if ((user.siteadmin != 0xFFFFFFFF) && ((command.siteadmin & (0xFFFFFFFF - 224)) != 0)) { err = 'Invalid site permissions'; }
+                            }
+                            if (parent.users[newuserid]) { err = 'User already exists'; } // Account already exists
+                        }
+                    } catch (ex) { err = 'Validation exception'; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // Check if we exceed the maximum number of user accounts
                     db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
                         if (maxExceed) {
                             // Account count exceed, do notification
+                            if (command.responseid != null) {
+                                // Respond privately if requested
+                                try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
+                            } else {
+                                // Create the notification message
+                                var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
 
-                            // Create the notification message
-                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
-
-                            // Get the list of sessions for this user
-                            var sessions = parent.wssessions[user._id];
-                            if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == domain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
-                            // TODO: Notify all sessions on other peers.
+                                // Get the list of sessions for this user
+                                var sessions = parent.wssessions[user._id];
+                                if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == domain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
+                                // TODO: Notify all sessions on other peers.
+                            }
                         } else {
-                            // Check if this is an existing user
+                            // Create a new user
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
-                            if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
+                            if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
+                            else if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
                             if (command.email != null) { newuser.email = command.email; } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if ((user.groups != null) && (user.groups.length > 0)) { newuser.groups = user.groups; } // New account are automatically part of our groups.
@@ -1107,20 +1154,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Create a user, generate a salt and hash the password
                             require('./pass').hash(command.pass, function (err, salt, hash, tag) {
-                                if (err) throw err;
-                                newuser.salt = salt;
-                                newuser.hash = hash;
-                                db.SetUser(newuser);
+                                if (err == null) {
+                                    newuser.salt = salt;
+                                    newuser.hash = hash;
+                                    db.SetUser(newuser);
 
-                                var event, targets = ['*', 'server-users'];
-                                if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
-                                if (command.email == null) {
-                                    event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: domain.id };
+                                    var event, targets = ['*', 'server-users'];
+                                    if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
+                                    if (command.email == null) {
+                                        event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: domain.id };
+                                    } else {
+                                        event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id };
+                                    }
+                                    if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
+                                    parent.parent.DispatchEvent(targets, obj, event);
+
+                                    // OK Response
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                                 } else {
-                                    event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id };
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'passwordHashError' })); } catch (ex) { } }
                                 }
-                                if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                                parent.parent.DispatchEvent(targets, obj, event);
                             }, 0);
                         }
                     });
@@ -1386,61 +1439,91 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'createmesh':
                 {
-                    // Check if we have new group restriction
-                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0)) break;
+                    var err = null;
+                    try {
+                        // Check if we have new group restriction
+                        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0)) { err = 'Permission denied'; }
 
-                    // In some situations, we need a verified email address to create a device group.
-                    if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) return; // User must verify it's email first.
+                        // In some situations, we need a verified email address to create a device group.
+                        else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Email verification required'; } // User must verify it's email first.
 
-                    // Create mesh
-                    if (common.validateString(command.meshname, 1, 64) == false) break; // Meshname is between 1 and 64 characters
-                    if (common.validateString(command.desc, 0, 1024) == false) break; // Mesh description is between 0 and 1024 characters
+                        // Create mesh
+                        else if (common.validateString(command.meshname, 1, 64) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
+                        else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
+                        else if ((command.meshtype != 1) && (command.meshtype != 2)) { err = 'Invalid group type'; }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createmesh', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
-                    if ((command.meshtype == 1) || (command.meshtype == 2)) {
-                        parent.crypto.randomBytes(48, function (err, buf) {
-                            // Create new device group identifier
-                            meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                    parent.crypto.randomBytes(48, function (err, buf) {
+                        // Create new device group identifier
+                        meshid = 'mesh/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
-                            // Create the new device group
-                            var links = {};
-                            links[user._id] = { name: user.name, rights: 4294967295 };
-                            mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
-                            db.Set(common.escapeLinksFieldName(mesh));
-                            parent.meshes[meshid] = mesh;
-                            parent.parent.AddEventDispatch([meshid], ws);
+                        // Create the new device group
+                        var links = {};
+                        links[user._id] = { name: user.name, rights: 4294967295 };
+                        mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
+                        db.Set(common.escapeLinksFieldName(mesh));
+                        parent.meshes[meshid] = mesh;
+                        parent.parent.AddEventDispatch([meshid], ws);
 
-                            // Change the user to make him administration of the new device group
-                            if (user.links == null) user.links = {};
-                            user.links[meshid] = { rights: 4294967295 };
-                            user.subscriptions = parent.subscribe(user._id, ws);
-                            db.SetUser(user);
+                        // Change the user to make him administration of the new device group
+                        if (user.links == null) user.links = {};
+                        user.links[meshid] = { rights: 4294967295 };
+                        user.subscriptions = parent.subscribe(user._id, ws);
+                        db.SetUser(user);
 
-                            // Event the user change
-                            var targets = ['*', 'server-users', user._id];
-                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                            var event = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.parent.DispatchEvent(targets, obj, event);
+                        // Event the user change
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
 
-                            // Event the device group creation
-                            var event = { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id };
-                            parent.parent.DispatchEvent(['*', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
-                        });
-                    }
+                        // Event the device group creation
+                        var event = { etype: 'mesh', username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Mesh created: ' + command.meshname, domain: domain.id };
+                        parent.parent.DispatchEvent(['*', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
+
+                        try { ws.send(JSON.stringify({ action: 'createmesh', responseid: command.responseid, result: 'ok', meshid: meshid })); } catch (ex) { }
+                    });
                     break;
                 }
             case 'deletemesh':
                 {
-                    // Delete a mesh and all computers within it
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
+                    var err = null;
+                    try {
+                        // Delete a mesh and all computers within it
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+
                     db.Get(command.meshid, function (err, meshes) {
-                        if (meshes.length != 1) return;
+                        if (meshes.length != 1) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'Unknown device group' })); } catch (ex) { } }
+                            return;
+                        }
                         var mesh = common.unEscapeLinksFieldName(meshes[0]);
 
                         // Check if this user has rights to do this
-                        if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) return;
-                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        var err = null;
+                        if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) { err = 'Access denied'; }
+                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group'; } // Invalid domain, operation only valid for current domain
+
+                        // Handle any errors
+                        if (err != null) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } }
+                            return;
+                        }
 
                         // Fire the removal event first, because after this, the event will not route
                         var event = { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id };
@@ -1475,6 +1558,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Delete all devices attached to this mesh in the database
                         db.RemoveMeshDocuments(command.meshid);
+
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
                     break;
                 }
