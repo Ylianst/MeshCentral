@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -11,24 +11,26 @@ if (args['_'].length == 0) {
     console.log("Information at: https://meshcommander.com/meshcentral");
     console.log("No action specified, use MeshCtrl like this:\r\n\r\n  meshctrl [action] [arguments]\r\n");
     console.log("Supported actions:");
-    console.log("  Help [action]          - Get help on an action.");
-    console.log("  ServerInfo             - Show server information.");
-    console.log("  UserInfo               - Show user information.");
-    console.log("  ListUsers              - List user accounts.");
-    console.log("  ListDeviceGroups       - List device groups.");
-    console.log("  AddUser                - Create a new user account.");
-    console.log("  RemoveUser             - Delete a user account.");
-    console.log("  AddDeviceGroup         - Create a new device group.");
-    console.log("  RemoveDeviceGroup      - Delete a device group.");
-    console.log("  Broadcast              - Display a message to all online users.");
+    console.log("  Help [action]              - Get help on an action.");
+    console.log("  ServerInfo                 - Show server information.");
+    console.log("  UserInfo                   - Show user information.");
+    console.log("  ListUsers                  - List user accounts.");
+    console.log("  ListDeviceGroups           - List device groups.");
+    console.log("  AddUser                    - Create a new user account.");
+    console.log("  RemoveUser                 - Delete a user account.");
+    console.log("  AddDeviceGroup             - Create a new device group.");
+    console.log("  RemoveDeviceGroup          - Delete a device group.");
+    console.log("  AddUserToDeviceGroup       - Add a user to a device group.");
+    console.log("  RemoveUserFromDeviceGroup  - Remove a user from a device group.");
+    console.log("  Broadcast                  - Display a message to all online users.");
     console.log("\r\nSupported login arguments:");
-    console.log("  --url [wss://server]   - Server url, wss://localhost:443 is default.");
-    console.log("  --loginuser [username] - Login username, admin is default.");
-    console.log("  --loginpass [password] - Login password.");
-    console.log("  --token [number]       - 2nd factor authentication token.");
-    console.log("  --loginkey [hex]       - Server login key in hex.");
-    console.log("  --loginkeyfile [file]  - File containing server login key in hex.");
-    console.log("  --domain [domainid]    - Domain id, default is empty.");
+    console.log("  --url [wss://server]       - Server url, wss://localhost:443 is default.");
+    console.log("  --loginuser [username]     - Login username, admin is default.");
+    console.log("  --loginpass [password]     - Login password.");
+    console.log("  --token [number]           - 2nd factor authentication token.");
+    console.log("  --loginkey [hex]           - Server login key in hex.");
+    console.log("  --loginkeyfile [file]      - File containing server login key in hex.");
+    console.log("  --domain [domainid]        - Domain id, default is empty.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();
@@ -41,6 +43,18 @@ if (args['_'].length == 0) {
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listdevicegroups': { ok = true; break; }
+        case 'addusertodevicegroup': {
+            if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
+            else if (args.id == null) { console.log("Add user to group missing group id, use --id [groupid]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'removeuserfromdevicegroup': {
+            if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
+            else if (args.id == null) { console.log("Remove user from group missing group id, use --id [groupid]"); }
+            else { ok = true; }
+            break;
+        }
         case 'adddevicegroup': {
             if (args.name == null) { console.log("Message group name, use --name [name]"); }
             else { ok = true; }
@@ -149,9 +163,41 @@ if (args['_'].length == 0) {
                     }
                     case 'removedevicegroup': {
                         console.log("Remove a device group, Example usages:\r\n");
-                        console.log("  MeshCtrl RemoteDeviceGroup --id groupid");
+                        console.log("  MeshCtrl RemoveDeviceGroup --id groupid");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --id [groupid]         - The group identifier.");
+                        break;
+                    }
+                    case 'addusertodevicegroup': {
+                        console.log("Add a user to a device group, Example usages:\r\n");
+                        console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --fullrights");
+                        console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --editgroup --manageusers");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --userid [userid]      - The user identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --fullrights           - Allow full rights over this device group.");
+                        console.log("  --editgroup            - Allow the user to edit group information.");
+                        console.log("  --manageusers          - Allow the user to add/remove users.");
+                        console.log("  --managedevices        - Allow the user to edit device information.");
+                        console.log("  --remotecontrol        - Allow device remote control operations.");
+                        console.log("  --agentconsole         - Allow agent console operations.");
+                        console.log("  --serverfiles          - Allow access to group server files.");
+                        console.log("  --wakedevices          - Allow device wake operation.");
+                        console.log("  --notes                - Allow editing of device notes.");
+                        console.log("  --desktopviewonly      - Restrict user to view-only remote desktop.");
+                        console.log("  --limiteddesktop       - Limit remote desktop keys.");
+                        console.log("  --noterminal           - Hide the terminal tab from this user.");
+                        console.log("  --nofiles              - Hide the files tab from this user.");
+                        console.log("  --noamt                - Hide the Intel AMT tab from this user.");
+                        break;
+                    }
+                    case 'removeuserfromdevicegroup': {
+                        console.log("Remove a user from a device group, Example usages:\r\n");
+                        console.log("  MeshCtrl RemoveuserFromDeviceGroup --id groupid --userid userid");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --userid [userid]      - The user identifier.");
                         break;
                     }
                     case 'broadcast': {
@@ -267,6 +313,31 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'addusertodevicegroup': {
+                var meshrights = 0;
+                if (args.fullrights) { meshrights = 0xFFFFFFFF; }
+                if (args.editgroup) { meshrights |= 1; }
+                if (args.manageusers) { meshrights |= 2; }
+                if (args.managedevices) { meshrights |= 4; }
+                if (args.remotecontrol) { meshrights |= 8; }
+                if (args.agentconsole) { meshrights |= 16; }
+                if (args.serverfiles) { meshrights |= 32; }
+                if (args.wakedevices) { meshrights |= 64; }
+                if (args.notes) { meshrights |= 128; }
+                if (args.desktopviewonly) { meshrights |= 256; }
+                if (args.noterminal) { meshrights |= 512; }
+                if (args.nofiles) { meshrights |= 1024; }
+                if (args.noamt) { meshrights |= 2048; }
+                if (args.limiteddesktop) { meshrights |= 4096; }
+                var op = { action: 'addmeshuser', meshid: args.id, usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'removeuserfromdevicegroup': {
+                var op = { action: 'removemeshuser', meshid: args.id, userid: args.userid, responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'broadcast': {
                 var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
@@ -309,6 +380,8 @@ function serverConnect() {
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
+            case 'addmeshuser': //
+            case 'removemeshuser': //
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
