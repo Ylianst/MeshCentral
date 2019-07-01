@@ -91,7 +91,7 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginpass mypassword");
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginkeyfile key.txt");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --json                - Show result as JSON.");
+                        console.log("  --json                 - Show result as JSON.");
                         break;
                     }
                     case 'userinfo': {
@@ -99,7 +99,7 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl UserInfo --loginuser myaccountname --loginpass mypassword");
                         console.log("  MeshCtrl UserInfo --loginuser myaccountname --loginkeyfile key.txt");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --json                - Show result as JSON.");
+                        console.log("  --json                 - Show result as JSON.");
                         break;
                     }
                     case 'listusers': {
@@ -108,9 +108,9 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ListUsers --json");
                         console.log("  MeshCtrl ListUsers --nameexists \"bob\"");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --idexists [id]       - Return 1 if id exists, 0 if not.");
-                        console.log("  --nameexists [name]   - Return id if name exists.");
-                        console.log("  --json                - Show result as JSON.");
+                        console.log("  --idexists [id]        - Return 1 if id exists, 0 if not.");
+                        console.log("  --nameexists [name]    - Return id if name exists.");
+                        console.log("  --json                 - Show result as JSON.");
                         break;
                     }
                     case 'listdevicegroups': {
@@ -118,36 +118,37 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ListDeviceGroups ");
                         console.log("  MeshCtrl ListDeviceGroups --json");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --idexists [id]       - Return 1 if id exists, 0 if not.");
-                        console.log("  --nameexists [name]   - Return id if name exists.");
-                        console.log("  --emailexists [email] - Return id if email exists.");
-                        console.log("  --json                - Show result as JSON.");
+                        console.log("  --idexists [id]        - Return 1 if id exists, 0 if not.");
+                        console.log("  --nameexists [name]    - Return id if name exists.");
+                        console.log("  --emailexists [email]  - Return id if email exists.");
+                        console.log("  --json                 - Show result as JSON.");
                         break;
                     }
                     case 'adduser': {
                         console.log("Add a new user account, Example usages:\r\n");
                         console.log("  MeshCtrl AddUser --user newaccountname --pass newpassword");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --user [name]         - New account name.");
-                        console.log("  --pass [password]     - New account password.");
-                        console.log("  --randompass          - Create account with a random password.");
+                        console.log("  --user [name]          - New account name.");
+                        console.log("  --pass [password]      - New account password.");
+                        console.log("  --randompass           - Create account with a random password.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --email [email]       - New account email address.");
-                        console.log("  --resetpass           - Request password reset on next login.");
-                        console.log("  --siteadmin           - Create the account as full site administrator.");
-                        console.log("  --manageusers         - Allow this account to manage server users.");
-                        console.log("  --fileaccess          - Allow this account to store server files.");
-                        console.log("  --serverupdate        - Allow this account to update the server.");
-                        console.log("  --locked              - This account will be locked.");
-                        console.log("  --nonewgroups         - Account will not be allowed to create device groups.");
-                        console.log("  --notools             - Account not see MeshCMD download links.");
+                        console.log("  --email [email]        - New account email address.");
+                        console.log("  --emailverified        - New account email is verified.");
+                        console.log("  --resetpass            - Request password reset on next login.");
+                        console.log("  --siteadmin            - Create the account as full site administrator.");
+                        console.log("  --manageusers          - Allow this account to manage server users.");
+                        console.log("  --fileaccess           - Allow this account to store server files.");
+                        console.log("  --serverupdate         - Allow this account to update the server.");
+                        console.log("  --locked               - This account will be locked.");
+                        console.log("  --nonewgroups          - Account will not be allowed to create device groups.");
+                        console.log("  --notools              - Account not see MeshCMD download links.");
                         break;
                     }
                     case 'removeuser': {
                         console.log("Delete a user account, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveUser --userid accountid");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --userid [id]         - Account identifier.");
+                        console.log("  --userid [id]          - Account identifier.");
                         break;
                     }
                     case 'adddevicegroup': {
@@ -155,10 +156,10 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl AddDeviceGroup --name newgroupname");
                         console.log("  MeshCtrl AddDeviceGroup --name newgroupname --desc description --amtonly");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --name [name]         - Name of the new group.");
+                        console.log("  --name [name]          - Name of the new group.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --desc [description]  - New group description.");
-                        console.log("  --amtonly             - New group is agent-less, Intel AMT only.");
+                        console.log("  --desc [description]   - New group description.");
+                        console.log("  --amtonly              - New group is agent-less, Intel AMT only.");
                         break;
                     }
                     case 'removedevicegroup': {
@@ -290,7 +291,7 @@ function serverConnect() {
                 if (args.notools) { siteadmin |= 128; }
                 if (args.randompass) { args.pass = getRandomAmtPassword(); }
                 var op = { action: 'adduser', username: args.user, pass: args.pass, responseid: 'meshctrl' };
-                if (args.email) { op.email = args.email; }
+                if (args.email) { op.email = args.email; if (args.emailverified) { op.emailVerified = true; } }
                 if (args.resetpass) { op.resetNextLogin = true; }
                 if (siteadmin != 0) { op.siteadmin = siteadmin; }
                 ws.send(JSON.stringify(op));

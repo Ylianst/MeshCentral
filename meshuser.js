@@ -1066,7 +1066,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var newuserid = 'user/' + domain.id + '/' + command.users[i].user.toLowerCase();
                                 var newuser = { type: 'user', _id: newuserid, name: command.users[i].user, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
-                                if (command.users[i].email != null) { newuser.email = command.users[i].email; } // Email
+                                if (command.users[i].email != null) { newuser.email = command.users[i].email; if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email
                                 if (command.users[i].resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                                 if ((command.users[i].groups != null) && (common.validateStrArray(command.users[i].groups, 1, 32))) { newuser.groups = command.users[i].groups; } // New account are automatically part of our groups.
 
@@ -1103,6 +1103,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var err = null, newusername, newuserid;
                     try {
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
+                        else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
                         else if (common.validateUsername(command.username, 1, 64) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
                         else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
@@ -1147,9 +1148,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
                             else if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
-                            if (command.email != null) { newuser.email = command.email; } // Email
+                            if (command.email != null) { newuser.email = command.email; if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
-                            if ((user.groups != null) && (user.groups.length > 0)) { newuser.groups = user.groups; } // New account are automatically part of our groups.
+                            
                             parent.users[newuserid] = newuser;
 
                             // Create a user, generate a salt and hash the password
