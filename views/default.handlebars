@@ -2813,8 +2813,8 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.<br /><br />";
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="32bit version of the MeshAgent">Windows (.exe)</a>');
-            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="64bit version of the MeshAgent">Windows x64 (.exe)</a>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="32bit version of the MeshAgent">Windows (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue('Mesh Agent', '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title="64bit version of the MeshAgent">Windows x64 (.exe)</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + EscapeHtml(mesh.name) + ' settings (.msh)</a>'); }
             x += "</div>";
 
@@ -2898,8 +2898,8 @@
             QV('aginsTypeDiv', v == 0);
 
             // Fix the links if needed
-            //Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
-            //Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
+            Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
             if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value; }
         }
 
@@ -4036,7 +4036,7 @@
 
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Notes", 2, showNotesEx, '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>Notes can be viewed and changed by other administrators.<span>', noteid);
+            setDialogMode(2, "Notes", 2, showNotesEx, '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>Device group notes can be viewed and changed by other device group administrators.<span>', noteid);
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
@@ -4346,7 +4346,7 @@
         }
 
         function meshCmdOsClick() {
-            var os = Q('aginsSelect').value, osn = '';
+            var os = Q('aginsSelect').value, osn = '', osurl = '';
             //Q('meshcmddownloadid').href = "meshagents?meshcmd=" + os;
             if (os == 3) { osn = 'MeshCmd (Win32 executable)'; }
             if (os == 4) { osn = 'MeshCmd (Win64 executable)'; }
@@ -4355,6 +4355,7 @@
             if (os == 16) { osn = 'MeshCmd (MacOS, 64bit)'; }
             if (os == 25) { osn = 'MeshCmd (Linux ARM, 32bit)'; }
             QH('meshcmddownloadid', osn);
+            Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os);
         }
 
         function p10showiconselector() {
