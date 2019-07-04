@@ -178,7 +178,7 @@ var CreateAmtRemoteTerminal = function (divid, options) {
                 _termstate = 0;
                 break;
             case 6: // ']' Code, xterm
-                const bx = b.charCodeAt(0);
+                var bx = b.charCodeAt(0);
                 if (b == ';') {
                     _escNumberPtr++;
                 } else if (bx == 7) {
