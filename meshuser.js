@@ -1509,6 +1509,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try {
                         // Delete a mesh and all computers within it
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors
