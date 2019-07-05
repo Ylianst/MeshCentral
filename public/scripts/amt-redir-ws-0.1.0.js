@@ -79,7 +79,7 @@ var CreateAmtRedirect = function (module, authCookie) {
                 // Chrome & Firefox (Draft)
                 fileReaderInuse = true;
                 fileReader.readAsBinaryString(new Blob([e.data]));
-            } else if (f.readAsArrayBuffer) {
+            } else if (fileReader.readAsArrayBuffer) {
                 // Chrome & Firefox (Spec)
                 fileReaderInuse = true;
                 fileReader.readAsArrayBuffer(e.data);
