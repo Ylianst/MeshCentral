@@ -378,16 +378,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'nodes':
                 {
-                    var links = [];
-                    if (command.meshid == null) {
-                        // Request a list of all meshes this user as rights to
-                        for (i in user.links) { links.push(i); }
-                    } else {
-                        // Request list of all nodes for one specific meshid
-                        meshid = command.meshid;
-                        if (common.validateString(meshid, 0, 128) == false) return;
-                        if (meshid.split('/').length == 0) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
-                        if (user.links[meshid] != null) { links.push(meshid); }
+                    var links = [], err = null;
+                    try {
+                        if (command.meshid == null) {
+                            // Request a list of all meshes this user as rights to
+                            for (i in user.links) { links.push(i); }
+                        } else {
+                            // Request list of all nodes for one specific meshid
+                            meshid = command.meshid;
+                            if (common.validateString(meshid, 0, 128) == false) { err = 'Invalid group id'; } else {
+                                if (meshid.split('/').length == 1) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                                if (user.links[meshid] != null) { links.push(meshid); } else { err = 'Invalid group id'; }
+                            }
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
                     }
 
                     // Request a list of all nodes
@@ -429,7 +438,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             r[meshid].push(docs[i]);
                         }
-                        try { ws.send(JSON.stringify({ action: 'nodes', nodes: r, tag: command.tag })); } catch (ex) { }
+                        try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
                     });
                     break;
                 }
@@ -2222,22 +2231,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'inviteAgent':
                 {
-                    if ((parent.parent.mailserver == null) || (args.lanonly == true)) return; // This operation requires the email server
-                    if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) return; // Server name must be configured
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check meshid
-                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                    var err = null, mesh = null;
+                    try
+                    {
+                        if ((parent.parent.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
+                        else if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) { err = 'Unsupported feature'; } // Server name must be configured
+                        else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
+                        else {
+                            if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                            if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group identifier'; } // Invalid domain, operation only valid for current domain
+                            else if (common.validateString(command.email, 4, 1024) == false) { err = 'Invalid email'; } // Check email
+                            else if (command.email.split('@').length != 2) { err = 'Invalid email'; } // Check email
+                            else {
+                                mesh = parent.meshes[command.meshid];
+                                if (mesh == null) { err = 'Unknown device group'; } // Check if the group exists
+                                else if (mesh.mtype != 2) { err = 'Invalid group type'; } // Check if this is the correct group type
+                                else if (mesh.links[user._id] == null) { err = 'Not allowed'; } // Check if this user has rights to do this
+                            }
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
 
-                    // Get the mesh
-                    mesh = parent.meshes[command.meshid];
-                    if (mesh) {
-                        if (mesh.mtype != 2) return; // This operation is only allowed for mesh type 2, agent mesh
-
-                        // Check if this user has rights to do this
-                        //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 4) == 0)) return;
-
-                        // Perform email invitation
-                        parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags, command.expire);
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
                     }
+
+                    // Perform email invitation
+                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags, command.expire);
+
+                    // Send a response if needed
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'setNotes':

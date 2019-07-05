@@ -156,6 +156,7 @@ body {
     -ms-grid-column: 1;
     -ms-grid-row: 2;
     -ms-grid-row-span: 3;
+    height: 100%;
     /* height: calc(100vh - 66px); */
     width: 90px;
     z-index: 1000;

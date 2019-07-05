@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -11,26 +11,29 @@ if (args['_'].length == 0) {
     console.log("Information at: https://meshcommander.com/meshcentral");
     console.log("No action specified, use MeshCtrl like this:\r\n\r\n  meshctrl [action] [arguments]\r\n");
     console.log("Supported actions:");
-    console.log("  Help [action]              - Get help on an action.");
-    console.log("  ServerInfo                 - Show server information.");
-    console.log("  UserInfo                   - Show user information.");
-    console.log("  ListUsers                  - List user accounts.");
-    console.log("  ListDeviceGroups           - List device groups.");
-    console.log("  AddUser                    - Create a new user account.");
-    console.log("  RemoveUser                 - Delete a user account.");
-    console.log("  AddDeviceGroup             - Create a new device group.");
-    console.log("  RemoveDeviceGroup          - Delete a device group.");
-    console.log("  AddUserToDeviceGroup       - Add a user to a device group.");
-    console.log("  RemoveUserFromDeviceGroup  - Remove a user from a device group.");
-    console.log("  Broadcast                  - Display a message to all online users.");
+    console.log("  Help [action]             - Get help on an action.");
+    console.log("  ServerInfo                - Show server information.");
+    console.log("  UserInfo                  - Show user information.");
+    console.log("  ListUsers                 - List user accounts.");
+    console.log("  ListDevices               - List devices.");
+    console.log("  ListDeviceGroups          - List device groups.");
+    console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
+    console.log("  AddUser                   - Create a new user account.");
+    console.log("  RemoveUser                - Delete a user account.");
+    console.log("  AddDeviceGroup            - Create a new device group.");
+    console.log("  RemoveDeviceGroup         - Delete a device group.");
+    console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
+    console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
+    console.log("  SendInviteEmail           - Send an agent install invitation email.");
+    console.log("  Broadcast                 - Display a message to all online users.");
     console.log("\r\nSupported login arguments:");
-    console.log("  --url [wss://server]       - Server url, wss://localhost:443 is default.");
-    console.log("  --loginuser [username]     - Login username, admin is default.");
-    console.log("  --loginpass [password]     - Login password.");
-    console.log("  --token [number]           - 2nd factor authentication token.");
-    console.log("  --loginkey [hex]           - Server login key in hex.");
-    console.log("  --loginkeyfile [file]      - File containing server login key in hex.");
-    console.log("  --domain [domainid]        - Domain id, default is empty.");
+    console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
+    console.log("  --loginuser [username]    - Login username, admin is default.");
+    console.log("  --loginpass [password]    - Login password.");
+    console.log("  --token [number]          - 2nd factor authentication token.");
+    console.log("  --loginkey [hex]          - Server login key in hex.");
+    console.log("  --loginkeyfile [file]     - File containing server login key in hex.");
+    console.log("  --domain [domainid]       - Domain id, default is empty.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();
@@ -43,6 +46,12 @@ if (args['_'].length == 0) {
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listdevicegroups': { ok = true; break; }
+        case 'listdevices': { ok = true; break; }
+        case 'listusersofdevicegroup': {
+            if (args.id == null) { console.log("Missing group id, use --id [groupid]"); }
+            else { ok = true; }
+            break;
+        }
         case 'addusertodevicegroup': {
             if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
             else if (args.id == null) { console.log("Add user to group missing group id, use --id [groupid]"); }
@@ -81,11 +90,25 @@ if (args['_'].length == 0) {
             else { ok = true; }
             break;
         }
+        case 'sendinviteemail': {
+            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            else if (args.email == null) { console.log("Device email is missing, use --email [email]"); }
+            else { ok = true; }
+            break;
+        }
         case 'help': {
             if (args['_'].length < 2) {
                 console.log("Get help on an action. Type:\r\n\r\n  help [action]\r\n\r\nPossible actions are: " + possibleCommands.join(', ') + '.');
             } else {
                 switch (args['_'][1].toLowerCase()) {
+                    case 'sendinviteemail': {
+                        console.log("Send invitation email with instructions on how to install the mesh agent for a specific device group. Example usage:\r\n");
+                        console.log("  MeshCtrl SendInviteEmail --id devicegroupid --email user@sample.com");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --email [email]        - Email address.");
+                        break;
+                    }
                     case 'serverinfo': {
                         console.log("Get information on the MeshCentral server, Example usages:\r\n");
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginpass mypassword");
@@ -121,6 +144,25 @@ if (args['_'].length == 0) {
                         console.log("  --idexists [id]        - Return 1 if id exists, 0 if not.");
                         console.log("  --nameexists [name]    - Return id if name exists.");
                         console.log("  --emailexists [email]  - Return id if email exists.");
+                        console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
+                    case 'listdevices': {
+                        console.log("List devices, Example usages:\r\n");
+                        console.log("  MeshCtrl ListDevices");
+                        console.log("  MeshCtrl ListDevices -id [groupid] --json");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --id [groupid]         - Filter by device group identifier.");
+                        console.log("  --count                - Only return the device count.");
+                        console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
+                    case 'listusersofdevicegroup': {
+                        console.log("List users that have permissions for a given device group, Example usage:\r\n");
+                        console.log("  MeshCtrl ListUserOfDeviceGroup ");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
                         console.log("  --json                 - Show result as JSON.");
                         break;
                     }
@@ -280,6 +322,15 @@ function serverConnect() {
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users' })); break; }
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
+            case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
+            case 'listdevices': {
+                if (args.id) {
+                    ws.send(JSON.stringify({ action: 'nodes', meshid: args.id, responseid: 'meshctrl' })); break;
+                } else {
+                    ws.send(JSON.stringify({ action: 'meshes' }));
+                    ws.send(JSON.stringify({ action: 'nodes', responseid: 'meshctrl' })); break;
+                }
+            }
             case 'adduser': {
                 var siteadmin = 0;
                 if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }
@@ -339,6 +390,11 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'sendinviteemail': {
+                var op = { action: "inviteAgent", meshid: args.id, email: args.email, name: "", os: "0", responseid: 'meshctrl' }
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'broadcast': {
                 var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
@@ -383,6 +439,7 @@ function serverConnect() {
             case 'deletemesh': // REMOVEDEVICEGROUP
             case 'addmeshuser': //
             case 'removemeshuser': //
+            case 'inviteAgent':
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
@@ -410,21 +467,95 @@ function serverConnect() {
                 process.exit();
                 break;
             }
+            case 'nodes': {
+                if ((settings.cmd == 'listdevices') && (data.responseid == 'meshctrl')) {
+                    if ((data.result != null) && (data.result != 'ok')) {
+                        console.log(data.result);
+                    } else {
+                        if (args.count) {
+                            // Return how many devices are in this group
+                            var nodes = [];
+                            for (var i in data.nodes) { var devicesInMesh = data.nodes[i]; for (var j in devicesInMesh) { nodes.push(devicesInMesh[j]); } }
+                            console.log(nodes.length);
+                        } else if (args.json) {
+                            // Return all devices in JSON format
+                            var nodes = [];
+                            for (var i in data.nodes) { var devicesInMesh = data.nodes[i]; for (var j in devicesInMesh) { nodes.push(devicesInMesh[j]); } }
+                            console.log(JSON.stringify(nodes, ' ', 2));
+                        } else {
+                            // Display the list of nodes in text format
+                            for (var i in data.nodes) {
+                                var devicesInMesh = data.nodes[i];
+                                if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name + '\"'); }
+                                console.log('id, name, icon, conn, pwr, ip\r\n-----------------------------');
+                                for (var j in devicesInMesh) {
+                                    var n = devicesInMesh[j];
+                                    console.log(n._id.split('/')[2] + ', \"' + n.name + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
+                                }
+                            }
+                        }
+                    }
+                    process.exit();
+                }
+                break;
+            }
             case 'meshes': { // LISTDEVICEGROUPS
-                if (args.json) {
-                    console.log(JSON.stringify(data.meshes, ' ', 2));
-                } else {
-                    if (args.idexists) { for (var i in data.meshes) { const u = data.meshes[i]; if ((u._id == args.idexists) || (u._id.split('/')[2] == args.idexists)) { console.log('1'); process.exit(); return; } } console.log('0'); process.exit(); return; }
-                    if (args.nameexists) { for (var i in data.meshes) { const u = data.meshes[i]; if (u.name == args.nameexists) { console.log(u._id); process.exit(); return; } } process.exit(); return; }
+                if (settings.cmd == 'listdevices') {
+                    // Store the list of device groups for later use
+                    settings.xmeshes = {}
+                    for (var i in data.meshes) { settings.xmeshes[data.meshes[i]._id] = data.meshes[i]; }
+                } else if (settings.cmd == 'listdevicegroups') {
+                    if (args.json) {
+                        console.log(JSON.stringify(data.meshes, ' ', 2));
+                    } else {
+                        if (args.idexists) { for (var i in data.meshes) { const u = data.meshes[i]; if ((u._id == args.idexists) || (u._id.split('/')[2] == args.idexists)) { console.log('1'); process.exit(); return; } } console.log('0'); process.exit(); return; }
+                        if (args.nameexists) { for (var i in data.meshes) { const u = data.meshes[i]; if (u.name == args.nameexists) { console.log(u._id); process.exit(); return; } } process.exit(); return; }
 
-                    console.log('id, name\r\n---------------');
+                        console.log('id, name\r\n---------------');
+                        for (var i in data.meshes) {
+                            const m = data.meshes[i];
+                            var t = "\"" + m._id.split('/')[2] + "\", \"" + m.name + "\"";
+                            console.log(t);
+                        }
+                    }
+                    process.exit();
+                } else if (settings.cmd == 'listusersofdevicegroup') {
                     for (var i in data.meshes) {
                         const m = data.meshes[i];
-                        var t = "\"" + m._id.split('/')[2] + "\", \"" + m.name + "\"";
-                        console.log(t);
+                        var mid = m._id.split('/')[2];
+                        if (mid == args.id) {
+                            if (args.json) {
+                                console.log(JSON.stringify(m.links, ' ', 2));
+                            } else {
+                                console.log('userid, rights\r\n---------------');
+                                for (var l in m.links) {
+                                    var rights = m.links[l].rights;
+                                    var rightsstr = [];
+                                    if (rights == 4294967295) { rightsstr = ['FullAdministrator']; } else {
+                                        if (rights & 1) { rightsstr.push('EditMesh'); }
+                                        if (rights & 2) { rightsstr.push('ManageUsers'); }
+                                        if (rights & 4) { rightsstr.push('ManageComputers'); }
+                                        if (rights & 8) { rightsstr.push('RemoteControl'); }
+                                        if (rights & 16) { rightsstr.push('AgentConsole'); }
+                                        if (rights & 32) { rightsstr.push('ServerFiles'); }
+                                        if (rights & 64) { rightsstr.push('WakeDevice'); }
+                                        if (rights & 128) { rightsstr.push('SetNotes'); }
+                                        if (rights & 256) { rightsstr.push('RemoteViewOnly'); }
+                                        if (rights & 512) { rightsstr.push('NoTerminal'); }
+                                        if (rights & 1024) { rightsstr.push('NoFiles'); }
+                                        if (rights & 2048) { rightsstr.push('NoAMT'); }
+                                        if (rights & 4096) { rightsstr.push('DesktopLimitedInput'); }
+                                    }
+                                    console.log(l.split('/')[2] + ', ' + rightsstr.join(', '));
+                                }
+                            }
+                            process.exit();
+                            return;
+                        }
                     }
+                    console.log('Group id not found');
+                    process.exit();
                 }
-                process.exit();
                 break;
             }
             case 'close': {
