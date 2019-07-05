@@ -473,7 +473,7 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
-                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event)></select>&nbsp;
+                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
@@ -944,7 +944,7 @@
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
         var sessionActivity = Date.now();
-
+        
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
         var p12TermConsoleMsgTimer = null;
@@ -1006,6 +1006,8 @@
             document.onkeypress = ondockeypress;
             document.onkeydown = ondockeydown;
             document.onkeyup = ondockeyup;
+            //window.addEventListener("focus", ondocfocus, false);
+            window.addEventListener("blur", ondocblur, false);
             window.onresize = function () { masterUpdate(512); }
             setTimeout("masterUpdate(512)", 200);
 
@@ -2163,6 +2165,9 @@
             if (Q('viewselect').value < 3) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (Q('viewselect').value == 3) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
         }
+
+        //function ondocfocus() { }
+        function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleReleaseKeys(); } }
 
         // Highlights the device being hovered
         function devMouseHover(element, over) {
@@ -4995,7 +5000,7 @@
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
         var deskPreferedStickyDisplay = 0;
-        function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); }
+        function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); Q('termdisplays').blur(); }
 
         // Double click detection. This is important for MacOS.
         var dblClickDetectArgs = { t:0, x:0, y:0 };
