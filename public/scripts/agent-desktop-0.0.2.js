@@ -32,6 +32,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.firstUpKeys = [];
     obj.stopInput = false;
     obj.localKeyMap = true;
+    obj.altPressed = false;
+    obj.ctrlPressed = false;
+    obj.shiftPressed = false;
 
     obj.sessionid = 0;
     obj.username;
@@ -394,6 +397,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             // Older browser support this.
             var kc = event.keyCode;
             if (kc == 0x3B) { kc = 0xBA; } // Fix the ';' key
+            else if (kc == 173) { kc = 189; } // Fix the '-' key for Firefox
+            else if (kc == 61) { kc = 187; } // Fix the '=' key for Firefox
             obj.SendKeyMsgKC(action, kc);
         }
     }
@@ -531,9 +536,27 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.firstUpKeys.length < 5) {
             obj.firstUpKeys.push(e.keyCode);
             if ((obj.firstUpKeys.length == 5)) { var j = obj.firstUpKeys.join(','); if ((j == '16,17,91,91,16') || (j == '16,17,18,91,92')) { obj.stopInput = true; } }
-        } return obj.xxKeyUp(e);
+        }
+        if (e.keyCode == 16) { obj.shiftPressed = false; }
+        if (e.keyCode == 17) { obj.ctrlPressed = false; }
+        if (e.keyCode == 18) { obj.altPressed = false; }
+        return obj.xxKeyUp(e);
     }
-    obj.handleKeyDown = function (e) { if (obj.stopInput == true || desktop.State != 3) return false; return obj.xxKeyDown(e); }
+    obj.handleKeyDown = function (e) {
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        if (e.keyCode == 16) { obj.shiftPressed = true; }
+        if (e.keyCode == 17) { obj.ctrlPressed = true; }
+        if (e.keyCode == 18) { obj.altPressed = true; }
+        return obj.xxKeyDown(e);
+    }
+
+    // Release the CTRL, ALT, SHIFT keys if they are pressed.
+    obj.handleReleaseKeys = function () {
+        if (obj.shiftPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 16); } // Shift
+        if (obj.ctrlPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 17); } // Ctrl
+        if (obj.altPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 18); } // Alt
+        obj.shiftPressed = obj.ctrlPressed = obj.altPressed = false;
+    }
 
     // Mouse handlers
     obj.mousedblclick = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDblClick(e); }
