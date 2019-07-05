@@ -254,7 +254,7 @@
     <Content Include="public\styles\font-awesome\scss\_stacked.scss" />
     <Content Include="public\styles\font-awesome\scss\_variables.scss" />
     <Content Include="public\styles\style.css" />
-    <Content Include="readme.txt" />
+    <Content Include="readme.md" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
     <Content Include="views\agentinvite.handlebars" />
