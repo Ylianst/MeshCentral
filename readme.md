@@ -3,7 +3,7 @@ MeshCentral
 
 For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
 
-Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the (installation guide)[http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf] can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu or Raspberry Pi.
+Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu or Raspberry Pi.
 
 This is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create a mesh (a group of computers) and then download and install a mesh agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
@@ -28,7 +28,7 @@ Then, install MeshCentral by creating an empty folder and using npm to download 
 	npm install meshcentral
 ```
 
-To run MeshCentral you may need to use "nodejs" instead of "node" on Linux.
+To run MeshCentral you may need to use `nodejs` instead of `node` on Linux.
 
 ```
 	cd ./node_modules/meshcentral
@@ -42,7 +42,7 @@ You can launch MeshCentral with no arguments to start it in LAN mode. In LAN mod
 	node meshcentral --cert 1.2.3.4
 ```
 
-On Windows, you can install MeshCentral to run as a background service, just run it using "--install". Once running, open a browser and enter the server url. By default, a TLS self-signed certificate is created so you will need to ignore the security warning given by your browser. A link to the root certificate that can be loaded into your browser is provided on the website so you can make the warnings go away. You can run without TLS security using --notls, but this is not recommended.
+On Windows, you can install MeshCentral to run as a background service, just run it using `--install`. Once running, open a browser and enter the server url. By default, a TLS self-signed certificate is created so you will need to ignore the security warning given by your browser. A link to the root certificate that can be loaded into your browser is provided on the website so you can make the warnings go away. You can run without TLS security using --notls, but this is not recommended.
 
 
 Update and uninstall
@@ -84,7 +84,7 @@ Command line arguments on any platform:
 Configuration File
 ------------------
 
-As an alternative to using command line arguments, you can create a ./node-module/meshcentral-data/config.json file, for example:
+As an alternative to using command line arguments, you can create a `./node-module/meshcentral-data/config.json` file, for example:
 
 ```json
 	{
@@ -120,7 +120,7 @@ As an alternative to using command line arguments, you can create a ./node-modul
 	}
 ```
 
-The "settings" part are for command line arguments. For example, instead of running with "--port 8080", you can put "port: 8080" in the settings portion of the config.json file. In addition, you can use the config.json file to create multi-tenancy servers. In the domains section, you can set options for the default domain ("") in addition to creating new domains.
+The `settings` part are for command line arguments. For example, instead of running with `--port 8080`, you can put `"port": 8080` in the `settings` portion of the `config.json` file. In addition, you can use the `config.json` file to create multi-tenancy servers. In the domains section, you can set options for the default domain (`""`) in addition to creating new domains.
 
 For the configuration above, the root domain and two other domains will be accessible like this:
 
@@ -130,14 +130,14 @@ For the configuration above, the root domain and two other domains will be acces
 	https://servername:8080/customer2
 ```
 
-When you setup many domains, the server considers each domain separately. Each domain has separate user accounts, administrators, etc. Within each domain, you can put a "title" and "title2" as strings that will show up at the top of the web site. "userQuota" indicates the default maximum amount of data a user can have in it's "My Files" folder. "meshQuota" is the maximum total size of files in each mesh folder. "newAccounts" indicates if new accounts can be created from the login page, 0 if not allowed, 1 if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
+When you setup many domains, the server considers each domain separately. Each domain has separate user accounts, administrators, etc. Within each domain, you can put a `title` and `title2` as strings that will show up at the top of the web site. `userQuota` indicates the default maximum amount of data a user can have in it's "My Files" folder. `meshQuota` is the maximum total size of files in each mesh folder. `newAccounts` indicates if new accounts can be created from the login page, `0` if not allowed, `1` if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
 
-MeshCentral also supports server peering, add the "peers" section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the "serverId" value is optional. If it's not specified, the computer hostname is used instead.
+MeshCentral also supports server peering, add the `peers` section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the `serverId` value is optional. If it's not specified, the computer hostname is used instead.
 
 Other Notes
 -----------
 
-For Windows users, if you install MeshCentral globally using "npm install meshcentral -g", it will not be able to run correctly as a Windows Service. It will immediately stop each time you start it.
+For Windows users, if you install MeshCentral globally using `npm install meshcentral -g`, it will not be able to run correctly as a Windows Service. It will immediately stop each time you start it.
 
 For more information on MeshCentral or other tools, visit [MeshCommander.com](http://meshcommander.com).
 
@@ -145,18 +145,14 @@ For more information on MeshCentral or other tools, visit [MeshCommander.com](ht
 Tutorials
 ---------
 
-How to install MeshCentral2 in a few minutes.
-
+How to install MeshCentral2 in a few minutes.  
 [![MeshCentral2 - Installation](https://img.youtube.com/vi/LSiWuu71k_U/mqdefault.jpg)](https://www.youtube.com/watch?v=LSiWuu71k_U)
 
-
-Demonstration of MeshCentral2 usages and more tips & tricks.
-
+Demonstration of MeshCentral2 usages and more tips & tricks.  
 [![MeshCentral2 - Usages](https://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](https://www.youtube.com/watch?v=1E3NqGJzYds)
 
 
-How to setup Intel&reg; AMT client initiated remote access (CIRA) to connect to MeshCentral2.
-
+How to setup Intel&reg; AMT client initiated remote access (CIRA) to connect to MeshCentral2.  
 [![MeshCentral2 - Intel AMT CIRA](https://img.youtube.com/vi/rA2KHa2jkO0/mqdefault.jpg)](https://www.youtube.com/watch?v=rA2KHa2jkO0)
 
 
