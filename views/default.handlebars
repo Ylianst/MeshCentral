@@ -987,6 +987,27 @@
                 //    QV('page_leftbar', false);
                 //    QS('page_content').left = '0px';
                 //}
+
+                // Fix the main grid to zero-height elements we want to hide.
+                QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+
+                // Adjust height of remote desktop, files and Intel AMT
+                var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
+                QS('p3users')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
+                QS('p3events')['height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
+                QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                QS('p5filetable')['height'] = 'calc(100vh - ' + (160 + xh) + 'px)';
+                QS('p13filetable')['height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
+                QS('serverMainStats')['height'] = 'calc(100vh - ' + (110 + xh) + 'px)';
+                QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (110 + xh) + 'px)';
+                QS('xdevices')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
+                QS('xdevicesmap')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
+                QS('p15agentConsole')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+                QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+                QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
+                QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
             }
 
             // We are looking at a single device, remove all the back buttons
