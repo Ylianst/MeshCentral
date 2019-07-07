@@ -58,16 +58,16 @@
                                             <td><input id=password type=password maxlength=256 name=password autocomplete=off onchange=validateLogin(2) onkeyup=validateLogin(2,event) /></td>
                                         </tr>
                                         <tr>
-                                            <td><div id=showPassHintLink style=display:none><a onclick=showPassHint() style="cursor:pointer">Show Hint</a></div></td>
+                                            <td><div id=showPassHintLink style=display:none><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div></td>
                                             <td align=right><input id=loginButton type=submit value="Log In" disabled="disabled" /></td>
                                         </tr>
                                     </table>
                                     <div id="hrAccountDiv" style="display:none"><hr /></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        Forgot username/password? <a onclick=xgo(3) style=cursor:pointer>Reset account</a>.
+                                        Forgot username/password? <a onclick="return xgo(3,event);" href="#" style=cursor:pointer>Reset account</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
-                                        Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
+                                        Don&#39;t have an account? <a onclick="return xgo(2,event);" href="#" style=cursor:pointer>Create one</a>.
                                     </div>
                                     <input id=loginformargs name="urlargs" type="hidden" value="" />
                                 </form>
@@ -113,7 +113,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                                     <input id=createformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
@@ -137,7 +137,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                                     <input id=resetformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
@@ -160,7 +160,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                                     <input id=tokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
@@ -183,7 +183,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                                     <input id=resettokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
@@ -213,7 +213,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <hr /><a onclick=xgo(1) style=cursor:pointer>Back to login</a>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
                                     <input id=resetpasswordformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
@@ -377,11 +377,13 @@
             userInterfaceSelectMenu();
         }
 
-        function showPassHint() {
+        function showPassHint(e) {
             messagebox("Password Hint", passhint);
+            haltEvent(e);
+            return false;
         }
 
-        function xgo(x) {
+        function xgo(x, e) {
             QV('message1', false);
             QV('message2', false);
             QV('message3', false);
@@ -389,6 +391,8 @@
             QV('message5', false);
             QV('message6', false);
             go(x);
+            haltEvent(e);
+            return false;
         }
 
         function go(x) {
@@ -413,7 +417,7 @@
             var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
             QE('loginButton', ok);
             setDialogMode(0);
-            if ((e != null) && (e.keyCode == 13)) { if (box == 1) { Q('password').focus(); } else if (box == 2) { Q('loginButton').click(); } }
+            if ((e != null) && (e.keyCode == 13)) { if ((box == 1) && (Q('username').value != '')) { Q('password').focus(); } else if ((box == 2) && (Q('password').value != '')) { Q('loginButton').click(); } }
             if (e != null) { haltEvent(e); }
         }
 
@@ -460,11 +464,12 @@
                 }
             }
             if ((e != null) && (e.keyCode == 13)) {
-                if (box == 1) { Q('aemail').focus(); }
-                if (box == 2) { Q('apassword1').focus(); }
-                if (box == 3) { Q('apassword2').focus(); }
-                if (box == 4) { Q('apasswordhint').focus(); }
-                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { Q('createButton').click(); } }
+
+                if ((box == 1) && userok) { Q('aemail').focus(); }
+                if ((box == 2) && emailok) { Q('apassword1').focus(); }
+                if ((box == 3) && pass1ok) { Q('apassword2').focus(); }
+                if ((box == 4) && pass2ok) { if (passRequirements.hint === true) { Q('apasswordhint').focus(); } else { box = 5; } }
+                if (box == 5) { if (newAccountPass == 1) { Q('anewaccountpass').focus(); } else { box = 6; } }
                 if (box == 6) { Q('createButton').click(); }
             }
             if (e != null) { haltEvent(e); }
