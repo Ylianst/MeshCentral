@@ -243,7 +243,7 @@
                                 <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
                                     <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
-                                    <div style="margin-top:5px"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></div>
+                                    <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
                                 </div>
@@ -607,6 +607,7 @@
 
             window.onresize = center;
             center();
+            QV('changeEmailId', (features & 0x200000) == 0);
             QH('p1message', 'Connecting...');
             go(1);
 

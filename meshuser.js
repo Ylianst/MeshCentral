@@ -850,6 +850,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changeemail':
                 {
+                    // If the email is the username, this command is not allowed.
+                    if (domain.usernameisemail) return;
+
                     // Change our own email address
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateEmail(command.email, 1, 256) == false) return;
@@ -1049,7 +1052,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (!Array.isArray(command.users)) break;
                     var userCount = 0;
                     for (var i in command.users) {
-                        if (common.validateUsername(command.users[i].user, 1, 64) == false) break; // Username is between 1 and 64 characters, no spaces
+                        if (domain.usernameisemail) { if (command.users[i].email) { command.users[i].user = command.users[i].email; } else { command.users[i].email = command.users[i].user; } } // If the email is the username, set this here.
+                        if (common.validateUsername(command.users[i].user, 1, 256) == false) break; // Username is between 1 and 64 characters, no spaces
                         if ((command.users[i].user == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name
                         if (common.validateString(command.users[i].pass, 1, 256) == false) break; // Password is between 1 and 256 characters
                         if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
@@ -1108,12 +1112,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'adduser':
                 {
+                    // If the email is the username, set this here.
+                    if (domain.usernameisemail) { if (command.email) { command.username = command.email; } else { command.email = command.username; } }
+
                     // Add a new user account
                     var err = null, newusername, newuserid;
                     try {
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
                         else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
-                        else if (common.validateUsername(command.username, 1, 64) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
+                        else if (common.validateUsername(command.username, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
                         else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
                         else if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) { err = 'Invalid password'; } // Password does not meet requirements
@@ -1204,8 +1211,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) return;
                             }
 
-                            // Validate input
-                            if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                            // Validate and change email
+                            if (domain.usernameisemail !== true) {
+                                if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                            }
 
                             // Make changes
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
