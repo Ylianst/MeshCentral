@@ -50,7 +50,7 @@
                                     </div>
                                     <table>
                                         <tr>
-                                            <td align=right width=100>Username:</td>
+                                            <td id=loginusername align=right width=100>Username:</td>
                                             <td><input id=username type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
                                         </tr>
                                         <tr>
@@ -64,7 +64,7 @@
                                     </table>
                                     <div id="hrAccountDiv" style="display:none"><hr /></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        Forgot username/password? <a onclick="return xgo(3,event);" href="#" style=cursor:pointer>Reset account</a>.
+                                        <span id="resetAccountSpan">Forgot username/password?</span> <a onclick="return xgo(3,event);" href="#" style=cursor:pointer>Reset account</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Don&#39;t have an account? <a onclick="return xgo(2,event);" href="#" style=cursor:pointer>Create one</a>.
@@ -82,7 +82,7 @@
                                     </div>
                                     <div id="passwordPolicyCallout" style="display:none"></div>
                                     <table>
-                                        <tr>
+                                        <tr id="nuUserRow">
                                             <td id="nuUser" align=right width=100>Username:</td>
                                             <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                                         </tr>
@@ -290,6 +290,12 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
+            if (features & 0x200000) { // Email is username
+                QH('loginusername', 'Email:');
+                QH('resetAccountSpan', 'Forgot password?');
+                QV('nuUserRow', false);
+            }
+
             if (nightMode) { QC('body').add('night'); }
 
             QV('createPanelHint', passRequirements.hint === true);
@@ -406,7 +412,7 @@
             QV('resettokenpanel', x == 5);
             QV('resetpasswordpanel', x == 6);
             if (x == 1) { Q('username').focus(); }
-            if (x == 2) { Q('ausername').focus(); }
+            if (x == 2) { if (features & 0x200000) { Q('aemail').focus(); } else { Q('ausername').focus(); } } // Email is username
             if (x == 3) { Q('remail').focus(); }
             if (x == 4) { Q('tokenInput').focus(); }
             if (x == 5) { Q('resetTokenInput').focus(); }
@@ -423,7 +429,8 @@
 
         function validateCreate(box, e) {
             setDialogMode(0);
-            var userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1);
+            var userok = false;
+            if (features & 0x200000) { userok = true; } else { userok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1); }
             var emailok = (validateEmail(Q('aemail').value) == true);
             var pass1ok = (Q('apassword1').value.length > 0);
             var pass2ok = (Q('apassword2').value.length > 0) && (Q('apassword2').value == Q('apassword1').value);

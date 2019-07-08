@@ -53,7 +53,7 @@
                                     </div>
                                     <table>
                                         <tr>
-                                            <td align=right width=100>Username:</td>
+                                            <td id=loginusername align=right width=100>Username:</td>
                                             <td><input id=username type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
                                         </tr>
                                         <tr>
@@ -67,7 +67,7 @@
                                     </table>
                                     <div id="hrAccountDiv" style="display:none"><hr /></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        Forgot user/password? <a onclick=xgo(3) style=cursor:pointer>Reset account</a>.
+                                        <span id="resetAccountSpan">Forgot user/password?</span> <a onclick=xgo(3) style=cursor:pointer>Reset account</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
@@ -86,7 +86,7 @@
                                         </div>
                                         <div id="passwordPolicyCallout" style="left:-5px;top:10px;width:100px;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
                                         <table>
-                                            <tr>
+                                            <tr id="nuUserRow">
                                                 <td align=right width=100>Username:</td>
                                                 <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                                             </tr>
@@ -289,6 +289,12 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
+            if (features & 0x200000) { // Email is username
+                QH('loginusername', 'Email:');
+                QH('resetAccountSpan', 'Forgot password?');
+                QV('nuUserRow', false);
+            }
+
             QV('createPanelHint', passRequirements.hint === true);
             QV('resetpasswordpanelHint', passRequirements.hint === true);
 
@@ -391,7 +397,7 @@
             QV('resettokenpanel', x == 5);
             QV('resetpasswordpanel', x == 6);
             if (x == 1) { Q('username').focus(); }
-            if (x == 2) { Q('ausername').focus(); }
+            if (x == 2) { if (features & 0x200000) { Q('aemail').focus(); } else { Q('ausername').focus(); } } // Email is username
             if (x == 3) { Q('remail').focus(); }
             if (x == 4) { Q('tokenInput').focus(); }
             if (x == 5) { Q('resetTokenInput').focus(); }
@@ -408,7 +414,9 @@
 
         function validateCreate(box,e) {
             setDialogMode(0);
-            var ok = ((Q('ausername').value.length > 0) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1) && (Q('ausername').value.indexOf(' ') == -1) && (validateEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
+            var ok = false;
+            if (features & 0x200000) { ok = true; } else { ok = (Q('ausername').value.length > 0) && (Q('ausername').value.indexOf(' ') == -1) && (Q('ausername').value.indexOf('"') == -1) && (Q('ausername').value.indexOf(',') == -1); }
+            ok &= ((validateEmail(Q('aemail').value) == true) && (Q('apassword1').value.length > 0) && (Q('apassword2').value == Q('apassword1').value));
             if ((newAccountPass == 1) && (Q('anewaccountpass').value.length == 0)) { ok = false; }
             if (Q('apassword1').value == '') {
                 QH('passWarning', '');

@@ -740,6 +740,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
+        // If the email is the username, set this here.
+        if (domain.usernameisemail) { req.body.username = req.body.email; }
+
         // Check if we are allowed to create new users using the login screen
         var domainUserCount = -1;
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) {
@@ -1354,6 +1357,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
             if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
             if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
+            if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
@@ -1414,6 +1418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         var features = 0;
         if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
+        if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         var loginmode = req.session.loginmode;
         delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.

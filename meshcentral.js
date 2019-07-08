@@ -198,7 +198,11 @@ function CreateMeshCentralServer(config, args) {
         xprocess.stderr.on('data', function (data) {
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
-            try { obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + obj.currentVer + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n'); } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
+            try {
+                var errlogpath = null;
+                if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
+                obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + obj.currentVer + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
+            } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
         });
         xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     };
