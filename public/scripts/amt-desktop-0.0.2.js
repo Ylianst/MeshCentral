@@ -49,9 +49,10 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.lastKeepAlive = Date.now();
     // ###END###{DesktopInband}
 
-    // ###BEGIN###{DesktopFocus}
+    obj.mNagleTimer = null; // Mouse motion slowdown timer
     obj.mx = 0; // Last mouse x position
     obj.my = 0; // Last mouse y position
+    // ###BEGIN###{DesktopFocus}
     obj.ox = -1; // Old mouse x position
     obj.oy = -1; // Old mouse y position
     obj.focusmode = 0;
@@ -836,10 +837,10 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     // RFB "PointerEvent" and mouse handlers
     obj.mousedblclick = function (e) { }
-    obj.mousedown = function (e) { obj.buttonmask |= (1 << e.button); return obj.mousemove(e); }
-    obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e); }
-    obj.mousemove = function (e) {
-        if (obj.state != 4) return true;
+    obj.mousedown = function (e) { obj.buttonmask |= (1 << e.button); return obj.mousemove(e, 1); }
+    obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e, 1); }
+    obj.mousemove = function (e, force) {
+        if (obj.state < 4) return true;
         var ScaleFactorHeight = (obj.canvas.canvas.height / Q(obj.canvasid).offsetHeight);
         var ScaleFactorWidth = (obj.canvas.canvas.width / Q(obj.canvasid).offsetWidth);
         var Offsets = obj.getPositionOfControl(Q(obj.canvasid));
@@ -856,7 +857,18 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         }
         // ###END###{DesktopRotation}
 
-        obj.send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
+        // This is the mouse motion nagle timer. Slow down the mouse motion event rate.
+        if (force == 1) {
+            obj.send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
+            if (obj.mNagleTimer != null) { clearTimeout(obj.mNagleTimer); obj.mNagleTimer = null; }
+        } else {
+            if (obj.mNagleTimer == null) {
+                obj.mNagleTimer = setTimeout(function () {
+                    obj.send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
+                    obj.mNagleTimer = null;
+                }, 50);
+            }
+        }
 
         // ###BEGIN###{DesktopFocus}
         // Update focus area if we are in focus mode
