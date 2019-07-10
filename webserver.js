@@ -1125,8 +1125,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         var mesh = obj.meshes[meshid];
                         if (mesh) {
                             // Remove user from the mesh
-                            var escUserId = obj.common.escapeFieldName(userid);
-                            if (mesh.links[escUserId] != null) { delete mesh.links[escUserId]; obj.db.Set(mesh); }
+                            if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(obj.common.escapeLinksFieldName(mesh)); }
                             // Notify mesh change
                             var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
                             obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
@@ -2529,7 +2528,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
         if (req.query.id != null) {
             // Send a specific mesh agent back
@@ -2545,10 +2544,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (mesh == null) { res.sendStatus(401); return; }
 
                 // If required, check if this user has rights to do this
-                if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+                if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
                     var user = obj.users[req.session.userid];
-                    var escUserId = obj.common.escapeFieldName(user._id);
-                    if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+                    if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
                     if (domain.id != mesh.domain) { res.sendStatus(401); return; }
                 }
 
@@ -2690,7 +2688,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain == null) || (req.query.id == null)) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
         // Send a specific mesh agent back
         var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
@@ -2702,10 +2700,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (mesh == null) { res.sendStatus(401); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
             var user = obj.users[req.session.userid];
-            var escUserId = obj.common.escapeFieldName(user._id);
-            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
             if (domain.id != mesh.domain) { res.sendStatus(401); return; }
         }
 
@@ -2785,17 +2782,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
         // Fetch the mesh object
         var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.id];
         if (mesh == null) { res.sendStatus(401); return; }
 
         // If needed, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && (obj.parent.config.settings.lockagentdownload == true)) {
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
             var user = obj.users[req.session.userid];
-            var escUserId = obj.common.escapeFieldName(user._id);
-            if ((user == null) || (mesh.links[escUserId] == null) || ((mesh.links[escUserId].rights & 1) == 0)) { res.sendStatus(401); return; }
+            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
             if (domain.id != mesh.domain) { res.sendStatus(401); return; }
         }
 

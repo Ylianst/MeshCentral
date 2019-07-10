@@ -566,7 +566,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'help': {
                             r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
                             r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
-                            r += 'heapdump, relays, autobackup, backupconfig, dupagents.';
+                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable.';
+                            break;
+                        }
+                        case 'dispatchtable': {
+                            r = '';
+                            for (var i in parent.parent.eventsDispatch) {
+                                r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n');
+                            }
                             break;
                         }
                         case 'dupagents': {
@@ -972,7 +979,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             mesh = parent.meshes[meshid];
                             if (mesh) {
                                 // Remove user from the mesh
-                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
+                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(common.escapeLinksFieldName(mesh)); }
                                 // Notify mesh change
                                 change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                 var event = { etype: 'mesh', username: user.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id };
@@ -1522,65 +1529,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors
-                    if (err != null) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } }
-                        break;
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                    // Get the device group reference we are going to delete
+                    var mesh = parent.meshes[command.meshid];
+                    if (mesh == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'Unknown device group' })); } catch (ex) { } } return; }
+
+                    // Check if this user has rights to do this
+                    var err = null;
+                    if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) { err = 'Access denied'; }
+                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group'; } // Invalid domain, operation only valid for current domain
+
+                    // Handle any errors
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } } return; }
+
+                    // Fire the removal event first, because after this, the event will not route
+                    var event = { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id };
+                    parent.parent.DispatchEvent(['*', command.meshid], obj, event); // Even if DB change stream is active, this event need to be acted on.
+
+                    // Remove all user links to this mesh
+                    for (var j in mesh.links) {
+                        var xuser = parent.users[j];
+                        if (xuser && xuser.links) {
+                            delete xuser.links[mesh._id];
+                            db.SetUser(xuser);
+                            parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+                        }
                     }
 
-                    db.Get(command.meshid, function (err, meshes) {
-                        if (meshes.length != 1) {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'Unknown device group' })); } catch (ex) { } }
-                            return;
-                        }
-                        var mesh = common.unEscapeLinksFieldName(meshes[0]);
+                    // Delete all files on the server for this mesh
+                    try {
+                        var meshpath = parent.getServerRootFilePath(mesh);
+                        if (meshpath != null) { parent.deleteFolderRec(meshpath); }
+                    } catch (e) { }
 
-                        // Check if this user has rights to do this
-                        var err = null;
-                        if (mesh.links[user._id] == null || mesh.links[user._id].rights != 0xFFFFFFFF) { err = 'Access denied'; }
-                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group'; } // Invalid domain, operation only valid for current domain
+                    parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
 
-                        // Handle any errors
-                        if (err != null) {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } }
-                            return;
-                        }
+                    // Mark the mesh as deleted
+                    mesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
+                    db.Set(common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will un-delete it.
 
-                        // Fire the removal event first, because after this, the event will not route
-                        var event = { etype: 'mesh', username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Mesh deleted: ' + command.meshname, domain: domain.id };
-                        parent.parent.DispatchEvent(['*', command.meshid], obj, event); // Even if DB change stream is active, this event need to be acted on.
+                    // Delete all devices attached to this mesh in the database
+                    db.RemoveMeshDocuments(command.meshid);
 
-                        // Remove all user links to this mesh
-                        for (i in meshes) {
-                            var links = meshes[i].links;
-                            for (var j in links) {
-                                var xuser = parent.users[j];
-                                if (xuser && xuser.links) {
-                                    delete xuser.links[meshes[i]._id];
-                                    db.SetUser(xuser);
-                                    parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
-                                }
-                            }
-                        }
-
-                        // Delete all files on the server for this mesh
-                        try {
-                            var meshpath = parent.getServerRootFilePath(mesh);
-                            if (meshpath != null) { parent.deleteFolderRec(meshpath); }
-                        } catch (e) { }
-
-                        parent.parent.RemoveEventDispatchId(command.meshid); // Remove all subscriptions to this mesh
-
-                        // Mark the mesh as deleted
-                        var dbmesh = meshes[0];
-                        dbmesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
-                        db.Set(common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will up-delete it.
-                        parent.meshes[command.meshid] = mesh; // Update the mesh in memory;
-
-                        // Delete all devices attached to this mesh in the database
-                        db.RemoveMeshDocuments(command.meshid);
-
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
-                    });
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'editmesh':
@@ -1712,7 +1704,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id };
                         }
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, event);
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     } else {
