@@ -113,7 +113,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTPOWER', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -186,6 +186,7 @@ function run(argv) {
         console.log('  AmtStorageState   - Show contents of the Intel AMT web storage.');
         console.log('  AmtSaveState      - Save all Intel AMT WSMAN object to file.');
         console.log('  AmtPresence       - Heartbeat a local Intel AMT watchdog agent.');
+        console.log('  AmtPower          - Perform remote Intel AMT power operation.');
         console.log('  AmtScript         - Run .mescript on Intel AMT.');
         console.log('  AmtIDER           - Mount local disk image to remote computer.');
         console.log('\r\nHelp on a specific action using:\r\n');
@@ -294,6 +295,15 @@ function run(argv) {
             console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtpower') {
+            console.log('AmtPower will get current pwoer state or send a reboot command to a remote Intel AMT device. Example usage:\r\n\r\n  meshcmd amtpower --reset --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --tls                  Specifies that TLS must be used.');
         } else if (action == 'meshcommander') {
             console.log('This action launched a local web server that hosts MeshCommander, a Intel AMT management console.');
@@ -572,6 +582,38 @@ function run(argv) {
         if ((settings.cdrom == null) || (typeof settings.cdrom != 'string') || (settings.cdrom == '')) { settings.cdrom = null; }
         if ((settings.floppy == null) && (settings.cdrom == null)) { console.log('No or invalid \"floppy\" or \"cdrom\" specified, use --floppy [file] or --cdrom [file].'); exit(1); return; }
         performIder();
+    } else if (settings.action == 'amtpower') { // Perform remote Intel AMT power operation
+        if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [host].'); exit(1); return; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+
+        /*
+        2 = Power On
+        3 = Sleep - Light
+        4 = Sleep - Deep
+        5 = Power Cycle (Off Soft)
+        6 = Power Off - Hard
+        7 = Hibernate
+        8 = Power Off - Soft
+        9 = Power Cycle (Off Hard)
+        10 = Master Bus Reset
+        11 = Diagnostic Interrupt (NMI)
+        12 = Power Off - Soft Graceful
+        13 = Power Off - Hard Graceful
+        14 = Master Bus Reset Graceful
+        15 = Power Cycle (Off - Soft Graceful)
+        16 = Power Cycle (Off - Hard Graceful)
+        */
+
+        settings.poweraction = 0;
+        if (args.poweron) { settings.poweraction = 2; }
+        if (args.sleep) { settings.poweraction = 3; }
+        if (args.powercycle) { settings.poweraction = 5; }
+        if (args.poweroff) { settings.poweraction = 6; }
+        if (args.hibernate) { settings.poweraction = 7; }
+        if (args.reset) { settings.poweraction = 10; }
+        //if (settings.poweraction == 0) { console.log('No power action, specify --poweron, --sleep, --powercycle, --poweroff, --hibernate, --reset.'); exit(1); return; }
+        performAmtPowerAction();
     } else {
         console.log('Invalid \"action\" specified.'); exit(1); return;
     }
@@ -2026,6 +2068,53 @@ function iderSectorStats(mode, dev, mediaBlocks, lba, len) {
     if (iderIdleTimer != null) { clearTimeout(iderIdleTimer); }
     iderIdleTimer = setTimeout(function () { console.log('Idle timeout'); process.exit(1); }, 1000 * settings.timeout);
 }
+
+
+//
+// Intel AMT Remote Power Action
+//
+
+function performAmtPowerAction() {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    if (settings.poweraction != 0) {
+        // Set the power state
+        amtstack.RequestPowerStateChange(settings.poweraction, performAmtPowerActionEx);
+    } else {
+        // Get the power state
+        amtstack.Get("CIM_AssociatedPowerManagementService", performAmtPowerActionEx2, 0, 1);
+    }
+}
+
+function performAmtPowerActionEx(stack, name, response, status) {
+    if (status == 200) {
+        console.log(response.Body.ReturnValueStr.split('_').join(' '));
+        process.exit(0);
+    } else {
+        console.log('Error, status ' + status + '.');
+        process.exit(1);
+    }
+}
+
+var DMTFPowerStates = ["", "", "Power on", "Light sleep", "Deep sleep", "Power cycle (Soft off)", "Off - Hard", "Hibernate (Off soft)", "Soft off", "Power cycle (Off-hard)", "Master bus reset", "Diagnostic interrupt (NMI)", "Not applicable", "Off - Soft graceful", "Off - Hard graceful", "Master bus reset graceful", "Power cycle (Off - Soft graceful)", "Power cycle (Off - Hard graceful)", "Diagnostic interrupt (INIT)"];
+function performAmtPowerActionEx2(stack, name, response, status) {
+    if (status == 200) {
+        var powerNumber = parseInt(response.Body.PowerState);
+        if ((powerNumber >= DMTFPowerStates.length) && (powerNumber > 1)) {
+            console.log('Unknown power state: ' + response.Body.PowerState);
+        } else {
+            console.log('Current power state: ' + DMTFPowerStates[powerNumber]);
+        }
+        process.exit(0);
+    } else {
+        console.log('Error, status ' + status + '.');
+        process.exit(1);
+    }
+}
+
 
 //
 //  Startup
