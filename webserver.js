@@ -2584,7 +2584,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="' + scriptInfo.rname + '"' });
             var data = scriptInfo.data;
             var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' }
-            if (isTrustedCert() == false) {
+            if (isTrustedCert() != true) {
                 cmdoptions.wgetoptionshttps += '--no-check-certificate ';
                 cmdoptions.curloptionshttps += '-k ';
             }
