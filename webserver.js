@@ -2582,7 +2582,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
             if (scriptInfo == null) { res.sendStatus(404); return; }
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="' + scriptInfo.rname + '"' });
-            res.send(scriptInfo.data.split('{{{noproxy}}}').join((domain.agentnoproxy === true)?'--no-proxy ':''));
+            var data = scriptInfo.data;
+            var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' }
+            if (isTrustedCert() == false) {
+                cmdoptions.wgetoptionshttps += '--no-check-certificate ';
+                cmdoptions.curloptionshttps += '-k ';
+            }
+            if (domain.agentnoproxy === true) {
+                cmdoptions.wgetoptionshttp += '--no-proxy ';
+                cmdoptions.wgetoptionshttps += '--no-proxy ';
+                cmdoptions.curloptionshttp += '--noproxy \'*\' ';
+                cmdoptions.curloptionshttps += '--noproxy \'*\' ';
+            }
+            for (var i in cmdoptions) { data = data.split('{{{' + i + '}}}').join(cmdoptions[i]); }
+            res.send(data);
         } else if (req.query.meshcmd != null) {
             // Send meshcmd for a specific platform back
             var agentid = parseInt(req.query.meshcmd);

@@ -8,13 +8,16 @@ CheckStartupType() {
   elif [[ $starttype == 'init' ]];
       then
          # Upstart
-         if [[ `/sbin/init --version` =~ upstart ]]; then return 2;
-         # Sysv-init
-         return 3;
-      fi
+         /sbin/init --version && [[ `/sbin/init --version` =~ upstart ]] && return 2 || return 3
+  #      if [[ `/sbin/init --version` =~ upstart ]]; then return 2;
+  #        Sysv-init
+  #        return 3;
+  #      fi
   fi
   return 0;
 }
+
+
 
 # Add "StartupType=(type)" to .msh file
 UpdateMshFile() {
@@ -97,13 +100,13 @@ DownloadAgent() {
   mkdir -p /usr/local/mesh
   cd /usr/local/mesh
   echo "Downloading Mesh agent #$machineid..."
-  wget $url/meshagents?id=$machineid --no-check-certificate {{{noproxy}}}-O /usr/local/mesh/meshagent
+  wget $url/meshagents?id=$machineid {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent || curl {{{curloptionshttps}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
 
   # If it did not work, try again using http
   if [ $? != 0 ]
   then
     url=${url/"https://"/"http://"}
-    wget $url/meshagents?id=$machineid {{{noproxy}}}-O /usr/local/mesh/meshagent
+    wget $url/meshagents?id=$machineid {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent || curl {{{curloptionshttp}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
   fi
 
   if [ $? -eq 0 ]
@@ -111,12 +114,12 @@ DownloadAgent() {
     echo "Mesh agent downloaded."
     # TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
-    wget $url/meshsettings?id=$meshid --no-check-certificate {{{noproxy}}}-O /usr/local/mesh/meshagent.msh
+    wget $url/meshsettings?id=$meshid {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent.msh || curl {{{curloptionshttps}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
 
     # If it did not work, try again using http
     if [ $? -ne 0 ]
     then
-      wget $url/meshsettings?id=$meshid {{{noproxy}}}-O /usr/local/mesh/meshagent.msh
+      wget $url/meshsettings?id=$meshid {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent.msh || curl {{{curloptionshttp}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
     fi
 
     if [ $? -eq 0 ]
@@ -145,7 +148,7 @@ DownloadAgent() {
       elif [ $starttype -eq 3 ]
           then
           # initd
-          wget $url/meshagents?script=2 --no-check-certificate {{{noproxy}}}-O /etc/init.d/meshagent
+          wget $url/meshagents?script=2 {{{wgetoptionshttps}}}-O /etc/init.d/meshagent || curl {{{curloptionshttps}}}--output /etc/init.d/meshagent $url/meshagents?script=2
           chmod +x /etc/init.d/meshagent
           # creates symlinks for rc.d
           update-rc.d meshagent defaults
