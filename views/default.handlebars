@@ -64,57 +64,57 @@
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
-            <div id=LeftMenuMyDevices class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1)>
+            <div id=LeftMenuMyDevices tabindex=0 class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1) onkeypress="if (event.key=='Enter') { go(1); }">
                 <div class="lb2"></div>
             </div>
-            <div id=LeftMenuMyAccount class="lbbutton" title="My Account" onclick=go(2)>
+            <div id=LeftMenuMyAccount tabindex=0 class="lbbutton" title="My Account" onclick=go(2) onkeypress="if (event.key=='Enter') { go(2); }">
                 <div class="lb1"></div>
             </div>
-            <div id=LeftMenuMyEvents class="lbbutton" title="My Events" onclick=go(3)>
+            <div id=LeftMenuMyEvents tabindex=0 class="lbbutton" title="My Events" onclick=go(3) onkeypress="if (event.key=='Enter') { go(3); }">
                 <div class="lb3"></div>
             </div>
-            <div id=LeftMenuMyFiles class="lbbutton" style="display:none" title="My Files" onclick=go(5)>
+            <div id=LeftMenuMyFiles tabindex=0 class="lbbutton" style="display:none" title="My Files" onclick=go(5) onkeypress="if (event.key=='Enter') { go(5); }">
                 <div class="lb4"></div>
             </div>
-            <div id=LeftMenuMyUsers class="lbbutton" style="display:none" title="My Users" onclick=go(4)>
+            <div id=LeftMenuMyUsers tabindex=0 class="lbbutton" style="display:none" title="My Users" onclick=go(4) onkeypress="if (event.key=='Enter') { go(4); }">
                 <div class="lb5"></div>
             </div>
-            <div id=LeftMenuMyServer class="lbbutton" style="display:none" title="My Server" onclick=go(6) style="display:none">
+            <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onclick=go(6) onkeypress="if (event.key=='Enter') { go(6); }">
                 <div class="lb6"></div>
             </div>
         </div>
         <div id=topbar class=noselect>
             <div>
                 <div style="position:relative">
-                    <div id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()">&diams;
+                    <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">&diams;
                         <div id=uiMenu style="display:none">
-                            <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
-                            <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
-                            <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
-                            <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
+                            <div tabindex=0 id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)"><div class="uiSelector1"></div></div>
+                            <div tabindex=0 id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)"><div class="uiSelector2"></div></div>
+                            <div tabindex=0 id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)"><div class="uiSelector3"></div></div>
+                            <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
                         </div>
                     </div>
                     <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                         <tr>
-                            <td id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1)>My Devices</td>
-                            <td id=MainMenuMyAccount class="topbar_td style3x" onclick=go(2)>My Account</td>
-                            <td id=MainMenuMyEvents class="topbar_td style3x" onclick=go(3)>My Events</td>
-                            <td id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5)>My Files</td>
-                            <td id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4)>My Users</td>
-                            <td id=MainMenuMyServer class="topbar_td style3x" onclick=go(6)>My Server</td>
+                            <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1) onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
+                            <td tabindex=0 id=MainMenuMyAccount class="topbar_td style3x" onclick=go(2) onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
+                            <td tabindex=0 id=MainMenuMyEvents class="topbar_td style3x" onclick=go(3) onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
+                            <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
+                            <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
+                            <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </table>
                     <div id=MainSubMenuSpan style="display:none">
                         <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td id=MainDev class="topbar_td style3x" onclick=go(10)>General</td>
-                                <td id=MainDevDesktop class="topbar_td style3x" onclick=go(11)>Desktop</td>
-                                <td id=MainDevTerminal class="topbar_td style3x" onclick=go(12)>Terminal</td>
-                                <td id=MainDevFiles class="topbar_td style3x" onclick=go(13)>Files</td>
-                                <td id=MainDevEvents class="topbar_td style3x" onclick=go(16)>Events</td>
-                                <td id=MainDevAmt class="topbar_td style3x" onclick=go(14)>Intel&reg; AMT</td>
-                                <td id=MainDevConsole class="topbar_td style3x" onclick=go(15)>Console</td>
+                                <td tabindex=0 id=MainDev class="topbar_td style3x" onclick=go(10) onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onclick=go(11) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onclick=go(13) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onclick=go(16) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onclick=go(14) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg; AMT</td>
+                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onclick=go(15) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -122,7 +122,7 @@
                     <div id=MeshSubMenuSpan style="display:none">
                         <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td id=MeshGeneral class="topbar_td style3x" onclick=go(20)>General</td>
+                                <td tabindex=0 id=MeshGeneral class="topbar_td style3x" onclick=go(20) onkeypress="if (event.key == 'Enter') go(20)">General</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -130,8 +130,8 @@
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td id=UserGeneral class="topbar_td style3x" onclick=go(30)>General</td>
-                                <td id=UserEvents class="topbar_td style3x" onclick=go(31)>Events</td>
+                                <td tabindex=0 id=UserGeneral class="topbar_td style3x" onclick=go(30) onkeypress="if (event.key == 'Enter') go(30)">General</td>
+                                <td tabindex=0 id=UserEvents class="topbar_td style3x" onclick=go(31) onkeypress="if (event.key == 'Enter') go(31)">Events</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -139,9 +139,9 @@
                     <div id=ServerSubMenuSpan style="display:none">
                         <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td id=ServerGeneral class="topbar_td style3x" onclick=go(6)>General</td>
-                                <td id=ServerStats class="topbar_td style3x" onclick=go(40)>Stats</td>
-                                <td id=ServerConsole class="topbar_td style3x" onclick=go(115)>Console</td>
+                                <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onclick=go(6) onkeypress="if (event.key == 'Enter') go(6)">General</td>
+                                <td tabindex=0 id=ServerStats class="topbar_td style3x" onclick=go(40) onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
+                                <td tabindex=0 id=ServerConsole class="topbar_td style3x" onclick=go(115) onkeypress="if (event.key == 'Enter') go(115)">Console</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -160,10 +160,10 @@
             </div>
             <div id=p1 style="display:none">
                 <div style="display:none" id="devListToolbarViewIcons">
-                    <div id=devViewButton1 class="viewSelector" onclick=onDeviceViewChange(1) title="Columns"><div class="viewSelector2"></div></div>
-                    <div id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) title="List"><div class="viewSelector1"></div></div>
-                    <div id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) title="Desktops"><div class="viewSelector3"></div></div>
-                    <div id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) title="Map"><div class="viewSelector4"></div></div>
+                    <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key=='Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
+                    <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
+                    <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
+                    <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"><div class="viewSelector4"></div></div>
                 </div><div><h1>My Devices</h1></div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
@@ -288,7 +288,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>&nbsp;
-                            <img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer onclick=p3showDownloadEventsDialog()>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog()><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -303,8 +303,8 @@
                         <td class="style14">
                             <div style="float:right">
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
-                                <img onclick=p4downloadUserInfo() style="cursor:pointer" title="Download user information" src="images/link4.png" />
-                                <img id=p4UserBatchCreate onclick=p4batchAccountCreate() style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" />
+                                <a href=# onclick=p4downloadUserInfo()><img style="cursor:pointer" title="Download user information" src="images/link4.png" /></a>
+                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
                             </div>
                             <div>
                                 <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
@@ -398,14 +398,14 @@
                     <tr>
                         <td style=width:auto valign=top>
                             <div id=p10title>
-                                <div id="p10BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                                <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                                 <h1>General - <span id=p10deviceName></span></h1>
                             </div>
                             <div id=p10html></div>
                         </td>
                         <td style=width:20px></td>
                         <td style=width:200px>
-                            <a onclick=p10showiconselector()><img id=MainComputerImage></a>
+                            <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
                             <div id=MainComputerState></div>
                         </td>
                     </tr>
@@ -416,7 +416,7 @@
             <div id=p11 class="noselect" style="display:none">
                 <div id="p11title">
                     <div id=p11deviceNameHeader>
-                        <div id="p11BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                        <div id="p11BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                         <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                         <h1>Desktop - <span id=p11deviceName></span></h1>
                     </div>
@@ -502,7 +502,7 @@
             </div>
             <div id=p12 style="display:none">
                 <div id="p12title">
-                    <div id="p12BackButton"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <div id="p12BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Terminal - <span id=p12deviceName></span></h1>
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
@@ -569,7 +569,7 @@
             </div>
             <div id=p13 style="display:none">
                 <div id="p13title">
-                    <div id="p13BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <div id="p13BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Files - <span id=p13deviceName></span></h1>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
@@ -630,7 +630,7 @@
             </div>
             <div id=p14 style="display:none">
                 <div id="p14title">
-                    <div id="p14BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <div id="p14BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                     <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
                 </div>
@@ -638,7 +638,7 @@
             </div>
             <div id=p15 style="display:none">
                 <div id="p15title">
-                    <div id="p15BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <div id="p15BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1><span id=p15deviceName></span></h1>
                 </div>
                 <table id="consoleTable" cellpadding=0 cellspacing=0>
@@ -679,7 +679,7 @@
             </div>
             <div id=p16 style="display:none">
                 <div id="p16title">
-                    <div id="p16BackButton" style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                    <div id="p16BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Events - <span id=p16deviceName></span></h1>
                 </div>
                 <table class="pTable">
@@ -706,7 +706,7 @@
                     <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp">
                     <img alt="" width=200 height=200 src=images/mesh-256.png />
                 </picture>
-                <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                 <h1>General - <span id=p20meshName></span></h1>
                 <p id=p20info></p>
             </div>
@@ -715,7 +715,7 @@
                     <tr>
                         <td style=width:auto valign=top>
                             <div id="p30title">
-                                <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                                 <h1>General - <span id=p30userName></span></h1>
                             </div>
                             <div id=p30html></div>
@@ -734,7 +734,7 @@
                 <div id=p30html3></div>
             </div>
             <div id=p31 style="display:none">
-                <div style="float:left"><div class="backButton" onclick=goBack() title="Back"><div class="backButtonEx"></div></div></div>
+                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                 <h1>Events - <span id=p31userName></span></h1>
                 <table class="pTable">
                     <tr>
@@ -790,7 +790,7 @@
         </div>
         <div id=dialog style="display:none">
             <div id=dialogHeader>
-                <div id=id_dialogclose onclick=setDialogMode()>&#x2716;</div>
+                <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
                 <div id=id_dialogtitle></div>
             </div>
             <div id=dialogBody>
@@ -1124,6 +1124,7 @@
             Q('uiViewButton4').classList.remove('uiSelectorSel');
             try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
             QV('uiMenu', (QS('uiMenu').display == 'none'));
+            //Q('uiViewButton1').focus();
             if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
         }
 
@@ -2326,7 +2327,7 @@
                     var icon = node.icon;
                     if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div><div style=height:100%;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div></div>';
+                        r += '<div id=devs onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div><div style=height:100%;cursor:pointer tabindex=0 onclick=gotoDevice(\'' + node._id + '\',null,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div></div>';
                     } else if (view == 2) {
                         var states = [];
                         if (node.conn) {
@@ -2335,7 +2336,7 @@
                             else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">AMT</span>'); }
                             if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
                         }
-                        r += '<tr><td><div id=devs class=bar18 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium>';
+                        r += '<tr><td><div id=devs class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
                         r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=\"j' + icon + '\" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
@@ -2347,10 +2348,10 @@
                         r += '</tr>';
                     } else if ((view == 3) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + node._id) >= 0)) {
-                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event)>';
+                            r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">';
                             //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                             r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                            r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\')>Disconnected</div></div>';
+                            r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">Disconnected</div></div>';
                             r += '</div>';
                             kvmDivs.push(node._id);
                         }
@@ -3985,7 +3986,7 @@
                 x += '</div><div class="p10html3left">';
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
-                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
+                if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="Traffic router used to connect to a device thru this server.">Router</a>&nbsp;';
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
@@ -4411,12 +4412,12 @@
             if ((meshrights & 4) == 0) return;
 
             var x = '<br><div style=display:inline-block;width:40px></div>';
-            x += '<div style=display:inline-block class=i1 onclick=p10setIcon(1)></div>';
-            x += '<div style=display:inline-block class=i2 onclick=p10setIcon(2)></div>';
-            x += '<div style=display:inline-block class=i3 onclick=p10setIcon(3)></div>';
-            x += '<div style=display:inline-block class=i4 onclick=p10setIcon(4)></div>';
-            x += '<div style=display:inline-block class=i5 onclick=p10setIcon(5)></div>';
-            x += '<div style=display:inline-block class=i6 onclick=p10setIcon(6)></div><br><br>';
+            x += '<div tabindex=0 style=display:inline-block class=i1 onclick=p10setIcon(1) onkeypress="if (event.key==\'Enter\') p10setIcon(1)"></div>';
+            x += '<div tabindex=0 style=display:inline-block class=i2 onclick=p10setIcon(2) onkeypress="if (event.key==\'Enter\') p10setIcon(2)"></div>';
+            x += '<div tabindex=0 style=display:inline-block class=i3 onclick=p10setIcon(3) onkeypress="if (event.key==\'Enter\') p10setIcon(3)"></div>';
+            x += '<div tabindex=0 style=display:inline-block class=i4 onclick=p10setIcon(4) onkeypress="if (event.key==\'Enter\') p10setIcon(4)"></div>';
+            x += '<div tabindex=0 style=display:inline-block class=i5 onclick=p10setIcon(5) onkeypress="if (event.key==\'Enter\') p10setIcon(5)"></div>';
+            x += '<div tabindex=0 style=display:inline-block class=i6 onclick=p10setIcon(6) onkeypress="if (event.key==\'Enter\') p10setIcon(6)"></div><br><br>';
             setDialogMode(2, "Icon Selection", 0, null, x);
             QV('id_dialogclose', true);
         }
@@ -6232,7 +6233,7 @@
                 if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
 
                 // Print the mesh information
-                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\')><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
+                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + i + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
 
             meshcount = count;
@@ -6403,7 +6404,7 @@
                 var trash = '', rights = 'Partial Rights', r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = 'Full Administrator'; else if (r == 0) rights = 'No Rights';
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title="User" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                x += '<tr tabindex=0 onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')" style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title="User" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -7173,7 +7174,7 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="2nd factor authentication enabled" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" />'; }
 
-            x += '<tr onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0)><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
+            x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
             x += '<div class=bar>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div>';
@@ -8254,7 +8255,7 @@
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; localStorage.setItem(name, val); } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
-        function addLink(x, f) { return "<span style=cursor:pointer;text-decoration:none onclick='" + f + "'>" + x + " <img class=hoverButton src=images/link5.png></span>"; }
+        function addLink(x, f) { return "<span tabindex=0 style=cursor:pointer;text-decoration:none onclick='" + f + "' onkeypress=\"if (event.key=='Enter') {" + f + "} \">" + x + " <img class=hoverButton src=images/link5.png></span>"; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement("option"); option.text = t; option.value = i; Q(q).add(option); }
