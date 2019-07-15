@@ -670,7 +670,7 @@
                                         <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
                                     </td>
                                     <td>&nbsp;</td>
-                                    <td style="width:1%"><input id="id_p15consoleClear" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
+                                    <td style="width:1%"><input id="id_p15consoleClear" type="button" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
                                 </tr>
                             </table>
                         </td>
@@ -1521,8 +1521,8 @@
                         if (message.data == null) {
                             setDialogMode(2, "MeshCentral Server Errors", 1, null, 'Server has no error log.');
                         } else {
-                            var x = '<div class="dialogText dialogTextLog"><pre>' + message.data + '<pre></div>';
-                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x + '<br /><label><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to clear error log.</label>');
+                            var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + message.data + '<pre></div>';
+                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x + '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="Download error log" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div><div><label><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> Check and click OK to clear error log.</label></div>');
                             server_showVersionDlgUpdate();
                         }
                     }
@@ -2294,7 +2294,7 @@
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span>' + extra;
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + node.meshid + '")>' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
+                            r += '</span><span id=MxMESH tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
                             if (view == 2) { r += '</div>'; }
                             current = node.meshid;
                             displayedMeshes[current] = 1;
@@ -6149,8 +6149,8 @@
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below.<br /><br />";
-            x += addHtmlValue('Name', '<input id=dp2meshname style=width:230px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
-            x += addHtmlValue('Type', '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Manage using a software agent</option><option value=1>Intel&reg; AMT only, no agent</option></select></div>');
+            x += addHtmlValue('Name', '<input id=dp2meshname style=width:230px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += addHtmlValue('Type', '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>Manage using a software agent</option><option value=1>Intel&reg; AMT only, no agent</option></select></div>');
             x += addHtmlValue('Description', '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
             account_validateMeshCreate();
@@ -6158,7 +6158,9 @@
             return false;
         }
 
-        function account_validateMeshCreate() {
+        function account_validateMeshCreate(e, x) {
+            if ((x == 1) && (e != null) && (e.key == "Enter") && (Q('dp2meshname').value.length > 0)) { Q('dp2meshtype').focus(); }
+            if ((x == 2) && (e != null) && (e.key == "Enter")) { Q('dp2meshdesc').focus(); }
             QE('idx_dlgOkButton', Q('dp2meshname').value.length > 0);
         }
 
@@ -6283,6 +6285,7 @@
         }
         function server_showErrorsDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
         function server_showErrorsDlgEx() { meshserver.send({ action: 'serverclearerrorlog' }); }
+        function d2CopyServerErrorsToClip() { saveAs(new Blob([Q('d2ServerErrorsLogPre').innerText], { type: "application/octet-stream" }), "servererrors.txt"); }
 
         //
         // MY MESHS
@@ -6371,21 +6374,6 @@
                     x += '<a href=# onclick=\'return inviteAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title="Invite someone to install the mesh agent on this mesh."><img src=images/icon-addnew.png border=0 height=12 width=12> Invite</a>';
                 }
             }
-
-            /*
-            function getMeshActions(mesh, meshrights) {
-                if ((meshrights & 4) == 0) return '';
-                var r = '';
-                if (mesh.mtype == 1) {
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=\'return addCiraDeviceToMesh(\"' + mesh._id + '\")\'>Add CIRA</a>';
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the local network." onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>Add Local</a>';
-                }
-                if (mesh.mtype == 2) {
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>Add Agent</a>';
-                }
-                return r;
-            }
-            */
 
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th><th scope=col style=text-align:left></th></tr>';
 

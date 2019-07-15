@@ -1354,7 +1354,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id };
                     if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
-                    if ((log == 0) || (obj.agentInfo.capabilities & 0x20) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                    if ((log == 0) || ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     var device2 = common.Clone(device);
                     if (device2.intelamt && device2.intelamt.pass) { delete device2.intelamt.pass; } // Remove the Intel AMT password before eventing this.
                     event.node = device;
