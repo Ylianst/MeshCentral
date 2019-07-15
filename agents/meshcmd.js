@@ -114,7 +114,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -157,6 +157,7 @@ function run(argv) {
     if (args.noconsole) { settings.noconsole = true; }
     if (args.nocommander) { settings.noconsole = true; }
     if (args.lmsdebug) { settings.lmsdebug = true; }
+    if (args.json) { settings.json = true; }
     if (args.tls) { settings.tls = true; }
     if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
 
@@ -181,6 +182,7 @@ function run(argv) {
         console.log('\r\nValid local or remote actions:');
         console.log('  MeshCommander     - Launch a local MeshCommander web server.');
         console.log('  AmtUUID           - Show Intel AMT unique identifier.');
+        console.log('  AmtEventLog       - Show the Intel AMT event log.');
         console.log('  AmtAuditLog       - Show the Intel AMT audit log.');
         console.log('  AmtLoadWebApp     - Load MeshCommander in Intel AMT 11.6+ firmware.');
         console.log('  AmtClearWebApp    - Clear everything from Intel AMT web storage.');
@@ -342,14 +344,24 @@ function run(argv) {
             console.log('  --localport [port]     Local port used for the web server, 3000 is default.');
             console.log('\r\nRun as a background service:\r\n');
             console.log('  meshcommander install/uninstall/start/stop.');
-        } else if (action == 'amtauditlog') {
-            console.log('AmtAuditLog action will fetch the local or remote audit log. If used localy, no username/password is required. Example usage:\r\n\r\n  meshcmd amtauditlog --host 1.2.3.4 --user admin --pass mypassword --tls --output audit.json');
+        } else if (action == 'amteventlog') {
+            console.log('AmtEventLog action will fetch the local or remote event log. Example usage:\r\n\r\n  meshcmd amteventlog --host 1.2.3.4 --user admin --pass mypassword --tls --output events.txt');
             console.log('\r\nPossible arguments:\r\n');
-            console.log('  --output [filename]    The output file for the Intel AMT state in JSON format.');
+            console.log('  --output [filename]    The output file for the Intel AMT event log.');
             console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --tls                  Specifies that TLS must be used.');
+            console.log('  --json                 Output as a JSON format.');
+        } else if (action == 'amtauditlog') {
+            console.log('AmtAuditLog action will fetch the local or remote audit log. If used localy, no username/password is required. Example usage:\r\n\r\n  meshcmd amtauditlog --host 1.2.3.4 --user admin --pass mypassword --tls --output audit.json');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --output [filename]    The output file for the Intel AMT audit log.');
+            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --user [username]      The Intel AMT login username, admin is default.');
+            console.log('  --pass [password]      The Intel AMT login password.');
+            console.log('  --tls                  Specifies that TLS must be used.');
+            console.log('  --json                 Output as a JSON format.');
         } else if (action == 'amtider') {
             console.log('AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:\r\n\r\n  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso');
             console.log('\r\nPossible arguments:\r\n');
@@ -605,6 +617,11 @@ function run(argv) {
             if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         } else { settings.hostname = '127.0.0.1'; }
         readAmtAuditLog();
+    } else if (settings.action == 'amteventlog') { // Read the Intel AMT audit log
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        readAmtEventLog();
     } else if (settings.action == 'amtider') { // Remote mount IDER image
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [password].'); exit(1); return; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -739,6 +756,52 @@ function performAmtAgentPresenceEx5(stack, name, response, status, watchdog) {
     }
 }
 
+
+//
+// Intel AMT Event Log
+//
+
+function readAmtEventLog() {
+    // See if MicroLMS needs to be started
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
+        settings.noconsole = true; startLms(readAmtEventLogEx);
+    } else {
+        readAmtEventLogEx(9999);
+    }
+}
+
+function readAmtEventLogEx(x) {
+    if (x == 9999) {
+        var transport = require('amt-wsman-duk');
+        var wsman = require('amt-wsman');
+        var amt = require('amt');
+        wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+        amtstack = new amt(wsstack);
+        amtstack.GetMessageLog(readAmtEventLogEx2);
+    } else {
+        osamtstack.GetMessageLog(readAmtEventLogEx2);
+    }
+}
+
+function readAmtEventLogEx2(stack, messages) {
+    if (messages == null) {
+        console.log('Unable to get event log.');
+    } else {
+        var out = '';
+        if (settings.json) {
+            out = JSON.stringify(messages, 4, ' ');
+        } else {
+            for (var i in messages) { out += messages[i].Time + ', ' + messages[i].EntityStr + ', ' + messages[i].Desc + '\r\n'; }
+        }
+        if (settings.output == null) { console.log(out); } else {
+            var file = fs.openSync(settings.output, 'w');
+            fs.writeSync(file, Buffer.from(out));
+            fs.closeSync(file);
+        }
+    }
+    exit(1);
+}
+
 //
 // Intel AMT Audit Log
 //
@@ -770,11 +833,19 @@ function readAmtAuditLogEx2(stack, response, status) {
         console.log('Unable to get audit log, status = ' + status + '.');
     } else {
         var out = '';
-        for (var i in response) {
-            var name = ((response[i].Initiator != '') ? (response[i].Initiator + ': ') : '')
-            out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
+        if (settings.json) {
+            out = JSON.stringify(response, 4, ' ');
+        } else {
+            for (var i in response) {
+                var name = ((response[i].Initiator != '') ? (response[i].Initiator + ': ') : '')
+                out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
+            }
         }
-        if (settings.output == null) { console.log(out); } else { var file = fs.openSync(settings.output, 'w'); fs.writeSync(file, Buffer.from(out, 'utf8')); fs.closeSync(file); }
+        if (settings.output == null) { console.log(out); } else {
+            var file = fs.openSync(settings.output, 'w');
+            fs.writeSync(file, Buffer.from(out));
+            fs.closeSync(file);
+        }
     }
     exit(1);
 }
