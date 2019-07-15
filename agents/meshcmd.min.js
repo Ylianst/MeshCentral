@@ -113,7 +113,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTPOWER', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTPOWER', 'AMTFEATURES', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTPRESENCE'];
 
     // Load the action file
     var actionfile = null;
@@ -165,7 +165,7 @@ function run(argv) {
         console.log('No action specified, use MeshCmd like this:\r\n');
         console.log('  meshcmd [action] [arguments...]\r\n');
         console.log('Valid MeshCentral actions:');
-        console.log('  Route           - Map a local TCP port to a remote computer.');
+        console.log('  Route             - Map a local TCP port to a remote computer.');
         console.log('\r\nValid local actions:');
         console.log('  SMBios            - Display System Management BIOS tables for this computer.');
         console.log('  RawSMBios         - Display RAW System Management BIOS tables for this computer.');
@@ -189,6 +189,7 @@ function run(argv) {
         console.log('  AmtPower          - Perform remote Intel AMT power operation.');
         console.log('  AmtScript         - Run .mescript on Intel AMT.');
         console.log('  AmtIDER           - Mount local disk image to remote computer.');
+        console.log('  AmtFeatures       - Intel AMT features & user consent.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -305,6 +306,19 @@ function run(argv) {
             console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --tls                  Specifies that TLS must be used.');
+        } else if (action == 'amtfeatures') {
+            console.log('AmtFeatures is used to get/set Intel AMT feature configuration. Example usage:\r\n\r\n  meshcmd amtfeatures --host 1.2.3.4 --user admin --pass mypassword --tls --redir 1');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]         The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]         The Intel AMT login password.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --user [username]         The Intel AMT login username, admin is default.');
+            console.log('  --tls                     Specifies that TLS must be used.');
+            console.log('  --consent [none/kvm/all]  Set Intel AMT user consent feature.');
+            console.log('  --redir [0/1]             Set Intel AMT redirection port feature.');
+            console.log('  --kvm [0/1]               Set Intel AMT KVM feature.');
+            console.log('  --sol [0/1]               Set Intel AMT Serial-over-LAN feature.');
+            console.log('  --ider [0/1]              Set Intel AMT IDE redirection feature.');
         } else if (action == 'meshcommander') {
             console.log('This action launched a local web server that hosts MeshCommander, a Intel AMT management console.');
             console.log('\r\nPossible arguments:\r\n');
@@ -582,6 +596,11 @@ function run(argv) {
         if ((settings.cdrom == null) || (typeof settings.cdrom != 'string') || (settings.cdrom == '')) { settings.cdrom = null; }
         if ((settings.floppy == null) && (settings.cdrom == null)) { console.log('No or invalid \"floppy\" or \"cdrom\" specified, use --floppy [file] or --cdrom [file].'); exit(1); return; }
         performIder();
+    } else if (settings.action == 'amtfeatures') { // Perform remote Intel AMT feature configuration operation
+        if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [host].'); exit(1); return; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        performAmtFeatureConfig(args);
     } else if (settings.action == 'amtpower') { // Perform remote Intel AMT power operation
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [host].'); exit(1); return; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2067,6 +2086,89 @@ function onIderStateChange(stack, state) { console.log(['Disconnected', 'Connect
 function iderSectorStats(mode, dev, mediaBlocks, lba, len) {
     if (iderIdleTimer != null) { clearTimeout(iderIdleTimer); }
     iderIdleTimer = setTimeout(function () { console.log('Idle timeout'); process.exit(1); }, 1000 * settings.timeout);
+}
+
+//
+// Intel AMT feature configuration action
+//
+
+function performAmtFeatureConfig(args) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['*IPS_OptInService', '*AMT_RedirectionService', '*CIM_KVMRedirectionSAP'], performAmtFeatureConfig1, args);
+}
+
+var pendingAmtConfigActions = 0;
+function performAmtFeatureConfig1(stack, name, response, status, args) {
+    if (status == 200) {
+        // User consent
+        var optinrequired = response['IPS_OptInService'].response["OptInRequired"];
+        if (args) {
+            if ((args.userconsent == 'none') && (optinrequired != 0)) {
+                pendingAmtConfigActions++;
+                response['IPS_OptInService'].response["OptInRequired"] = 0;
+                amtstack.Put("IPS_OptInService", response['IPS_OptInService'].response, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } });
+            }
+            else if ((args.userconsent == 'kvm') && (optinrequired != 1)) {
+                pendingAmtConfigActions++;
+                response['IPS_OptInService'].response["OptInRequired"] = 1;
+                amtstack.Put("IPS_OptInService", response['IPS_OptInService'].response, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } });
+            }
+            else if ((args.userconsent == 'all') && (optinrequired != 0xFFFFFFFF)) {
+                pendingAmtConfigActions++;
+                response['IPS_OptInService'].response["OptInRequired"] = 0xFFFFFFFF;
+                amtstack.Put("IPS_OptInService", response['IPS_OptInService'].response, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } });
+            }
+        }
+
+        // Redirection ports
+        var redirportchange = false;
+        var redirchange = false;
+        var redir = (response['AMT_RedirectionService'].response["ListenerEnabled"] == true);
+
+        var sol = ((response['AMT_RedirectionService'].response["EnabledState"] & 2) != 0);
+        var ider = ((response['AMT_RedirectionService'].response["EnabledState"] & 1) != 0);
+        if (args) {
+            if ((redir == false) && ((args.redir == 'enabled') || (args.redir == 1))) { response['AMT_RedirectionService'].response["ListenerEnabled"] = true; redirportchange = true; }
+            if ((redir == true) && ((args.redir == 'disabled') || (args.redir == 0))) { response['AMT_RedirectionService'].response["ListenerEnabled"] = false; redirportchange = true; }
+            if ((sol == false) && ((args.sol == 'enabled') || (args.sol == 1))) { sol = true; redirchange = true; }
+            if ((sol == true) && ((args.sol == 'disabled') || (args.sol == 0))) { sol = false; redirchange = true; }
+            if ((ider == false) && ((args.ider == 'enabled') || (args.ider == 1))) { ider = true; redirchange = true; }
+            if ((ider == true) && ((args.ider == 'disabled') || (args.ider == 0))) { ider = false; redirchange = true; }
+            if (redirportchange) { pendingAmtConfigActions++; amtstack.Put("AMT_RedirectionService", response['AMT_RedirectionService'].response, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } }); }
+            if (redirchange) { pendingAmtConfigActions++; amtstack.AMT_RedirectionService_RequestStateChange((32768 + ((ider ? 1 : 0) + (sol ? 2 : 0))), function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } }); }
+        }
+
+        // KVM
+        var kvm = false;
+        var kvmchange = false;
+        if (response['CIM_KVMRedirectionSAP'] != null) {
+            kvm = ((response['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6 && response['CIM_KVMRedirectionSAP'].response["RequestedState"] == 2) || response['CIM_KVMRedirectionSAP'].response["EnabledState"] == 2 || response['CIM_KVMRedirectionSAP'].response["EnabledState"] == 6);
+            if (args) {
+                if ((kvm == false) && ((args.kvm == 'enabled') || (args.kvm == 1))) { kvm = true; kvmchange = true; }
+                if ((kvm == true) && ((args.kvm == 'disabled') || (args.kvm == 0))) { kvm = false; kvmchange = true; }
+                if (kvmchange) { pendingAmtConfigActions++; amtstack.CIM_KVMRedirectionSAP_RequestStateChange(kvm ? 2 : 3, 0, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtFeatureConfig(); } }); }
+            }
+        }
+
+        if (pendingAmtConfigActions == 0) {
+            if (optinrequired == 0) { console.log('User Consent:         None'); }
+            else if (optinrequired == 1) { console.log('User Consent:         KVM'); }
+            else if (optinrequired == 0xFFFFFFFF) { console.log('User Consent:         All'); }
+            else { console.log('User Consent:         ' + optinrequired); }
+            console.log('Redirection Port:     ' + (redir ? 'Enabled' : 'Disabled'));
+            console.log('Serial-over-LAN:      ' + (sol ? 'Enabled' : 'Disabled'));
+            console.log('IDE Redirection:      ' + (ider ? 'Enabled' : 'Disabled'));
+            if (response['CIM_KVMRedirectionSAP'] != null) { console.log('Remote desktop (KVM): ' + (kvm ? 'Enabled' : 'Disabled')); }
+            process.exit(0);
+        }
+    } else {
+        console.log('Error, status ' + status + '.');
+        process.exit(1);
+    }
 }
 
 
