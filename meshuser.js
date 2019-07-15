@@ -862,7 +862,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Change our own email address
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
-                    if (common.validateEmail(command.email, 1, 256) == false) return;
+                    if (common.validateEmail(command.email, 1, 1024) == false) return;
+
+                    // Always lowercase the email address
+                    command.email = command.email.toLowerCase();
+
                     if (parent.users[req.session.userid].email != command.email) {
                         // Check if this email is already validated on a different account
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
@@ -901,7 +905,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Send a account email verification email
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateString(command.email, 3, 1024) == false) return;
-                    if ((parent.parent.mailserver != null) && (parent.users[req.session.userid].email == command.email)) {
+
+                    // Always lowercase the email address
+                    command.email = command.email.toLowerCase();
+
+                    if ((parent.parent.mailserver != null) && (parent.users[req.session.userid].email.toLowerCase() == command.email)) {
                         // Send the verification email
                         parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
                     }
@@ -1064,7 +1072,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((command.users[i].user == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name
                         if (common.validateString(command.users[i].pass, 1, 256) == false) break; // Password is between 1 and 256 characters
                         if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
-                        if ((command.email != null) && (common.validateEmail(command.users[i].email, 1, 256) == false)) break; // Check if this is a valid email address
+                        if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) break; // Check if this is a valid email address
                         userCount++;
                     }
 
@@ -1086,7 +1094,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var newuserid = 'user/' + domain.id + '/' + command.users[i].user.toLowerCase();
                                 var newuser = { type: 'user', _id: newuserid, name: command.users[i].user, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
-                                if (command.users[i].email != null) { newuser.email = command.users[i].email; if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email
+                                if (command.users[i].email != null) { newuser.email = command.users[i].email.toLowerCase(); if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email, always lowercase
                                 if (command.users[i].resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                                 if ((command.users[i].groups != null) && (common.validateStrArray(command.users[i].groups, 1, 32))) { newuser.groups = command.users[i].groups; } // New account are automatically part of our groups.
 
@@ -1131,7 +1139,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
                         else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
                         else if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) { err = 'Invalid password'; } // Password does not meet requirements
-                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 256) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
+                        else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
                         else {
                             newusername = command.username;
                             newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
@@ -1171,7 +1179,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
                             else if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
-                            if (command.email != null) { newuser.email = command.email; if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
+                            if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             
                             parent.users[newuserid] = newuser;
@@ -1188,7 +1196,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (command.email == null) {
                                         event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: domain.id };
                                     } else {
-                                        event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email, domain: domain.id };
+                                        event = { etype: 'user', username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email.toLowerCase(), domain: domain.id };
                                     }
                                     if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                     parent.parent.DispatchEvent(targets, obj, event);
@@ -1220,7 +1228,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Validate and change email
                             if (domain.usernameisemail !== true) {
-                                if (common.validateString(command.email, 1, 256) && (chguser.email != command.email)) { chguser.email = command.email; change = 1; }
+                                if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) { chguser.email = command.email.toLowerCase(); change = 1; }
                             }
 
                             // Make changes
@@ -2259,7 +2267,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Perform email invitation
-                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email, command.meshid, command.name, command.os, command.msg, command.flags, command.expire);
+                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire);
 
                     // Send a response if needed
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }

@@ -96,6 +96,11 @@ module.exports.CreateDB = function (parent, func) {
                     for (var i in docs) {
                         var fixed = false;
 
+                        // Fix email address capitalization
+                        if (docs[i].email && (docs[i].email != docs[i].email.toLowerCase())) {
+                            docs[i].email = docs[i].email.toLowerCase(); fixed = true;
+                        }
+
                         // Fix account creation
                         if (docs[i].creation) {
                             if (docs[i].creation > 1300000000000) { docs[i].creation = Math.floor(docs[i].creation / 1000); fixed = true; }
@@ -852,6 +857,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Called when a device group has changed
     function dbMeshChange(meshChange, added) {
+        if (parent.webserver == null) return;
         common.unEscapeLinksFieldName(meshChange.fullDocument);
         const mesh = meshChange.fullDocument;
 
@@ -872,6 +878,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Called when a user account has changed
     function dbUserChange(userChange, added) {
+        if (parent.webserver == null) return;
         const user = userChange.fullDocument;
 
         // Update the user object in memory
