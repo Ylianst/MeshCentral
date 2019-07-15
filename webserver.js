@@ -740,6 +740,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
 
+        // Always lowercase the email address
+        if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
+
         // If the email is the username, set this here.
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
@@ -915,6 +918,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleResetAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { res.sendStatus(404); return; }
+
+        // Always lowercase the email address
+        if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
 
         // Get the email from the body or session.
         var email = req.body.email;
