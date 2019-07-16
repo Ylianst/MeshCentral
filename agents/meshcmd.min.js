@@ -318,6 +318,7 @@ function run(argv) {
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --user [username]         The Intel AMT login username, admin is default.');
             console.log('  --tls                     Specifies that TLS must be used.');
+            console.log('  --ipsync [0 or 1]         Change the wired IPSync setting on Intel AMT 7+');
             console.log('  --dhcp                    Change IPv4 wired interface to DHCP mode');
             console.log('  --static                  Change IPv4 wired interface to static IP mode');
             console.log('    --ip [1.2.3.4]          Static IPv4 address (required)');
@@ -2215,46 +2216,61 @@ function performAmtNetConfig1(stack, name, response, status, args) {
 
         // Check if configuration change is required
         if (args) {
+            var docall = false;
+            var x = JSON.parse(JSON.stringify(response['AMT_EthernetPortSettings'].responses[amtwiredif]));
+            var y = response['AMT_EthernetPortSettings'].responses[amtwiredif];
+            delete x["IpSyncEnabled"];
+            delete x["LinkIsUp"];
+            delete x["LinkPolicy"];
+            delete x["MACAddress"];
+            delete x["SharedDynamicIP"];
+            delete x["SharedMAC"];
+            delete x["SharedStaticIp"];
+
+            if ((y['IpSyncEnabled'] == false) && (args.ipsync === '1')) { x['IpSyncEnabled'] = true; docall = true; }
+            if ((y['IpSyncEnabled'] == true) && (args.ipsync === '0')) { x['IpSyncEnabled'] = false; docall = true; }
             if (args.dhcp && (amtwiredif != -1) && (response['AMT_EthernetPortSettings'].responses[amtwiredif].DHCPEnabled == false)) {
                 // Change to DHCP
-                pendingAmtConfigActions++;
-                var x = response['AMT_EthernetPortSettings'].responses[amtwiredif];
                 x['DHCPEnabled'] = true;
-                delete x["IPAddress"];
-                delete x["SubnetMask"];
-                delete x["DefaultGateway"];
-                delete x["PrimaryDNS"];
-                delete x["SecondaryDNS"];
-                amtstack.Put("AMT_EthernetPortSettings", x, function (stack, name, response, status) { if (--pendingAmtConfigActions == 0) { performAmtNetConfig0(); } });
+                docall = true;
             }
             else if (args.static && (amtwiredif != -1) && (response['AMT_EthernetPortSettings'].responses[amtwiredif].DHCPEnabled == true)) {
                 // Change to STATIC
-                pendingAmtConfigActions++;
-                var x = response['AMT_EthernetPortSettings'].responses[amtwiredif];
                 x['DHCPEnabled'] = false;
-                delete x["IPAddress"];
-                delete x["SubnetMask"];
-                delete x["DefaultGateway"];
-                delete x["PrimaryDNS"];
-                delete x["SecondaryDNS"];
                 if (args.ip) { x["IPAddress"] = args.ip; } else { console.log('Missing IPv4 address, use --ip 1.2.3.4'); process.exit(1); }
                 if (args.subnet) { x["SubnetMask"] = args.subnet; } else { console.log('Missing IPv4 subnet, use --subnet 255.255.255.0'); process.exit(1); }
                 if (args.gateway) { x["DefaultGateway"] = args.gateway; }
                 if (args.dns) { x["PrimaryDNS"] = args.dns; }
                 if (args.dns2) { x["SecondaryDNS"] = args.dns2; }
-                amtstack.Put("AMT_EthernetPortSettings", x, function (stack, name, response, status) { console.log(status); if (--pendingAmtConfigActions == 0) { performAmtNetConfig0(); } });
+                docall = true;
+            }
+            if (docall) {
+                if (x["DHCPEnabled"] == true) {
+                    delete x["IPAddress"];
+                    delete x["DefaultGateway"];
+                    delete x["PrimaryDNS"];
+                    delete x["SecondaryDNS"];
+                    delete x["SubnetMask"];
+                }
+                pendingAmtConfigActions++;
+                //console.log(JSON.stringify(x, 4, ' '));
+                amtstack.Put("AMT_EthernetPortSettings", x, function (stack, name, response, status) { if (status != 200) { console.log('Error, status ' + status + '.'); } if (--pendingAmtConfigActions == 0) { performAmtNetConfig0(); } }, null, 0, x);
             }
         }
 
         if (pendingAmtConfigActions == 0) {
+            var maxlen = 0;
+            if (amtwiredif != -1) { for (var i in response['AMT_EthernetPortSettings'].responses[amtwiredif]) { if (i.length > maxlen) { maxlen = i.length; } } }
+            if (amtwirelessif != -1) { for (var i in response['AMT_EthernetPortSettings'].responses[amtwirelessif]) { if (i.length > maxlen) { maxlen = i.length; } } }
+
             if (amtwiredif != -1) { // Wired
                 var z = response['AMT_EthernetPortSettings'].responses[amtwiredif];
                 console.log('--WIRED---');
                 for (var i in z) {
                     if (['ElementName', 'InstanceID'].indexOf(i) == -1) {
                         var name = i;
-                        while (name.length < 16) { name += ' '; }
-                        console.log(name + ': ' + z[i]);
+                        while (name.length < maxlen) { name += ' '; }
+                        console.log(name + ' : ' + z[i]);
                     }
                 }
             }
@@ -2264,8 +2280,8 @@ function performAmtNetConfig1(stack, name, response, status, args) {
                 for (var i in z) {
                     if (['ElementName', 'InstanceID'].indexOf(i) == -1) {
                         var name = i;
-                        while (name.length < 16) { name += ' '; }
-                        console.log(name + ': ' + z[i]);
+                        while (name.length < maxlen) { name += ' '; }
+                        console.log(name + ' : ' + z[i]);
                     }
                 }
             }
