@@ -614,6 +614,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.parent.performServerUpdate();
                             break;
                         }
+                        case 'print': {
+                            console.log(cmdargs["_"][0]);
+                            break;
+                        }
                         case 'updatecheck': {
                             parent.parent.getLatestServerVersion(function (currentVer, newVer, error) {
                                 var r2 = 'Current Version: ' + currentVer + '\r\n';

@@ -17,6 +17,10 @@
 const crypto = require('crypto');
 var certStore = null;
 
+// When the parent process terminates, we exit also.
+process.on('disconnect', function () { process.exit(); });
+
+// Handle parent messages
 process.on('message', function (message) {
     switch (message.action) {
         case 'sign': {

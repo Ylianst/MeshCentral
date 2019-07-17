@@ -165,7 +165,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // If "--launch" is in the arguments, launch now
-        if (obj.args.launch == 1) {
+        if (obj.args.launch) {
             obj.StartEx();
         } else {
             // if "--launch" is not specified, launch the server as a child process.
@@ -183,20 +183,23 @@ function CreateMeshCentralServer(config, args) {
 
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startLine) {
+        if (process.pid) { obj.updateServerState('monitor-pid', process.pid); }
+        if (process.ppid) { obj.updateServerState('monitor-ppid', process.ppid); }
         var child_process = require('child_process');
-        var xprocess = child_process.exec(startLine + ' --launch', { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
-            if (xprocess.xrestart == 1) {
+        childProcess = child_process.exec(startLine + ' --launch ' + process.pid, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
+            if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
-            } else if (xprocess.xrestart == 2) {
+            } else if (childProcess.xrestart == 2) {
                 console.log('Expected exit...');
                 process.exit(); // User CTRL-C exit.
-            } else if (xprocess.xrestart == 3) {
+            } else if (childProcess.xrestart == 3) {
                 // Server self-update exit
                 var version = '';
                 if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 var child_process = require('child_process');
                 var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
+                var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+                var xxprocess = child_process.exec(npmpath + npmproxy + ' install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
@@ -229,8 +232,8 @@ function CreateMeshCentralServer(config, args) {
                 }
             }
         });
-        xprocess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Updating server certificates...') >= 0) { xprocess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { xprocess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { xprocess.xrestart = 3; } else if (data.indexOf('Server restart...') >= 0) { xprocess.xrestart = 1; } console.log(data); });
-        xprocess.stderr.on('data', function (data) {
+        childProcess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { childProcess.xrestart = 1; } else if (data.indexOf('Updating server certificates...') >= 0) { childProcess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { childProcess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { childProcess.xrestart = 3; } else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; } console.log(data); });
+        childProcess.stderr.on('data', function (data) {
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
             try {
@@ -239,7 +242,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + obj.currentVer + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
             } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
         });
-        xprocess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
+        childProcess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     };
 
     // Get current and latest MeshCentral server versions using NPM
@@ -249,13 +252,14 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.args.selfupdate == 'string') { callback(obj.currentVer, obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
             var child_process = require('child_process');
             var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-            var xprocess = child_process.exec(npmpath + ' view meshcentral dist-tags.latest', { maxBuffer: 512000, cwd: obj.parentpath }, function (error, stdout, stderr) { });
-            xprocess.data = '';
-            xprocess.stdout.on('data', function (data) { xprocess.data += data; });
-            xprocess.stderr.on('data', function (data) { });
-            xprocess.on('close', function (code) {
+            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            var xxprocess = child_process.exec(npmpath + npmproxy + ' view meshcentral dist-tags.latest', { maxBuffer: 512000, cwd: obj.parentpath }, function (error, stdout, stderr) { });
+            xxprocess.data = '';
+            xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+            xxprocess.stderr.on('data', function (data) { });
+            xxprocess.on('close', function (code) {
                 var latestVer = null;
-                if (code == 0) { try { latestVer = xprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
+                if (code == 0) { try { latestVer = xxprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
                 callback(obj.currentVer, latestVer);
             });
         } catch (ex) { callback(obj.currentVer, null, ex); } // If the system is running out of memory, an exception here can easily happen.
@@ -551,7 +555,7 @@ function CreateMeshCentralServer(config, args) {
         );
     };
 
-    // Time to start the server or real.
+    // Time to start the server of real.
     obj.StartEx1b = function () {
         var i;
 
@@ -563,6 +567,8 @@ function CreateMeshCentralServer(config, args) {
 
         // Write the server state
         obj.updateServerState('state', 'starting');
+        if (process.pid) { obj.updateServerState('server-pid', process.pid); }
+        if (process.ppid) { obj.updateServerState('server-ppid', process.ppid); }
 
         // Start memory tracking if requested
         if (typeof obj.args.memorytracking == 'number') {
@@ -1780,6 +1786,7 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 
 // Load the really basic modules
 var meshserver = null;
+var childProcess = null;
 var previouslyInstalledModules = { };
 function mainStart() {
     // Check the NodeJS is version 6 or better.
@@ -1837,6 +1844,15 @@ function mainStart() {
         
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
+
+        // On exit, also terminate the child process if applicable
+        process.on("exit", function () { if (childProcess) { childProcess.kill(); childProcess = null; } });
+
+        // If our parent exits, we also exit
+        process.stderr.on('end', function () { process.exit(); });
+        process.stdout.on('end', function () { process.exit(); });
+        process.stdin.on('end', function () { process.exit(); });
+        process.stdin.on('data', function (data) { });
     });
 }
 
