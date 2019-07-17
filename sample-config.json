@@ -25,6 +25,8 @@
     "_AgentPong": 60,
     "_AgentIdleTimeout": 150,
     "_MeshErrorLogPath": "c:\\tmp",
+    "_NpmPath": "c:\\npm.exe",
+    "_NpmProxy": "http://1.2.3.4:80",
     "_AllowHighQualityDesktop": true,
     "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
     "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
