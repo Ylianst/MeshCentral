@@ -136,7 +136,23 @@ function CreateMeshCentralServer(config, args) {
             var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
             svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
-            svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
+            svc.on('start', function () {
+                console.log('MeshCentral service started.');
+                // Attempt to copy the demon folder to "meshcentral-data\win-deamon".
+                try {
+                    var sourceDaemonFolder = obj.path.join(__dirname, 'daemon');
+                    var targetDaemonFolder = obj.path.join(obj.datapath, 'win-deamon');
+                    if (!obj.fs.existsSync(targetDaemonFolder)) { obj.fs.mkdirSync(targetDaemonFolder); }
+                    var files = obj.fs.readdirSync(sourceDaemonFolder);
+                    for (var i in files) {
+                        if (files[i].endsWith('.log') == false) {
+                            var bin = obj.fs.readFileSync(obj.path.join(sourceDaemonFolder, files[i]), 'binary');
+                            obj.fs.writeFileSync(obj.path.join(targetDaemonFolder, files[i]), bin, 'binary');
+                        }
+                    }
+                } catch (e) { console.error(e); }
+                process.exit();
+            });
             svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (obj.args.stop) { process.exit(); } if (obj.args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
             svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
             svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
@@ -184,7 +200,26 @@ function CreateMeshCentralServer(config, args) {
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startLine); }, 1000); });
+                xxprocess.on('close', function (code) {
+                    console.log('Update completed...');
+                    if (require('os').platform() == 'win32') {
+                        // On Windows, attempt to copy "meshcentral-data\win-deamon" folder back into "deamon".
+                        // This folder will have been removed after update and needs to be added back.
+                        try {
+                            var sourceDaemonFolder = obj.path.join(obj.datapath, 'win-deamon');
+                            var targetDaemonFolder = obj.path.join(__dirname, 'daemon');
+                            if (!obj.fs.existsSync(targetDaemonFolder)) { obj.fs.mkdirSync(targetDaemonFolder); }
+                            var files = obj.fs.readdirSync(sourceDaemonFolder);
+                            for (var i in files) {
+                                if (files[i].endsWith('.log') == false) {
+                                    var bin = obj.fs.readFileSync(obj.path.join(sourceDaemonFolder, files[i]), 'binary');
+                                    obj.fs.writeFileSync(obj.path.join(targetDaemonFolder, files[i]), bin, 'binary');
+                                }
+                            }
+                        } catch (e) { console.error(e); }
+                    }
+                    setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
+                });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
