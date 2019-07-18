@@ -611,7 +611,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'serverupdate': {
                             r = 'Performing server update...';
-                            parent.parent.performServerUpdate();
+                            if (parent.parent.performServerUpdate() == false) { r = 'Server self-update not possible.'; }
                             break;
                         }
                         case 'print': {
