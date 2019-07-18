@@ -310,6 +310,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send user information to web socket, this is the first thing we send
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
+            // Send user web state
+            db.Get('ws' + user._id, function (err, docs) {
+                if (docs.length == 1) { try { ws.send(JSON.stringify({ action: 'event', event: { action: 'userWebState', state: docs[0].state, nolog: 1 } })); } catch (ex) { } }
+            });
+
             // We are all set, start receiving data
             ws._socket.resume();
         });

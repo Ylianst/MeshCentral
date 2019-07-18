@@ -110,7 +110,7 @@ function AmtManager(agent, db, isdebug) {
         }
 
         // Sent to the entire group, no sessionid or userid specified.
-        if (notify != null) { agent.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general" }); }
+        if (notify != null) { agent.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general", "amtMessage": amtMessage }); }
     }
 
     // Launch LMS

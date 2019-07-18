@@ -34,7 +34,7 @@ stop() {
     pid=$( cat "$PIDFILE" )
     if kill -0 $pid 2>/dev/null; then
           echo 'Stopping service…' >&2
-          kill -16 $pid
+          kill -15 $pid
           echo 'Service stopped' >&2
     else
       echo 'Service not running'
