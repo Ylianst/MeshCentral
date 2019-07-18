@@ -176,21 +176,16 @@ function CreateMeshCentralServer(config, args) {
                 process.exit(); // User CTRL-C exit.
             } else if (childProcess.xrestart == 3) {
                 // Server self-update exit
-                var updateArgs = [];
-                var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-                if (typeof obj.args.npmproxy == 'string') { updateArgs.push('--proxy', obj.args.npmproxy); }
-                updateArgs.push('install', 'meshcentral');
-                if (typeof obj.args.selfupdate == 'string') { updateArgs.push('@' + obj.args.selfupdate); }
-
+                var version = '';
+                if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
                 var child_process = require('child_process');
-                var xxprocess = child_process.execFile(npmpath, updateArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
+                var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+                var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+                var xxprocess = child_process.exec(npmpath + ' install meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.on('close', function (code) {
-                    console.log('Update completed...');
-                    setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
-                });
+                xxprocess.on('close', function (code) { console.log('Update completed...'); setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
