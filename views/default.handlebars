@@ -260,6 +260,7 @@
                     <p class="mL">
                         <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                         <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
+                        <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
                         <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
                         <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
                         <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
@@ -1432,6 +1433,8 @@
                             // Node was found, dispatch the message
                             if (message.type == 'console') { p15consoleReceive(nodes[index], message.value); } // This is a console message.
                             else if (message.type == 'notify') { // This is a notification message.
+                                var n = getstore('notifications', 0);
+                                if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon };
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
@@ -1941,6 +1944,19 @@
                             for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
                             if (index != -1) {
                                 var node = nodes[index];
+
+                                // Event the connection change if needed
+                                var n = getstore('notifications', 0);
+                                if (n & 2) {
+                                    if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: 'Agent connected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: 'Intel AMT detected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: 'Intel AMT CIRA connected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                }
+                                if (n & 4) {
+                                    if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { addNotification({ text: 'Agent disconnected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: 'Intel AMT not detected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: 'Intel AMT CIRA disconnected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                }
 
                                 // Change the node connection state
                                 node.conn = message.event.conn;
@@ -6052,6 +6068,31 @@
             return false;
         }
 
+        function account_showAccountNotifySettings() {
+            if (xxdialogMode) return false;
+            var x = '';
+            x += '<div><input id=p2notifyPlayNotifySound type=checkbox />Notification sound.</div>';
+            x += '<div><input id=p2notifyIntelDeviceConnect type=checkbox />Device connections.</div>';
+            x += '<div><input id=p2notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</div>';
+            x += '<div><input id=p2notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</div>';
+            setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
+            var n = getstore('notifications', 0);
+            Q('p2notifyPlayNotifySound').checked = (n & 1);
+            Q('p2notifyIntelDeviceConnect').checked = (n & 2);
+            Q('p2notifyIntelDeviceDisconnect').checked = (n & 4);
+            Q('p2notifyIntelAmtKvmActions').checked = (n & 8);
+            return false;
+        }
+
+        function account_showAccountNotifySettingsEx() {
+            var n = 0;
+            n += Q('p2notifyPlayNotifySound').checked ? 1 : 0;
+            n += Q('p2notifyIntelDeviceConnect').checked ? 2 : 0;
+            n += Q('p2notifyIntelDeviceDisconnect').checked ? 4 : 0;
+            n += Q('p2notifyIntelAmtKvmActions').checked ? 8 : 0;
+            putstore('notifications', n);
+        }
+
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return false;
             var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
@@ -7879,7 +7920,8 @@
             notifications.unshift(n);
             setNotificationCount(notifications.length);
             clickNotificationIcon(true);
-            Q('chimes').play();
+            var notifySettings = getstore('notifications', 0);
+            if (notifySettings & 1) { Q('chimes').play(); }
 
             // If web notifications are granted, use it.
             var notification = null;
