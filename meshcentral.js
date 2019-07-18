@@ -186,7 +186,7 @@ function CreateMeshCentralServer(config, args) {
         var child_process = require('child_process');
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
-                setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
+                setTimeout(function () { obj.launchChildServer(startArgs); }, 500); // This is an expected restart.
             } else if (childProcess.xrestart == 2) {
                 console.log('Expected exit...');
                 process.exit(); // User CTRL-C exit.
@@ -219,14 +219,14 @@ function CreateMeshCentralServer(config, args) {
                             }
                         } catch (e) { console.error(e); }
                     }
-                    setTimeout(function () { obj.launchChildServer(startLine); }, 1000);
+                    setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
                 });
             } else {
                 if (error != null) {
                     // This is an un-expected restart
                     console.log(error);
                     console.log('ERROR: MeshCentral failed with critical error, check MeshErrors.txt. Restarting in 5 seconds...');
-                    setTimeout(function () { obj.launchChildServer(startLine); }, 5000);
+                    setTimeout(function () { obj.launchChildServer(startArgs); }, 5000);
                 }
             }
         });
