@@ -136,23 +136,7 @@ function CreateMeshCentralServer(config, args) {
             var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
             svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
-            svc.on('start', function () {
-                console.log('MeshCentral service started.');
-                // Attempt to copy the demon folder to "meshcentral-data\win-deamon".
-                try {
-                    var sourceDaemonFolder = obj.path.join(__dirname, 'daemon');
-                    var targetDaemonFolder = obj.path.join(obj.datapath, 'win-deamon');
-                    if (!obj.fs.existsSync(targetDaemonFolder)) { obj.fs.mkdirSync(targetDaemonFolder); }
-                    var files = obj.fs.readdirSync(sourceDaemonFolder);
-                    for (var i in files) {
-                        if (files[i].endsWith('.log') == false) {
-                            var bin = obj.fs.readFileSync(obj.path.join(sourceDaemonFolder, files[i]), 'binary');
-                            obj.fs.writeFileSync(obj.path.join(targetDaemonFolder, files[i]), bin, 'binary');
-                        }
-                    }
-                } catch (e) { console.error(e); }
-                process.exit();
-            });
+            svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
             svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (obj.args.stop) { process.exit(); } if (obj.args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
             svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
             svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
@@ -192,33 +176,19 @@ function CreateMeshCentralServer(config, args) {
                 process.exit(); // User CTRL-C exit.
             } else if (childProcess.xrestart == 3) {
                 // Server self-update exit
-                var version = '';
-                if (typeof obj.args.selfupdate == 'string') { version = '@' + obj.args.selfupdate; }
-                var child_process = require('child_process');
+                var updateArgs = [];
                 var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
-                var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
-                var xxprocess = child_process.exec(npmpath + npmproxy + ' install meshcentral' + version, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
+                if (typeof obj.args.npmproxy == 'string') { updateArgs.push('--proxy', obj.args.npmproxy); }
+                updateArgs.push('install', 'meshcentral');
+                if (typeof obj.args.selfupdate == 'string') { updateArgs.push('@' + obj.args.selfupdate); }
+
+                var child_process = require('child_process');
+                var xxprocess = child_process.execFile(npmpath, updateArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) { });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.on('close', function (code) {
                     console.log('Update completed...');
-                    if (require('os').platform() == 'win32') {
-                        // On Windows, attempt to copy "meshcentral-data\win-deamon" folder back into "deamon".
-                        // This folder will have been removed after update and needs to be added back.
-                        try {
-                            var sourceDaemonFolder = obj.path.join(obj.datapath, 'win-deamon');
-                            var targetDaemonFolder = obj.path.join(__dirname, 'daemon');
-                            if (!obj.fs.existsSync(targetDaemonFolder)) { obj.fs.mkdirSync(targetDaemonFolder); }
-                            var files = obj.fs.readdirSync(sourceDaemonFolder);
-                            for (var i in files) {
-                                if (files[i].endsWith('.log') == false) {
-                                    var bin = obj.fs.readFileSync(obj.path.join(sourceDaemonFolder, files[i]), 'binary');
-                                    obj.fs.writeFileSync(obj.path.join(targetDaemonFolder, files[i]), bin, 'binary');
-                                }
-                            }
-                        } catch (e) { console.error(e); }
-                    }
                     setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
                 });
             } else {
@@ -264,7 +234,10 @@ function CreateMeshCentralServer(config, args) {
     };
 
     // Initiate server self-update
-    obj.performServerUpdate = function () { console.log('Starting self upgrade...'); process.exit(200); };
+    obj.performServerUpdate = function () {
+        if (obj.serverSelfWriteAllowed == true) { console.log('Starting self upgrade...'); process.exit(200); return true; }
+        return false;
+    };
 
     // Initiate server self-update
     obj.performServerCertUpdate = function () { console.log('Updating server certificates...'); process.exit(200); };
@@ -557,8 +530,11 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx1b = function () {
         var i;
 
+        // Check if self update is allowed. If running as a Windows service, self-update is not possible.
+        if (obj.fs.existsSync(obj.path.join(__dirname, 'daemon'))) { obj.serverSelfWriteAllowed = false; }
+
         // If we are targetting a specific version, update now.
-        if (typeof obj.args.selfupdate == 'string') {
+        if ((obj.serverSelfWriteAllowed == true) && (typeof obj.args.selfupdate == 'string')) {
             obj.args.selfupdate = obj.args.selfupdate.toLowerCase();
             if (obj.currentVer !== obj.args.selfupdate) { obj.performServerUpdate(); return; } // We are targetting a specific version, run self update now.
         }
