@@ -169,24 +169,22 @@ function CreateMeshCentralServer(config, args) {
             obj.StartEx();
         } else {
             // if "--launch" is not specified, launch the server as a child process.
-            var startLine = '';
+            var startArgs = [];
             for (i in process.argv) {
-                var arg = process.argv[i];
-                if (arg.length > 0) {
-                    if (startLine.length > 0) startLine += ' ';
-                    if ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0)) { startLine += '"' + arg + '"'; } else { startLine += arg; }
+                if (i > 0) {
+                    var arg = process.argv[i];
+                    if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push('"' + arg + '"'); } else { startArgs.push(arg); }
                 }
             }
-            obj.launchChildServer(startLine);
+            startArgs.push('--launch', process.pid);
+            obj.launchChildServer(startArgs);
         }
     };
 
     // Launch MeshCentral as a child server and monitor it.
-    obj.launchChildServer = function (startLine) {
-        if (process.pid) { obj.updateServerState('monitor-pid', process.pid); }
-        if (process.ppid) { obj.updateServerState('monitor-ppid', process.ppid); }
+    obj.launchChildServer = function (startArgs) {
         var child_process = require('child_process');
-        childProcess = child_process.exec(startLine + ' --launch ' + process.pid, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
+        childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startLine); }, 500); // This is an expected restart.
             } else if (childProcess.xrestart == 2) {
@@ -568,7 +566,7 @@ function CreateMeshCentralServer(config, args) {
         // Write the server state
         obj.updateServerState('state', 'starting');
         if (process.pid) { obj.updateServerState('server-pid', process.pid); }
-        if (process.ppid) { obj.updateServerState('server-ppid', process.ppid); }
+        if (process.ppid) { obj.updateServerState('server-parent-pid', process.ppid); }
 
         // Start memory tracking if requested
         if (typeof obj.args.memorytracking == 'number') {
@@ -1849,10 +1847,12 @@ function mainStart() {
         process.on("exit", function () { if (childProcess) { childProcess.kill(); childProcess = null; } });
 
         // If our parent exits, we also exit
-        process.stderr.on('end', function () { process.exit(); });
-        process.stdout.on('end', function () { process.exit(); });
-        process.stdin.on('end', function () { process.exit(); });
-        process.stdin.on('data', function (data) { });
+        if (args.launch) {
+            process.stderr.on('end', function () { process.exit(); });
+            process.stdout.on('end', function () { process.exit(); });
+            process.stdin.on('end', function () { process.exit(); });
+            process.stdin.on('data', function (data) { });
+        }
     });
 }
 
