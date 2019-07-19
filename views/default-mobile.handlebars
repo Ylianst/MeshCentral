@@ -362,6 +362,7 @@
                             <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
                                     <span id="p14power"></span>&nbsp;
+                                    <input id=DeskSoftInput type=text style="width:25px;display:none;opacity:.2" onblur="toggleSoftKeys(0)" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)">
                                 </div>
                                 <div style="margin-left:3px">
                                     <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">
@@ -395,10 +396,11 @@
                                 </div>
                                 <div>
                                     <input id="deskActionsBtn" type=button style="margin-left:3px" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
-                                    <input type="button" value="Settings..." style="margin-left:3px" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
-                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none;margin-left:3px">
-                                    <!--<input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">-->
-                                    <label><span id="DeskControlSpan" style="margin-left:3px;display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
+                                    <input type="button" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
+                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
+                                    <input id="DeskCAD" type="button" value="CtrlAltDel" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
+                                    <input id="DeskSoftKeys" type="button" value="Keys" onkeypress="return false" onkeydown="return false" onclick="    toggleSoftKeys(1)">
+                                    <label><span id="DeskControlSpan" style="display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
                         </div>
@@ -1523,6 +1525,57 @@
         // MY DEVICES
         //
 
+        function ondeskkeypress(e) {
+            Q('DeskSoftInput').value = '';
+            setSessionActivity();
+            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links[userinfo._id].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeys(e);
+            }
+        }
+
+        function ondeskkeydown(e) {
+            Q('DeskSoftInput').value = '';
+            setSessionActivity();
+            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links[userinfo._id].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeyDown(e);
+            }
+        }
+
+        function ondeskkeyup(e) {
+            Q('DeskSoftInput').value = '';
+            setSessionActivity();
+            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+                // Check what keys we are allows to send
+                if (currentNode != null) {
+                    var mesh = meshes[currentNode.meshid];
+                    var meshrights = mesh.links[userinfo._id].rights;
+                    var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
+                    if (inputAllowed == false) return false;
+                    var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
+                    if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
+                }
+                return desktop.m.handleKeyUp(e);
+            }
+        }
+
         // Since the update device call can be quite frequent, we can moderate it and only call it at most 5 times a second.
         var updateDevicesTimer = null;
         function updateDevices() { if (updateDevicesTimer != null) return; updateDevicesTimer = setTimeout(updateDevicesEx, 200); }
@@ -2222,7 +2275,7 @@
                 case 2:
                     break;
                 default:
-                    console.log('Unknown onDesktopStateChange state', state);
+                    //console.log('Unknown onDesktopStateChange state', state);
                     break;
             }
             updateDesktopButtons();
@@ -2354,13 +2407,17 @@
         }
         */
 
-        /*
         // Send CTRL-ALT-DEL
         function sendCAD() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             desktop.m.sendcad();
         }
-        */
+        
+        // Toggle soft keyboard
+        function toggleSoftKeys(x) {
+            QV('DeskSoftInput', x == 1);
+            if (x == 1) { Q('DeskSoftInput').focus(); }
+        }
 
         // Show process dialogs
         function toggleDeskTools() {
@@ -2426,10 +2483,10 @@
             desktop.m.SetDisplay(display);
         }
 
-        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousedown(e) }
-        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mouseup(e) }
-        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked) desktop.m.mousemove(e) }
-        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && Q('DeskControl').checked && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousedown(e) }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mouseup(e) }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousemove(e) }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
