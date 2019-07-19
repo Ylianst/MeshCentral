@@ -399,7 +399,7 @@
                                     <input type="button" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
                                     <input id="DeskCAD" type="button" value="CtrlAltDel" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
-                                    <input id="DeskSoftKeys" type="button" value="Keys" onkeypress="return false" onkeydown="return false" onclick="    toggleSoftKeys(1)">
+                                    <input id="DeskSoftKeys" type="button" value="Keys" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
                                     <label><span id="DeskControlSpan" style="display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
@@ -1526,6 +1526,7 @@
         //
 
         function ondeskkeypress(e) {
+            toggleSoftKeys(0);
             Q('DeskSoftInput').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
@@ -1543,6 +1544,7 @@
         }
 
         function ondeskkeydown(e) {
+            toggleSoftKeys(0);
             Q('DeskSoftInput').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
@@ -1560,6 +1562,7 @@
         }
 
         function ondeskkeyup(e) {
+            toggleSoftKeys(0);
             Q('DeskSoftInput').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {

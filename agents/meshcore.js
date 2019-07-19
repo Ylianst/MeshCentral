@@ -995,7 +995,6 @@ function createMeshCore(agent)
                         this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                         this.prependListener('end', function () { this.httprequest.process.kill(); });
-                        this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nclear\n");
                     }
 
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
