@@ -1293,6 +1293,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'changemeshnotify':
+                {
+                    var err = null;
+                    try {
+                        // Change the current user's notification flags for a meshid
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                        if (common.validateInt(command.notify) == false) { err = 'Invalid notification flags'; }
+                        if ((user.links == null) || (user.links[command.meshid] == null)) { err = 'Incorrect group identifier'; }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                    // Change the notification
+                    if (command.notify == 0) {
+                        delete user.links[command.meshid].notify;
+                    } else {
+                        user.links[command.meshid].notify = command.notify;
+                    }
+
+                    // Save the user
+                    parent.db.SetUser(user);
+
+                    // Notify change
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Mesh notification change.', domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+
+                    break;
+                }
             case 'changepassword':
                 {
                     // Change our own password
