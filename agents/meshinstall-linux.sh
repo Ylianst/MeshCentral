@@ -1,18 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 CheckStartupType() {
+  # 1 = Systemd
+  # 2 = Upstart
+  # 3 = init.d
+  # 5 = BSD
+
+  # echo "Checking if Linux or BSD Platform"
+  plattype=`uname | awk '{ tst=tolower($0);a=split(tst, res, "bsd"); if(a==1) { print "LINUX"; } else { print "BSD"; }}'`
+  if [[ $plattype == 'BSD' ]]
+   then return 5;
+  fi
+
   # echo "Checking process autostart system..."
-  starttype=`ps -p 1 | awk '/1/ {print $4}'`
+  starttype=`ps -p 1 -o command= | awk '{ a=split($0, res, "/"); split(res[a], f, " "); print f[1]}'`
+ 
   # Systemd
-  if [[ $starttype == 'systemd' ]]; then return 1;
-  elif [[ $starttype == 'init' ]];
-      then
-         # Upstart
-         /sbin/init --version && [[ `/sbin/init --version` =~ upstart ]] && return 2 || return 3
-  #      if [[ `/sbin/init --version` =~ upstart ]]; then return 2;
-  #        Sysv-init
-  #        return 3;
-  #      fi
+  if [[ $starttype == 'systemd' ]]
+    then return 1;
+  elif [[ $starttype == 'init' ]]
+	then
+		if [ -d "/etc/init" ]
+			then
+				return 2;
+			else
+				return 3;
+		fi
   fi
   return 0;
 }
@@ -55,13 +68,25 @@ CheckInstallAgent() {
         # echo "Detecting computer type..."
         if [ $machinetype == 'x86_64' ] || [ $machinetype == 'amd64' ]
         then
-          # Linux x86, 64 bit
-          machineid=6
+		  if [ $starttype -eq 5 ]
+		  then
+			# FreeBSD x86, 64 bit
+			machineid=30
+		  else
+			# Linux x86, 64 bit
+			machineid=6
+		  fi
         fi
         if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ] || [ $machinetype == 'i586' ]
         then
-          # Linux x86, 32 bit
-          machineid=5
+			if [ $starttype -eq 5 ]
+			then
+				# FreeBSD x86, 32 bit
+				machineid=31
+			else
+				# Linux x86, 32 bit
+				machineid=5
+			fi
         fi
         if [ $machinetype == 'armv6l' ] || [ $machinetype == 'armv7l' ]
         then
@@ -164,6 +189,15 @@ DownloadAgent() {
           echo 'meshagent installed as upstart/init.d service.'
           echo 'To start service: sudo initctl start meshagent'
           echo 'To stop service: sudo initctl stop meshagent'
+	  elif [ $starttype -eq 5 ]
+          then
+		  # FreeBSD
+          wget $url/meshagents?script=5 {{{wgetoptionshttps}}}-O /usr/local/etc/rc.d/meshagent || curl {{{curloptionshttps}}}--output /usr/local/etc/rc.d/meshagent $url/meshagents?script=5
+          chmod +x /usr/local/etc/rc.d/meshagent
+          service meshagent start
+          echo 'meshagent installed as BSD service.'
+          echo 'To start service: sudo service meshagent start'
+          echo 'To stop service: sudo service meshagent stop'
       else
           # unknown
           echo "Unknown Service Platform Type. (ie: init, systemd, etc)"
@@ -211,7 +245,13 @@ UninstallAgent() {
         rm -f /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
         initctl stop meshagentDiagnostic &> /dev/null
         rm -f /etc/init/meshagentDiagnostic.conf &> /dev/null
-    fi
+    elif [ $starttype -eq 5 ]; then
+		# FreeBSD
+		service meshagent stop
+		service meshagentDiagnostic stop &> /dev/null
+		rm -f /usr/local/etc/rc.d/meshagent
+		rm -f /usr/local/etc/rc.d/meshagentDiagnostic &> /dev/null
+	fi
   fi
 
   if [ -e $installpath ]
