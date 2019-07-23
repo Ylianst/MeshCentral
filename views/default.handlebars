@@ -1282,6 +1282,7 @@
                     if (updateNaggleFlags & 256) { drawDeviceTimeline(); }
                     if (updateNaggleFlags & 1024) { deviceEventsUpdate(); }
                     if (updateNaggleFlags & 2048) { userEventsUpdate(); }
+                    if (updateNaggleFlags & 4096) { p20updateMesh(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                 }, 150);
@@ -1295,7 +1296,7 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            masterUpdate(4 + 128);
+            masterUpdate(4 + 128 + 4096);
 
             // If we can't create new groups, hide all links that can do that.
             var newGroupsAllowed = ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0));
@@ -1791,7 +1792,7 @@
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
-                            if (xxcurrentView == 20 && currentMesh._id == message.event.meshid) { p20updateMesh(); }
+                            if (xxcurrentView == 20 && currentMesh._id == message.event.meshid) { masterUpdate(4096); }
                             break;
                         }
                         case 'deletemesh': {
@@ -1946,7 +1947,14 @@
                                 var node = nodes[index];
 
                                 // Event the connection change if needed
-                                var n = getstore('notifications', 0);
+                                var n = getstore('notifications', 0); // Account notification settings
+
+                                // Per-group notification settings
+                                if (message.event.meshid && userinfo.links && userinfo.links[message.event.meshid] && userinfo.links[message.event.meshid].notify) {
+                                    n |= userinfo.links[message.event.meshid].notify;
+                                }
+
+                                // Show the notification
                                 if (n & 2) {
                                     if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: 'Agent connected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: 'Intel AMT detected', title: node.name, icon: node.icon, nodeid: node._id }); }
@@ -6379,6 +6387,15 @@
                 x += addHtmlValue('User Consent', addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
             }
 
+            // Display user consent
+            var meshNotify = 0, meshNotifyStr = [];
+            if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+            if (meshNotify & 2) { meshNotifyStr.push('Connect'); }
+            if (meshNotify & 4) { meshNotifyStr.push('Disconnect'); }
+            if (meshNotify & 8) { meshNotifyStr.push('Intel&reg; AMT'); }
+            if (meshNotifyStr.length == 0) { meshNotifyStr.push('None'); }
+            x += addHtmlValue('Notifications', addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+
             // Intel AMT setup
             var intelAmtPolicy = 'No Policy';
             if (currentMesh.amt) {
@@ -6754,6 +6771,29 @@
         }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); return false; }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
+
+        function p20editMeshNotify() {
+            if (xxdialogMode) return false;
+            var meshNotify = 0;
+            if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+            var x = '';
+            x += '<div><input id=p20notifyIntelDeviceConnect type=checkbox />Device connections.</div>';
+            x += '<div><input id=p20notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</div>';
+            x += '<div><input id=p20notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</div>';
+            setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x);
+            Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
+            Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
+            Q('p20notifyIntelAmtKvmActions').checked = (meshNotify & 8);
+            return false;
+        }
+
+        function p20editMeshNotifyEx() {
+            var meshNotify = 0;
+            meshNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
+            meshNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
+            meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0;
+            meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
+        }
 
         //
         // MY FILES
@@ -7325,8 +7365,12 @@
             x += addHtmlValue('Email', '<input id=p4email maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass1 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
-            if (serverinfo.emailcheck) { x += '<div><input id=p4verifiedEmail type=checkbox />Email is verified.</div>'; }
+            x += '<div><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />Randomize the password.</div>';
+            x += '<div><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />Force password reset on next login.</div>';
+            if (serverinfo.emailcheck) {
+                x += '<div><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />Email is verified.</div>';
+                x += '<div><input id=p4invitationEmail type=checkbox />Send invitation email.</div>';
+            }
 
             if (passRequirements) {
                 var r = [], rc = 0;
@@ -7340,18 +7384,31 @@
         }
 
         function showCreateNewAccountDialogValidate(x) {
-            if ((x == null) && (Q('p4email').value.length > 0) && (validateEmail(Q('p4email').value)) == false) { QE('idx_dlgOkButton', false); return; }
+            var ve = validateEmail(Q('p4email').value);
+            if (serverinfo.emailcheck) {
+                QE('p4verifiedEmail', ve);
+                QE('p4invitationEmail', ve && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
+                if (ve == false) { Q('p4verifiedEmail').checked = false; }
+                if ((Q('p4resetNextLogin').checked == false) || (Q('p4verifiedEmail').checked == false)) { Q('p4invitationEmail').checked = false; }
+            }
+            QE('p4pass1', !Q('p4randomPassword').checked);
+            QE('p4pass2', !Q('p4randomPassword').checked);
+
+            if ((x == null) && (Q('p4email').value.length > 0) && (ve == false)) { QE('idx_dlgOkButton', false); return; }
             var ok = true;
             if ((features & 0x200000) == 0) { ok &= (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))); }
-            ok &= (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
+            if (Q('p4randomPassword').checked == false) { ok &= (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements)); }
             if (ok && passRequirements) { if (checkPasswordRequirements(Q('p4pass1').value, passRequirements) == false) { ok = false; } }
             QE('idx_dlgOkButton', ok);
         }
 
         function showCreateNewAccountDialogEx() {
             var username = ((features & 0x200000) == 0) ? Q('p4name').value : Q('p4email').value;
-            var x = { action: 'adduser', username: username, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked };
-            if (serverinfo.emailcheck) { x.emailVerified = Q('p4verifiedEmail').checked; }
+            var x = { action: 'adduser', username: username, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked, randomPassword: Q('p4randomPassword').checked };
+            if (serverinfo.emailcheck) {
+                x.emailVerified = Q('p4verifiedEmail').checked;
+                x.emailInvitation = Q('p4invitationEmail').checked;
+            }
             meshserver.send(x);
         }
 
