@@ -8122,7 +8122,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                elements: { line: { tension: 0.001 } },
+                elements: { line: { cubicInterpolationMode: 'monotone' } },
                 scales: {
                     xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
                     yAxes: [{ type: 'linear', display: true, scaleLabel: { display: true, labelString: '' } }]
