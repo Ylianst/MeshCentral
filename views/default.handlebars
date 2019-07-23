@@ -2866,7 +2866,7 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return false;
             var mesh = meshes[meshid], x = '', installType = 0;
-            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux</option><option value=2>Apple MacOS</option><option value=3>Windows (UnInstall)</option><option value=4>Linux (UnInstall)</option></select>');
+            x += addHtmlValue('Operating System', '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>Windows</option><option value=1>Linux / BSD</option><option value=2>Apple MacOS</option><option value=3>Windows (UnInstall)</option><option value=4>Linux / BSD (UnInstall)</option></select>');
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue('Installation Type', '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>Background & interactive</option><option value=2>Background only</option><option value=1>Interactive only</option></select>');
             x += '</div><hr>';
@@ -2886,7 +2886,7 @@
             // Linux agent install
             x += "<div id=agins_linux style=display:none>To add a computer to " + EscapeHtml(mesh.name) + " run the following command. Root credentials will be needed.<br />";
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += "</div>";
+            x += "<div style='font-size:x-small'>* For BSD, run \"pkg install wget sudo bash\" first.</div></div>";
 
             // MacOS agent install
             x += "<div id=agins_osx style=display:none>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.<br /><br />";
@@ -8073,6 +8073,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                elements: { line: { tension: 0.001 } },
                 scales: {
                     xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
                     yAxes: [{ type: 'linear', display: true, scaleLabel: { display: true, labelString: '' } }]
