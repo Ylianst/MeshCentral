@@ -482,6 +482,7 @@
                         </div>
                         <div>
                             <select id="deskkeys">
+                                <option value=10>Ctrl+Alt+Del</option>
                                 <option value=5>Win</option>
                                 <option value=0>Win+Down</option>
                                 <option value=1>Win+Up</option>
@@ -495,7 +496,6 @@
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
-                            <input id="DeskCAD" type="button" value="Ctrl-Alt-Del" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span></label>&nbsp;
                         </div>
                     </div>
@@ -4547,8 +4547,6 @@
             QE('connectbutton1h', hwonline);
             QE('deskSaveBtn', deskState == 3);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QV('DeskCAD', inputAllowed);
-            QE('DeskCAD', deskState == 3);
             QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on MacOS
             QE('DeskClip', deskState == 3);
             QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
@@ -4971,6 +4969,8 @@
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
                 }
+            } else if (ks == 10) { // CTRL-ALT-DEL
+                desktop.m.sendcad();
             }
         }
 

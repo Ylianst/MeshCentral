@@ -157,7 +157,7 @@ function CreateMeshCentralServer(config, args) {
             for (i in process.argv) {
                 if (i > 0) {
                     var arg = process.argv[i];
-                    if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push('"' + arg + '"'); } else { startArgs.push(arg); }
+                    if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push(arg); } else { startArgs.push(arg); }
                 }
             }
             startArgs.push('--launch', process.pid);
