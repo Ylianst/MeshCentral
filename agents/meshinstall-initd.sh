@@ -20,7 +20,8 @@ start() {
     return 1
   fi
   echo 'Starting service…' >&2
-  local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
+  local CMD="$SCRIPT -exec \"var child; process.on('SIGTERM', function () { child.removeAllListeners('exit'); child.kill(); process.exit(); }); function start() { child = require('child_process').execFile(process.execPath, [process.argv0, \"\"]); child.stdout.on('data', function (c) { }); child.stderr.on('data', function (c) { }); child.on('exit', function (status) { start(); }); } start();\" &> \"$LOGFILE\" & echo \$!"
+
   cd /usr/local/mesh
   su -c "$CMD" $RUNAS > "$PIDFILE"
   echo 'Service started' >&2
