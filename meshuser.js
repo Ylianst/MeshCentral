@@ -1687,7 +1687,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (newuser != null) {
                             // Add mesh to user
                             if (newuser.links == null) newuser.links = {};
-                            newuser.links[command.meshid] = { rights: command.meshadmin };
+                            if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
                             db.SetUser(newuser);
                             parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
