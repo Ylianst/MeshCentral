@@ -33,7 +33,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>{{{title}}}</title>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -6626,15 +6626,24 @@
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 
-        function p20showAddMeshUserDialog() {
+        function p20showAddMeshUserDialog(userid) {
             if (xxdialogMode) return false;
-            var x = "Allow users to manage this device group and devices in this group.";
-            if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
-            x += "<br /><br /><div style='position:relative'>";
-            x += addHtmlValue('User Names', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
-            x += "<div id=dp20usersuggest class=suggestionBox style='top:30px;left:130px;display:none'></div>";
-            x += '</div>';
-            x += '<br><div style="height:120px;overflow-y:scroll;border:1px solid gray">';
+            var x = '';
+            if (userid == null) {
+                x += "Allow users to manage this device group and devices in this group.";
+                if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
+                x += "<br /><br /><div style='position:relative'>";
+                x += addHtmlValue('User Names', '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
+                x += "<div id=dp20usersuggest class=suggestionBox style='top:30px;left:130px;display:none'></div>";
+                x += '</div><br>';
+            } else {
+                userid = decodeURIComponent(userid);
+                var uname = userid.split('/')[2];
+                if (users && users[userid]) { uname = users[userid].name; }
+                if (userinfo._id == userid) { uname = userinfo.name; }
+                x += "Group permissions for user " + uname + ".<br /><br />";
+            }
+            x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users</label><br>';
@@ -6650,9 +6659,33 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes</label><br>';
             x += '</div>';
-            setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
+            if (userid == null) {
+                setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
+                Q('dp20username').focus();
+            } else {
+                setDialogMode(2, "Edit User Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
+                var cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
+                if (meshrights == 0xFFFFFFFF) {
+                    Q('p20fulladmin').checked = true;
+                } else {
+                    if (meshrights & 1) { Q('p20editmesh').checked = true; }
+                    if (meshrights & 2) { Q('p20manageusers').checked = true; }
+                    if (meshrights & 4) { Q('p20managecomputers').checked = true; }
+                    if (meshrights & 8) {
+                        Q('p20remotecontrol').checked = true;
+                        if (meshrights & 256) { Q('p20remoteview').checked = true; }
+                        if (meshrights & 512) { Q('p20remotelimitedinput').checked = true; }
+                        if (meshrights & 1024) { Q('p20noterminal').checked = true; }
+                        if (meshrights & 2048) { Q('p20nofiles').checked = true; }
+                        if (meshrights & 4096) { Q('p20noamt').checked = true; }
+                    }
+                    if (meshrights & 16) { Q('p20meshagentconsole').checked = true; }
+                    if (meshrights & 32) { Q('p20meshserverfiles').checked = true; }
+                    if (meshrights & 64) { Q('p20wakedevices').checked = true; }
+                    if (meshrights & 128) { Q('p20editnotes').checked = true; }
+                }
+            }
             p20validateAddMeshUserDialog();
-            Q('dp20username').focus();
             return false;
         }
 
@@ -6668,28 +6701,31 @@
 
         function p20validateAddMeshUserDialog() {
             var meshrights = currentMesh.links[userinfo._id].rights;
-            var ok = true, xusers = Q('dp20username').value.split(',');
-            for (var i in xusers) { var xuser = xusers[i] = xusers[i].trim(); if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; } }
-            QE('idx_dlgOkButton', ok);
+            var ok = true, xusers = null;
+            if (Q('dp20username')) {
+                Q('dp20username').value.split(',');
+                for (var i in xusers) { var xuser = xusers[i] = xusers[i].trim(); if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; } }
 
-            // Fill the suggestion box
-            var showsuggestbox = false, exactMatch = false;
-            if (users != null) {
-                var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
-                if (lastuser.length > 0) {
-                    for (var i in users) {
-                        if (users[i].name === lastuser) { exactMatch = true; break; }
-                        if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
-                    }
-                    if ((exactMatch == false) && (matchingUsers.length > 0)) {
-                        var x = '';
-                        for (var i in matchingUsers) { x += '<a href=# onclick=\'p20setname("' + encodeURIComponent(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
-                        QH('dp20usersuggest', x);
-                        showsuggestbox = true;
+                // Fill the suggestion box
+                var showsuggestbox = false, exactMatch = false;
+                if (users != null) {
+                    var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
+                    if (lastuser.length > 0) {
+                        for (var i in users) {
+                            if (users[i].name === lastuser) { exactMatch = true; break; }
+                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
+                        }
+                        if ((exactMatch == false) && (matchingUsers.length > 0)) {
+                            var x = '';
+                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p20setname("' + encodeURIComponent(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            QH('dp20usersuggest', x);
+                            showsuggestbox = true;
+                        }
                     }
                 }
+                QV('dp20usersuggest', showsuggestbox);
             }
-            QV('dp20usersuggest', showsuggestbox);
+            QE('idx_dlgOkButton', ok);
 
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
@@ -6707,59 +6743,72 @@
             QE('p20noamt', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
         }
 
-        function p20showAddMeshUserDialogEx() {
-            var meshadmin = 0;
-            if (Q('p20fulladmin').checked == true) { meshadmin = 0xFFFFFFFF; } else {
-                if (Q('p20editmesh').checked == true) meshadmin += 1;
-                if (Q('p20manageusers').checked == true) meshadmin += 2;
-                if (Q('p20managecomputers').checked == true) meshadmin += 4;
-                if (Q('p20remotecontrol').checked == true) meshadmin += 8;
-                if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
-                if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
-                if (Q('p20wakedevices').checked == true) meshadmin += 64;
-                if (Q('p20editnotes').checked == true) meshadmin += 128;
-                if (Q('p20remoteview').checked == true) meshadmin += 256;
-                if (Q('p20noterminal').checked == true) meshadmin += 512;
-                if (Q('p20nofiles').checked == true) meshadmin += 1024;
-                if (Q('p20noamt').checked == true) meshadmin += 2048;
-                if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
-            }
+        function p20showAddMeshUserDialogEx(b, t) {
+            if (b == 2) {
+                p20viewuserEx(b, t);
+            } else {
+                var meshadmin = 0;
+                if (Q('p20fulladmin').checked == true) { meshadmin = 0xFFFFFFFF; } else {
+                    if (Q('p20editmesh').checked == true) meshadmin += 1;
+                    if (Q('p20manageusers').checked == true) meshadmin += 2;
+                    if (Q('p20managecomputers').checked == true) meshadmin += 4;
+                    if (Q('p20remotecontrol').checked == true) meshadmin += 8;
+                    if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
+                    if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
+                    if (Q('p20wakedevices').checked == true) meshadmin += 64;
+                    if (Q('p20editnotes').checked == true) meshadmin += 128;
+                    if (Q('p20remoteview').checked == true) meshadmin += 256;
+                    if (Q('p20noterminal').checked == true) meshadmin += 512;
+                    if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                    if (Q('p20noamt').checked == true) meshadmin += 2048;
+                    if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
+                }
 
-            var users = Q('dp20username').value.split(','), users2 = [];
-            for (var i in users) { users2.push(users[i].trim()); }
-            meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: users2, meshadmin: meshadmin });
+                if (t == null) {
+                    var users = Q('dp20username').value.split(','), users2 = [];
+                    for (var i in users) { users2.push(users[i].trim()); }
+                    meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: users2, meshadmin: meshadmin });
+                } else {
+                    meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: [ t.split('/')[2] ], meshadmin: meshadmin });
+                }
+            }
         }
 
         function p20viewuser(userid) {
             if (xxdialogMode) return;
-            userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
-            if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
-                if ((meshrights &    1) != 0) r += ', Edit Device Group';
-                if ((meshrights &    2) != 0) r += ', Manage Device Group Users';
-                if ((meshrights &    4) != 0) r += ', Manage Device Group Computers';
-                if ((meshrights &    8) != 0) r += ', Remote Control';
-                if ((meshrights &   16) != 0) r += ', Agent Console';
-                if ((meshrights &   32) != 0) r += ', Server Files';
-                if ((meshrights &   64) != 0) r += ', Wake Devices';
-                if ((meshrights &  128) != 0) r += ', Edit Notes';
-                if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r += ', Remote View Only';
-                if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r += ', No Terminal';
-                if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r += ', No Files';
-                if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
-                if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r += ', Limited Input';
-            }
-            r = r.substring(2);
-            if (r == '') { r = 'No Rights'; }
-            var uname = userid.split('/')[2];
-            if (users && users[userid]) { uname = users[userid].name; }
-            if (userinfo._id == userid) { uname = userinfo.name; }
-            var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(decodeURIComponent(uname)));
-            if (userid.split('/')[2] != uname) { x += addHtmlValue('User Identifier', EscapeHtml(userid.split('/')[2])); }
+            var xuserid = decodeURIComponent(userid);
+            var cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[xuserid].rights;
+            if (((userinfo._id) != xuserid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) {
+                p20showAddMeshUserDialog(userid);
+            } else {
+                var r = ''
+                if (meshrights == 0xFFFFFFFF) r = ', Full Administrator (all rights)'; else {
+                    if ((meshrights & 1) != 0) r += ', Edit Device Group';
+                    if ((meshrights & 2) != 0) r += ', Manage Device Group Users';
+                    if ((meshrights & 4) != 0) r += ', Manage Device Group Computers';
+                    if ((meshrights & 8) != 0) r += ', Remote Control';
+                    if ((meshrights & 16) != 0) r += ', Agent Console';
+                    if ((meshrights & 32) != 0) r += ', Server Files';
+                    if ((meshrights & 64) != 0) r += ', Wake Devices';
+                    if ((meshrights & 128) != 0) r += ', Edit Notes';
+                    if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r += ', Remote View Only';
+                    if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r += ', No Terminal';
+                    if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r += ', No Files';
+                    if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
+                    if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r += ', Limited Input';
+                }
+                r = r.substring(2);
+                if (r == '') { r = 'No Rights'; }
+                var uname = xuserid.split('/')[2];
+                if (users && users[xuserid]) { uname = users[xuserid].name; }
+                if (userinfo._id == xuserid) { uname = userinfo.name; }
+                var buttons = 1, x = addHtmlValue('User Name', EscapeHtml(decodeURIComponent(uname)));
+                if (xuserid.split('/')[2] != uname) { x += addHtmlValue('User Identifier', EscapeHtml(xuserid.split('/')[2])); }
 
-            x += addHtmlValue('Permissions', r);
-            if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
-            setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
+                x += addHtmlValue('Permissions', r);
+                if (((userinfo._id) != xuserid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
+                setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, xuserid);
+            }
         }
 
         function p20viewuserEx(button, userid) {
