@@ -1139,6 +1139,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // If the email is the username, set this here.
                     if (domain.usernameisemail) { if (command.email) { command.username = command.email; } else { command.email = command.username; } }
 
+                    // Randomize the password if needed
+                    if (command.randomPassword === true) { command.pass = getRandomPassword(); }
+
                     // Add a new user account
                     var err = null, newusername, newuserid;
                     try {
@@ -1147,7 +1150,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (common.validateUsername(command.username, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
                         else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
-                        else if (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false) { err = 'Invalid password'; } // Password does not meet requirements
+                        else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = 'Invalid password'; } // Password does not meet requirements
                         else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
                         else {
                             newusername = command.username;
@@ -1209,6 +1212,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                     if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                     parent.parent.DispatchEvent(targets, obj, event);
+
+                                    // Perform email invitation
+                                    if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && parent.parent.mailserver) {
+                                        parent.parent.mailserver.sendAccountInviteMail(domain, user.name, newusername, command.email.toLowerCase(), command.pass);
+                                    }
 
                                     // OK Response
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -1291,6 +1299,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
                     }
+                    break;
+                }
+            case 'changemeshnotify':
+                {
+                    var err = null;
+                    try {
+                        // Change the current user's notification flags for a meshid
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                        if (common.validateInt(command.notify) == false) { err = 'Invalid notification flags'; }
+                        if ((user.links == null) || (user.links[command.meshid] == null)) { err = 'Incorrect group identifier'; }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                    // Change the notification
+                    if (command.notify == 0) {
+                        delete user.links[command.meshid].notify;
+                    } else {
+                        user.links[command.meshid].notify = command.notify;
+                    }
+
+                    // Save the user
+                    parent.db.SetUser(user);
+
+                    // Notify change
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Mesh notification change.', domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+
                     break;
                 }
             case 'changepassword':
@@ -2824,6 +2865,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
+    function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
     return obj;
 };
