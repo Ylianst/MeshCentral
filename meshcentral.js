@@ -1397,7 +1397,8 @@ function CreateMeshCentralServer(config, args) {
     // List of possible mesh agent install scripts
     var meshAgentsInstallScriptList = {
         1: { id: 1, localname: 'meshinstall-linux.sh', rname: 'meshinstall.sh', linux: true },
-        2: { id: 2, localname: 'meshinstall-initd.sh', rname: 'meshagent', linux: true }
+        2: { id: 2, localname: 'meshinstall-initd.sh', rname: 'meshagent', linux: true },
+        5: { id: 5, localname: 'meshinstall-bsd-rcd.sh', rname: 'meshagent', linux: true }
     };
 
     // Update the list of available mesh agents
