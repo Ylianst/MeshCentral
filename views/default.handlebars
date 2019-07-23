@@ -775,8 +775,8 @@
                     </div>
                     <div>
                         <input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
-                        &nbsp;<input id=p40log type="checkbox" onclick="updateServerTimelineHours()" />Log-X
-                    </div>
+                        &nbsp;<label><input id=p40log type="checkbox" onclick="updateServerTimelineHours()" />Log-X</label>
+</div>
                 </div>
                 <canvas id=serverMainStats style=""></canvas>
             </div>
@@ -789,7 +789,7 @@
                 &nbsp;<a href=terms>Terms &amp; Privacy</a>
             </div>
         </div>
-        <div id=dialog style="display:none">
+        <div id=dialog class="noselect" style="display:none">
             <div id=dialogHeader>
                 <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
                 <div id=id_dialogtitle></div>
@@ -5499,7 +5499,7 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? "<br /><br /><input type=checkbox id=p13recdeleteinput>Recursive delete<br>" : "<input type=checkbox id=p13recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?' + rec) : ('Delete selected item?' + rec)); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? "<br /><br /><label><input type=checkbox id=p13recdeleteinput>Recursive delete</label><br>" : "<input type=checkbox id=p13recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?' + rec) : ('Delete selected item?' + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
@@ -6079,10 +6079,10 @@
         function account_showAccountNotifySettings() {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div><input id=p2notifyPlayNotifySound type=checkbox />Notification sound.</div>';
-            x += '<div><input id=p2notifyIntelDeviceConnect type=checkbox />Device connections.</div>';
-            x += '<div><input id=p2notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</div>';
-            x += '<div><input id=p2notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</div>';
+            x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />Notification sound.</label></div>';
+            x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />Device connections.</label></div>';
+            x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</label></div>';
+            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</label></div>';
             setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
@@ -6538,7 +6538,7 @@
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return false;
             var x = "Are you sure you want to delete group \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the device group will also delete all information about devices within this group.<br /><br />";
-            x += "<input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />Confirm";
+            x += "<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />Confirm</label>";
             setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
             return false;
@@ -6575,14 +6575,14 @@
             if (xxdialogMode) return;
             var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>Desktop</b></div>';
-            x += "<div><input type=checkbox id=d20flag1 " + ((consent & 0x0001) ? 'checked' : '') + ">Notify user</div>";
-            x += "<div><input type=checkbox id=d20flag2 " + ((consent & 0x0008) ? 'checked' : '') + ">Prompt for user consent</div>";
+            x += "<div><label><input type=checkbox id=d20flag1 " + ((consent & 0x0001) ? 'checked' : '') + ">Notify user</label></div>";
+            x += "<div><label><input type=checkbox id=d20flag2 " + ((consent & 0x0008) ? 'checked' : '') + ">Prompt for user consent</label></div>";
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Terminal</b></div>';
-            x += "<div><input type=checkbox id=d20flag3 " + ((consent & 0x0002) ? 'checked' : '') + ">Notify user</div>";
-            x += "<div><input type=checkbox id=d20flag4 " + ((consent & 0x0010) ? 'checked' : '') + ">Prompt for user consent</div>";
+            x += "<div><label><input type=checkbox id=d20flag3 " + ((consent & 0x0002) ? 'checked' : '') + ">Notify user</label></div>";
+            x += "<div><label><input type=checkbox id=d20flag4 " + ((consent & 0x0010) ? 'checked' : '') + ">Prompt for user consent</label></div>";
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Files</b></div>';
-            x += "<div><input type=checkbox id=d20flag5 " + ((consent & 0x0004) ? 'checked' : '') + ">Notify user</div>";
-            x += "<div><input type=checkbox id=d20flag6 " + ((consent & 0x0020) ? 'checked' : '') + ">Prompt for user consent</div>";
+            x += "<div><label><input type=checkbox id=d20flag5 " + ((consent & 0x0004) ? 'checked' : '') + ">Notify user</label></div>";
+            x += "<div><label><input type=checkbox id=d20flag6 " + ((consent & 0x0020) ? 'checked' : '') + ">Prompt for user consent</label></div>";
             setDialogMode(2, "Edit Device Group User Consent", 3, p20editmeshconsentEx, x);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -6614,8 +6614,8 @@
         function p20editmeshfeatures() {
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0;
-            var x = "<div><input type=checkbox id=d20flag1 " + ((flags & 1)?'checked':'') + ">Remove device on disconnect<br></div>";
-            x += "<div><input type=checkbox id=d20flag2 " + ((flags & 2) ? 'checked' : '') + ">Sync server device name to hostname<br></div>";
+            var x = "<div><label><input type=checkbox id=d20flag1 " + ((flags & 1) ? 'checked' : '') + ">Remove device on disconnect</label><br></div>";
+            x += "<div><label><input type=checkbox id=d20flag2 " + ((flags & 2) ? 'checked' : '') + ">Sync server device name to hostname</label><br></div>";
             setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
         }
 
@@ -6635,20 +6635,20 @@
             x += "<div id=dp20usersuggest class=suggestionBox style='top:30px;left:130px;display:none'></div>";
             x += '</div>';
             x += '<br><div style="height:120px;overflow-y:scroll;border:1px solid gray">';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>Remote View Only<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>Limited Input Only<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>No Terminal Access<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>No File Access<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>No Intel&reg; AMT<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>Remote View Only</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>Limited Input Only</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>No Terminal Access</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>No File Access</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>No Intel&reg; AMT</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes</label><br>';
             x += '</div>';
             setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -6777,9 +6777,9 @@
             var meshNotify = 0;
             if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
             var x = '';
-            x += '<div><input id=p20notifyIntelDeviceConnect type=checkbox />Device connections.</div>';
-            x += '<div><input id=p20notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</div>';
-            x += '<div><input id=p20notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</div>';
+            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />Device connections.</label></div>';
+            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</label></div>';
+            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</label></div>';
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
@@ -6951,7 +6951,7 @@
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
-        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? "<br /><br /><input type=checkbox id=p5recdeleteinput>Recursive delete<br>" : "<input type=checkbox id=p5recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?' + rec) : ('Delete selected item?' + rec)); }
+        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? "<br /><br /><label><input type=checkbox id=p5recdeleteinput>Recursive delete</label><br>" : "<input type=checkbox id=p5recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?' + rec) : ('Delete selected item?' + rec)); }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
         function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile}); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
@@ -7080,7 +7080,7 @@
         function showDeleteAllEventsDialog() {
             if (xxdialogMode) return;
             var x = "Delete all events in the server event log?<br /><br />";
-            x += "<input id=p3check type=checkbox onchange=validateDeleteAllEventsDialog() />Confirm";
+            x += "<label><input id=p3check type=checkbox onchange=validateDeleteAllEventsDialog() />Confirm</label>";
             setDialogMode(2, "Delete All Events", 3, showDeleteAllEventsDialogEx, x);
             validateDeleteAllEventsDialog();
         }
@@ -7365,11 +7365,11 @@
             x += addHtmlValue('Email', '<input id=p4email maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass1 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('Password', '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += '<div><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />Randomize the password.</div>';
-            x += '<div><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />Force password reset on next login.</div>';
+            x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />Randomize the password.</label></div>';
+            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />Force password reset on next login.</label></div>';
             if (serverinfo.emailcheck) {
-                x += '<div><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />Email is verified.</div>';
-                x += '<div><input id=p4invitationEmail type=checkbox />Send invitation email.</div>';
+                x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />Email is verified.</label></div>';
+                x += '<div><label><input id=p4invitationEmail type=checkbox />Send invitation email.</label></div>';
             }
 
             if (passRequirements) {
@@ -7445,15 +7445,15 @@
             haltEvent(e);
             userid = decodeURIComponent(userid);
             var x = '<div><div id=d2AdminPermissions>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>Server Files, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>k max, blank for default<br><hr/>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>Full Administrator<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>Server Backup<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>Server Restore<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>Server Updates<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>Manage Users<br>';
-            x += '<hr/></div><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>Lock Account<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>No New Device Groups<br>';
-            x += '<input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>No Tools (MeshCmd/Router)<br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>Server Files</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>k max, blank for default<br><hr/>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>Full Administrator</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>Server Backup</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>Server Restore</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>Server Updates</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>Manage Users</label><br>';
+            x += '<hr/></div><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>Lock Account</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>No New Device Groups</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>No Tools (MeshCmd/Router)</label><br>';
             x += '</div>';
             var user = users[userid.toLowerCase()];
             setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
@@ -7660,8 +7660,8 @@
                 if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>Requirements: ' + r.join(', ') + '.</div>'; }
             }
 
-            x += '<div><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</div>';
-            if (multiFactor == 1) { x += '<div><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</div>'; }
+            x += '<div><label><input id=p4resetNextLogin type=checkbox />Force password reset on next login.</label></div>';
+            if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />Remove all 2nd factor authentication.</label></div>'; }
             setDialogMode(2, "Change Password for " + EscapeHtml(currentUser.name), 3, p30showUserChangePassDialogEx, x, multiFactor);
             p30showUserChangePassDialogValidate();
             Q('p4pass1').focus();
