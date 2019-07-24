@@ -132,7 +132,12 @@ function windows_terminal() {
         this._kernel32.SetConsoleWindowInfo(this._stdoutput, 1, rect);
     }
     
-    this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
+    this.PowerShellCapable = function()
+    {
+        return (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+    }
+
+    this.StartEx = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, terminalTarget)
     {
         this.stopping = null;
         if (this._kernel32.GetConsoleWindow().Val == 0) {
@@ -163,9 +168,10 @@ function windows_terminal() {
         this._user32.ShowWindow(this._kernel32.GetConsoleWindow().Val, SW_HIDE);
 
         this.ClearScreen();
-        this._hookThread().then(function () {
+        this._hookThread(terminalTarget).then(function ()
+        {
             // Hook Ready
-            this.terminal.StartCommand();
+            this.terminal.StartCommand(this.userArgs[0]);
         }, console.log);
         this._stream = new duplex({
             'write': function (chunk, flush) {
@@ -208,6 +214,15 @@ function windows_terminal() {
         this._stream._promise.terminal = this;
         return (this._stream);
     };
+    this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
+    {
+        return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\System32\\cmd.exe'));
+    }
+    this.StartPowerShell = function StartPowerShell(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
+    {
+        return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+    }
+
     this._stop = function () {
         if (this.stopping) { return (this.stopping); }
         //console.log('Stopping Terminal...');
@@ -220,8 +235,14 @@ function windows_terminal() {
         return (this.stopping);
     }
     
-    this._hookThread = function () {
+    this._hookThread = function ()
+    {
         var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
+        ret.userArgs = [];
+        for (var a in arguments)
+        {
+            ret.userArgs.push(arguments[a]);
+        }
         ret.terminal = this;
         this._ConsoleWinEventProc = GM.GetGenericGlobalCallback(7);
         this._ConsoleWinEventProc.terminal = this;
@@ -458,8 +479,9 @@ function windows_terminal() {
         }, 250, this, nWidth, nHeight);
     }
     
-    this.StartCommand = function StartCommand() {
-        if (this._kernel32.CreateProcessA(GM.CreateVariable(process.env['windir'] + '\\system32\\cmd.exe'), 0, 0, 0, 1, CREATE_NEW_PROCESS_GROUP, 0, 0, si, pi).Val == 0) {
+    this.StartCommand = function StartCommand(target) {
+        if (this._kernel32.CreateProcessA(GM.CreateVariable(target), 0, 0, 0, 1, CREATE_NEW_PROCESS_GROUP, 0, 0, si, pi).Val == 0)
+        {
             console.log('Error Spawning CMD');
             return;
         }
