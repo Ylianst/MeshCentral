@@ -940,11 +940,11 @@ function createMeshCore(agent)
             if (data == 'c') { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
         } else {
             // Handle tunnel data
-            if (this.httprequest.protocol == 0) { // 1 = Terminal, 2 = Desktop, 5 = Files
+            if (this.httprequest.protocol == 0) { // 1 = Terminal, 2 = Desktop, 5 = Files, 6 = PowerShell
                 // Take a look at the protocol
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                if (this.httprequest.protocol == 1) {
+                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
                     // Check user access rights for terminal
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -954,7 +954,6 @@ function createMeshCore(agent)
                         return;
                     }
 
-                   
                     this.end = function () {
                         if (process.platform == "win32") {
                             // Unpipe the web socket
@@ -977,7 +976,11 @@ function createMeshCore(agent)
 
                     // Remote terminal using native pipes
                     if (process.platform == "win32") {
-                        this.httprequest._term = require('win-terminal').Start(80, 25);
+                        if ((this.httprequest.protocol == 6) && (require('win-terminal').PowerShellCapable() == true)) {
+                            this.httprequest._term = require('win-terminal').StartPowerShell(80, 25);
+                        } else {
+                            this.httprequest._term = require('win-terminal').Start(80, 25);
+                        }
                         this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                         this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                         this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
@@ -1428,7 +1431,7 @@ function createMeshCore(agent)
             }
             ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // End of data marker
         } else if (obj.type == 'webrtc1') {
-            if (ws.httprequest.protocol == 1) { // Terminal
+            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
                 // Switch the user input from websocket to webrtc at this point.
                 if (process.platform == 'win32')
                 {
@@ -1450,7 +1453,7 @@ function createMeshCore(agent)
             ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}"); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
         } else if (obj.type == 'webrtc2') {
             // Other side received websocket end of data marker, start sending data on WebRTC channel
-            if (ws.httprequest.protocol == 1) { // Terminal
+            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
                 if (process.platform == 'win32')
                 {
                     ws.httprequest._term.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
@@ -1465,7 +1468,7 @@ function createMeshCore(agent)
             }
         } else if (obj.type == 'offer') {
             // This is a WebRTC offer.
-            if (ws.httprequest.protocol == 1) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
+            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
             ws.webrtc = rtc.createConnection();
             ws.webrtc.websocket = ws;
             ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });

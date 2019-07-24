@@ -45,17 +45,11 @@
         <hr id="cxmgroupsplit" />
         <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style="display:none">Multi-Desktop</div>
     </div>
-    <div id="meshContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+    <div id="meshContextMenu" class="contextMenu,noselect" style="display: none; min-width: 0px">
         <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1,event)">Select All</div>
         <div id="cxselectnone" class="cmtext" onclick="cmmeshaction(2,event)">Select None</div>
-        <!--
         <hr id="cxmgroupsplit2" style="display:none" />
         <div id="cxmmdesktop" class="cmtext" style="display:none" onclick="cmmeshaction(3,event)">Multi-Desktop</div>
-        -->
-    </div>
-    <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)">Normal Connect</div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
     </div>
     <!-- main page -->
     <div id=container>
@@ -525,7 +519,7 @@
                         <tr>
                             <td class="areaHead">
                                 <div class="toright2">
-                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction()/>
                                 </div>
                                 <div>
                                     <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none">
@@ -3148,13 +3142,7 @@
             var scrollLeft = (window.pageXOffset !== null) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
             var scrollTop = (window.pageYOffset !== null) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
             var elem = document.elementFromPoint(event.pageX - scrollLeft, event.pageY - scrollTop);
-            if (elem && elem != null && elem.id == "connectbutton2" && currentNode && currentNode.agent && (currentNode.agent.id > 0) && (currentNode.agent.id < 5)) {
-                contextelement = elem;
-                var contextmenudiv = document.getElementById("termShellContextMenu");
-                contextmenudiv.style.left = event.pageX + "px";
-                contextmenudiv.style.top = event.pageY + "px";
-                contextmenudiv.style.display = "block";
-            } else if (elem && elem != null && elem.id == "MxMESH") {
+            if (elem && elem != null && elem.id == "MxMESH") {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById("meshContextMenu");
                 contextmenudiv.style.left = event.pageX + "px";
@@ -3168,25 +3156,25 @@
                 contextmenudiv.style.left = event.pageX + "px";
                 contextmenudiv.style.top = event.pageY + "px";
                 contextmenudiv.style.display = "block";
-
-                // Get the node and set the menu options
-                var nodeid = contextelement.children[1].attributes.onclick.value;
-                var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
-                var mesh = meshes[node.meshid];
-                var meshlinks = mesh.links[userinfo._id];
-                var meshrights = meshlinks.rights;
-                var consoleRights = ((meshrights & 16) != 0);
-
-                // Check if we have terminal and file access
-                var terminalAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0));
-                var fileAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0));
-
-                QV('cxdesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((meshrights & 8) || (meshrights & 256)));
-                QV('cxterminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
-                QV('cxfiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8) && fileAccess);
-                QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8));
-                QV('cxconsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
             }
+
+            // Get the node and set the menu options
+            var nodeid = contextelement.children[1].attributes.onclick.value;
+            var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
+            var mesh = meshes[node.meshid];
+            var meshlinks = mesh.links[userinfo._id];
+            var meshrights = meshlinks.rights;
+            var consoleRights = ((meshrights & 16) != 0);
+
+            // Check if we have terminal and file access
+            var terminalAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0));
+            var fileAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0));
+
+            QV('cxdesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((meshrights & 8) || (meshrights & 256)));
+            QV('cxterminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
+            QV('cxfiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8) && fileAccess);
+            QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8));
+            QV('cxconsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
 
             return haltEvent(event);
         }
@@ -3216,25 +3204,17 @@
         }
 
         function cmmeshaction(action) {
-            var meshid = contextelement.attributes.onclick.value.substring(10, contextelement.attributes.onclick.value.length - 2);
+            var meshid = contextelement.attributes.onclick.value.substring(32, (32 + 69));
             var elements = document.getElementsByClassName("DeviceCheckbox");
-            if ((action == 1) || (action == 2)) {
-                for (var i = 0; i < elements.length; i++) {
-                    if ((elements[i].attributes) && (elements[i].attributes['class']['value'].split(' ')[0] == meshid)) { elements[i].checked = (action == 1); }
-                }
-            }
+            if (action == 1) { for (var i = 0; i < elements.length; i++) { if ( (elements[i].attributes) && (elements[i].attributes['class']['value'].substring(0, 69) == meshid)) { elements[i].checked = true; } } }
+            if (action == 2) { for (var i = 0; i < elements.length; i++) { if ( (elements[i].attributes) && (elements[i].attributes['class']['value'].substring(0, 69) == meshid)) { elements[i].checked = false; } } }
             //if (action == 3) { window.location = "multidesktop.aspx?mesh=" + meshid + "&auto=1"; }
             p1updateInfo();
-        }
-
-        function cmtermaction(action) {
-            connectTerminal(null, 1, { powershell: (action == 2) });
         }
 
         function hideContextMenu() {
             QV('contextMenu', false);
             QV('meshContextMenu', false);
-            QV('termShellContextMenu', false);
             contextelement = null;
         }
 
@@ -5186,7 +5166,7 @@
         var autoConnectTerminalTimer = null;
         function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
 
-        function connectTerminal(e, contype, options) {
+        function connectTerminal(e, contype) {
             p12clearConsoleMsg();
             if (!terminal) {
                 if (contype == 2) {
@@ -5214,7 +5194,6 @@
                             termoptions.xterm = true;
                         }
                     }
-                    if ((e && (e.shiftKey == true)) || (options && (options.powershell))) { termoptions.protocol = 6; }
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;

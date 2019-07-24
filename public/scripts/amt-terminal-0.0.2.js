@@ -13,6 +13,7 @@ var CreateAmtRemoteTerminal = function (divid, options) {
     obj.DivId = divid;
     obj.DivElement = document.getElementById(divid);
     obj.protocol = 1; // SOL
+    if (options.protocol) { obj.protocol = options.protocol; } // 1 = Normal, 6 = PowerShell
     // ###BEGIN###{Terminal-Enumation-All}
     obj.terminalEmulation = 1;
     // ###END###{Terminal-Enumation-All}
