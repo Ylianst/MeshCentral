@@ -134,7 +134,11 @@ function windows_terminal() {
     
     this.PowerShellCapable = function()
     {
-        return (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        if (require('os').arch() == 'x64') {
+            return (require('fs').existsSync(process.env['windir'] + '\\SysWow64\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        } else {
+            return (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        }
     }
 
     this.StartEx = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, terminalTarget)
@@ -220,7 +224,14 @@ function windows_terminal() {
     }
     this.StartPowerShell = function StartPowerShell(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
     {
-        return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        if (require('os').arch() == 'x64')
+        {
+            return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\SysWow64\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        }
+        else
+        {
+            return (this.StartEx(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
+        }
     }
 
     this._stop = function () {
