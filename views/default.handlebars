@@ -901,7 +901,7 @@
         var webState = "{{{webstate}}}";
         if (webState != "") { webState = JSON.parse(decodeURIComponent(webState)); }
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
-        //localStorage.clear();
+        if (!webState.loctag) { delete localStorage.removeItem('loctag'); }
 
         var args;
         var autoReconnect = true;
@@ -8439,20 +8439,7 @@
 
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function putstore(name, val) {
-            try {
-                if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
-                if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); }
-            } catch (e) { }
-            if (name[0] != '_') {
-                var s = {};
-                for (var i = 0, len = localStorage.length; i < len; ++i) {
-                    var k = localStorage.key(i);
-                    if (k[0] != '_') { s[k] = localStorage.getItem(k); }
-                }
-                meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
-            }
-        }
+        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLink(x, f) { return "<span tabindex=0 style=cursor:pointer;text-decoration:none onclick='" + f + "' onkeypress=\"if (event.key=='Enter') {" + f + "} \">" + x + " <img class=hoverButton src=images/link5.png></span>"; }
