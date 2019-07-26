@@ -266,6 +266,7 @@
                     <p class="mL">
                         <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                         <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
+                        <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
                         <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
                         <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
                         <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
@@ -967,6 +968,7 @@
 
             // Check if we are in debug mode
             args = parseUriArgs();
+            if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
             debugmode = args.debug;
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
             QV('p13AutoConnect', debugmode); // Files
@@ -1699,6 +1701,7 @@
                                 var oldShowRealNames = localStorage.getItem('showRealNames');
                                 var oldUiMode = localStorage.getItem('uiMode');
                                 var oldSort = localStorage.getItem('sort');
+                                var oldLoctag = localStorage.getItem('loctag');
 
                                 var webstate = JSON.parse(message.event.state);
                                 for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
@@ -1708,6 +1711,7 @@
                                 if ((webstate.showRealNames != null) && (webstate.showRealNames != oldShowRealNames)) { showRealNames = Q('RealNameCheckBox').checked = (webstate.showRealNames == "1"); masterUpdate(6); }
                                 if ((webstate.uiMode != null) && (webstate.uiMode != oldUiMode)) { userInterfaceSelectMenu(parseInt(webstate.uiMode)); }
                                 if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById("sortselect").selectedIndex = sort = parseInt(webstate.sort); masterUpdate(6); }
+                                if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) { if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; } masterUpdate(0xFFFFFFFF); }
                             }
                             break;
                         }
@@ -1957,7 +1961,9 @@
 
                                 // Per-group notification settings
                                 if (message.event.meshid && userinfo.links && userinfo.links[message.event.meshid] && userinfo.links[message.event.meshid].notify) {
-                                    n |= userinfo.links[message.event.meshid].notify;
+                                    n &= userinfo.links[message.event.meshid].notify;
+                                } else {
+                                    n = 0;
                                 }
 
                                 // Show the notification
@@ -6092,6 +6098,28 @@
             meshserver.send({ action: 'otp-hkey-get' });
         }
 
+        var loclist = {'af':'Afrikaans','sq':'Albanian','ar':'Arabic (Standard)','ar-dz':'Arabic (Algeria)','ar-bh':'Arabic (Bahrain)','ar-eg':'Arabic (Egypt)','ar-iq':'Arabic (Iraq)','ar-jo':'Arabic (Jordan)','ar-kw':'Arabic (Kuwait)','ar-lb':'Arabic (Lebanon)','ar-ly':'Arabic (Libya)','ar-ma':'Arabic (Morocco)','ar-om':'Arabic (Oman)','ar-qa':'Arabic (Qatar)','ar-sa':'Arabic (Saudi Arabia)','ar-sy':'Arabic (Syria)','ar-tn':'Arabic (Tunisia)','ar-ae':'Arabic (U.A.E.)','ar-ye':'Arabic (Yemen)','ar':'Aragonese','hy':'Armenian','as':'Assamese','ast':'Asturian','az':'Azerbaijani','eu':'Basque','bg':'Bulgarian','be':'Belarusian','bn':'Bengali','bs':'Bosnian','br':'Breton','bg':'Bulgarian','my':'Burmese','ca':'Catalan','ch':'Chamorro','ce':'Chechen','zh':'Chinese','zh-hk':'Chinese (Hong Kong)','zh-cn':'Chinese (PRC)','zh-sg':'Chinese (Singapore)','zh-tw':'Chinese (Taiwan)','cv':'Chuvash','co':'Corsican','cr':'Cree','hr':'Croatian','cs':'Czech','da':'Danish','nl':'Dutch (Standard)','nl-be':'Dutch (Belgian)','en':'English','en-au':'English (Australia)','en-bz':'English (Belize)','en-ca':'English (Canada)','en-ie':'English (Ireland)','en-jm':'English (Jamaica)','en-nz':'English (New Zealand)','en-ph':'English (Philippines)','en-za':'English (South Africa)','en-tt':'English (Trinidad & Tobago)','en-gb':'English (United Kingdom)','en-us':'English (United States)','en-zw':'English (Zimbabwe)','eo':'Esperanto','et':'Estonian','fo':'Faeroese','fa':'Farsi','fj':'Fijian','fi':'Finnish','fr':'French (Standard)','fr-be':'French (Belgium)','fr-ca':'French (Canada)','fr-fr':'French (France)','fr-lu':'French (Luxembourg)','fr-mc':'French (Monaco)','fr-ch':'French (Switzerland)','fy':'Frisian','fur':'Friulian','gd':'Gaelic (Scots)','gd-ie':'Gaelic (Irish)','gl':'Galacian','ka':'Georgian','de':'German (Standard)','de-at':'German (Austria)','de-de':'German (Germany)','de-li':'German (Liechtenstein)','de-lu':'German (Luxembourg)','de-ch':'German (Switzerland)','el':'Greek','gu':'Gujurati','ht':'Haitian','he':'Hebrew','hi':'Hindi','hu':'Hungarian','is':'Icelandic','id':'Indonesian','iu':'Inuktitut','ga':'Irish','it':'Italian (Standard)','it-ch':'Italian (Switzerland)','ja':'Japanese','kn':'Kannada','ks':'Kashmiri','kk':'Kazakh','km':'Khmer','ky':'Kirghiz','tlh':'Klingon','ko':'Korean','ko-kp':'Korean (North Korea)','ko-kr':'Korean (South Korea)','la':'Latin','lv':'Latvian','lt':'Lithuanian','lb':'Luxembourgish','mk':'FYRO Macedonian','ms':'Malay','ml':'Malayalam','mt':'Maltese','mi':'Maori','mr':'Marathi','mo':'Moldavian','nv':'Navajo','ng':'Ndonga','ne':'Nepali','no':'Norwegian','nb':'Norwegian (Bokmal)','nn':'Norwegian (Nynorsk)','oc':'Occitan','or':'Oriya','om':'Oromo','fa':'Persian','fa-ir':'Persian/Iran','pl':'Polish','pt':'Portuguese','pt-br':'Portuguese (Brazil)','pa':'Punjabi','pa-in':'Punjabi (India)','pa-pk':'Punjabi (Pakistan)','qu':'Quechua','rm':'Rhaeto-Romanic','ro':'Romanian','ro-mo':'Romanian (Moldavia)','ru':'Russian','ru-mo':'Russian (Moldavia)','sz':'Sami (Lappish)','sg':'Sango','sa':'Sanskrit','sc':'Sardinian','gd':'Scots Gaelic','sd':'Sindhi','si':'Singhalese','sr':'Serbian','sk':'Slovak','sl':'Slovenian','so':'Somani','sb':'Sorbian','es':'Spanish','es-ar':'Spanish (Argentina)','es-bo':'Spanish (Bolivia)','es-cl':'Spanish (Chile)','es-co':'Spanish (Colombia)','es-cr':'Spanish (Costa Rica)','es-do':'Spanish (Dominican Republic)','es-ec':'Spanish (Ecuador)','es-sv':'Spanish (El Salvador)','es-gt':'Spanish (Guatemala)','es-hn':'Spanish (Honduras)','es-mx':'Spanish (Mexico)','es-ni':'Spanish (Nicaragua)','es-pa':'Spanish (Panama)','es-py':'Spanish (Paraguay)','es-pe':'Spanish (Peru)','es-pr':'Spanish (Puerto Rico)','es-es':'Spanish (Spain)','es-uy':'Spanish (Uruguay)','es-ve':'Spanish (Venezuela)','sx':'Sutu','sw':'Swahili','sv':'Swedish','sv-fi':'Swedish (Finland)','sv-sv':'Swedish (Sweden)','ta':'Tamil','tt':'Tatar','te':'Teluga','th':'Thai','tig':'Tigre','ts':'Tsonga','tn':'Tswana','tr':'Turkish','tk':'Turkmen','uk':'Ukrainian','hsb':'Upper Sorbian','ur':'Urdu','ve':'Venda','vi':'Vietnamese','vo':'Volapuk','wa':'Walloon','cy':'Welsh','xh':'Xhosa','ji':'Yiddish','zu':'Zulu'};
+        function account_showLocalizationSettings() {
+            if (xxdialogMode) return false;
+            var n = getstore('loctag', 0);
+            var x = '<select id=d2locselect style=width:100%><option value="*">User browser value</option>';
+            for (var i in loclist) { x += '<option value="' + i + '"' + ((n == i)?' selected':'') + '>' + i + ' - ' + loclist[i] + '</option>'; }
+            x += '</select>';
+            var y = addHtmlValue('Localization', x);
+            setDialogMode(2, "Localization Settings", 3, account_showLocalizationSettingsEx, y);
+            return false;
+        }
+
+        function account_showLocalizationSettingsEx() {
+            var n = getstore('loctag', 0);
+            var m = Q('d2locselect').value;
+            if (n != m) {
+                if (m != '*') { args.locale = m; } else { delete args.locale; }
+                putstore('loctag', args.locale);
+                masterUpdate(0xFFFFFFFF); // Refresh everything.
+            }
+        }
+
         function account_enableNotifications() {
             if (Notification) { Notification.requestPermission().then(function (permission) { QV('accountEnableNotificationsSpan', permission != "granted"); }); }
             return false;
@@ -6847,7 +6875,7 @@
             if (xxdialogMode) return false;
             var meshNotify = 0;
             if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
-            var x = '';
+            var x = 'Notification settings must also be turned on in account settings.<br /><br />';
             x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />Device connections.</label></div>';
             x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</label></div>';
             x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</label></div>';
@@ -8411,7 +8439,20 @@
 
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; localStorage.setItem(name, val); } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
+        function putstore(name, val) {
+            try {
+                if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
+                if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); }
+            } catch (e) { }
+            if (name[0] != '_') {
+                var s = {};
+                for (var i = 0, len = localStorage.length; i < len; ++i) {
+                    var k = localStorage.key(i);
+                    if (k[0] != '_') { s[k] = localStorage.getItem(k); }
+                }
+                meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
+            }
+        }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         //function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
         function addLink(x, f) { return "<span tabindex=0 style=cursor:pointer;text-decoration:none onclick='" + f + "' onkeypress=\"if (event.key=='Enter') {" + f + "} \">" + x + " <img class=hoverButton src=images/link5.png></span>"; }
