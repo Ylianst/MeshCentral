@@ -5032,7 +5032,7 @@
                 // MeshAgent
                 for (var i in txt) {
                     var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
-                    if ((a >= 65) && (a <= 90)) {
+                    if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
                         if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
                         if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
                     } else if (DeskTypeTranslate[a]) {
