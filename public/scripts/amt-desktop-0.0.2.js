@@ -747,8 +747,12 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     }
 
     obj.sendkey = function (k, d) {
-        if (typeof k == 'object') { for (var i in k) { obj.sendkey(k[i][0], k[i][1]); } }
-        else { obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k)); }
+        if (typeof k == 'object') {
+            //for (var i in k) { obj.sendkey(k[i][0], k[i][1]); }
+            var buf = ''; for (var i in k) { buf += (String.fromCharCode(4, k[i][1], 0, 0) + IntToStr(k[i][0])); } obj.send(buf);
+        } else {
+            obj.send(String.fromCharCode(4, d, 0, 0) + IntToStr(k));
+        }
     }
 
     function handleServerCutText(acc) {

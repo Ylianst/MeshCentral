@@ -503,6 +503,7 @@
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
+                            <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()">
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span></label>&nbsp;
                         </div>
                     </div>
@@ -2230,7 +2231,8 @@
         }
 
         //function ondocfocus() { }
-        function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked) { return desktop.m.handleReleaseKeys(); } }
+        // TODO: Add handleReleaseKeys() for Intel AMT.
+        function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q("DeskControl").checked && desktop.m.handleReleaseKeys) { return desktop.m.handleReleaseKeys(); } }
 
         // Highlights the device being hovered
         function devMouseHover(element, over) {
@@ -2383,7 +2385,7 @@
                         //r += '<td style=text-align:center>' + (node.pwr != null ? powerStateStrings[node.pwr] : '');
                         r += '</tr>';
                     } else if ((view == 3) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
-                        if ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + node._id) >= 0)) {
+                        if ((multiDesktopFilter) && ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + node._id) >= 0))) {
                             r += '<div id=devs style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">';
                             //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                             r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
@@ -2474,7 +2476,7 @@
 
                 // Re-check nodeid's
                 var elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
-                for (var i=0;i<elements.length;i++) { elements[i].checked = (checkedNodeids.indexOf(elements[i].value) >= 0); }
+                if (checkedNodeids) { for (var i=0;i<elements.length;i++) { elements[i].checked = (checkedNodeids.indexOf(elements[i].value) >= 0); } }
 
                 for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
                 for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
@@ -4575,6 +4577,7 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on MacOS
             QE('DeskClip', deskState == 3);
+            QE('DeskType', deskState == 3);
             QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
@@ -4997,6 +5000,52 @@
                 }
             } else if (ks == 10) { // CTRL-ALT-DEL
                 desktop.m.sendcad();
+            }
+        }
+
+        // Remote desktop typing
+        function showDeskType() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            Q('DeskType').blur();
+            var x = '<div>Enter text and click OK to remotely type it using a US english keyboard. Make sure to place the remote cursor at the correct position before proceeding.<div>';
+            x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000></textarea>';
+            setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
+            Q('d2typeText').focus();
+        }
+
+        var AmtDeskTypeTimer = null;
+        var AmtDeskTypeContent = null;
+        var DeskTypeTranslate = { 39: 222, 42: 106, 43: 107, 44: 188, 45: 189, 46: 190, 47: 191, 59: 186, 61: 187, 91: 219, 92: 220, 93: 221, 96: 192, 191: 111 };
+        var DeskTypeShiftTranslate = { 33: 49, 34: 222, 35: 51, 36: 52, 37: 53, 38: 55, 40: 57, 41: 48, 58: 186, 60: 188, 62: 190, 63: 191, 64: 50, 94: 54, 95: 189, 106: 56, 107: 187, 123: 219, 124: 220, 125: 221, 126: 192 };
+        function showDeskTypeEx() {
+            var txt = Q('d2typeText').value, ltxt = Q('d2typeText').value.toUpperCase(), x = [], shift = false;
+            if (desktop.contype == 2) {
+                // Intel AMT
+                for (var i in txt) { var a = txt.charCodeAt(i); x.push([a, 1], [a, 0]); }
+                AmtDeskTypeContent = x;
+                AmtDeskTypeTimer = setInterval(function () {
+                    var key = AmtDeskTypeContent.shift();
+                    if (desktop) { desktop.m.sendkey(key[0], key[1]); }
+                    if ((desktop == null) || (AmtDeskTypeContent.length == 0)) { clearInterval(AmtDeskTypeTimer); AmtDeskTypeContent = null; }
+                }, 10);
+            } else {
+                // MeshAgent
+                for (var i in txt) {
+                    var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
+                    if ((a >= 65) && (a <= 90)) {
+                        if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                        if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
+                    } else if (DeskTypeTranslate[a]) {
+                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                        b = DeskTypeTranslate[a];
+                    } else if (DeskTypeShiftTranslate[a]) {
+                        if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                        b = DeskTypeShiftTranslate[a];
+                    }
+                    x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
+                }
+                if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                desktop.m.SendKeyMsgKC(x);
             }
         }
 
