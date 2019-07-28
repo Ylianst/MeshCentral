@@ -1100,7 +1100,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
                                 if (command.users[i].email != null) { newuser.email = command.users[i].email.toLowerCase(); if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email, always lowercase
                                 if (command.users[i].resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
-                                if ((command.users[i].groups != null) && (common.validateStrArray(command.users[i].groups, 1, 32))) { newuser.groups = command.users[i].groups; } // New account are automatically part of our groups.
+                                if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
 
                                 if (parent.users[newuserid] == null) {
                                     parent.users[newuserid] = newuser;
@@ -1188,6 +1188,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             else if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
                             if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
+                            if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
                             
                             parent.users[newuserid] = newuser;
 
@@ -1268,7 +1269,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                     groups2.sort();
 
-                                    // Set the user groups
+                                    // Set the user groups (Realms)
                                     if (chguser.groups != groups2) { chguser.groups = groups2; change = 1; }
 
                                     // Add any missing groups in the target list
