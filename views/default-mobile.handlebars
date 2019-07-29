@@ -1063,11 +1063,6 @@
                             }
                             break;
                         }
-                        case 'clearevents': {
-                            //events = [];
-                            //events_update();
-                            break;
-                        }
                         case 'login': {
                             // Update the last login time
                             if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) { users['user/' + domain + '/' + message.event.username.toLowerCase()].login = message.event.time; }

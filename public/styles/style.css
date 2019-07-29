@@ -837,15 +837,9 @@ NoMeshesPanel img {
         color: gray;
     }
 
-#p3events {
+#p3events, #p16events, #p31events {
     height: calc(100vh - 245px);
     overflow-y: scroll;
-}
-
-.p3eventsTable {
-    width: 100%;
-    border-spacing: 0;
-    padding: 0;
 }
 
 .p3eventsTable {
@@ -1360,6 +1354,14 @@ a {
     float: left;
 }
 
+.si5 {
+    background: url(../images/icons16.png) -80px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
 .mi {
     background: url(../images/meshicon50.png) 0px 0px;
     height: 50px;
@@ -1582,6 +1584,14 @@ a {
     float: none;
 }
 
+#p16events .g1 {
+    float: none;
+}
+
+#p31events .g1 {
+    float: none;
+}
+
 #p3users .g1 {
     height: 24px;
     float: left;
@@ -1614,6 +1624,14 @@ a {
 }
 
 #p3events .g2 {
+    float: none;
+}
+
+#p16events .g2 {
+    float: none;
+}
+
+#p31events .g2 {
     float: none;
 }
 
@@ -2288,6 +2306,7 @@ a {
     width: calc(100vw - 120px);
 }
 
+/*
 #p16events, #p31events {
     max-height: calc(100vh - 245px);
     overflow-y: auto;
@@ -2296,6 +2315,7 @@ a {
 .room4submenu #p16events, #p31events {
     max-height: calc(100vh - 269px);
 }
+*/
 
 .night #p16events, #p31events {
     color: #222;

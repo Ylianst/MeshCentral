@@ -171,8 +171,9 @@ function createMeshCore(agent)
                         }
                         break;
                     default:
-                        this.parent._daipc = null; this.end(); return;
-                        break;
+                        this.parent._daipc = null;
+                        this.end();
+                        return;
                 }
             }
             catch(xe)
@@ -305,6 +306,17 @@ function createMeshCore(agent)
     var amtscanner = null;
     var nextTunnelIndex = 1;
     var amtPolicy = null;
+
+    // Add to the server event log
+    function MeshServerLog(msg, state) {
+        if (typeof msg == 'string') { msg = { 'action': 'log', 'msg': msg }; } else { msg.action = 'log'; }
+        if (state) {
+            if (state.userid) { msg.userid = state.userid; }
+            if (state.username) { msg.username = state.username; }
+            if (state.sessionid) { msg.sessionid = state.sessionid; }
+        }
+        mesh.SendCommand(msg);
+    }
 
     // If we are running in Duktape, agent will be null
     if (agent == null) {
@@ -615,6 +627,7 @@ function createMeshCore(agent)
                     switch (data.type) {
                         case 'console': { // Process a console command
                             if (data.value && data.sessionid) {
+                                MeshServerLog('Processing console command: ' + data.value, data);
                                 var args = splitArgs(data.value);
                                 processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
                             }
@@ -636,6 +649,8 @@ function createMeshCore(agent)
                                     tunnel.rights = data.rights;
                                     tunnel.consent = data.consent;
                                     tunnel.username = data.username;
+                                    tunnel.userid = data.userid;
+                                    tunnel.remoteaddr = data.remoteaddr;
                                     tunnel.state = 0;
                                     tunnel.url = xurl;
                                     tunnel.protocol = 0;
@@ -664,12 +679,14 @@ function createMeshCore(agent)
                         case 'pskill': {
                             // Kill a process
                             if (data.value) {
+                                MeshServerLog('Killing process ' + data.value, data);
                                 try { process.kill(data.value); } catch (e) { sendConsoleText("pskill: " + JSON.stringify(e)); }
                             }
                             break;
                         }
                         case 'openUrl': {
                             // Open a local web browser and return success/fail
+                            MeshServerLog('Opening: ' + data.url, data);
                             sendConsoleText('OpenURL: ' + data.url);
                             if (data.url) { mesh.SendCommand({ "action": "msg", "type":"openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                             break;
@@ -677,31 +694,33 @@ function createMeshCore(agent)
                         case 'getclip': {
                             // Send the load clipboard back to the user
                             //sendConsoleText('getClip: ' + JSON.stringify(data));
-                            if (require('MeshAgent').isService)
-                            {
-                                require('clipboard').dispatchRead().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
-                            }
-                            else
-                            {
-                                require("clipboard").read().then(function (str) { mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str }); });
+                            if (require('MeshAgent').isService) {
+                                require('clipboard').dispatchRead().then(function (str) {
+                                    if (str) {
+                                        MeshServerLog('Getting clipboard content, ' + str.length + ' byte(s)', data);
+                                        mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str });
+                                    }
+                                });
+                            } else {
+                                require("clipboard").read().then(function (str) {
+                                    if (str) {
+                                        MeshServerLog('Getting clipboard content, ' + str.length + ' byte(s)', data);
+                                        mesh.SendCommand({ "action": "msg", "type": "getclip", "sessionid": data.sessionid, "data": str });
+                                    }
+                                });
                             }
                             break;
                         }
                         case 'setclip': {
                             // Set the load clipboard to a user value
                             //sendConsoleText('setClip: ' + JSON.stringify(data));
-                            if (typeof data.data == 'string')
-                            {
-                                if (require('MeshAgent').isService)
-                                {
-                                    require('clipboard').dispatchWrite(data.data);
+                            if (typeof data.data == 'string') {
+                                MeshServerLog('Setting clipboard content, ' + data.data.length + ' byte(s)', data);
+                                if (typeof data.data == 'string') {
+                                    if (require('MeshAgent').isService) { require('clipboard').dispatchWrite(data.data); } else { require("clipboard")(data.data); } // Set the clipboard
+                                    mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
                                 }
-                                else
-                                {
-                                    require("clipboard")(data.data); // Set the clipboard
-                                }
-                                mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
-                            } 
+                            }
                             break;
                         }
                         default:
@@ -711,7 +730,10 @@ function createMeshCore(agent)
                     break;
                 }
                 case 'acmactivate': {
-                    if (amt != null) { amt.setAcmResponse(data); }
+                    if (amt != null) {
+                        MeshServerLog('Attempting Intel AMT ACM mode activation', data);
+                        amt.setAcmResponse(data);
+                    }
                     break;
                 }
                 case 'wakeonlan': {
@@ -726,6 +748,7 @@ function createMeshCore(agent)
                         var forced = 0;
                         if (data.forced == 1) { forced = 1; }
                         data.actiontype = parseInt(data.actiontype);
+                        MeshServerLog('Performing power action=' + data.actiontype + ', forced=' + forced, data);
                         sendConsoleText('Performing power action=' + data.actiontype + ', forced=' + forced + '.');
                         var r = mesh.ExecPowerState(data.actiontype, forced);
                         sendConsoleText('ExecPowerState returned code: ' + r);
@@ -740,13 +763,15 @@ function createMeshCore(agent)
                 case 'toast': {
                     // Display a toast message
                     if (data.title && data.msg) {
+                        MeshServerLog('Displaying toast message, title=' + data.title + ', message=' + data.msg, data);
                         try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
                     }
                     break;
                 }
                 case 'openUrl': {
                     // Open a local web browser and return success/fail
-                    sendConsoleText('OpenURL: ' + data.url);
+                    //sendConsoleText('OpenURL: ' + data.url);
+                    MeshServerLog('Opening: ' + data.url, data);
                     if (data.url) { mesh.SendCommand({ "action": "openUrl", "url": data.url, "sessionid": data.sessionid, "success": (openUserDesktopUrl(data.url) != null) }); }
                     break;
                 }
@@ -1003,43 +1028,40 @@ function createMeshCore(agent)
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 16)) {
                         // User Consent Prompt is required
-
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting Terminal Access. Grant access?', 10);
                         pr.ws = this;
                         this.pause();
 
                         pr.then(
                             function () {
-                                // Success!
+                                // Success
+                                MeshServerLog('Starting remote terminal after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
                                     // User Notifications is required
                                     try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
                                 }
-
                                 this.ws.resume();
                             },
                             function (e) {
-                                // User Consent Denied/Failed!
+                                // User Consent Denied/Failed
+                                MeshServerLog('Failed to start remote terminal after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                                 this.ws.end();
                             });
-                    }
-                    else {
+                    } else {
                         // User Consent Prompt is not required
                         if (this.httprequest.consent && (this.httprequest.consent & 2)) {
                             // User Notifications is required
+                            MeshServerLog('Started remote terminal with toast notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
+                        } else {
+                            MeshServerLog('Started remote terminal without notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                         }
                         this.resume();
                     }
-
-
-
-
 
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -1096,10 +1118,8 @@ function createMeshCore(agent)
                     if (this.httprequest.consent && (this.httprequest.consent & 8))
                     {
                         // User Consent Prompt is required
-
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting KVM Access. Grant access?', 10);
                         pr.ws = this;
                         this.pause();
@@ -1107,37 +1127,32 @@ function createMeshCore(agent)
                         pr.then(
                             function ()
                             {
-                                // Success!
+                                // Success
+                                MeshServerLog('Starting remote desktop after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1))
-                                {
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
                                     try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
                                 }
-
                                 this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
                                 this.ws.resume();
                             },
                             function (e)
                             {
-                                // User Consent Denied/Failed!
+                                // User Consent Denied/Failed
+                                MeshServerLog('Failed to start remote desktop after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
-
-                                //var err = 'User consent: ' + e.toString();
-                                //var b = Buffer.alloc(5 + err.length);
-                                //b.writeUInt16BE(MNG_ERROR, 0);
-                                //b.writeUInt16BE(err.length + 4, 2);
-                                //Buffer.from(err).copy(b, 4);
-                                //this.ws.end(b);
                             });
                     }
                     else
                     {
                         // User Consent Prompt is not required
-                        if (this.httprequest.consent && (this.httprequest.consent & 1))
-                        {
+                        if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
+                            MeshServerLog('Started remote desktop with toast notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
+                        } else {
+                            MeshServerLog('Started remote desktop without notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                         }
                         this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 });
                     }
@@ -1161,35 +1176,36 @@ function createMeshCore(agent)
                     if (this.httprequest.consent && (this.httprequest.consent & 32))
                     {
                         // User Consent Prompt is required
-
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting remote file access. Grant access?', 10);
                         pr.ws = this;
                         this.pause();
 
                         pr.then(
                             function () {
-                                // Success!
+                                // Success
+                                MeshServerLog('Starting remote files after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4))
-                                {
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                     // User Notifications is required
                                     try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote file session.'); } catch (ex) { }
                                 }
                                 this.ws.resume();
                             },
                             function (e) {
-                                // User Consent Denied/Failed!
+                                // User Consent Denied/Failed
+                                MeshServerLog('Failed to start remote files after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
-                    }
-                    else {
+                    } else {
                         // User Consent Prompt is not required
                         if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                             // User Notifications is required
+                            MeshServerLog('Started remote files with toast notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote file session.'); } catch (ex) { }
+                        } else {
+                            MeshServerLog('Started remote files without notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                         }
                         this.resume();
                     }
@@ -1252,12 +1268,15 @@ function createMeshCore(agent)
                     case 'mkdir': {
                         // Create a new empty folder
                         fs.mkdirSync(cmd.path);
+                        MeshServerLog('Create folder: \"' + cmd.path + '\"', this.httprequest);
                         break;
                     }
                     case 'rm': {
                         // Delete, possibly recursive delete
                         for (var i in cmd.delfiles) {
-                            try { deleteFolderRecursive(obj.path.join(cmd.path, cmd.delfiles[i]), cmd.rec); } catch (e) { }
+                            var p = obj.path.join(cmd.path, cmd.delfiles[i]), delcount = 0;
+                            try { delcount = deleteFolderRecursive(p, cmd.rec); } catch (e) { }
+                            MeshServerLog((cmd.rec ? 'Delete recursive: \"' : 'Delete: \"') + p + '\", ' + delcount + ' element(s) removed', this.httprequest);
                         }
                         break;
                     }
@@ -1265,6 +1284,7 @@ function createMeshCore(agent)
                         // Rename a file or folder
                         var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
                         var newfullpath = obj.path.join(cmd.path, cmd.newname);
+                        MeshServerLog('Rename: \"' + oldfullpath + '\" to \"' + cmd.newname + '\"', this.httprequest);
                         try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
                         break;
                     }
@@ -1272,6 +1292,7 @@ function createMeshCore(agent)
                         // Download a file
                         var sendNextBlock = 0;
                         if (cmd.sub == 'start') { // Setup the download
+                            MeshServerLog('Download: \"' + cmd.path + '\"', this.httprequest);
                             if (this.filedownload != null) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                             this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
                             try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
@@ -1317,6 +1338,7 @@ function createMeshCore(agent)
                         if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        MeshServerLog('Upload: \"' + filepath + '\"', this.httprequest);
                         try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
                         if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
@@ -1326,6 +1348,7 @@ function createMeshCore(agent)
                         // Copy a bunch of files from scpath to dspath
                         for (var i in cmd.names) {
                             var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            MeshServerLog('Copy: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
                             if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
                         }
                         break;
@@ -1334,6 +1357,7 @@ function createMeshCore(agent)
                         // Move a bunch of files from scpath to dspath
                         for (var i in cmd.names) {
                             var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
+                            MeshServerLog('Move: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
                             if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
                         }
                         break;
@@ -1349,19 +1373,23 @@ function createMeshCore(agent)
 
     // Delete a directory with a files and directories within it
     function deleteFolderRecursive(path, rec) {
+        var count = 0;
         if (fs.existsSync(path)) {
             if (rec == true) {
                 fs.readdirSync(obj.path.join(path, '*')).forEach(function (file, index) {
                     var curPath = obj.path.join(path, file);
                     if (fs.statSync(curPath).isDirectory()) { // recurse
-                        deleteFolderRecursive(curPath, true);
+                        count += deleteFolderRecursive(curPath, true);
                     } else { // delete file
                         fs.unlinkSync(curPath);
+                        count++;
                     }
                 });
             }
             fs.unlinkSync(path);
+            count++;
         }
+        return count;
     };
 
     // Called when receiving control data on WebRTC
@@ -1391,6 +1419,7 @@ function createMeshCore(agent)
                     // Lock the current user out of the desktop
                     try {
                         if (process.platform == 'win32') {
+                            MeshServerLog('Locking remote user out of desktop', ws.httprequest);
                             var child = require('child_process');
                             child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
                         }
@@ -1557,6 +1586,9 @@ function createMeshCore(agent)
                     }
                     break;
                     */
+                case 'log':
+                    if (args['_'].length != 1) { response = 'Proper usage: log "sample text"'; } else { MeshServerLog(args['_'][0]); response = 'ok'; }
+                    break;
                 case 'getclip':
                     if (require('MeshAgent').isService) {
                         require('clipboard').dispatchRead().then(function (str) { sendConsoleText(str, sessionid); });
