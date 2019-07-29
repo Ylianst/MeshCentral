@@ -1192,6 +1192,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Nothing is done right now.
                         break;
                     }
+                case 'log':
+                    {
+                        // Log a value in the event log
+                        if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
+                            var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
+                            if (typeof command.userid == 'string') {
+                                var loguser = parent.users[command.userid];
+                                if (loguser) { event.userid = command.userid; event.username = loguser.name; }
+                            }
+                            if ((typeof command.sessionid == 'string') && (command.sessionid.length < 500)) { event.sessionid = command.sessionid; }
+                            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
+                        }
+                        break;
+                    }
                 case 'ping': { sendPong(); break; }
                 case 'pong': { break; }
                 case 'getScript':
@@ -1273,10 +1287,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     break;
                                 }
                                 case 'log': {
-                                    // Only the diagnostic agent can do
-                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256))
-                                    {
-                                        // Log a value in the event log of the main again
+                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256)) {
+                                        // If this is a diagnostic agent, log the event in the log of the main agent
                                         var event = { etype: 'node', action: 'diagnostic', nodeid: obj.realNodeKey, domain: domain.id, msg: command.value.value };
                                         parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
                                     }

@@ -286,7 +286,6 @@
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
-                        <td>&nbsp;<input id="p2deleteall" type=button onclick=showDeleteAllEventsDialog() style="display:none" value="Delete All..." /></td>
                         <td class="auto-style1">
                             Show
                             <select id=p3limitdropdown onchange=refreshEvents()>
@@ -762,7 +761,7 @@
                         <td class="h2"></td>
                     </tr>
                 </table>
-                <div id=p31events></div>
+                <div id=p31events style=""></div>
             </div>
             <div id=p40 style="display:none;">
                 <h1>My Server Stats</h1>
@@ -1263,7 +1262,6 @@
                 if (xxcurrentView == 4 || ((xxcurrentView >= 30) && (xxcurrentView < 40))) { setDialogMode(0); go(1); currentUser = null; }
             }
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
-            QV('p2deleteall', userinfo.siteadmin == 0xFFFFFFFF);
             QV('ServerConsole', userinfo.siteadmin === 0xFFFFFFFF);
             if ((xxcurrentView == 115) && (userinfo.siteadmin != 0xFFFFFFFF)) { go(6); }
             if ((xxcurrentView == 6) && ((userinfo.siteadmin & 21) == 0)) { go(1); }
@@ -1689,6 +1687,23 @@
                 }
                 case 'event': {
                     if (!message.event.nolog) {
+                        if (currentNode && (message.event.nodeid == currentNode._id)) {
+                            // If this event has a nodeid and we are looking at this node, update the log in real time.
+                            currentDeviceEvents.unshift(message.event);
+                            var eventLimit = parseInt(p16limitdropdown.value);
+                            while (currentDeviceEvents.length > eventLimit) { currentDeviceEvents.pop(); } // Remove element(s) at the end
+                            masterUpdate(1024);
+                        }
+
+                        if (currentUser && (message.event.userid == currentUser._id)) {
+                            // If this event has a userid and we are looking at this user, update the log in real time.
+                            currentUserEvents.unshift(message.event);
+                            var eventLimit = parseInt(p31limitdropdown.value);
+                            while (currentUserEvents.length > eventLimit) { currentUserEvents.pop(); } // Remove element(s) at the end
+                            masterUpdate(2048);
+                        }
+
+                        // Add this event to the master events log.
                         events.unshift(message.event);
                         var eventLimit = parseInt(p3limitdropdown.value);
                         while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
@@ -1999,11 +2014,6 @@
                                 }
                                 updateUsers();
                             }
-                            break;
-                        }
-                        case 'clearevents': {
-                            events = [];
-                            masterUpdate(32);
                             break;
                         }
                         case 'login': {
@@ -4147,6 +4157,7 @@
         function deviceUrlFunction() {
             if (xxdialogMode) return;
             setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll></input>');
+            Q('d2devurl').focus();
         }
 
         function deviceUrlFunctionEx() {
@@ -4156,6 +4167,7 @@
         function deviceToastFunction() {
             if (xxdialogMode) return;
             setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+            Q('d2devToast').focus();
         }
 
         function deviceToastFunctionEx() {
@@ -5830,48 +5842,54 @@
         function deviceEventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in currentDeviceEvents) {
-                var event = currentDeviceEvents[i];
-                var time = new Date(event.time);
-                if (printDate(time) != dateHeader) {
-                    if (dateHeader != null) x += '</table>';
-                    dateHeader = printDate(time);
-                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt colspan=4>' + dateHeader + '</td></tr>';
-                }
-                var icon = 'si3';
-                if (event.etype == 'user') icon = 'm2';
-                if (event.etype == 'server') icon = 'si3';
+                var event = currentDeviceEvents[i], time = new Date(event.time);
+                if (event.msg) {
+                    if (event.h == null) { event.h = Math.random(); }
+                    if (printDate(time) != dateHeader) {
+                        if (dateHeader != null) x += '</table>';
+                        dateHeader = printDate(time);
+                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                    }
+                    var icon = 'si3';
+                    if (event.etype == 'user') icon = 'm2';
+                    if (event.etype == 'server') icon = 'si3';
 
-                var msg = event.msg.split('(R)').join('&reg;');
-                //if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td style=width:18px><div class=' + icon + '></div></td><td class=g1 style=float:none>&nbsp;</td><td style=background-color:#C9C9C9>' + printTime(time) + ' - ' + msg + '</td><td class=g2 style=float:none>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    var msg = event.msg.split('(R)').join('&reg;');
+                    if (event.username) {
+                        if ((userinfo.siteadmin & 2) && (event.userid)) {
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                        } else {
+                            msg = event.username + ' &rarr; ' + msg;
+                        }
+                    }
+                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                }
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
             QH('p16events', x);
         }
 
-        /*
-        function showDeleteAllEventsDialog() {
-            if (xxdialogMode) return;
-            var x = "Delete all events in the server event log?<br /><br />";
-            x += "<input id=p3check type=checkbox onchange=validateDeleteAllEventsDialog() />Confirm";
-            setDialogMode(2, "Delete All Events", 3, showDeleteAllEventsDialogEx, x);
-            validateDeleteAllEventsDialog();
-        }
-
-        function validateDeleteAllEventsDialog() {
-            QE('idx_dlgOkButton', Q('p3check').checked);
-        }
-
-        function showDeleteAllEventsDialogEx(buttons, tag) {
-            meshserver.send({ action: 'clearevents' });
-        }
-        */
-
         function refreshDeviceEvents() {
-            //currentDeviceEvents = null;
-            //QH('p16events', '');
             meshserver.send({ action: 'events', nodeid: currentNode._id, limit: parseInt(p16limitdropdown.value) });
+        }
+
+        function showEventDetails(h, mode) {
+            var eventList, xevent;
+            if (mode == 1) { eventList = currentDeviceEvents; }
+            if (mode == 2) { eventList = events; }
+            if (mode == 3) { eventList = currentUserEvents; }
+            for (var i in eventList) { if (eventList[i].h == h) { xevent = eventList[i]; break; } }
+            if (xevent) {
+                if (xxdialogMode) return false;
+                var x = '<div style=overflow-y:auto>';
+                for (var i in xevent) {
+                    if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null) || (typeof xevent[i] == 'object')) continue;
+                    x += addHtmlValue3(EscapeHtml(i), EscapeHtml(xevent[i]));
+                }
+                x += '</div>';
+                setDialogMode(2, "Event Details", 9, null, x);
+            }
         }
 
         //
@@ -7206,6 +7224,7 @@
             for (var i in events) {
                 var event = events[i], time = new Date(event.time);
                 if (event.msg) {
+                    if (event.h == null) { event.h = Math.random(); }
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
@@ -7216,29 +7235,26 @@
                     if (event.etype == 'server') icon = 'si3';
 
                     var msg = event.msg.split('(R)').join('&reg;');
-                    if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                    x += '<tr onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    if (event.nodeid) {
+                        var node = getNodeFromId(event.nodeid);
+                        if (node != null) {
+                            icon = 'si' + node.icon;
+                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + node.name + '</a> &rarr; ' + msg;
+                        }
+                    }
+                    if (event.username) {
+                        if ((userinfo.siteadmin & 2) && (event.userid)) {
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                        } else {
+                            msg = event.username + ' &rarr; ' + msg;
+                        }
+                    }
+                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
             QH('p3events', x);
-        }
-
-        function showDeleteAllEventsDialog() {
-            if (xxdialogMode) return;
-            var x = "Delete all events in the server event log?<br /><br />";
-            x += "<label><input id=p3check type=checkbox onchange=validateDeleteAllEventsDialog() />Confirm</label>";
-            setDialogMode(2, "Delete All Events", 3, showDeleteAllEventsDialogEx, x);
-            validateDeleteAllEventsDialog();
-        }
-
-        function validateDeleteAllEventsDialog() {
-            QE('idx_dlgOkButton', Q('p3check').checked);
-        }
-
-        function showDeleteAllEventsDialogEx(buttons, tag) {
-            meshserver.send({ action: 'clearevents' });
         }
 
         function refreshEvents() {
@@ -7902,23 +7918,35 @@
         function userEventsUpdate() {
             var x = '', dateHeader = null;
             for (var i in currentUserEvents) {
-                var event = currentUserEvents[i];
-                var time = new Date(event.time);
-                if (printDate(time) != dateHeader) {
-                    if (dateHeader != null) x += '</table>';
-                    dateHeader = printDate(time);
-                    x += '<table style=width:100% cellpadding=0 cellspacing=0><tr><td class=DevSt>' + dateHeader + '</td></tr>';
-                }
-                var icon = 'si3';
-                if (event.etype == 'user') icon = 'm2';
-                if (event.etype == 'server') icon = 'si3';
+                var event = currentUserEvents[i], time = new Date(event.time);
+                if (event.msg) {
+                    if (event.h == null) { event.h = Math.random(); }
+                    if (printDate(time) != dateHeader) {
+                        if (dateHeader != null) x += '</table>';
+                        dateHeader = printDate(time);
+                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                    }
+                    var icon = 'si3';
+                    if (event.etype == 'user') icon = 'm2';
+                    if (event.etype == 'server') icon = 'si3';
 
-                var msg = event.msg.split('(R)').join('&reg;');
-                if (event.username && event.username != userinfo.name) { msg += ': ' + event.username; }
-                x += '<tr><td><div class=bar18 style=height:18px;width:100%;font-size:medium>';
-                x += '<div style=float:left;height:18px;width:18px;background-color:white><div class=' + icon + ' style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
-                x += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                x += '<div style=font-size:14px><span style=width:300px>' + printTime(time) + ' - ' + msg + '</span></div></div></td></tr>';
+                    var msg = event.msg.split('(R)').join('&reg;');
+                    if (event.nodeid) {
+                        var node = getNodeFromId(event.nodeid);
+                        if (node != null) {
+                            icon = 'si' + node.icon;
+                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + node.name + '</a> &rarr; ' + msg;
+                        }
+                    }
+                    if (event.username && (event.username != currentUser.name)) {
+                        if ((userinfo.siteadmin & 2) && (event.userid)) {
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                        } else {
+                            msg = event.username + ' &rarr; ' + msg;
+                        }
+                    }
+                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                }
             }
             if (dateHeader != null) x += '</table>';
             if (x == '') x = "<br><i>No Events Found</i><br><br>";
@@ -8516,6 +8544,7 @@
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
+        function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
         function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
         function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version

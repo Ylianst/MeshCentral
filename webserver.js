@@ -319,7 +319,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (user.name != username) {
                             user.name = username;
                             obj.db.SetUser(user);
-                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            var event = { etype: 'user', userid: userid, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
@@ -365,7 +365,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
-                        var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
                         if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                         obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                         return fn(null, user._id);
@@ -375,7 +375,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (user.name != username) {
                             user.name = username;
                             obj.db.SetUser(user);
-                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
@@ -495,7 +495,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Destroy the user's session to log them out will be re-created next request
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
-            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
+            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
         res.redirect(domain.url);
@@ -697,7 +697,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Notify account login
         var targets = ['*', 'server-users'];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-        obj.parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
+        obj.parent.DispatchEvent(targets, obj, { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
 
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
@@ -824,7 +824,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Send the verification email
                                     if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
                                 }, 0);
-                                var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                             }
@@ -886,7 +886,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user.passchange = Math.floor(Date.now() / 1000);
                             delete user.passtype;
                             obj.db.SetUser(user);
-                            var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
@@ -1030,7 +1030,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(user);
 
                                                 // Event the change
-                                                var event = { etype: 'user', username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id };
+                                                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id };
                                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
@@ -1065,7 +1065,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.db.SetUser(userinfo);
 
                                                 // Event the change
-                                                var event = { etype: 'user', username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
+                                                var event = { etype: 'user', userid: user._id, username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
                                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
@@ -1134,7 +1134,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(obj.common.escapeLinksFieldName(mesh)); }
                             // Notify mesh change
                             var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
-                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', username: user.name, userid: userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
                         }
                     }
                 }
@@ -1147,7 +1147,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete obj.users[user._id];
                 req.session = null;
                 res.redirect(domain.url + getQueryPortion(req));
-                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
             } else {
                 res.redirect(domain.url + getQueryPortion(req));
             }
@@ -1206,7 +1206,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.db.SetUser(user);
                     req.session.viewmode = 2;
                     res.redirect(domain.url + getQueryPortion(req));
-                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
                 }, 0);
             }
         });
@@ -1291,7 +1291,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (usercount == 0) { user2.siteadmin = 4294967295; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
                     obj.db.SetUser(user2);
-                    var event = { etype: 'user', username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id };
+                    var event = { etype: 'user', userid: req.session.userid, username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id };
                     if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                 }
@@ -3311,7 +3311,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (u) {
                         var targets = ['*', 'server-users'];
                         if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                        obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                        obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', userid: userid, username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
                     }
                 }
             }
@@ -3325,7 +3325,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (u) {
                         var targets = ['*', 'server-users'];
                         if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                        obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
+                        obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', userid: userid, username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
                     }
                 }
             }
@@ -3350,7 +3350,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (u) {
                     var targets = ['*', 'server-users'];
                     if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                    obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
+                    obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', userid: userid, username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
                     obj.sessionsCount[userid] = newcount;
                 }
             }
