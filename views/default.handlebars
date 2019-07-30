@@ -295,7 +295,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>&nbsp;
-                            <a href=# onclick=p3showDownloadEventsDialog()><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(2)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -693,7 +693,7 @@
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
-                        <td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>
+                        <!--<td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
                             Show
                             <select id=p16limitdropdown onchange=refreshDeviceEvents()>
@@ -703,6 +703,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
+                            <a href=# onclick=p3showDownloadEventsDialog(1)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -747,7 +748,7 @@
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
-                        <td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>
+                        <!--<td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
                             Show
                             <select id=p31limitdropdown onchange=refreshUsersEvents()>
@@ -757,6 +758,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
+                            <a href=# onclick=p3showDownloadEventsDialog(3)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -783,7 +785,7 @@
                     <div>
                         <input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
                         &nbsp;<label><input id=p40log type="checkbox" onclick="updateServerTimelineHours()" />Log-X</label>
-</div>
+                    </div>
                 </div>
                 <canvas id=serverMainStats style=""></canvas>
             </div>
@@ -2319,7 +2321,7 @@
                 var deviceBoxWidth = Math.floor(totalDeviceViewWidth / 301);
                 deviceBoxWidth = 301 + Math.floor((totalDeviceViewWidth - (deviceBoxWidth * 301)) / deviceBoxWidth);
 
-                if (view == 2) {
+                if ((view == 2) && (sort != 3)) {
                     r += '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>User<th style=color:gray;width:120px>Address<th style=color:gray;width:100px>Connectivity'; //<th style=color:gray;width:100px>State';
                 }
 
@@ -2354,7 +2356,10 @@
                         if (pwr !== current) {
                             deviceHeaderSet();
                             if ((view == 1) && (current !== null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
+
+                            if (view == 2) { r += '<tr><td>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span><span>' + PowerStateStr2(node.pwr) + '</span></div>';
+
                             current = pwr;
                             c = 0;
                         }
@@ -2423,11 +2428,18 @@
 
                 // If displaying devices by groups, sort the group names and display the devices.
                 if (sort == 3) {
+                    if (view == 2) { r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>User<th style=color:gray;width:120px>Address<th style=color:gray;width:100px>Connectivity'; }
+
                     var groupNames = [];
                     for (var i in groups) { groupNames.push(i); }
                     groupNames.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
                     for (var j in groupNames) {
-                        var i = groupNames[j]; r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
+                        var i = groupNames[j];
+                        if (view == 2) {
+                            r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
+                        } else {
+                            r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
+                        }
                     }
                 }
 
@@ -5047,6 +5059,8 @@
                     if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
                         if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
                         if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
+                    } else if ((a >= 48) && (a <= 57)) {
+                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
                     } else if (DeskTypeTranslate[a]) {
                         if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
                         b = DeskTypeTranslate[a];
@@ -5125,7 +5139,13 @@
                 for (var pid in processes) { p.push( { p:parseInt(pid), c:processes[pid].cmd, d:processes[pid].cmd.toLowerCase(), u: processes[pid].user } ); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
-                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=\'return stopProcess(' + p[i].p + ',"' + p[i].c + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u?p[i].u:'') + '</div><div>' + p[i].c + '</div></div>'; } }
+                for (var i in p) {
+                    if (p[i].p != 0) {
+                        var c = p[i].c;
+                        if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0,30) + '...</span>' }
+                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=\'return stopProcess(' + p[i].p + ',"' + p[i].c + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + c + '</div></div>';
+                    }
+                }
                 QH('DeskToolsProcesses', x);
             }
         }
@@ -7261,24 +7281,31 @@
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
         }
 
-        function p3showDownloadEventsDialog() {
+        function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
             var x = 'Download the list of events with one of the file formats below.<br /><br />';
-            x += addHtmlValue('CSV Format', '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV()">eventslist.csv</a>');
-            x += addHtmlValue('JSON Format', '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON()">eventslist.json</a>');
-            setDialogMode(2, "Event List Export", 1, null, x);
+            x += addHtmlValue('CSV Format', '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">eventslist.csv</a>');
+            x += addHtmlValue('JSON Format', '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">eventslist.json</a>');
+            setDialogMode(2, "Event List Export", 1, null, x, mode);
         }
 
-        function p3downloadEventsDialogCSV() {
-            var csv = "time, type, action, user, message\r\n";
-            for (var i in events) { csv += '\"' + events[i].time + '\",\"' + events[i].etype + '\",\"' + ((events[i].action != null)?events[i].action:'') + '\",\"' + ((events[i].username != null)?events[i].username:'') + '\",\"' + ((events[i].msg != null)?events[i].msg:'') + '\"\r\n'; }
+        function p3downloadEventsDialogCSV(mode) {
+            var csv, eventList;
+            if (mode == 1) { eventList = currentDeviceEvents; }
+            if (mode == 2) { eventList = events; }
+            if (mode == 3) { eventList = currentUserEvents; }
+            csv = "time, type, action, user, message\r\n"
+            for (var i in eventList) { csv += '\"' + eventList[i].time + '\",\"' + eventList[i].etype + '\",\"' + ((eventList[i].action != null) ? eventList[i].action : '') + '\",\"' + ((eventList[i].username != null) ? eventList[i].username : '') + '\",\"' + ((eventList[i].msg != null) ? eventList[i].msg : '') + '\"\r\n'; }
             saveAs(new Blob([csv], { type: "application/octet-stream" }), "eventslist.csv");
             return false;
         }
 
-        function p3downloadEventsDialogJSON() {
-            var r = []
-            for (var i in events) { r.push(events[i]); }
+        function p3downloadEventsDialogJSON(mode) {
+            var r = [], eventList;
+            if (mode == 1) { eventList = currentDeviceEvents; }
+            if (mode == 2) { eventList = events; }
+            if (mode == 3) { eventList = currentUserEvents; }
+            for (var i in eventList) { r.push(events[i]); }
             saveAs(new Blob([JSON.stringify(r)], { type: "application/octet-stream" }), "eventslist.json");
             return false;
         }
