@@ -391,16 +391,15 @@
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
                                     <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
-                                    <input id=DeskToastButton type=button value=Toast title="Display a notification message on the remote computer" onkeypress="return false" onkeydown="return false" onclick="deviceToastFunction()">&nbsp;
+                                    <span id=DeskToastButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
                                     <input id="deskActionsBtn" type=button style="margin-left:3px" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     <input type="button" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
-                                    <!--<input id="DeskCAD" type="button" value="CtrlAltDel" onkeypress="return false" onkeydown="return false" onclick="sendCAD()">-->
-                                    <input id="DeskSpecialKeys" type="button" value="Special" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
-                                    <input id="DeskSoftKeys" type="button" value="Keys" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
+                                    <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
+                                    <input id="DeskSoftKeys" type="button" value="Keyboard" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
                                     <label><span id="DeskControlSpan" style="display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
@@ -2252,7 +2251,7 @@
             //QE('deskkeys', deskState == 3);
             //QE('DeskToolsButton', online);
             QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
-            QE('DeskToastButton', online);
+            //QE('DeskToastButton', online);
             QV('deskActionsBtn', meshrights & 8);
             Q('DeskControl').checked = ((meshrights & 8) != 0);
             if (online == false) QV('DeskTools', false);
