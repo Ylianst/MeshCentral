@@ -2,7 +2,8 @@
   "__comment__" : "This is a sample configuration file, edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
     "_Cert": "myserver.mydomain.com",
-    "_MongoDb": "mongodb://127.0.0.1:27017/meshcentral",
+    "_MongoDb": "mongodb://127.0.0.1:27017",
+    "_MongoDbName": "meshcentral",
     "_MongoDbChangeStream": true,
     "_WANonly": true,
     "_LANonly": true,

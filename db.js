@@ -211,10 +211,7 @@ module.exports.CreateDB = function (parent, func) {
             Datastore = client;
 
             // Get the database name and setup the database client
-            var dbNamefromUrl = null;
-            try { dbNamefromUrl = require('url').parse(parent.args.mongodb).path.split('/')[1]; } catch (ex) { }
             var dbname = 'meshcentral';
-            if (dbNamefromUrl) { dbname = dbNamefromUrl; }
             if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
             const dbcollectionname = (parent.args.mongodbcol) ? (parent.args.mongodbcol) : 'meshcentral';
             const db = client.db(dbname);
