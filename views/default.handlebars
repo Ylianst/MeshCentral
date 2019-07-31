@@ -467,13 +467,26 @@
                             <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                         </div>
                         <div id=DeskTools>
-                            <a id=DeskToolsRefreshButton style="" onclick="refreshDeskTools()">Refresh</a>
-                            <div id=DeskToolsBar>Processes</div>
+                            <div id=deskToolsAreaTop>
+                                <a id=DeskToolsRefreshButton style="right:2px" onclick="refreshDeskTools()">Refresh</a>
+                                <div id=deskToolsTopTabProcess class="deskToolsTopTab" onclick="changeDeskToolTab(0)" style="left:0px;bottom:0px">Processes</div>
+                                <div id=deskToolsTopTabService class="deskToolsTopTab" onclick="changeDeskToolTab(1)" style="display:none;left:90px;color:gray">Services</div>
+                            </div>
                             <div id=deskToolsArea>
-                                <div id=deskToolsHeader>
-                                    <a class="colmn1" title="Sort by process id" onclick=sortProcess(0)>PID</a>
-                                    <a class="colmn2" title="Sort by name" onclick=sortProcess(1)>Name</a></div>
-                                <div id="DeskToolsProcesses" style=""></div>
+                                <div id="DeskToolsProcessTab">
+                                    <div id=deskToolsHeader>
+                                        <a class="colmn1" title="Sort by process id" onclick=sortProcess(0)>PID</a>
+                                        <a class="colmn2" title="Sort by name" onclick=sortProcess(1)>Name</a>
+                                    </div>
+                                    <div id="DeskToolsProcesses" style=""></div>
+                                </div>
+                                <div id="DeskToolsServiceTab" style="display:none">
+                                    <div id=deskToolsServiceHeader>
+                                        <a class="colmn1" style="width:70px" title="Sort by state" onclick=sortService(0)>State</a>
+                                        <a class="colmn2" title="Sort by name" onclick=sortService(1)>Name</a>
+                                    </div>
+                                    <div id="DeskToolsServices" style=""></div>
+                                </div>
                             </div>
                         </div>
                         <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p11clearConsoleMsg()></div>
@@ -1452,6 +1465,8 @@
                                 addNotification(n);
                             } else if (message.type == 'ps') {
                                 showDeskToolsProcesses(message);
+                            } else if (message.type == 'services') {
+                                showDeskToolsServices(message);
                             } else if ((message.type == 'getclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 Q('d2clipText').value = message.data;
                             } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
@@ -5112,22 +5127,41 @@
             if (QS('DeskTools').display == 'none') {
                 QV('DeskTools', true);
                 Q('DeskTools').nodeid = currentNode._id;
-                refreshDeskTools();
+                QH('DeskToolsProcesses', '');
+                QH('DeskToolsServices', '');
+                QV('deskToolsTopTabService', false);
+                changeDeskToolTab(0)
+                refreshDeskTools(0);
+                refreshDeskTools(1);
             } else {
                 QV('DeskTools', false);
             }
         }
 
+        var deskToolTabSelection = 0;
+        function changeDeskToolTab(tabnum) {
+            deskToolTabSelection = tabnum;
+            QV('DeskToolsProcessTab', tabnum == 0);
+            QV('DeskToolsServiceTab', tabnum == 1);
+            QS('deskToolsTopTabProcess')['bottom'] = (tabnum == 0) ? '0px' : '3px';
+            QS('deskToolsTopTabService')['bottom'] = (tabnum == 1) ? '0px' : '3px';
+            QS('deskToolsTopTabProcess')['color'] = (tabnum == 0) ? 'black' : 'gray';
+            QS('deskToolsTopTabService')['color'] = (tabnum == 1) ? 'black' : 'gray';
+        }
+
         // Refresh all of the desktop tool panels
-        function refreshDeskTools() {
+        function refreshDeskTools(x) {
+            var sel = (x == null) ? deskToolTabSelection : x;
             QV('DeskToolsRefreshButton', false);
             setTimeout(refreshDeskToolsEx, 500);
-            meshserver.send({ action: 'msg', type:'ps', nodeid: currentNode._id });
+            if (sel == 0) meshserver.send({ action: 'msg', type: 'ps', nodeid: currentNode._id });
+            if (sel == 1) meshserver.send({ action: 'msg', type: 'services', nodeid: currentNode._id });
         }
         function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
-        var deskTools = { sort: 1, msg: null };
+        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null };
         function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
-        function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return 0; }
+        function sortService(sort) { deskTools.ssort = sort; showDeskToolsServices(deskTools.smsg); }
+        function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return sortProcessName(a, b); }
         function sortProcessName(a, b) { if (a.d > b.d) return 1; if (a.d < b.d) return (-1); return 0; }
         function showDeskToolsProcesses(message) {
             deskTools.msg = message;
@@ -5147,6 +5181,68 @@
                     }
                 }
                 QH('DeskToolsProcesses', x);
+            }
+        }
+        function showDeskToolsServices(message) {
+            deskTools.smsg = message;
+            if (message == null) { QH('DeskToolsProcesses', ''); return; }
+            if (Q('DeskTools').nodeid != message.nodeid) return;
+            QV('deskToolsTopTabService', true);
+            var s = [], services = null;
+            try { services = JSON.parse(message.value); } catch (e) { }
+            deskTools.services = services;
+            if (services != null) {
+                for (var i in services) {
+                    if (services[i].status) {
+                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: i });
+                    }
+                }
+                if (deskTools.ssort == 0) { s.sort(sortProcessPid); } else if (deskTools.ssort == 1) { s.sort(sortProcessName); }
+                var x = '';
+                for (var i in s) {
+                    if (s[i].p != 0) {
+                        var c = s[i].d;
+                        if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0, 30) + '...</span>' }
+                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + s[i].p + '</div><div>' + c + '</div></div>';
+                    }
+                }
+                QH('DeskToolsServices', x);
+            }
+        }
+
+        function showServiceDetailsDialog(index) {
+            if (xxdialogMode) return;
+            var service = deskTools.services[index];
+            if (service != null) {
+                var x = '';
+                if (service.name) { x += addHtmlValue('Name', service.name); }
+                if (service.displayName) { x += addHtmlValue('Display name', service.displayName); }
+                if (service.status) {
+                    if (service.status.state) { x += addHtmlValue('State', capitalizeFirstLetter(service.status.state.toLowerCase())); }
+                    if (service.status.pid) { x += addHtmlValue('PID', service.status.pid); }
+                    var serviceTypes = [];
+                    if (service.status.isFileSystemDriver === true) { serviceTypes.push('FileSystemDriver'); }
+                    if (service.status.isInteractive === true) { serviceTypes.push('Interactive'); }
+                    if (service.status.isKernelDriver === true) { serviceTypes.push('KernelDriver'); }
+                    if (service.status.isOwnProcess === true) { serviceTypes.push('OwnProcess'); }
+                    if (service.status.isSharedProcess === true) { serviceTypes.push('SharedProcess'); }
+                    if (serviceTypes.length > 0) { x += addHtmlValue('Type', serviceTypes.join(', ')); }
+                }
+                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="Close" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="Start" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="Stop" onclick=showServiceDetailsDialogEx(2,' + index + ')></div>';
+                // <input type=button value="Restart" onclick=showServiceDetailsDialogEx(3,' + index + ')>
+                setDialogMode(2, "Service Details", 8, null, x, name);
+            }
+        }
+
+        function showServiceDetailsDialogEx(action, index) {
+            setDialogMode(0);
+            if (action == 0) return;
+            var service = deskTools.services[index];
+            if (service != null) {
+                if (action == 1) { meshserver.send({ action: 'msg', type: 'serviceStart', nodeid: currentNode._id, serviceName: service.name }); }
+                if (action == 2) { meshserver.send({ action: 'msg', type: 'serviceStop', nodeid: currentNode._id, serviceName: service.name }); }
+                //if (action == 3) { meshserver.send({ action: 'msg', type: 'serviceRestart', nodeid: currentNode._id, serviceName: service.name }); }
+                setTimeout(function () { refreshDeskTools(1) }, 1000);
             }
         }
 
@@ -7609,9 +7705,9 @@
             userid = decodeURIComponent(userid);
             var user = users[userid.toLowerCase()], groups = "";
             if (user.groups != null) { groups = user.groups.join(', ') }
-            var x = 'Enter a comma seperate list of groups.<br /><br />';
-            x += addHtmlValue('Groups', '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="Group1, Group2, Group3" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
-            setDialogMode(2, "User Groups", 3, showUserGroupDialogEx, x, user);
+            var x = 'Enter a comma seperate list of administrative realms names.<br /><br />';
+            x += addHtmlValue('Realms', '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="Name1, Name2, Name3" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
+            setDialogMode(2, "Administrative Realms", 3, showUserGroupDialogEx, x, user);
             focusTextBox('dp4usergroups');
             p4validateUserGroups();
             return false;
@@ -7757,10 +7853,12 @@
             }
             x += addDeviceAttribute('Device Groups', linkCountStr);
 
-            // User Groups
-            var userGroups = '<i>None</i>';
-            if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
-            x += addDeviceAttribute('User Groups', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo.siteadmin & 2) && (userinfo._id != user._id) && (user._id != 0xFFFFFFFF))));
+            // Administrative Realms
+            if ((userinfo.siteadmin == 0xFFFFFFFF) || (userinfo.siteadmin & 2)) {
+                var userGroups = '<i>None</i>';
+                if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
+                x += addDeviceAttribute('Admin Realms', addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
+            }
 
             var multiFactor = 0;
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) {
@@ -8579,6 +8677,7 @@
         function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
         function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
+        function capitalizeFirstLetter(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }

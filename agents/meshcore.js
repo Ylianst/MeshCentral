@@ -672,7 +672,9 @@ function createMeshCore(agent)
                         case 'ps': {
                             // Return the list of running processes
                             if (data.sessionid) {
-                                processManager.getProcesses(function (plist) { mesh.SendCommand({ "action": "msg", "type": "ps", "value": JSON.stringify(plist), "sessionid": data.sessionid }); });
+                                processManager.getProcesses(function (plist) {
+                                    mesh.SendCommand({ "action": "msg", "type": "ps", "value": JSON.stringify(plist), "sessionid": data.sessionid });
+                                });
                             }
                             break;
                         }
@@ -684,6 +686,39 @@ function createMeshCore(agent)
                             }
                             break;
                         }
+                        case 'services': {
+                            // Return the list of installed services
+                            var services = null;
+                            try { services = require('service-manager').manager.enumerateService(); } catch (e) { }
+                            if (services != null) { mesh.SendCommand({ "action": "msg", "type": "services", "value": JSON.stringify(services), "sessionid": data.sessionid }); }
+                            break;
+                        }
+                        case 'serviceStop': {
+                            // Stop a service
+                            try {
+                                var service = require('service-manager').manager.getService(data.serviceName);
+                                if (service != null) { service.stop(); }
+                            } catch (e) { }
+                            break;
+                        }
+                        case 'serviceStart': {
+                            // Start a service
+                            try {
+                                var service = require('service-manager').manager.getService(data.serviceName);
+                                if (service != null) { service.start(); }
+                            } catch (e) { }
+                            break;
+                        }
+                        /*
+                        case 'serviceRestart': {
+                            // Start a service
+                            try {
+                                var service = require('service-manager').manager.getService(data.serviceName);
+                                if (service != null) { service.stop(); service.start(); }
+                            } catch (e) { }
+                            break;
+                        }
+                        */
                         case 'openUrl': {
                             // Open a local web browser and return success/fail
                             MeshServerLog('Opening: ' + data.url, data);
@@ -2035,6 +2070,11 @@ function createMeshCore(agent)
                 }
                 case 'modules': {
                     response = JSON.stringify(addedModules);
+                    break;
+                }
+                case 'listservices': {
+                    var services = require('service-manager').manager.enumerateService();
+                    response = JSON.stringify(services, null, 1);
                     break;
                 }
                 case 'getscript': {
