@@ -157,6 +157,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     relayinfo.peer1.ws.send('c');
                     relayinfo.peer1.ws._socket.resume(); // Release the traffic
                     relayinfo.peer2.ws._socket.resume(); // Release the traffic
+                    ws.time = relayinfo.peer1.ws.time = Date.now();
 
                     relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
                     relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
@@ -165,6 +166,12 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
 
                     parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
+
+                    // Log the connection
+                    if (user) {
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
+                        parent.parent.DispatchEvent(['*', user._id], obj, event);
+                    }
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
                     ws.close();
@@ -236,6 +243,12 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(peer.ws._socket.remoteAddress) + ')');
                     try { peer.ws.close(); } catch (e) { } // Soft disconnect
                     try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
+
+                    // Log the disconnection
+                    if (user && ws.time) {
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Ended relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)' };
+                        parent.parent.DispatchEvent(['*', user._id], obj, event);
+                    }
 
                     // Aggressive peer cleanup
                     delete peer.id;

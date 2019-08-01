@@ -1186,6 +1186,14 @@ a {
     border: none;
 }
 
+.relayIcon16 {
+    background: url(../images/icon-relay.png);
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+}
+
 .lbbutton {
     width: 74px;
     height: 74px;

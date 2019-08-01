@@ -1311,7 +1311,11 @@ function createMeshCore(agent)
                         for (var i in cmd.delfiles) {
                             var p = obj.path.join(cmd.path, cmd.delfiles[i]), delcount = 0;
                             try { delcount = deleteFolderRecursive(p, cmd.rec); } catch (e) { }
-                            MeshServerLog((cmd.rec ? 'Delete recursive: \"' : 'Delete: \"') + p + '\", ' + delcount + ' element(s) removed', this.httprequest);
+                            if ((delcount == 1) && !cmd.rec) {
+                                MeshServerLog('Delete: \"' + p + '\"', this.httprequest);
+                            } else {
+                                MeshServerLog((cmd.rec ? 'Delete recursive: \"' : 'Delete: \"') + p + '\", ' + delcount + ' element(s) removed', this.httprequest);
+                            }
                         }
                         break;
                     }

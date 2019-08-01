@@ -5723,7 +5723,13 @@
             QV('p13bigfail', false);
             QV('p13bigok', false);
             if (e.dataTransfer == null || e.dataTransfer.files.length == 0 || p13filetree == null) return;
-            p13doUploadFiles(e.dataTransfer.files);
+
+            // Check if these are files we can upload, remove all folders.
+            var files = [];
+            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].type != '') && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
+            if (files.length == 0) return;
+
+            p13doUploadFiles(files);
         }
 
         var p13dragtimer = null;
@@ -5969,6 +5975,7 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
+                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = event.msg.split('(R)').join('&reg;');
                     if (event.username) {
@@ -7257,21 +7264,27 @@
             QV('bigok', false);
             //QV('p5fileCatchAllInput', false);
 
+            // Check if these are files we can upload, remove all folders.
+            if (e.dataTransfer == null) return;
+            var files = [];
+            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].type != '') && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
+            if (files.length == 0) return;
+
             // For Chrome & Firefox
             var error = 0;
             p5uploadFile(); // Display the the dialog box
-            try { Q('p5uploadinput').files = e.dataTransfer.files; } catch (ex) { error = 1; } // Set the files in the dialog box
+            try { Q('p5uploadinput').files = files; } catch (ex) { error = 1; } // Set the files in the dialog box
             if (error == 0) { p5uploadFileEx(); } // Press the submit button
             setDialogMode(0); // Close the dialog box
 
             // For IE browser - This will not work with very large files
             if (error == 1) {
-                if (e.dataTransfer == null || e.dataTransfer.files.length == 0 || filetreelocation.length == 0) return;
-                var names = [], sizes = [], types = [], datas = [], readercount = e.dataTransfer.files.length, totalSize = 0;
-                for (var i = 0; i < e.dataTransfer.files.length; i++) { totalSize += e.dataTransfer.files[i].size; }
+                if (filetreelocation.length == 0) return;
+                var names = [], sizes = [], types = [], datas = [], readercount = files.length, totalSize = 0;
+                for (var i = 0; i < files.length; i++) { totalSize += files[i].size; }
                 if (totalSize > 1300000) { p5uploadFile(); return; } // File is too large, not sure what the real maximum is.
-                for (var i = 0; i < e.dataTransfer.files.length; i++) {
-                    var reader = new FileReader(), file = e.dataTransfer.files[i];
+                for (var i = 0; i < files.length; i++) {
+                    var reader = new FileReader(), file = files[i];
                     names.push(file.name);
                     sizes.push(file.size);
                     types.push(file.type);
@@ -7349,6 +7362,7 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
+                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = event.msg.split('(R)').join('&reg;');
                     if (event.nodeid) {
@@ -8054,6 +8068,7 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
+                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = event.msg.split('(R)').join('&reg;');
                     if (event.nodeid) {
