@@ -171,6 +171,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (user) {
                         var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
                         parent.parent.DispatchEvent(['*', user._id], obj, event);
+                    } else if (obj.peer.user) {
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.peer.user._id, username: parent.users[obj.peer.user._id].name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
+                        parent.parent.DispatchEvent(['*', obj.peer.user._id], obj, event);
                     }
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
@@ -245,9 +248,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
 
                     // Log the disconnection
-                    if (user && ws.time) {
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Ended relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)' };
-                        parent.parent.DispatchEvent(['*', user._id], obj, event);
+                    if (ws.time) {
+                        if (user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Ended relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)' };
+                            parent.parent.DispatchEvent(['*', user._id], obj, event);
+                        } else if (peer.user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: parent.users[peer.user._id].name, msg: 'Ended relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)' };
+                            parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
+                        }
                     }
 
                     // Aggressive peer cleanup
