@@ -1603,10 +1603,10 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip.';
+                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av.';
                     break;
                 }
-                    /*
+                /*
                 case 'border':
                     {
                         if ((args['_'].length == 1) && (args['_'][0] == 'on')) {
@@ -1624,7 +1624,10 @@ function createMeshCore(agent)
                         }
                     }
                     break;
-                    */
+                */
+                case 'av':
+                    if (process.platform == 'win32') { response = JSON.stringify(require('win-info').av()); } else { response = 'Not supported on the platform'; }
+                    break;
                 case 'log':
                     if (args['_'].length != 1) { response = 'Proper usage: log "sample text"'; } else { MeshServerLog(args['_'][0]); response = 'ok'; }
                     break;
@@ -2170,7 +2173,7 @@ function createMeshCore(agent)
             // Update the server on more advanced stuff, like Intel ME and Network Settings
             meInfoStr = null;
             sendPeriodicServerUpdate();
-            //if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
+            if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
         }
     }
         
@@ -2234,6 +2237,13 @@ function createMeshCore(agent)
         if (flags & 2) {
             // Update network information
             sendNetworkUpdateNagle(false);
+        }
+
+        if ((flags & 4) && (process.platform == 'win32')) {
+            // Update anti-virus information
+            var av = null;
+            try { av = require('win-info').av(); } catch (ex) { av = { product: 'Error', updated: false, enabled: false }; }
+            if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
         }
     }
     

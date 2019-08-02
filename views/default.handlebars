@@ -1933,6 +1933,7 @@
                                     if (message.event.node.intelamt.uuid != null) { node.intelamt.uuid = message.event.node.intelamt.uuid; }
                                     if (message.event.node.intelamt.realm != null) { node.intelamt.realm = message.event.node.intelamt.realm; }
                                 }
+                                if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
@@ -4032,6 +4033,21 @@
                 // Operating system description
                 if (node.osdesc) { x += addDeviceAttribute('Operating System', node.osdesc); }
 
+                // Antivirus
+                if (node.av && node.av.length > 0) {
+                    var y = [];
+                    for (var i in node.av) {
+                        if (node.av[i].product) {
+                            var avx = EscapeHtml(node.av[i].product);
+                            if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>Disabled</span>'; }
+                            if (node.av[i].updated !== true) { avx += ' - <span style=color:red>Out of date</span>'; }
+                            if ((node.av[i].enabled == true) && (node.av[i].updated == true)) { avx += ' - <span style=color:green>OK</span>'; }
+                            y.push(avx);
+                        }
+                    }
+                    x += addDeviceAttribute('Antivirus', y.join('<br />'));
+                }
+
                 // Active Users
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute('Active User' + ((node.users.length > 1)?'s':''), node.users.join(', ')); }
 
@@ -5977,12 +5993,12 @@
                     if (event.etype == 'server') icon = 'si3';
                     if (event.etype == 'relay') icon = 'relayIcon16';
 
-                    var msg = event.msg.split('(R)').join('&reg;');
+                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.username) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
-                            msg = event.username + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
                     x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
@@ -7364,19 +7380,19 @@
                     if (event.etype == 'server') icon = 'si3';
                     if (event.etype == 'relay') icon = 'relayIcon16';
 
-                    var msg = event.msg.split('(R)').join('&reg;');
+                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);
                         if (node != null) {
                             icon = 'si' + node.icon;
-                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + node.name + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a> &rarr; ' + msg;
                         }
                     }
                     if (event.username) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
-                            msg = event.username + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
                     x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
@@ -8070,19 +8086,19 @@
                     if (event.etype == 'server') icon = 'si3';
                     if (event.etype == 'relay') icon = 'relayIcon16';
 
-                    var msg = event.msg.split('(R)').join('&reg;');
+                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);
                         if (node != null) {
                             icon = 'si' + node.icon;
-                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + node.name + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a> &rarr; ' + msg;
                         }
                     }
                     if (event.username && (event.username != currentUser.name)) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + event.username + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
-                            msg = event.username + ' &rarr; ' + msg;
+                            msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
                     x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
