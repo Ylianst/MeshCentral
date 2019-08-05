@@ -317,7 +317,8 @@ body {
 }
 
 .room4submenu {
-    min-height: calc(100vh - 159px);
+    /*min-height: calc(100vh - 159px);*/
+    min-height: calc(100vh - 184px);
 }
 
 #centralTable {
