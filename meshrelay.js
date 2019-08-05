@@ -170,7 +170,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
                         var recFilename = 'session' + ((domain.id == '')?'':'-') + domain.id + '-' + Date.now() + '-' + sessionUser.name + '-' + obj.id + '.mcrec'
                         var recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
-                        console.log('OpenLog'); 
+                        //console.log('OpenLog');
                         parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
                             relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
                             ws.send('c'); // Send connect to both peers
@@ -229,21 +229,22 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             try {
                 this._socket.pause();
-                if ((this.logfile != null) && (this.logfile.lock == false)) {
+                if (this.logfile != null) {
                     // Write data to log file then perform relay
-                    /*
                     var xthis = this;
-                    console.log('Write', data.length, typeof data, data);
-                    this.logfile.lock = true;
                     try {
-                        parent.parent.fs.write(this.logfile.fd, data, function (err, bytesWritten, buffer) {
-                            xthis.logfile.lock = false;
-                            console.log('WriteDone', err, bytesWritten, buffer.length);
-                            xthis.peer.send(data, ws.flushSink);
-                        });
+                        if (typeof data == 'string') {
+                            // String write
+                            parent.parent.fs.write(this.logfile.fd, data, function (err, bytesWritten, buffer) {
+                                xthis.peer.send(data, ws.flushSink);
+                            });
+                        } else {
+                            // Binary write
+                            parent.parent.fs.write(this.logfile.fd, data, 0, data.length, function (err, bytesWritten, buffer) {
+                                xthis.peer.send(data, ws.flushSink);
+                            });
+                        }
                     } catch (ex) { console.log(ex); }
-                    */
-                    this.peer.send(data, ws.flushSink);
                 } else {
                     // Perform relay
                     this.peer.send(data, ws.flushSink);
@@ -275,7 +276,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
 
                     // Close the recording file
-                    if (ws.logfile != null) { console.log('CloseLog'); parent.parent.fs.close(ws.logfile.fd); ws.logfile = null; peer.ws.logfile = null; }
+                    if (ws.logfile != null) { parent.parent.fs.close(ws.logfile.fd); ws.logfile = null; peer.ws.logfile = null; }
 
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
