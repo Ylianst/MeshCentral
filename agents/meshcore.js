@@ -1072,7 +1072,7 @@ function createMeshCore(agent)
                         pr.then(
                             function () {
                                 // Success
-                                MeshServerLog('Starting remote terminal after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Starting remote terminal after local user accepted (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
                                     // User Notifications is required
@@ -1082,7 +1082,7 @@ function createMeshCore(agent)
                             },
                             function (e) {
                                 // User Consent Denied/Failed
-                                MeshServerLog('Failed to start remote terminal after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Failed to start remote terminal after local user rejected (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                                 this.ws.end();
                             });
@@ -1163,7 +1163,7 @@ function createMeshCore(agent)
                             function ()
                             {
                                 // Success
-                                MeshServerLog('Starting remote desktop after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Starting remote desktop after local user accepted (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
@@ -1175,7 +1175,7 @@ function createMeshCore(agent)
                             function (e)
                             {
                                 // User Consent Denied/Failed
-                                MeshServerLog('Failed to start remote desktop after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Failed to start remote desktop after local user rejected (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
                     }
@@ -1220,7 +1220,7 @@ function createMeshCore(agent)
                         pr.then(
                             function () {
                                 // Success
-                                MeshServerLog('Starting remote files after local user accepted (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Starting remote files after local user accepted (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                     // User Notifications is required
@@ -1230,7 +1230,7 @@ function createMeshCore(agent)
                             },
                             function (e) {
                                 // User Consent Denied/Failed
-                                MeshServerLog('Failed to start remote files after local user rejected (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                MeshServerLog('Failed to start remote files after local user rejected (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
                     } else {
