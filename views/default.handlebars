@@ -4907,12 +4907,13 @@
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
             } else {
                 QC('body').remove("fulldesk");
-                exitBrowserFullscreen();
-                browserfullscreen = false;
-                toggleFullScreen();
+                if (browserfullscreen == true) {
+                    exitBrowserFullscreen();
+                    browserfullscreen = false;
+                    toggleFullScreen();
+                }
             }
             deskAdjust();
-            //deskAdjust();
             updateDesktopButtons();
         }
 

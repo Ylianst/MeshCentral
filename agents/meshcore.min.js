@@ -2241,8 +2241,8 @@ function createMeshCore(agent)
 
         if ((flags & 4) && (process.platform == 'win32')) {
             // Update anti-virus information
-            var av = [];
-            //try { av = require('win-info').av(); } catch (ex) { av = [ { product: 'Error', updated: false, enabled: false } ]; }
+            var av;
+            try { av = require('win-info').av(); } catch (ex) { av = []; }
             if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
         }
     }
