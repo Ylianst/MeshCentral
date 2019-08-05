@@ -153,8 +153,6 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     obj.peer.peer = obj;
                     relayinfo.peer2 = obj;
                     relayinfo.state = 2;
-                    ws.send('c'); // Send connect to both peers
-                    relayinfo.peer1.ws.send('c');
                     relayinfo.peer1.ws._socket.resume(); // Release the traffic
                     relayinfo.peer2.ws._socket.resume(); // Release the traffic
                     ws.time = relayinfo.peer1.ws.time = Date.now();
@@ -165,15 +163,31 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Remove the timeout
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
 
+                    // Setup session recording
+                    var sessionUser = user;
+                    if (sessionUser == null) { sessionUser = obj.peer.user; }
+                    if (domain.sessionrecord) {
+                        try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
+                        var recFilename = 'session' + ((domain.id == '')?'':'-') + domain.id + '-' + Date.now() + '-' + sessionUser.name + '-' + obj.id + '.mcrec'
+                        var recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
+                        console.log('OpenLog'); 
+                        parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
+                            relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
+                            ws.send('c'); // Send connect to both peers
+                            relayinfo.peer1.ws.send('c');
+                        });
+                    } else {
+                        // Send session start
+                        ws.send('c'); // Send connect to both peers
+                        relayinfo.peer1.ws.send('c');
+                    }
+
                     parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
 
                     // Log the connection
-                    if (user) {
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: parent.users[user._id].name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
+                    if (sessionUser) {
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
                         parent.parent.DispatchEvent(['*', user._id], obj, event);
-                    } else if (obj.peer.user) {
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: obj.peer.user._id, username: parent.users[obj.peer.user._id].name, msg: 'Started relay session \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress) };
-                        parent.parent.DispatchEvent(['*', obj.peer.user._id], obj, event);
                     }
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
@@ -215,7 +229,25 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
             try {
                 this._socket.pause();
-                this.peer.send(data, ws.flushSink);
+                if ((this.logfile != null) && (this.logfile.lock == false)) {
+                    // Write data to log file then perform relay
+                    /*
+                    var xthis = this;
+                    console.log('Write', data.length, typeof data, data);
+                    this.logfile.lock = true;
+                    try {
+                        parent.parent.fs.write(this.logfile.fd, data, function (err, bytesWritten, buffer) {
+                            xthis.logfile.lock = false;
+                            console.log('WriteDone', err, bytesWritten, buffer.length);
+                            xthis.peer.send(data, ws.flushSink);
+                        });
+                    } catch (ex) { console.log(ex); }
+                    */
+                    this.peer.send(data, ws.flushSink);
+                } else {
+                    // Perform relay
+                    this.peer.send(data, ws.flushSink);
+                }
             } catch (ex) { console.log(ex); }
         }
     });
@@ -240,8 +272,12 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             var relayinfo = parent.wsrelays[obj.id];
             if (relayinfo != null) {
                 if (relayinfo.state == 2) {
-                    // Disconnect the peer
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
+
+                    // Close the recording file
+                    if (ws.logfile != null) { console.log('CloseLog'); parent.parent.fs.close(ws.logfile.fd); ws.logfile = null; peer.ws.logfile = null; }
+
+                    // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
                     parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(peer.ws._socket.remoteAddress) + ')');
                     try { peer.ws.close(); } catch (e) { } // Soft disconnect
