@@ -5992,7 +5992,6 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
-                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.username) {
@@ -6002,6 +6001,7 @@
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
             }
@@ -7379,7 +7379,6 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
-                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.nodeid) {
@@ -7396,6 +7395,7 @@
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
             }
@@ -8085,7 +8085,6 @@
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
-                    if (event.etype == 'relay') icon = 'relayIcon16';
 
                     var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.nodeid) {
@@ -8102,6 +8101,7 @@
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
             }
