@@ -166,15 +166,24 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Setup session recording
                     var sessionUser = user;
                     if (sessionUser == null) { sessionUser = obj.peer.user; }
-                    if (domain.sessionrecord) {
+                    if (domain.sessionrecording) {
                         try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
-                        var recFilename = 'session' + ((domain.id == '')?'':'-') + domain.id + '-' + Date.now() + '-' + sessionUser.name + '-' + obj.id + '.mcrec'
+                        var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + sessionUser.name + '-' + obj.id + '.mcrec'
                         var recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
-                        //console.log('OpenLog');
                         parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
-                            relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
-                            ws.send('c'); // Send connect to both peers
-                            relayinfo.peer1.ws.send('c');
+                            // Write the recording file header
+                            var firstBlock = Buffer.from(JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString() }));
+                            var header = Buffer.alloc(16); // Type (2) + Flags (2) + Size(4) + Time(8)
+                            header.writeInt16BE(1, 0); // Type (1 = Header, 2 = Network Data)
+                            header.writeInt16BE(0, 2); // Flags (1 = Binary, 2 = User)
+                            header.writeInt32BE(firstBlock.length, 4); // Size
+                            header.writeIntBE(ws.time, 10, 6); // Time
+                            var block = Buffer.concat([header, firstBlock]);
+                            parent.parent.fs.write(fd, block, 0, block.length, function (err, bytesWritten, buffer) {
+                                relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
+                                ws.send('c'); // Send connect to both peers
+                                relayinfo.peer1.ws.send('c');
+                            });
                         });
                     } else {
                         // Send session start
@@ -233,14 +242,27 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Write data to log file then perform relay
                     var xthis = this;
                     try {
+                        //console.log(obj);
                         if (typeof data == 'string') {
                             // String write
-                            parent.parent.fs.write(this.logfile.fd, data, function (err, bytesWritten, buffer) {
+                            var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                            header.writeInt16BE(2, 0); // Type (1 = Header, 2 = Network Data)
+                            header.writeInt16BE(((req.query.browser) ? 2 : 0), 2); // Flags (1 = Binary, 2 = User)
+                            header.writeInt32BE(blockData.length, 4); // Size
+                            header.writeIntBE(new Date(), 10, 6); // Time
+                            var block = Buffer.concat([header, blockData]);
+                            parent.parent.fs.write(this.logfile.fd, block, 0, block.length, function (err, bytesWritten, buffer) {
                                 xthis.peer.send(data, ws.flushSink);
                             });
                         } else {
                             // Binary write
-                            parent.parent.fs.write(this.logfile.fd, data, 0, data.length, function (err, bytesWritten, buffer) {
+                            var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                            header.writeInt16BE(2, 0); // Type (1 = Header, 2 = Network Data)
+                            header.writeInt16BE(((req.query.browser) ? 3 : 1), 2); // Flags (1 = Binary, 2 = User)
+                            header.writeInt32BE(data.length, 4); // Size
+                            header.writeIntBE(new Date(), 10, 6); // Time
+                            var block = Buffer.concat([header, data]);
+                            parent.parent.fs.write(this.logfile.fd, block, 0, block.length, function (err, bytesWritten, buffer) {
                                 xthis.peer.send(data, ws.flushSink);
                             });
                         }
@@ -368,3 +390,40 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     performRelay();
     return obj;
 };
+
+/*
+Relay session recording required that "SessionRecording":true be set in the domain section of the config.json.
+Once done, a folder "meshcentral-recordings" will be created next to "meshcentral-data" that will contain all
+of the recording files with the .mcrec extension.
+
+The recording files are binary and contain a set of:
+
+    <HEADER><DATABLOCK><HEADER><DATABLOCK><HEADER><DATABLOCK><HEADER><DATABLOCK>...
+
+The header is always 16 bytes long and is encoded like this:
+
+    TYPE   2 bytes, 1 = Header, 2 = Network Data
+    FLAGS  2 bytes, 0x0001 = Binary, 0x0002 = User
+    SIZE   4 bytes, Size of the data following this header.
+    TIME   8 bytes, Time this record was written, number of milliseconds since 1 January, 1970 UTC.
+
+All values are BigEndian encoded. The first data block is of TYPE 1 and contains a JSON string with information
+about this recording. It looks something like this:
+
+{
+    magic: 'MeshCentralRelaySession',
+    ver: 1,
+    userid: "user\domain\userid",
+    username: "username",
+    sessionid: "RandomValue",
+    ipaddr1: 1.2.3.4,
+    ipaddr2: 1.2.3.5,
+    time: new Date().toLocaleString()
+}
+
+The rest of the data blocks are all network traffic that was relayed thru the server. They are of TYPE 2 and have
+a given size and timestamp. When looking at network traffic the flags are imporant.
+
+- If traffic has the first (0x0001) flag set, the data is binary otherwise it's a string.
+- If the traffic has the second (0x0002) flag set, traffic is coming from the user's browser, if not, it's coming from the MeshAgent.
+*/
