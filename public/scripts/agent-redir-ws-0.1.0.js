@@ -35,7 +35,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     //obj.debug = function (msg) { console.log(msg); }
 
     obj.Start = function (nodeid) {
-        var url2, url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/meshrelay.ashx?browser=1&id=" + obj.tunnelid;
+        var url2, url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + "/meshrelay.ashx?browser=1&p=" + obj.protocol + "&nodeid=" + nodeid + "&id=" + obj.tunnelid;
         //if (serverPublicNamePort) { url2 = window.location.protocol.replace("http", "ws") + "//" + serverPublicNamePort + "/meshrelay.ashx?id=" + obj.tunnelid; } else { url2 = url; }
         if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
         obj.nodeid = nodeid;
@@ -48,7 +48,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.socket.onclose = obj.xxOnSocketClosed;
         obj.xxStateChange(1);
         //obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: url2 });
-        obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: "*" + domainUrl + "meshrelay.ashx?id=" + obj.tunnelid, usage: obj.protocol });
+        obj.meshserver.send({ action: 'msg', type: 'tunnel', nodeid: obj.nodeid, value: "*" + domainUrl + "meshrelay.ashx?p=" + obj.protocol + "&nodeid=" + nodeid + "&id=" + obj.tunnelid, usage: obj.protocol });
         //obj.debug("Agent Redir Start: " + url);
     }
 

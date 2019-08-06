@@ -101,7 +101,11 @@
       },
       "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
       "_httpheaders": { "Strict-Transport-Security": "max-age=360000" },
-      "_agentConfig": [ "webSocketMaskOverride=1" ]
+      "_agentConfig": [ "webSocketMaskOverride=1" ],
+      "_SessionRecording": {
+        "_filepath": "C:\\temp",
+        "protocols": [ 1, 2 ]
+      }
     },
     "customer1": {
       "DNS": "customer1.myserver.com",
