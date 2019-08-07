@@ -910,8 +910,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) })); } catch (ex) { }
         }
 
-        // Fetch system information
         /*
+        // Fetch system information
         db.GetHash('si' + obj.dbNodeKey, function (err, results) {
             if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
         });
@@ -1306,9 +1306,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
-                /*
                 case 'sysinfo': {
-                    //console.log('sysinfo', obj.nodeid, JSON.stringify(command.data.hash));
+                    console.log('sysinfo', obj.nodeid, JSON.stringify(command.data.hash));
                     command.data._id = 'si' + obj.dbNodeKey;
                     db.Set(command.data); // Update system information in the database.
                     break;
@@ -1320,7 +1319,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     });
                     break;
                 }
-                */
                 default: {
                     parent.agentStats.unknownAgentActionCount++; 
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');

@@ -822,7 +822,6 @@ function createMeshCore(agent)
                     sendConsoleText('getScript: ' + JSON.stringify(data));
                     break;
                 }
-                /*
                 case 'sysinfo': {
                     // Fetch system information
                     if (process.platform != 'win32') break; // Remove this when Linux/MacOS support this.
@@ -838,6 +837,7 @@ function createMeshCore(agent)
                             try { delete x.TotalVirtualMemorySize; } catch (ex) { }
                             try { delete x.TotalVisibleMemorySize; } catch (ex) { }
                         }
+                        /*
                         if (process.platform == 'win32')
                         {
                             var defragResult = function (r)
@@ -862,13 +862,13 @@ function createMeshCore(agent)
                             pr.sessionid = data.sessionid;
                             pr.then(defragResult, defragResult);
                         } else {
+                        */
                             results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
                             if (data.hash != results.hash) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
-                        }
+                        //}
                     } catch (ex) { }
                     break;
                 }
-                */
                 case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
                 case 'pong': { break; }
                 default:
@@ -1650,7 +1650,7 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av.'; // cpuinfo, sysinfo
+                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo.';
                     break;
                 }
                 /*
@@ -1814,7 +1814,6 @@ function createMeshCore(agent)
                     }
                     break;
                 }
-                /*
                 case 'cpuinfo': { // Return system information
                     // CPU & memory utilization
                     pr = require('sysinfo').cpuUtilization();
@@ -1850,7 +1849,6 @@ function createMeshCore(agent)
                     }
                     break;
                 }
-                */
                 case 'info': { // Return information about the agent and agent core module
                     response = 'Current Core: ' + meshCoreObj.value + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amt != null) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amt.lmsstate] + '.'; }
