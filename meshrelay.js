@@ -183,14 +183,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                 relayinfo.peer1.ws.send('c');
                             } else {
                                 // Write the recording file header
-                                var firstBlock = Buffer.from(JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid }));
-                                var header = Buffer.alloc(16); // Type (2) + Flags (2) + Size(4) + Time(8)
-                                header.writeInt16BE(1, 0); // Type (1 = Header, 2 = Network Data)
-                                header.writeInt16BE(0, 2); // Flags (1 = Binary, 2 = User)
-                                header.writeInt32BE(firstBlock.length, 4); // Size
-                                header.writeIntBE(ws.time, 10, 6); // Time
-                                var block = Buffer.concat([header, firstBlock]);
-                                parent.parent.fs.write(fd, block, 0, block.length, function (err, bytesWritten, buffer) {
+                                var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid });
+                                recordingEntry(fd, 2, ((req.query.browser) ? 2 : 0), firstBlock, function () {
                                     relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
                                     ws.send('c'); // Send connect to both peers
                                     relayinfo.peer1.ws.send('c');
@@ -257,32 +251,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 if (this.logfile != null) {
                     // Write data to log file then perform relay
                     var xthis = this;
-                    try {
-                        //console.log(obj);
-                        if (typeof data == 'string') {
-                            // String write
-                            var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                            header.writeInt16BE(2, 0); // Type (1 = Header, 2 = Network Data)
-                            header.writeInt16BE(((req.query.browser) ? 2 : 0), 2); // Flags (1 = Binary, 2 = User)
-                            header.writeInt32BE(blockData.length, 4); // Size
-                            header.writeIntBE(new Date(), 10, 6); // Time
-                            var block = Buffer.concat([header, blockData]);
-                            parent.parent.fs.write(this.logfile.fd, block, 0, block.length, function (err, bytesWritten, buffer) {
-                                xthis.peer.send(data, ws.flushSink);
-                            });
-                        } else {
-                            // Binary write
-                            var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                            header.writeInt16BE(2, 0); // Type (1 = Header, 2 = Network Data)
-                            header.writeInt16BE(((req.query.browser) ? 3 : 1), 2); // Flags (1 = Binary, 2 = User)
-                            header.writeInt32BE(data.length, 4); // Size
-                            header.writeIntBE(new Date(), 10, 6); // Time
-                            var block = Buffer.concat([header, data]);
-                            parent.parent.fs.write(this.logfile.fd, block, 0, block.length, function (err, bytesWritten, buffer) {
-                                xthis.peer.send(data, ws.flushSink);
-                            });
-                        }
-                    } catch (ex) { console.log(ex); }
+                    recordingEntry(this.logfile.fd, 2, ((req.query.browser) ? 2 : 0), data, function () { xthis.peer.send(data, ws.flushSink); });
                 } else {
                     // Perform relay
                     this.peer.send(data, ws.flushSink);
@@ -353,6 +322,31 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.id;
         delete obj.ws;
         delete obj.peer;
+    }
+
+    // Record a new entry in a recording log
+    function recordingEntry(fd, type, flags, data, func) {
+        try {
+            if (typeof data == 'string') {
+                // String write
+                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(blockData.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, blockData]);
+                parent.parent.fs.write(fd, block, 0, block.length, func);
+            } else {
+                // Binary write
+                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(data.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, data]);
+                parent.parent.fs.write(fd, block, 0, block.length, func);
+            }
+        } catch (ex) { console.log(ex); func(); }
     }
 
     // Mark this relay session as authenticated if this is the user end.
