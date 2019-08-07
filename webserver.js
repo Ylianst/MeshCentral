@@ -1960,10 +1960,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             }
 
-            /*
             // Setup session recording if needed
-            if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(100) >= 0)))) { // TODO 100
-                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + 'AAAAAAA' + '.mcrec'; // TODO: Random ID
+            if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf((req.query.p == 2) ? 101 : 100) >= 0)))) { // TODO 100
+                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + getRandomPassword() + '.mcrec'; // TODO: Random ID
                 var recFullFilename = null;
                 if (domain.sessionrecording.filepath) {
                     try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
@@ -1975,13 +1974,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var fd = obj.fs.openSync(recFullFilename, 'w');
                 if (fd != null) {
                     // Write the recording file header
-                    //console.log({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: parseInt(req.query.p), time: new Date().toLocaleString() });
-                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: parseInt(req.query.p), time: new Date().toLocaleString() })
+                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
                     recordingEntry(fd, 1, 0, firstBlock, function () { });
                     ws.logfile = { fd: fd, lock: false };
                 }
             }
-            */
 
             // If Intel AMT CIRA connection is available, use it
             if (((conn & 2) != 0) && (parent.mpsserver.ciraConnections[req.query.host] != null)) {
@@ -2001,7 +1998,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var ser = new SerialTunnel();
                     var chnl = parent.mpsserver.SetupCiraChannel(ciraconn, port);
 
-                    // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
+                    // Let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
                     ser.forwardwrite = function (msg) {
                         // TLS ---> CIRA
@@ -2056,7 +2053,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
                     //console.log('WS --> AMT', Buffer.from(msg, 'binary').toString('hex'));
-                    if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
+
+                    // Log to recording file
+                    if (ws.logfile == null) {
+                        // Forward data to the associated TCP connection.
+                        if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
+                    } else {
+                        // Log to recording file
+                        var msg2 = Buffer.from(msg, 'binary');
+                        recordingEntry(ws.logfile.fd, 2, 2, msg2, function () { try { if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(msg2); } else { ws.forwardclient.write(msg); } } catch (ex) { } });
+                    }
                 });
 
                 // If error, close the associated TCP connection.
@@ -2064,12 +2070,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     console.log('CIRA server websocket error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
                     Debug(1, 'Websocket relay closed on error.');
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
+
+                    // Close the recording file
+                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function (req) {
                     Debug(1, 'Websocket relay closed.');
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
+
+                    // Close the recording file
+                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
                 });
 
                 ws.forwardclient.onStateChange = function (ciraconn, state) {
@@ -2081,7 +2093,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     Debug(4, 'Relay CIRA data', data.length);
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
                     //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
-                    if (data.length > 0) { try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } } // TODO: Add TLS support
+                    if (data.length > 0) {
+                        if (ws.logfile == null) {
+                            try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } // TODO: Add TLS support
+                        } else {
+                            // Log to recording file
+                            data = Buffer.from(data, 'binary');
+                            recordingEntry(ws.logfile.fd, 2, 2, data, function () { try { ws.send(data); } catch (e) { } }); // TODO: Add TLS support
+                        }
+                    } 
                 };
 
                 ws.forwardclient.onSendOk = function (ciraconn) {
@@ -2116,7 +2136,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                     msg = msg.toString('binary');
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
-                    ws.forwardclient.write(Buffer.from(msg, 'binary')); // Forward data to the associated TCP connection.
+
+                    // Log to recording file
+                    if (ws.logfile == null) {
+                        // Forward data to the associated TCP connection.
+                        try { ws.forwardclient.write(Buffer.from(msg, 'binary')); } catch (ex) { }
+                    } else {
+                        // Log to recording file
+                        msg = Buffer.from(msg, 'binary');
+                        recordingEntry(ws.logfile.fd, 2, 2, msg, function () { try { ws.forwardclient.write(msg); } catch (ex) { } });
+                    }
                 });
 
                 // If error, close the associated TCP connection.
@@ -2124,12 +2153,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     console.log('Error with relay web socket connection from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
                     Debug(1, 'Error with relay web socket connection from ' + ws._socket.remoteAddress + '.');
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
+
+                    // Close the recording file
+                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function () {
                     Debug(1, 'Closing relay web socket connection to ' + req.query.host + '.');
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
+
+                    // Close the recording file
+                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
                 });
 
                 // Compute target port
@@ -2165,7 +2200,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    try { ws.send(Buffer.from(data, 'binary')); } catch (e) { }
+                    if (ws.logfile == null) {
+                        // No logging
+                        try { ws.send(Buffer.from(data, 'binary')); } catch (e) { }
+                    } else {
+                        // Log to recording file
+                        data = Buffer.from(data, 'binary');
+                        recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } });
+                    }
                 });
 
                 // If the TCP connection closes, disconnect the associated web socket.
@@ -3412,6 +3454,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Generate a random Intel AMT password
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
     function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }

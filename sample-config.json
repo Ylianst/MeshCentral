@@ -104,7 +104,8 @@
       "_agentConfig": [ "webSocketMaskOverride=1" ],
       "_SessionRecording": {
         "_filepath": "C:\\temp",
-        "protocols": [ 1, 2 ]
+        "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection",
+        "protocols": [ 1, 2, 101 ]
       }
     },
     "customer1": {
