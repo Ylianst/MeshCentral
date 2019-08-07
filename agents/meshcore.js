@@ -822,6 +822,53 @@ function createMeshCore(agent)
                     sendConsoleText('getScript: ' + JSON.stringify(data));
                     break;
                 }
+                case 'sysinfo': {
+                    // Fetch system information
+                    if (process.platform != 'win32') break; // Remove this when Linux/MacOS support this.
+                    try {
+                        var results = { hardware: require('identifiers').get(), pendingReboot: require('win-info').pendingReboot() }; // Hardware & pending reboot
+                        if (results.hardware.windows) {
+                            var x = results.hardware.windows.osinfo;
+                            try { delete x.FreePhysicalMemory; } catch (ex) { }
+                            try { delete x.FreeSpaceInPagingFiles; } catch (ex) { }
+                            try { delete x.FreeVirtualMemory; } catch (ex) { }
+                            try { delete x.LocalDateTime; } catch (ex) { }
+                            try { delete x.MaxProcessMemorySize; } catch (ex) { }
+                            try { delete x.TotalVirtualMemorySize; } catch (ex) { }
+                            try { delete x.TotalVisibleMemorySize; } catch (ex) { }
+                        }
+                        /*
+                        if (process.platform == 'win32')
+                        {
+                            var defragResult = function (r)
+                            {
+                                if (typeof r == 'object') { results[this.callname] = r; }
+                                if (this.callname == 'defrag')
+                                {
+                                    var pr = require('win-info').installedApps(); // Installed apps
+                                    pr.callname = 'installedApps';
+                                    pr.sessionid = data.sessionid;
+                                    pr.then(defragResult, defragResult);
+                                }
+                                else
+                                {
+                                    results.winpatches = require('win-info').qfe(); // Windows patches
+                                    results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                                    if (data.hash != results.hash) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
+                                }
+                            }
+                            var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag
+                            pr.callname = 'defrag';
+                            pr.sessionid = data.sessionid;
+                            pr.then(defragResult, defragResult);
+                        } else {
+                        */
+                        results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                        if (data.hash != results.hash) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
+                        //}
+                    } catch (ex) { }
+                    break;
+                }
                 case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
                 case 'pong': { break; }
                 default:
@@ -1603,7 +1650,7 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av.';
+                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo.';
                     break;
                 }
                 /*
@@ -1626,7 +1673,11 @@ function createMeshCore(agent)
                     break;
                 */
                 case 'av':
-                    if (process.platform == 'win32') { response = JSON.stringify(require('win-info').av()); } else { response = 'Not supported on the platform'; }
+                    if (process.platform == 'win32') {
+                        response = JSON.stringify(require('win-info').av(), null, 1);
+                    } else {
+                        response = 'Not supported on the platform';
+                    }
                     break;
                 case 'log':
                     if (args['_'].length != 1) { response = 'Proper usage: log "sample text"'; } else { MeshServerLog(args['_'][0]); response = 'ok'; }
@@ -1760,6 +1811,41 @@ function createMeshCore(agent)
                         if (args.session) { notification.sessionid = sessionid; } // If "--session" is specified, notify only this session, if not, the server will notify the mesh
                         mesh.SendCommand(notification); // no sessionid or userid specified, notification will go to the entire mesh
                         response = 'ok';
+                    }
+                    break;
+                }
+                case 'cpuinfo': { // Return system information
+                    // CPU & memory utilization
+                    pr = require('sysinfo').cpuUtilization();
+                    pr.sessionid = sessionid;
+                    pr.then(function (data) {
+                        sendConsoleText(JSON.stringify({ cpu: data, memory: require('sysinfo').memUtilization() }, null, 1), this.sessionid);
+                    }, function (e) {
+                        sendConsoleText(e);
+                    });
+                    break;
+                }
+                case 'sysinfo': { // Return system information
+                    var results = { hardware: require('identifiers').get(), pendingReboot: require('win-info').pendingReboot() }; // Hardware && pending reboot
+                    if (process.platform == 'win32') {
+                        var defragResult = function (r) {
+                            if (typeof r == 'object') { results[this.callname] = r; }
+                            if (this.callname == 'defrag') {
+                                var pr = require('win-info').installedApps(); // Installed apps
+                                pr.sessionid = sessionid;
+                                pr.callname = 'installedApps';
+                                pr.then(defragResult, defragResult);
+                            } else {
+                                results.winpatches = require('win-info').qfe(); // Windows patches
+                                sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
+                            }
+                        }
+                        var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag
+                        pr.sessionid = sessionid;
+                        pr.callname = 'defrag';
+                        pr.then(defragResult, defragResult);
+                    } else {
+                        response = JSON.stringify(results, null, 1);
                     }
                     break;
                 }
@@ -2241,8 +2327,9 @@ function createMeshCore(agent)
 
         if ((flags & 4) && (process.platform == 'win32')) {
             // Update anti-virus information
-            var av;
-            try { av = require('win-info').av(); } catch (ex) { av = []; }
+            var av, pr;
+            try { av = require('win-info').av(); } catch (ex) { av = []; } // Antivirus
+            //if (process.platform == 'win32') { try { pr = require('win-info').pendingReboot(); } catch (ex) { pr = null; } } // Pending reboot
             if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
         }
     }

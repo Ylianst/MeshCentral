@@ -60,13 +60,16 @@
     <Compile Include="agents\modules_meshcore\amt-wsman.js" />
     <Compile Include="agents\modules_meshcore\amt-xml.js" />
     <Compile Include="agents\modules_meshcore\amt.js" />
+    <Compile Include="agents\modules_meshcore\identifiers.js" />
     <Compile Include="agents\modules_meshcore\linux-dbus.js" />
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
     <Compile Include="agents\modules_meshcore\power-monitor.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
+    <Compile Include="agents\modules_meshcore\sysinfo.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
     <Compile Include="agents\modules_meshcore\win-console.js" />
+    <Compile Include="agents\modules_meshcore\win-info.js" />
     <Compile Include="agents\modules_meshcore\win-terminal.js" />
     <Compile Include="agents\modules_meshcore_min\amt-lme.min.js" />
     <Compile Include="agents\modules_meshcore_min\amt-mei.min.js" />

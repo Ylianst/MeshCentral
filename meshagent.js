@@ -64,6 +64,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             db.Remove('if' + obj.dbNodeKey);                // Remove interface information
             db.Remove('nt' + obj.dbNodeKey);                // Remove notes
             db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
+            db.Remove('si' + obj.dbNodeKey);                // Remove system information
             db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
             db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
             db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
@@ -909,6 +910,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) })); } catch (ex) { }
         }
 
+        // Fetch system information
+        db.GetHash('si' + obj.dbNodeKey, function (err, results) {
+            if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
+        });
+
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
         if (domain.iplocation == true) {
             // Check if we already have IP location information for this node
@@ -1298,6 +1304,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'sysinfo': {
+                    //console.log('sysinfo', obj.nodeid, JSON.stringify(command.data.hash));
+                    command.data._id = 'si' + obj.dbNodeKey;
+                    db.Set(command.data); // Update system information in the database.
+                    break;
+                }
+                case 'sysinfocheck': {
+                    // Check system information update
+                    db.GetHash('si' + obj.dbNodeKey, function (err, results) {
+                        if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
+                    });
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++; 
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
