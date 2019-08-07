@@ -1514,7 +1514,7 @@
                                 x += '<hr />'
                                 if (net.name) { x += addHtmlValue2('Name', '<b>' + EscapeHtml(net.name) + '</b>'); }
                                 if (net.desc) { x += addHtmlValue2('Description', EscapeHtml(net.desc).replace('(R)', '&reg;').replace('(r)', '&reg;')); }
-                                if (net.dnssuffix) { x += addHtmlValue2('DNS suffix', EscapeHtml(net.dnssuffix)); }
+                                if (net.dnssuffix) { x += addHtmlValue2('DNS suffix', EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="Copy name to clipboard" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.dnssuffix) + '\") width=10 height=10>'); }
                                 if (net.mac) { x += addHtmlValue2('MAC address', '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="Copy MAC address to clipboard" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.mac.toLowerCase()) + '\") width=10 height=10>'); }
                                 if (net.v4addr) { x += addHtmlValue2('IPv4 address', EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="Copy address to clipboard" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.v4addr) + '\") width=10 height=10>'); }
                                 if (net.v4mask) { x += addHtmlValue2('IPv4 mask', EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="Copy address to clipboard" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.v4mask) + '\") width=10 height=10>'); }
