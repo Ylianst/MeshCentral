@@ -1960,6 +1960,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             }
 
+            /*
+            // Setup session recording if needed
+            if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(100) >= 0)))) { // TODO 100
+                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + 'AAAAAAA' + '.mcrec'; // TODO: Random ID
+                var recFullFilename = null;
+                if (domain.sessionrecording.filepath) {
+                    try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
+                    recFullFilename = obj.path.join(domain.sessionrecording.filepath, recFilename);
+                } else {
+                    try { obj.fs.mkdirSync(parent.recordpath); } catch (e) { }
+                    recFullFilename = obj.path.join(parent.recordpath, recFilename);
+                }
+                var fd = obj.fs.openSync(recFullFilename, 'w');
+                if (fd != null) {
+                    // Write the recording file header
+                    //console.log({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: parseInt(req.query.p), time: new Date().toLocaleString() });
+                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: parseInt(req.query.p), time: new Date().toLocaleString() })
+                    recordingEntry(fd, 1, 0, firstBlock, function () { });
+                    ws.logfile = { fd: fd, lock: false };
+                }
+            }
+            */
+
             // If Intel AMT CIRA connection is available, use it
             if (((conn & 2) != 0) && (parent.mpsserver.ciraConnections[req.query.host] != null)) {
                 Debug(1, 'Opening relay CIRA channel connection to ' + req.query.host + '.');
@@ -3389,6 +3412,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Generate a random Intel AMT password
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
     function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+
+    // Clean a IPv6 address that encodes a IPv4 address
+    function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
+
+    // Record a new entry in a recording log
+    function recordingEntry(fd, type, flags, data, func) {
+        try {
+            if (typeof data == 'string') {
+                // String write
+                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(blockData.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, blockData]);
+                obj.fs.write(fd, block, 0, block.length, func);
+            } else {
+                // Binary write
+                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(data.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, data]);
+                obj.fs.write(fd, block, 0, block.length, func);
+            }
+        } catch (ex) { console.log(ex); func(); }
+    }
 
     return obj;
 };
