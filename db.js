@@ -531,6 +531,7 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}).toArray(func); };
+            obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(func); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(func); };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }).toArray(func); };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(func); };
@@ -624,6 +625,7 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}, func); };
+            obj.GetHash = function (id, func) { obj.file.find({ _id: id }, { _id: 0, hash: 1 }, func); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, func); };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, func); };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }, func); };
