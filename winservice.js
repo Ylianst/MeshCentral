@@ -63,7 +63,7 @@ function start() {
 
         // This module is only called when MeshCentral is running as a Windows service.
         // In this case, we don't want to start a child process, so we launch directly without arguments.
-        require(cwd).mainStart({ "launch": true });
+        require(runarg).mainStart({ "launch": true });
     } catch (ex) { console.log(ex); }
 
     // Logging funtions
