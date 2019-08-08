@@ -709,16 +709,14 @@ function createMeshCore(agent)
                             } catch (e) { }
                             break;
                         }
-                        /*
                         case 'serviceRestart': {
-                            // Start a service
+                            // Restart a service
                             try {
                                 var service = require('service-manager').manager.getService(data.serviceName);
-                                if (service != null) { service.stop(); service.start(); }
+                                if (service != null) { service.restart(); }
                             } catch (e) { }
                             break;
                         }
-                        */
                         case 'openUrl': {
                             // Open a local web browser and return success/fail
                             MeshServerLog('Opening: ' + data.url, data);
