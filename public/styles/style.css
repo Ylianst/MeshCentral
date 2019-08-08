@@ -2529,6 +2529,10 @@ a {
     border-radius: 5px;
 }
 
+    .night .tagSpan {
+        color: black;
+    }
+
 .suggestionBox {
     position:absolute;
     background-color: #6CC;

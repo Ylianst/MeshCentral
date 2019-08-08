@@ -5245,8 +5245,7 @@
                     if (service.status.isSharedProcess === true) { serviceTypes.push('SharedProcess'); }
                     if (serviceTypes.length > 0) { x += addHtmlValue('Type', serviceTypes.join(', ')); }
                 }
-                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="Close" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="Start" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="Stop" onclick=showServiceDetailsDialogEx(2,' + index + ')></div>';
-                // <input type=button value="Restart" onclick=showServiceDetailsDialogEx(3,' + index + ')>
+                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="Close" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="Start" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="Stop" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="Restart" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
                 setDialogMode(2, "Service Details", 8, null, x, name);
             }
         }
@@ -5258,7 +5257,7 @@
             if (service != null) {
                 if (action == 1) { meshserver.send({ action: 'msg', type: 'serviceStart', nodeid: currentNode._id, serviceName: service.name }); }
                 if (action == 2) { meshserver.send({ action: 'msg', type: 'serviceStop', nodeid: currentNode._id, serviceName: service.name }); }
-                //if (action == 3) { meshserver.send({ action: 'msg', type: 'serviceRestart', nodeid: currentNode._id, serviceName: service.name }); }
+                if (action == 3) { meshserver.send({ action: 'msg', type: 'serviceRestart', nodeid: currentNode._id, serviceName: service.name }); }
                 setTimeout(function () { refreshDeskTools(1) }, 1000);
             }
         }
