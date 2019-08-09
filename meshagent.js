@@ -39,7 +39,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     //obj.agentInfo = null;
 
     // Send a message to the mesh agent
-    obj.send = function (data, func) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary'), func); } else { ws.send(data, func); } } catch (e) { } };
+    obj.send = function (data, func) { try { if (typeof data == 'string') { ws.send(Buffer.from(data), func); } else { ws.send(data, func); } } catch (e) { } };
+    obj.sendBinary = function (data, func) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary'), func); } else { ws.send(data, func); } } catch (e) { } };
 
     // Disconnect this agent
     obj.close = function (arg) {
@@ -125,7 +126,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // If we are using a custom core, don't try to update it.
                 if (obj.agentCoreCheck == 1000) {
-                    obj.send(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                    obj.sendBinary(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                     agentCoreIsStable();
                     return;
                 }
@@ -136,7 +137,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // If the agent indicates this is a custom core, we are done.
                 if ((agentMeshCoreHash != null) && (agentMeshCoreHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
                     obj.agentCoreCheck = 0;
-                    obj.send(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                    obj.sendBinary(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                     agentCoreIsStable();
                     return;
                 }
@@ -163,12 +164,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if ((obj.agentCoreCheck < 5) || (obj.agentCoreCheck == 1001)) {
                             if (meshcorehash == null) {
                                 // Clear the core
-                                obj.send(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
+                                obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
                                 parent.agentStats.clearingCoreCount++;
                                 parent.parent.debug(1, 'Clearing core');
                             } else {
                                 // Update new core
-                                //obj.send(common.ShortToStr(10) + common.ShortToStr(0) + meshcorehash + parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
+                                //obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + meshcorehash + parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
                                 //parent.parent.debug(1, 'Updating code ' + corename);
 
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
@@ -177,7 +178,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (obj.authenticated == 2) {
                                         // Send the updated code.
                                         delete obj.agentCoreUpdatePending;
-                                        obj.send(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
+                                        obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                         parent.agentStats.updatingCoreCount++;
                                         parent.parent.debug(1, 'Updating core ' + argument.name);
                                         agentCoreIsStable();
@@ -191,7 +192,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                     } else {
                         obj.agentCoreCheck = 0;
-                        obj.send(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
+                        obj.sendBinary(common.ShortToStr(16) + common.ShortToStr(0)); // MeshCommand_CoreOk. Indicates to the agent that the core is ok. Start it if it's not already started.
                         agentCoreIsStable(); // No updates needed, agent is ready to go.
                     }
                 }
@@ -204,13 +205,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (obj.agentCoreCheck < 5) { // This check is in place to avoid a looping core update.
                         if (parent.parent.defaultMeshCoreHash == null) {
                             // Update no core
-                            obj.send(common.ShortToStr(10) + common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
+                            obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
                         } else {
                             // Update new core
                             if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].amt == true) {
-                                obj.send(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreHash + parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core (with MEI support)
+                                obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreHash + parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core (with MEI support)
                             } else {
-                                obj.send(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreNoMeiHash + parent.parent.defaultMeshCoreNoMei); // Command 10, ask mesh agent to set the core (No MEI)
+                                obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreNoMeiHash + parent.parent.defaultMeshCoreNoMei); // Command 10, ask mesh agent to set the core (No MEI)
                             }
                         }
                         obj.agentCoreCheck++;
@@ -238,11 +239,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                     // MeshCommand_CoreModule, ask mesh agent to clear the core.
                                     // The new core will only be sent after the agent updates.
-                                    obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+                                    obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
 
                                     // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
                                     //console.log("Agent update file open.");
-                                    obj.send(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
+                                    obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
 
                                     // Send the first mesh agent update data block
                                     obj.agentUpdate.buf[0] = 0;
@@ -260,7 +261,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                             // Send the first block to the agent
                                             obj.agentUpdate.ptr += bytesRead;
                                             //console.log("Agent update send first block: " + bytesRead);
-                                            obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
+                                            obj.sendBinary(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                                         }
                                     });
                                 });
@@ -270,10 +271,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // MeshCommand_CoreModule, ask mesh agent to clear the core.
                                 // The new core will only be sent after the agent updates.
-                                obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+                                obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
 
                                 // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
-                                obj.send(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
+                                obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
 
                                 // Send the first mesh agent update data block
                                 obj.agentUpdate.buf[0] = 0;
@@ -286,7 +287,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     // Send the first block
                                     obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
                                     obj.agentUpdate.ptr += len;
-                                    obj.send(obj.agentUpdate.buf); // Command 14, mesh agent first data block
+                                    obj.sendBinary(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                                 } else {
                                     // Error
                                     parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
@@ -299,7 +300,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     } else {
                         // Check the mesh core, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
-                            obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                            obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
                         }
                     }
                 }
@@ -322,10 +323,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     // Send the next block to the agent
                                     obj.agentUpdate.ptr += bytesRead;
                                     //console.log("Agent update send next block", obj.agentUpdate.ptr, bytesRead);
-                                    if (bytesRead == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, bytesRead + 4)); } // Command 14, mesh agent next data block
+                                    if (bytesRead == agentUpdateBlockSize) { obj.sendBinary(obj.agentUpdate.buf); } else { obj.sendBinary(obj.agentUpdate.buf.slice(0, bytesRead + 4)); } // Command 14, mesh agent next data block
                                     if (bytesRead < agentUpdateBlockSize) {
                                         //console.log("Agent update sent from disk.");
-                                        obj.send(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
+                                        obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
                                         try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
                                         parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
                                         delete obj.agentUpdate.buf;
@@ -338,13 +339,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             const len = Math.min(agentUpdateBlockSize, obj.agentExeInfo.data.length - obj.agentUpdate.ptr);
                             if (len > 0) {
                                 obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
-                                if (len == agentUpdateBlockSize) { obj.send(obj.agentUpdate.buf); } else { obj.send(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
+                                if (len == agentUpdateBlockSize) { obj.sendBinary(obj.agentUpdate.buf); } else { obj.sendBinary(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
                                 obj.agentUpdate.ptr += len;
                             }
 
                             if (obj.agentUpdate.ptr == obj.agentExeInfo.data.length) {
                                 //console.log("Agent update sent from RAM.");
-                                obj.send(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
+                                obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
                                 parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
                                 delete obj.agentUpdate.buf;
                                 delete obj.agentUpdate;
@@ -367,7 +368,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 if (args.ignoreagenthashcheck === true) {
                     // Send the agent web hash back to the agent
-                    obj.send(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
+                    obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
                     if ((getWebCertHash(domain) != msg.substring(2, 50)) && (getWebCertFullHash(domain) != msg.substring(2, 50))) {
@@ -388,13 +389,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Perform the hash signature using older swarm server certificate
                         parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                             // Send back our certificate + signature
-                            obj2.send(common.ShortToStr(2) + common.ShortToStr(parent.swarmCertificateAsn1.length) + parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
+                            obj2.sendBinary(common.ShortToStr(2) + common.ShortToStr(parent.swarmCertificateAsn1.length) + parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
                         });
                     } else {
                         // Perform the hash signature using the server agent certificate
                         parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
                             // Send back our certificate + signature
-                            obj2.send(common.ShortToStr(2) + common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                            obj2.sendBinary(common.ShortToStr(2) + common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                         });
                     }
                 }
@@ -485,7 +486,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
     // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
     if (args.ignoreagenthashcheck !== true) {
-        obj.send(common.ShortToStr(1) + getWebCertHash(domain) + obj.nonce); // Command 1, hash + nonce
+        obj.sendBinary(common.ShortToStr(1) + getWebCertHash(domain) + obj.nonce); // Command 1, hash + nonce
     }
 
     // Return the mesh for this device, in some cases, we may auto-create the mesh.
@@ -556,10 +557,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Inform mesh agent that it's authenticated.
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
-            obj.send(common.ShortToStr(4));
+            obj.sendBinary(common.ShortToStr(4));
 
             // Ask for mesh core hash.
-            obj.send(common.ShortToStr(11) + common.ShortToStr(0));
+            obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0));
             return;
         }
 
@@ -784,11 +785,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
 
         // Command 4, inform mesh agent that it's authenticated.
-        obj.send(common.ShortToStr(4));
+        obj.sendBinary(common.ShortToStr(4));
 
         if (disconnectCount > 4) {
             // Too many disconnections, this agent has issues. Just clear the core.
-            obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+            obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
             //console.log('Agent in trouble: NodeId=' + obj.nodeid + ', IP=' + obj.remoteaddrport + ', Agent=' + obj.agentInfo.agentId + '.');
             // TODO: Log or do something to recover?
             return;
@@ -804,16 +805,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             corename = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core;
         } else {
             // MeshCommand_CoreModule, ask mesh agent to clear the core
-            obj.send(common.ShortToStr(10) + common.ShortToStr(0));
+            obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
         }
 
         if ((obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
             // Ask the agent for it's executable binary hash
-            obj.send(common.ShortToStr(12) + common.ShortToStr(0));
+            obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0));
         } else {
             // Check the mesh core, if the agent is capable of running one
             if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
-                obj.send(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
+                obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else {
                 agentCoreIsStable(); // No updates needed, agent is ready to go.
             }
