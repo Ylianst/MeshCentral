@@ -1824,8 +1824,9 @@ function createMeshCore(agent)
                     break;
                 }
                 case 'sysinfo': { // Return system information
-                    var results = { hardware: require('identifiers').get(), pendingReboot: require('win-info').pendingReboot() }; // Hardware && pending reboot
+                    var results = { hardware: require('identifiers').get() }; // Hardware && pending reboot
                     if (process.platform == 'win32') {
+                        results.pendingReboot = require('win-info').pendingReboot();
                         var defragResult = function (r) {
                             if (typeof r == 'object') { results[this.callname] = r; }
                             if (this.callname == 'defrag') {
