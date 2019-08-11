@@ -1962,7 +1962,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Setup session recording if needed
             if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf((req.query.p == 2) ? 101 : 100) >= 0)))) { // TODO 100
-                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + getRandomPassword() + '.mcrec'; // TODO: Random ID
+                var now = new Date(Date.now());
+                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth(), 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + '-' + getRandomPassword() + '.mcrec'
                 var recFullFilename = null;
                 if (domain.sessionrecording.filepath) {
                     try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }

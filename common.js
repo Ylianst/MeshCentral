@@ -126,6 +126,7 @@ module.exports.ComputeDigesthash = function (username, password, realm, method, 
 module.exports.toNumber = function (str) { var x = parseInt(str); if (x == str) return x; return str; };
 module.exports.escapeHtml = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' }[s]; }); };
 module.exports.escapeHtmlBreaks = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
+module.exports.zeroPad = function(num, c) { if (c == null) { c = 2; } var s = "000000" + num; return s.substr(s.length - c); }
 
 // Lowercase all the names in a object recursively
 // Allow for exception keys, child of exceptions will not get lower-cased.

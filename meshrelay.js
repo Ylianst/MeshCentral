@@ -17,6 +17,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     var obj = {};
     obj.ws = ws;
     obj.id = req.query.id;
+    obj.user = user;
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
@@ -164,10 +165,11 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
 
                     // Setup session recording
-                    var sessionUser = user;
+                    var sessionUser = obj.user;
                     if (sessionUser == null) { sessionUser = obj.peer.user; }
-                    if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(req.query.p)) >= 0)))) {
-                        var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + Date.now() + '-' + obj.id + '.mcrec'
+                    if ((sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(req.query.p)) >= 0))))) {
+                        var now = new Date(Date.now());
+                        var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.id + '.mcrec'
                         var recFullFilename = null;
                         if (domain.sessionrecording.filepath) {
                             try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
@@ -184,7 +186,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                             } else {
                                 // Write the recording file header
                                 var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid });
-                                recordingEntry(fd, 2, ((req.query.browser) ? 2 : 0), firstBlock, function () {
+                                recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
                                     relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
                                     ws.send('c'); // Send connect to both peers
                                     relayinfo.peer1.ws.send('c');
@@ -200,13 +202,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
 
                     // Log the connection
-                    if (sessionUser) {
+                    if (sessionUser != null) {
                         var msg = 'Started relay session';
                         if (req.query.p == 1) { msg = 'Started terminal session'; }
                         else if (req.query.p == 2) { msg = 'Started desktop session'; }
                         else if (req.query.p == 5) { msg = 'Started file management session'; }
                         var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ' to ' + cleanRemoteAddr(ws._socket.remoteAddress), protocol: req.query.p, nodeid: req.query.nodeid };
-                        parent.parent.DispatchEvent(['*', user._id], obj, event);
+                        parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
                     }
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
