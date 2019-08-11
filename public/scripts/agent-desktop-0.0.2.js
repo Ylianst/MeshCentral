@@ -92,7 +92,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.send = function (x) {
         if (obj.debugmode > 1) { console.log("KSend(" + x.length + "): " + rstr2hex(x)); }
-        obj.parent.send(x);
+        if (obj.parent != null) { obj.parent.send(x); }
     }
 
     // KVM Control.
@@ -288,8 +288,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 str = str.substring(4);
                 if (str[0] != '.') {
                     console.log(str); //alert('KVM: ' + str);
-                    obj.parent.consoleMessage = str;
-                    if (obj.parent.onConsoleMessageChange) { obj.parent.onConsoleMessageChange(obj.parent, str); }
+                    if (obj.parent != null) {
+                        obj.parent.consoleMessage = str;
+                        if (obj.parent.onConsoleMessageChange) { obj.parent.onConsoleMessageChange(obj.parent, str); }
+                    }
                 } else {
                     console.log('KVM: ' + str.substring(1));
                 }
