@@ -384,6 +384,7 @@ module.exports.CreateMultiServer = function (parent, args) {
     if (obj.peerConfig == null) { return null; }
     obj.serverid = obj.parent.config.peers.serverid;
     if (obj.serverid == null) { obj.serverid = require("os").hostname().toLowerCase(); } else { obj.serverid = obj.serverid.toLowerCase(); }
+    if (args.serverid != null) { obj.serverid = args.serverid.toLowerCase(); }
     if (obj.parent.config.peers.servers[obj.serverid] == null) { console.log("Error: Unable to peer with other servers, \"" + obj.serverid + "\" not present in peer servers list."); return null; }
     //console.log('Server peering ID: ' + obj.serverid);
 

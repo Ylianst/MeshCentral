@@ -219,6 +219,7 @@
     <Content Include="public\images\mapmarker.png" />
     <Content Include="public\images\meshicon50.png" />
     <Content Include="public\images\trash.png" />
+    <Content Include="public\player.htm" />
     <Content Include="public\scriptblocks.txt" />
     <Content Include="public\sounds\chimes.mp3" />
     <Content Include="public\styles\font-awesome\css\font-awesome.min.css" />
