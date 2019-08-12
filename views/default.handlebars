@@ -512,6 +512,8 @@
                                 <option value=7>Alt-F4</option>
                                 <option value=8>Ctrl-W</option>
                                 <option value=9>Alt-Tab</option>
+                                <option value=11>Win+Left</option>
+                                <option value=12>Win+Right</option>
                             </select>
                             <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
                             <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
@@ -5056,6 +5058,18 @@
                 }
             } else if (ks == 10) { // CTRL-ALT-DEL
                 desktop.m.sendcad();
+            } else if (ks == 11) { // WIN-LEFT
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff51, 1], [0xff51, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Left arrow press, Left arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 37], [desktop.m.KeyAction.UP, 37], [desktop.m.KeyAction.EXUP, 0x5B]]);
+                }
+            } else if (ks == 12) { // WIN-RIGHT
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe7, 1], [0xff53, 1], [0xff53, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Right arrow press, Right arrow release, Meta-left release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 39], [desktop.m.KeyAction.UP, 39], [desktop.m.KeyAction.EXUP, 0x5B]]);
+                }
             }
         }
 
