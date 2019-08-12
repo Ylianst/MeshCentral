@@ -84,6 +84,10 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicPath = obj.path.join(__dirname, '../meshcentral-web/public'); } else { obj.webPublicPath = obj.path.join(__dirname, 'public'); }
     }
 
+    // Look to see if data and/or file path is specified
+    if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
+    if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
+
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
     try { obj.fs.mkdirSync(obj.filespath); } catch (e) { }
@@ -555,10 +559,6 @@ function CreateMeshCentralServer(config, args) {
             }, (obj.args.memorytracking * 1000));
         }
 
-        // Look to see if data and/or file path is specified
-        if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
-        if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
-
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
         var xenv = ['user', 'port', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
         for (i in xenv) { if ((obj.args[xenv[i]] == null) && (process.env['mesh' + xenv[i]])) { obj.args[xenv[i]] = obj.common.toNumber(process.env['mesh' + xenv[i]]); } }
@@ -798,6 +798,7 @@ function CreateMeshCentralServer(config, args) {
                 // Setup Mesh Multi-Server if needed
                 obj.multiServer = require('./multiserver.js').CreateMultiServer(obj, obj.args);
                 if (obj.multiServer != null) {
+                    if ((obj.db.databaseType != 3) || (obj.db.changeStream != true)) { console.log("ERROR: Multi-server support requires use of MongoDB with ReplicaSet and ChangeStream enabled."); process.exit(0); return; }
                     obj.serverId = obj.multiServer.serverid;
                     for (var serverid in obj.config.peers.servers) { obj.peerConnectivityByNode[serverid] = {}; }
                 }

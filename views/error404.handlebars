@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <title>MeshCentral - Terms of use</title>
+</head>
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="display:none;overflow:hidden">
+    <div id="container">
+        <!-- Begin Masthead -->
+        <div id="masthead" class=noselect style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;">
+            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:20px; padding-top:8px">
+                <strong><font style="font-size:46px; font-family: Arial, Helvetica, sans-serif;">{{{title}}}</font></strong>
+            </div>
+            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:5px; padding-top:14px">
+                <strong><font style="font-size:14px; font-family: Arial, Helvetica, sans-serif;">{{{title2}}}</font></strong>
+            </div>
+            <p id="logoutControl" style="color:white;font-size:11px;margin: 10px 10px 0;">{{{logoutControl}}}</p>
+        </div>
+        <div id="page_leftbar">
+            <div style="height:16px"></div>
+        </div>
+        <div id=topbar class="noselect style3" style="height:24px;position:relative">
+            <div id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()">
+                &diams;
+                <div id=uiMenu style="display:none">
+                    <div id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface"><div class="uiSelector1"></div></div>
+                    <div id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface"><div class="uiSelector2"></div></div>
+                    <div id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface"><div class="uiSelector3"></div></div>
+                    <div id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode"><div class="uiSelector4"></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
+            <div style="text-align:center;padding-top:30px;font-size:200px;font-family:Arial;color:#bbb"><b>404</b></div>
+            <div style="text-align:center;font-size:20px;font-family:Arial;color:#999">This page does not exist</div>
+            <div style="text-align:center;padding-top:20px;font-size:20px;font-family:Arial;color:#999"><a href="/" style="text-decoration:none"><b>Go to main site</b></a></div>
+        </div>
+        <div id="footer">
+            <table cellpadding="0" cellspacing="10" style="width: 100%">
+                <tr>
+                    <td style="text-align:left"></td>
+                    <td style="text-align:right"><a href="/">Back</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script>
+        'use strict';
+        var uiMode = parseInt(getstore('uiMode', 1));
+        var webPageStackMenu = false;
+        var webPageFullScreen = true;
+        var nightMode = (getstore('_nightMode', '0') == '1');
+
+        var terms = "{{{terms}}}";
+        if (terms != "") { QH('column_l', decodeURIComponent(terms)); }
+        QV('column_l', true);
+        userInterfaceSelectMenu();
+
+        // Toggle user interface menu
+        function showUserInterfaceSelectMenu() {
+            Q('uiViewButton1').classList.remove('uiSelectorSel');
+            Q('uiViewButton2').classList.remove('uiSelectorSel');
+            Q('uiViewButton3').classList.remove('uiSelectorSel');
+            Q('uiViewButton4').classList.remove('uiSelectorSel');
+            try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
+            QV('uiMenu', (QS('uiMenu').display == 'none'));
+            if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
+        }
+
+        function userInterfaceSelectMenu(s) {
+            if (s) { uiMode = s; putstore('uiMode', uiMode); }
+            webPageFullScreen = (uiMode < 3);
+            webPageStackMenu = true;//(uiMode > 1);
+            toggleFullScreen(0);
+            toggleStackMenu(0);
+            QC('column_l').add('room4submenu');
+        }
+
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            putstore('_nightMode', nightMode ? '1' : '0');
+        }
+
+        // Toggle the web page to full screen
+        function toggleFullScreen(toggle) {
+            if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            var hide = 0;
+            //if (args.hide) { hide = parseInt(args.hide); }
+            if (webPageFullScreen == false) {
+                QC('body').remove("menu_stack");
+                QC('body').remove("fullscreen");
+                QC('body').remove("arg_hide");
+                //if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
+                //QV('UserDummyMenuSpan', false);
+                //QV('page_leftbar', false);
+            } else {
+                QC('body').add("fullscreen");
+                if (hide & 16) QC('body').add("arg_hide"); // This is replacement for QV('page_leftbar', !(hide & 16));
+                //QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
+                //QV('page_leftbar', true);
+            }
+            QV('body', true);
+        }
+
+        // If FullScreen, toggle menu to be horisontal or vertical
+        function toggleStackMenu(toggle) {
+            if (webPageFullScreen == true) {
+                if (toggle === 1) {
+                    webPageStackMenu = !webPageStackMenu;
+                    putstore('webPageStackMenu', webPageStackMenu);
+                }
+                if (webPageStackMenu == false) {
+                    QC('body').remove("menu_stack");
+                } else {
+                    QC('body').add("menu_stack");
+                    //if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
+                }
+            }
+        }
+
+        function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
+        function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
+
+    </script>
+</body>
+</html>

@@ -1733,7 +1733,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Handle domain redirection
-    function handleDomainRedirect(req, res) {
+    obj.handleDomainRedirect = function(req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
         var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split("?");
@@ -3041,7 +3041,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
 
             // Server redirects
-            if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, handleDomainRedirect); } } }
+            if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, obj.handleDomainRedirect); } } }
 
             // Server picture
             obj.app.get(url + 'serverpic.ashx', function (req, res) {
@@ -3105,6 +3105,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Indicates to ExpressJS that the public folder should be used to serve static files.
             obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
+
+            // Handle 404 error
+            obj.app.use(function (req, res, next) {
+                var domain = getDomain(req);
+                res.status(404).render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'error404-mobile' : 'error404'), { title: domain.title, title2: domain.title2 });
+            })
 
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
@@ -3373,7 +3379,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (oldcount == null) { oldcount = 0; } else { delete obj.sessionsCount[userid]; }
                 if (newcount != oldcount) {
                     x = userid.split('/');
-                    var u = users[userid];
+                    var u = obj.users[userid];
                     if (u) {
                         var targets = ['*', 'server-users'];
                         if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
@@ -3387,7 +3393,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 oldcount = obj.sessionsCount[userid];
                 if ((oldcount != null) && (oldcount != 0)) {
                     x = userid.split('/');
-                    var u = users[userid];
+                    var u = obj.users[userid];
                     if (u) {
                         var targets = ['*', 'server-users'];
                         if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
@@ -3412,7 +3418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If the count changed, update and event
             if (newcount != oldcount) {
                 x = userid.split('/');
-                var u = users[userid];
+                var u = obj.users[userid];
                 if (u) {
                     var targets = ['*', 'server-users'];
                     if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }

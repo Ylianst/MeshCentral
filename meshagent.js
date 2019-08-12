@@ -387,13 +387,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // If we did not get an indication that the agent already validated this server, send the server signature.
                     if (obj.useSwarmCert == true) {
                         // Perform the hash signature using older swarm server certificate
-                        parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                        parent.parent.certificateOperations.acceleratorPerformSignature(1, msg.substring(2) + obj.nonce, null, function (tag, signature) {
                             // Send back our certificate + signature
                             obj2.sendBinary(common.ShortToStr(2) + common.ShortToStr(parent.swarmCertificateAsn1.length) + parent.swarmCertificateAsn1 + signature); // Command 2, certificate + signature
                         });
                     } else {
                         // Perform the hash signature using the server agent certificate
-                        parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                        parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, null, function (tag, signature) {
                             // Send back our certificate + signature
                             obj2.sendBinary(common.ShortToStr(2) + common.ShortToStr(parent.agentCertificateAsn1.length) + parent.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                         });

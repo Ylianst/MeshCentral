@@ -86,8 +86,15 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             obj.app.post(url + "amtevents.ashx", obj.parent.webserver.handleAmtEventRequest);
             obj.app.get(url + "meshsettings", obj.parent.webserver.handleMeshSettingsRequest);
             obj.app.get(url + "meshagents", obj.parent.webserver.handleMeshAgentRequest);
+
+            // Server redirects
+            if (parent.config.domains[i].redirects) {
+                for (var j in parent.config.domains[i].redirects) {
+                    if (j[0] != '_') { obj.app.get(url + j, obj.parent.webserver.handleDomainRedirect); }
+                }
+            }
         }
-    };
+    }
 
     // Setup all HTTP redirection handlers
     //obj.app.set("etag", false);

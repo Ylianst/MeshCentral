@@ -46,6 +46,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         obj.peerServerId = null;
         obj.authenticated = 0;
         obj.serverCertHash = null;
+        obj.pendingData = [];
 
         // Disconnect from the server and/or stop trying
         obj.stop = function () {
@@ -88,7 +89,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                 if (msg.length < 2) return;
 
                 if (msg.charCodeAt(0) == 123) {
-                    if (obj.connectionState == 15) { processServerData(msg); }
+                    if ((obj.connectionState & 4) != 0) { processServerData(msg); } else { obj.pendingData.push(msg); }
                 } else {
                     var cmd = obj.common.ReadShort(msg, 0);
                     switch (cmd) {
@@ -101,9 +102,9 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.servernonce = msg.substring(50);
 
                             // Perform the hash signature using the server agent certificate
-                            obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                            obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, null, function (tag, signature) {
                                 // Send back our certificate + signature
-                                obj2.ws.send(obj2.common.ShortToStr(2) + obj2.common.ShortToStr(obj2.agentCertificateAsn1.length) + obj2.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                                obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                             });
 
                             break;
@@ -131,14 +132,22 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
 
                             // Send information about our server to the peer
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
+                            if (obj.connectionState == 15) {
+                                obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
+                                for (var i in obj.pendingData) { processServerData(obj.pendingData[i]); } // Process any pending data
+                                obj.pendingData = [];
+                            }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
                         case 4: {
-                            // Server confirmed authentication, we are allowed to send commands to the server
+                            // Peer server confirmed authentication, we are allowed to send commands to the server
                             obj.connectionState |= 8;
-                            if (obj.connectionState == 15) { obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 })); }
+                            if (obj.connectionState == 15) {
+                                obj.ws.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
+                                for (var i in obj.pendingData) { processServerData(obj.pendingData[i]); } // Process any pending data
+                                obj.pendingData = [];
+                            }
                             //if ((obj.connectionState == 15) && (obj.connectHandler != null)) { obj.connectHandler(1); }
                             break;
                         }
@@ -222,6 +231,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         obj.infoSent = 0;
         obj.peerServerId = null;
         obj.serverCertHash = null;
+        obj.pendingData = [];
         if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
         obj.parent.parent.debug(1, 'InPeer: Connected (' + obj.remoteaddr + ')');
 
@@ -246,13 +256,10 @@ module.exports.CreateMultiServer = function (parent, args) {
             if (typeof msg != 'string') { msg = msg.toString('binary'); }
             if (msg.length < 2) return;
 
-            if (obj.authenticated >= 2) { // We are authenticated
-                if (msg.charCodeAt(0) == 123) { processServerData(msg); }
+            if (msg.charCodeAt(0) == 123) {
                 if (msg.length < 2) return;
-                //var cmdid = obj.common.ReadShort(msg, 0);
-                // Process binary commands (if any). None right now.
-            }
-            else if (obj.authenticated < 2) { // We are not authenticated
+                if (obj.authenticated >= 2) { processServerData(msg); } else { obj.pendingData.push(msg); }
+            } else if (obj.authenticated < 2) { // We are not authenticated
                 var cmd = obj.common.ReadShort(msg, 0);
                 if (cmd == 1) {
                     // Peer server authentication request
@@ -264,9 +271,9 @@ module.exports.CreateMultiServer = function (parent, args) {
                     obj.peernonce = msg.substring(50);
 
                     // Perform the hash signature using the server agent certificate
-                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, obj, function (obj2, signature) {
+                    obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, null, function (tag, signature) {
                         // Send back our certificate + signature
-                        obj2.send(obj2.common.ShortToStr(2) + obj2.common.ShortToStr(obj2.agentCertificateAsn1.length) + obj2.agentCertificateAsn1 + signature); // Command 2, certificate + signature
+                        obj.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature); // Command 2, certificate + signature
                     });
 
                     // Check the peer server signature if we can
@@ -319,6 +326,10 @@ module.exports.CreateMultiServer = function (parent, args) {
             obj.send(obj.common.ShortToStr(4));
             obj.send(JSON.stringify({ action: 'info', serverid: obj.parent.serverid, dbid: obj.parent.parent.db.identifier, key: obj.parent.parent.serverKey.toString('hex'), serverCertHash: obj.parent.parent.webserver.webCertificateHashBase64 }));
             obj.authenticated = 2;
+
+            // Process any pending data that was received before peer authentication
+            for (var i in obj.pendingData) { processServerData(obj.pendingData[i]); }
+            obj.pendingData = null;
         }
 
         // Verify the peer server signature
@@ -371,9 +382,10 @@ module.exports.CreateMultiServer = function (parent, args) {
 
     // If we have no peering configuration, don't setup this object
     if (obj.peerConfig == null) { return null; }
-    obj.serverid = obj.parent.config.peers.serverId;
-    if (obj.serverid == null) { obj.serverid = require("os").hostname().toLowerCase(); }
+    obj.serverid = obj.parent.config.peers.serverid;
+    if (obj.serverid == null) { obj.serverid = require("os").hostname().toLowerCase(); } else { obj.serverid = obj.serverid.toLowerCase(); }
     if (obj.parent.config.peers.servers[obj.serverid] == null) { console.log("Error: Unable to peer with other servers, \"" + obj.serverid + "\" not present in peer servers list."); return null; }
+    //console.log('Server peering ID: ' + obj.serverid);
 
     // Return the private key of a peer server
     obj.getServerCookieKey = function (serverid) {
