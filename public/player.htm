@@ -10,6 +10,10 @@
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/amt-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/zlib.js"></script>
+    <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
+    <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
+    <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
 </head>
 <body style="overflow:hidden;background-color:black">
     <div id=p11 class="noselect" style="overflow:hidden">
@@ -83,6 +87,7 @@
         var recFileMetadata = null;
         var recFileProtocol = 0;
         var agentDesktop = null;
+        var amtDesktop = null;
         var playing = false;
         var readState = 0;
         var waitTimer = null;
@@ -162,6 +167,19 @@
                 agentDesktop.State = 3;
                 deskAdjust();
             }
+            else if (recFileMetadata.protocol == 101) {
+                // Intel AMT Redirection
+                recFileProtocol = 101;
+                x += '<br /><br /><span style=color:gray>Press [space] to play/pause.</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                amtDesktop = CreateAmtRemoteDesktop('Desk');
+                amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.State = 3;
+                deskAdjust();
+            }
             QV('metadatadiv', true);
             QH('metadatadiv', x);
             QH('deskstatus', recFile.name);
@@ -181,19 +199,32 @@
         function processBlockEx(type, flags, time, data) {
             if (playing == false) return;
             var flagBinary = (flags & 1) != 0, flagUser = (flags & 2) != 0;
-            if ((type == 2) && flagBinary && !flagUser) {
-                var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
-                if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
-                    currentDeltaTimeTotalSec = deltaTimeTotalSec;
-                    var deltaTimeHours = Math.floor(deltaTimeTotalSec / 3600);
-                    deltaTimeTotalSec -= (deltaTimeHours * 3600)
-                    var deltaTimeMinutes = Math.floor(deltaTimeTotalSec / 60);
-                    deltaTimeTotalSec -= (deltaTimeHours * 60)
-                    var deltaTimeSeconds = Math.floor(deltaTimeTotalSec);
-                    QH('timespan', pad2(deltaTimeHours) + ':' + pad2(deltaTimeMinutes) + ':' + pad2(deltaTimeSeconds))
-                }
-                agentDesktop.ProcessData(data);
+
+            // Update the clock
+            var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
+            if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
+                currentDeltaTimeTotalSec = deltaTimeTotalSec;
+                var deltaTimeHours = Math.floor(deltaTimeTotalSec / 3600);
+                deltaTimeTotalSec -= (deltaTimeHours * 3600)
+                var deltaTimeMinutes = Math.floor(deltaTimeTotalSec / 60);
+                deltaTimeTotalSec -= (deltaTimeHours * 60)
+                var deltaTimeSeconds = Math.floor(deltaTimeTotalSec);
+                QH('timespan', pad2(deltaTimeHours) + ':' + pad2(deltaTimeMinutes) + ':' + pad2(deltaTimeSeconds))
             }
+
+            if ((type == 2) && flagBinary && !flagUser) {
+                if (recFileProtocol == 2) {
+                    // MeshCentral Remote Desktop
+                    agentDesktop.ProcessData(data);
+                } else if (recFileProtocol == 101) {
+                    // Intel AMT KVM
+                    //if ((readState == 0) && (rstr2hex(data) == '140000000400000000')) { readState = 1; }
+                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) { readState = 1; }
+                    else if (readState == 1) { amtDesktop.ProcessData(data); }
+                    //console.log(rstr2hex(data));
+                }
+            }
+
             recFileLastTime = time;
             if (playing) { readNextBlock(processBlock); }
         }
@@ -202,10 +233,8 @@
             recFile = null;
             recFilePtr = 0;
             recFileMetadata = null;
-            if (agentDesktop != null) {
-                agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
-                agentDesktop = null;
-            }
+            if (agentDesktop != null) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); agentDesktop = null; }
+            if (amtDesktop != null) { amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height); amtDesktop = null; }
             readState = 0;
             waitTimerArgs = null;
             currentDeltaTimeTotalSec = 0;
@@ -328,8 +357,9 @@
             QE('PauseButton', false);
             QE('RestartButton', false);
             QS('progressbar').width = '0px';
-            QH('timespan', '00:00:00')
-            agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
+            QH('timespan', '00:00:00');
+             if (agentDesktop) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); }
+            if (amtDesktop) { amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height); amtDesktop = CreateAmtRemoteDesktop('Desk'); amtDesktop.onScreenSizeChange = deskAdjust;  amtDesktop.State = 3; }
         }
 
         function clearConsoleMsg() {

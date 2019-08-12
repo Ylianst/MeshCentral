@@ -78,7 +78,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     obj.ProcessData = function (data) {
         if (!data) return;
-        // obj.Debug("KRecv(" + data.length + "): " + rstr2hex(data));
+        //obj.Debug("KRecv(" + data.length + "): " + rstr2hex(data));
         //obj.inbytes += data.length;
         //obj.Debug("KRecv(" + obj.inbytes + ")");
         obj.acc += data;
@@ -159,7 +159,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 if (obj.bpp == 1) obj.send(String.fromCharCode(0, 0, 0, 0, 8, 8, 0, 1) + ShortToStr(7) + ShortToStr(7) + ShortToStr(3) + String.fromCharCode(5, 2, 0, 0, 0, 0));            // Setup 8 bit color RGB332
 
                 obj.state = 4;
-                obj.parent.xxStateChange(3);
+                if (obj.parent) { obj.parent.xxStateChange(3); }
                 _SendRefresh();
                 //obj.timer = setInterval(obj.xxOnTimer, 50);
 
@@ -602,13 +602,13 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.Stop = function () {
         obj.UnGrabMouseInput();
         obj.UnGrabKeyInput();
-        obj.parent.Stop();
+        if (obj.parent) { obj.parent.Stop(); }
     }
 
     obj.send = function (x) {
         //obj.Debug("KSend(" + x.length + "): " + rstr2hex(x));
         //obj.outbytes += x.length;
-        obj.parent.send(x);
+        if (obj.parent) { obj.parent.send(x); }
     }
 
     var convertAmtKeyCodeTable = {
