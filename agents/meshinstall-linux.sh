@@ -13,12 +13,13 @@ CheckStartupType() {
   fi
 
   # echo "Checking process autostart system..."
-  starttype=`ps -p 1 -o command= | awk '{ a=split($0, res, "/"); split(res[a], f, " "); print f[1]}'`
+  starttype1=`cat /proc/1/status | grep 'Name:' | awk '{ print $2; }'`
+  starttype2=`ps -p 1 -o command= | awk '{a=split($0,res," "); b=split(res[a],tp,"/"); print tp[b]; }'`
  
   # Systemd
-  if [[ $starttype == 'systemd' ]]
+  if [[ $starttype1 == 'systemd' ]]
     then return 1;
-  elif [[ $starttype == 'init' ]]
+  elif [[ $starttype1 == 'init'  ||  $starttype2 == 'init' ]]
 	then
 		if [ -d "/etc/init" ]
 			then
