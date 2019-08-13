@@ -188,7 +188,7 @@ require('MeshAgent').AddCommandHandler(function (data)
 
                                         if (this.httprequest.state == 0) {
                                             // Check if this is a relay connection
-                                            if (data == 'c') { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
+                                            if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
                                         } else {
                                             // Handle tunnel data
                                             if (this.httprequest.protocol == 0)

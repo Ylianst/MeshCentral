@@ -188,8 +188,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                 var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid });
                                 recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
                                     relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
-                                    ws.send('c'); // Send connect to both peers
-                                    relayinfo.peer1.ws.send('c');
+                                    ws.send('cr'); // Send connect to both peers, 'cr' indicates the session is being recorded.
+                                    relayinfo.peer1.ws.send('cr');
                                 });
                             }
                         });
@@ -285,7 +285,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
 
                     // Close the recording file
-                    if (ws.logfile != null) { parent.parent.fs.close(ws.logfile.fd); ws.logfile = null; peer.ws.logfile = null; }
+                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) { parent.parent.fs.close(fd); tag.ws.logfile = null; tag.pws.logfile = null; }, { ws: ws, pws: peer.ws }); }
 
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
@@ -327,7 +327,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 
     // Record a new entry in a recording log
-    function recordingEntry(fd, type, flags, data, func) {
+    function recordingEntry(fd, type, flags, data, func, tag) {
         try {
             if (typeof data == 'string') {
                 // String write
@@ -337,7 +337,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 header.writeInt32BE(blockData.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, blockData]);
-                parent.parent.fs.write(fd, block, 0, block.length, func);
+                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             } else {
                 // Binary write
                 var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
@@ -346,9 +346,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 header.writeInt32BE(data.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, data]);
-                parent.parent.fs.write(fd, block, 0, block.length, func);
+                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             }
-        } catch (ex) { console.log(ex); func(); }
+        } catch (ex) { console.log(ex); func(fd, tag); }
     }
 
     // Mark this relay session as authenticated if this is the user end.
@@ -418,7 +418,7 @@ The recording files are binary and contain a set of:
 
 The header is always 16 bytes long and is encoded like this:
 
-    TYPE   2 bytes, 1 = Header, 2 = Network Data
+    TYPE   2 bytes, 1 = Header, 2 = Network Data, 3 = EndBlock
     FLAGS  2 bytes, 0x0001 = Binary, 0x0002 = User
     SIZE   4 bytes, Size of the data following this header.
     TIME   8 bytes, Time this record was written, number of milliseconds since 1 January, 1970 UTC.

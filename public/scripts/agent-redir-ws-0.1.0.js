@@ -25,6 +25,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.webchannel = null;
     obj.webrtc = null;
     obj.debugmode = 0;
+    obj.serverIsRecording = false;
     if (domainUrl == null) { domainUrl = '/'; }
 
     // Console Message
@@ -95,7 +96,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.xxOnMessage = function (e) {
         //console.log('Recv', e.data, e.data.byteLength, obj.State);
         if (obj.State < 3) {
-            if (e.data == 'c') {
+            if ((e.data == 'c') || (e.data == 'cr')) {
+                if (e.data == 'cr') { obj.serverIsRecording = true; }
                 try { obj.socket.send(obj.protocol); } catch (ex) { }
                 obj.xxStateChange(3);
 
