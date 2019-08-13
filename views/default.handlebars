@@ -443,6 +443,7 @@
                             <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
                             <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
                             <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
+                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                             <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
                             <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() class="mR">
                             <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
@@ -541,6 +542,7 @@
                         <tr>
                             <td class="areaHead">
                                 <div class="toright2">
+                                    <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                 </div>
                                 <div>
@@ -600,6 +602,7 @@
                         <td class="areaHead">
                             <div class="toright2">
                                 <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
+                                <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                             </div>
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none">
@@ -4816,12 +4819,16 @@
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('termdisplays', false);
+                    QV('deskRecordIcon', false);
                     deskFocusBtn.value = 'All Focus';
                     if (fullscreen == true) { deskToggleFull(); }
                     webRtcDesktopReset();
                     deskPreferedStickyDisplay = 0;
                     break;
                 case 2:
+                    break;
+                case 3:
+                    if (desktop.serverIsRecording == true) { QV('deskRecordIcon', true); }
                     break;
                 default:
                     //console.log('Unknown onDesktopStateChange state', state);
@@ -5380,12 +5387,14 @@
                     // Disconnected, clear the terminal
                     QE('termSizeList', true);
                     QH('termtitle', '');
+                    QV('termRecordIcon', false);
                     xterminal.m.TermResetScreen();
                     xterminal.m.TermDraw();
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
                     QE('termSizeList', false);
+                    if (xterminal.serverIsRecording == true) { QV('termRecordIcon', true); }
                     break;
                 default:
                     QE('termSizeList', false);
@@ -5531,12 +5540,14 @@
                     p13filetreelocation = [];
                     QH('p13currentpath', '');
                     QE('p13FolderUp', false);
+                    QV('filesRecordIcon', false);
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
                     break;
                 case 3:
                     p13targetpath = '';
                     files.sendText({ action: 'ls', reqid: 1, path: '' });
+                    if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
                     break;
                 default:
                     //console.log('Unknown onFilesStateChange state', state);

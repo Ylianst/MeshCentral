@@ -1978,6 +1978,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
                     recordingEntry(fd, 1, 0, firstBlock, function () { });
                     ws.logfile = { fd: fd, lock: false };
+                    if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
                 }
             }
 
@@ -2073,7 +2074,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
 
                     // Close the recording file
-                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
+                    if (ws.logfile != null) {
+                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) {
+                            obj.fs.close(fd);
+                            ws.logfile = null;
+                        }, ws);
+                    }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
@@ -2082,7 +2088,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
 
                     // Close the recording file
-                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
+                    if (ws.logfile != null) {
+                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) {
+                            obj.fs.close(fd);
+                            ws.logfile = null;
+                        }, ws);
+                    }
                 });
 
                 ws.forwardclient.onStateChange = function (ciraconn, state) {
@@ -2156,7 +2167,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
-                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
+                    if (ws.logfile != null) {
+                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd) {
+                            obj.fs.close(fd);
+                            ws.logfile = null;
+                        });
+                    }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
@@ -2165,7 +2181,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
-                    if (ws.logfile != null) { obj.fs.close(ws.logfile.fd); ws.logfile = null; }
+                    if (ws.logfile != null) {
+                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd) {
+                            obj.fs.close(fd);
+                            ws.logfile = null;
+                        });
+                    }
                 });
 
                 // Compute target port
@@ -3467,7 +3488,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
 
     // Record a new entry in a recording log
-    function recordingEntry(fd, type, flags, data, func) {
+    function recordingEntry(fd, type, flags, data, func, tag) {
         try {
             if (typeof data == 'string') {
                 // String write
@@ -3477,7 +3498,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 header.writeInt32BE(blockData.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, blockData]);
-                obj.fs.write(fd, block, 0, block.length, func);
+                obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             } else {
                 // Binary write
                 var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
@@ -3486,9 +3507,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 header.writeInt32BE(data.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, data]);
-                obj.fs.write(fd, block, 0, block.length, func);
+                obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             }
-        } catch (ex) { console.log(ex); func(); }
+        } catch (ex) { console.log(ex); func(fd, tag); }
     }
 
     return obj;

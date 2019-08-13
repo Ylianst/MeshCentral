@@ -579,7 +579,7 @@
                     socket.onerror = function (e) { /*console.error(e);*/ }
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
-                        if ((state < 2) && (typeof msg.data == 'string') && (msg.data == 'c')) {
+                        if ((state < 2) && (typeof msg.data == 'string') && ((msg.data == 'c') || (msg.data == 'cr'))) {
                             hangUpButtonClick(0, true);
                             hangUpButtonClick(1, true);
                             hangUpButtonClick(2, true);

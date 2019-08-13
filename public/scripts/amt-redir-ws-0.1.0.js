@@ -245,6 +245,11 @@ var CreateAmtRedirect = function (module, authCookie) {
                     if (obj.amtaccumulator.length > 8) { obj.m.ProcessData(obj.amtaccumulator.substring(8)); }
                     cmdsize = obj.amtaccumulator.length;
                     break;
+                case 0xF0:
+                    // console.log('Session is being recorded');
+                    obj.serverIsRecording = true;
+                    cmdsize = 1;
+                    break;
                 default:
                     console.log("Unknown Intel AMT command: " + obj.amtaccumulator.charCodeAt(0) + " acclen=" + obj.amtaccumulator.length);
                     obj.Stop(4);
