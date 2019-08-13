@@ -10,6 +10,7 @@
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/amt-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/zlib.js"></script>
     <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
@@ -30,12 +31,15 @@
             <div id=deskarea2 style="">
                 <div class="areaProgress"><div id="progressbar" style=""></div></div>
             </div>
-            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);">
+            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);position:relative">
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
                 <div id=DeskParent onclick="togglePause()">
                     <canvas id=Desk width=640 height=480></canvas>
+                </div>
+                <div id=TermParent onclick="togglePause()" style="margin:0;overflow:hidden;height:100px;left:0;position:absolute;right:0;top:0;background-color:red">
+                    <pre id=Term style="background-color:blue"></pre>
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
@@ -176,7 +180,21 @@
                 else if (p == 101) { p = 'Intel&reg; AMT Redirection'; }
                 x += addInfoNoEsc('Protocol', p);
             }
-            if (recFileMetadata.protocol == 2) {
+            console.log('desk');
+            QV('DeskParent', true);
+            QV('TermParent', false);
+            if (recFileMetadata.protocol == 1) {
+                // MeshCentral remote terminal
+                recFileProtocol = 1;
+                x += '<br /><br /><span style=color:gray>Press [space] to play/pause.</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                agentTerminal = CreateAmtRemoteTerminal('Term', {});
+                agentTerminal.State = 3;
+            }
+            else if (recFileMetadata.protocol == 2) {
                 // MeshCentral remote desktop
                 recFileProtocol = 2;
                 x += '<br /><br /><span style=color:gray>Press [space] to play/pause.</span>';
@@ -237,7 +255,10 @@
 
             if ((type == 2) && flagBinary && !flagUser) {
                 // Device --> User data
-                if (recFileProtocol == 2) {
+                if (recFileProtocol == 1) {
+                    // MeshCentral Terminal
+                    agentTerminal.ProcessData(data);
+                } else if (recFileProtocol == 2) {
                     // MeshCentral Remote Desktop
                     agentDesktop.ProcessData(data);
                 } else if (recFileProtocol == 101) {
@@ -276,6 +297,10 @@
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
             QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>Drag & drop a .mcrec file or click "Open File..."</span>');
+            QH('Term', '');
+            console.log('desk');
+            QV('DeskParent', true);
+            QV('TermParent', false);
         }
 
         function ondrop(e) {
@@ -359,6 +384,11 @@
             QE('PlayButton', false);
             QE('PauseButton', true);
             QE('RestartButton', false);
+            if (recFileProtocol == 1) {
+                console.log('term');
+                QV('DeskParent', false);
+                QV('TermParent', true);
+            }
             readNextBlock(processBlock);
         }
 
@@ -389,6 +419,10 @@
             QE('RestartButton', false);
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
+            QH('Term', '');
+            console.log('desk');
+            QV('DeskParent', true);
+            QV('TermParent', false);
             if (agentDesktop) {
                 agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
             } else if (amtDesktop) {
@@ -409,6 +443,7 @@
         }
 
         function deskAdjust() {
+            return;
             var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
             var deskH = Q('Desk').height, deskW = Q('Desk').width;
 
