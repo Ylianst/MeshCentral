@@ -31,15 +31,15 @@
             <div id=deskarea2 style="">
                 <div class="areaProgress"><div id="progressbar" style=""></div></div>
             </div>
-            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);position:relative">
+            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);" onclick="togglePause()">
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
                 <div id=DeskParent onclick="togglePause()">
                     <canvas id=Desk width=640 height=480></canvas>
                 </div>
-                <div id=TermParent onclick="togglePause()" style="margin:0;overflow:hidden;height:100px;left:0;position:absolute;right:0;top:0;background-color:red">
-                    <pre id=Term style="background-color:blue"></pre>
+                <div id=TermParent onclick="togglePause()" style="display:none">
+                    <pre id=Term></pre>
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
@@ -180,7 +180,6 @@
                 else if (p == 101) { p = 'Intel&reg; AMT Redirection'; }
                 x += addInfoNoEsc('Protocol', p);
             }
-            console.log('desk');
             QV('DeskParent', true);
             QV('TermParent', false);
             if (recFileMetadata.protocol == 1) {
@@ -191,8 +190,6 @@
                 QE('PauseButton', false);
                 QE('RestartButton', false);
                 recFileStartTime = recFileLastTime = time;
-                agentTerminal = CreateAmtRemoteTerminal('Term', {});
-                agentTerminal.State = 3;
             }
             else if (recFileMetadata.protocol == 2) {
                 // MeshCentral remote desktop
@@ -288,6 +285,7 @@
             waitTimerArgs = null;
             currentDeltaTimeTotalSec = 0;
             recFileEndTime = 0;
+            agentTerminal = null;
             if (waitTimer != null) { clearTimeout(waitTimer); waitTimer = null; }
             QH('deskstatus', '');
             QE('PlayButton', false);
@@ -297,8 +295,6 @@
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
             QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>Drag & drop a .mcrec file or click "Open File..."</span>');
-            QH('Term', '');
-            console.log('desk');
             QV('DeskParent', true);
             QV('TermParent', false);
         }
@@ -384,10 +380,11 @@
             QE('PlayButton', false);
             QE('PauseButton', true);
             QE('RestartButton', false);
-            if (recFileProtocol == 1) {
-                console.log('term');
+            if ((recFileProtocol == 1) && (agentTerminal == null)) {
                 QV('DeskParent', false);
                 QV('TermParent', true);
+                agentTerminal = CreateAmtRemoteTerminal('Term', {});
+                agentTerminal.State = 3;
             }
             readNextBlock(processBlock);
         }
@@ -419,8 +416,6 @@
             QE('RestartButton', false);
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
-            QH('Term', '');
-            console.log('desk');
             QV('DeskParent', true);
             QV('TermParent', false);
             if (agentDesktop) {
@@ -431,6 +426,8 @@
                 amtDesktop.onScreenSizeChange = deskAdjust;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
+            } else if (agentTerminal) {
+                agentTerminal = null;
             }
         }
 
@@ -443,7 +440,6 @@
         }
 
         function deskAdjust() {
-            return;
             var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
             var deskH = Q('Desk').height, deskW = Q('Desk').width;
 
