@@ -1316,7 +1316,6 @@ function createMeshCore(agent)
             } else if (this.httprequest.protocol == 1) {
                 // Send data into terminal stdin
                 //this.write(data); // Echo back the keys (Does not seem to be a good idea)
-                this.httprequest.process.write(data);
             } else if (this.httprequest.protocol == 2) {
                 // Send data into remote desktop
                 if (this.httprequest.desktop.state == 0) {
