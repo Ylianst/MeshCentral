@@ -1982,7 +1982,7 @@ function OnWebSocket(msg, s, head) {
     s.on('data', function (msg) {
         if (this.parent.tunneling == false) {
             msg = msg.toString();
-            if (msg == 'c') {
+            if ((msg == 'c') || (msg == 'cr')) {
                 this.parent.tunneling = true; this.pipe(this.parent.tcp); this.parent.tcp.pipe(this); debug(1, 'Tunnel active');
             } else if ((msg.length > 6) && (msg.substring(0, 6) == 'error:')) {
                 console.log(msg.substring(6));
