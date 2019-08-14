@@ -234,41 +234,45 @@ module.exports.CreateDB = function (parent, func) {
 
             // Setup the changeStream on the MongoDB main collection if possible
             if (parent.args.mongodbchangestream == true) {
-                obj.fileChangeStream = obj.file.watch( [ { $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } }, { 'operationType': 'delete' }] } } ], { fullDocument: 'updateLookup' });
-                obj.fileChangeStream.on('change', function (change) {
-                    if (change.operationType == 'update') {
-                        switch (change.fullDocument.type) {
-                            case 'node': { dbNodeChange(change, false); break; } // A node has changed
-                            case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
-                            case 'user': { dbUserChange(change, false); break; } // A user account has changed
-                        }
-                    } else if (change.operationType == 'insert') {
-                        switch (change.fullDocument.type) {
-                            case 'node': { dbNodeChange(change, true); break; } // A node has added
-                            case 'mesh': { dbMeshChange(change, true); break; } // A device group has created
-                            case 'user': { dbUserChange(change, true); break; } // A user account has created
-                        }
-                    } else if (change.operationType == 'delete') {
-                        var splitId = change.documentKey._id.split('/');
-                        switch (splitId[0]) {
-                            case 'node': {
-                                //Not Good: Problem here is that we don't know what meshid the node belonged to before the delete.
-                                //parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: change.documentKey._id, domain: splitId[1] });
-                                break;
+                if (typeof obj.file.watch != 'function') {
+                    console.log('WARNING: watch() is not a function, MongoDB ChangeStream not supported.');
+                } else {
+                    obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
+                    obj.fileChangeStream.on('change', function (change) {
+                        if (change.operationType == 'update') {
+                            switch (change.fullDocument.type) {
+                                case 'node': { dbNodeChange(change, false); break; } // A node has changed
+                                case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
+                                case 'user': { dbUserChange(change, false); break; } // A user account has changed
                             }
-                            case 'mesh': {
-                                parent.DispatchEvent(['*', node.meshid], obj, { etype: 'mesh', action: 'deletemesh', meshid: change.documentKey._id, domain: splitId[1] });
-                                break;
+                        } else if (change.operationType == 'insert') {
+                            switch (change.fullDocument.type) {
+                                case 'node': { dbNodeChange(change, true); break; } // A node has added
+                                case 'mesh': { dbMeshChange(change, true); break; } // A device group has created
+                                case 'user': { dbUserChange(change, true); break; } // A user account has created
                             }
-                            case 'user': {
-                                //Not Good: This is not a perfect user removal because we don't know what groups the user was in.
-                                //parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', action: 'accountremove', userid: change.documentKey._id, domain: splitId[1], username: splitId[2] });
-                                break;
+                        } else if (change.operationType == 'delete') {
+                            var splitId = change.documentKey._id.split('/');
+                            switch (splitId[0]) {
+                                case 'node': {
+                                    //Not Good: Problem here is that we don't know what meshid the node belonged to before the delete.
+                                    //parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: 'removenode', nodeid: change.documentKey._id, domain: splitId[1] });
+                                    break;
+                                }
+                                case 'mesh': {
+                                    parent.DispatchEvent(['*', node.meshid], obj, { etype: 'mesh', action: 'deletemesh', meshid: change.documentKey._id, domain: splitId[1] });
+                                    break;
+                                }
+                                case 'user': {
+                                    //Not Good: This is not a perfect user removal because we don't know what groups the user was in.
+                                    //parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', action: 'accountremove', userid: change.documentKey._id, domain: splitId[1], username: splitId[2] });
+                                    break;
+                                }
                             }
                         }
-                    }
-                });
-                obj.changeStream = true;
+                    });
+                    obj.changeStream = true;
+                }
             }
 
             // Setup MongoDB events collection and indexes

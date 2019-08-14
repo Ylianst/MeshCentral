@@ -35,10 +35,10 @@
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
-                <div id=DeskParent onclick="togglePause()">
+                <div id=DeskParent>
                     <canvas id=Desk width=640 height=480></canvas>
                 </div>
-                <div id=TermParent onclick="togglePause()" style="display:none">
+                <div id=TermParent style="display:none">
                     <pre id=Term></pre>
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
@@ -279,6 +279,7 @@
             recFile = null;
             recFilePtr = 0;
             recFileMetadata = null;
+            playing = false;
             if (agentDesktop != null) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); agentDesktop = null; }
             if (amtDesktop != null) { amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height); amtDesktop = null; }
             readState = 0;
@@ -370,7 +371,9 @@
             QE('idx_dlgOkButton', files.length == 1);
         }
 
-        function togglePause() { if (recFile == null) return; if (playing == true) { pause(); } else { if (recFilePtr != recFile.size) { play(); } } }
+        function togglePause() {
+            if (recFile != null) { if (playing == true) { pause(); } else { if (recFilePtr != recFile.size) { play(); } } } return false;
+        }
 
         function play() {
             Q('PlayButton').blur();
