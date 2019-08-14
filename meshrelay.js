@@ -18,6 +18,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.ws = ws;
     obj.id = req.query.id;
     obj.user = user;
+    obj.req = req; // Used in multi-server.js
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
@@ -181,22 +182,22 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
                             if (err != null) {
                                 // Unable to record
-                                ws.send('c'); // Send connect to both peers
-                                relayinfo.peer1.ws.send('c');
+                                try { ws.send('c'); } catch (ex) { } // Send connect to both peers
+                                try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                             } else {
                                 // Write the recording file header
                                 var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(ws._socket.remoteAddress), ipaddr2: cleanRemoteAddr(obj.peer.ws._socket.remoteAddress), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid });
                                 recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
                                     relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
-                                    ws.send('cr'); // Send connect to both peers, 'cr' indicates the session is being recorded.
-                                    relayinfo.peer1.ws.send('cr');
+                                    try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
+                                    try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
                                 });
                             }
                         });
                     } else {
                         // Send session start
-                        ws.send('c'); // Send connect to both peers
-                        relayinfo.peer1.ws.send('c');
+                        try { ws.send('c'); } catch (ex) { } // Send connect to both peers
+                        try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                     }
 
                     parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');

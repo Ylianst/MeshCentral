@@ -3192,6 +3192,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else if ((req.query.auth != null) && (req.query.auth != '')) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+                if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
                     // Valid cookie, we are authenticated
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
