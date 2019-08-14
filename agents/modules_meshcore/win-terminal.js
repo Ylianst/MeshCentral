@@ -134,15 +134,22 @@ function windows_terminal() {
     
     this.PowerShellCapable = function()
     {
-        if (require('os').arch() == 'x64') {
+        if (require('os').arch() == 'x64')
+        {
             return (require('fs').existsSync(process.env['windir'] + '\\SysWow64\\WindowsPowerShell\\v1.0\\powershell.exe'));
-        } else {
+        }
+        else
+        {
             return (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
         }
     }
 
     this.StartEx = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, terminalTarget)
     {
+        if (this._stream != null)
+        {
+            throw ('Concurrent terminal sessions are not supported on Windows.');
+        }
         this.stopping = null;
         if (this._kernel32.GetConsoleWindow().Val == 0) {
             if (this._kernel32.AllocConsole().Val == 0) {
@@ -177,45 +184,59 @@ function windows_terminal() {
             // Hook Ready
             this.terminal.StartCommand(this.userArgs[0]);
         }, console.log);
-        this._stream = new duplex({
-            'write': function (chunk, flush) {
-                if (!this.terminal.connected) {
-                    //console.log('_write: ' + chunk);
-                    if (!this._promise.chunk) {
-                        this._promise.chunk = [];
-                    }
-                    if (typeof (chunk) == 'string') {
-                        this._promise.chunk.push(chunk);
-                    } else {
-                        this._promise.chunk.push(Buffer.alloc(chunk.length));
-                        chunk.copy(this._promise.chunk.peek());
-                    }
-                    this._promise.chunk.peek().flush = flush;
-                    this._promise.then(function () {
-                        var buf;
-                        while (this.chunk.length > 0) {
-                            buf = this.chunk.shift();
-                            this.terminal._WriteBuffer(buf);
-                            buf.flush();
+        this._stream = new duplex(
+            {
+                'write': function (chunk, flush)
+                {
+                    if (!this.terminal.connected)
+                    {
+                        //console.log('_write: ' + chunk);
+                        if (!this._promise.chunk)
+                        {
+                            this._promise.chunk = [];
                         }
-                    });
+                        if (typeof (chunk) == 'string')
+                        {
+                            this._promise.chunk.push(chunk);
+                        } else
+                        {
+                            this._promise.chunk.push(Buffer.alloc(chunk.length));
+                            chunk.copy(this._promise.chunk.peek());
+                        }
+                        this._promise.chunk.peek().flush = flush;
+                        this._promise.then(function ()
+                        {
+                            var buf;
+                            while (this.chunk.length > 0)
+                            {
+                                buf = this.chunk.shift();
+                                this.terminal._WriteBuffer(buf);
+                                buf.flush();
+                            }
+                        });
+                    }
+                    else
+                    {
+                        //console.log('writeNOW: ' + chunk);
+                        this.terminal._WriteBuffer(chunk);
+                        flush();
+                    }
+                    return (true);
+                },
+                'final': function (flush)
+                {
+                    var p = this.terminal._stop();
+                    p.__flush = flush;
+                    p.then(function () { this.__flush(); });
                 }
-                else {
-                    //console.log('writeNOW: ' + chunk);
-                    this.terminal._WriteBuffer(chunk);
-                    flush();
-                }
-                return (true);
-            },
-            'final': function (flush) {
-                var p = this.terminal._stop();
-                p.__flush = flush;
-                p.then(function () { this.__flush(); });
-            }
-        });
+            });
         this._stream.terminal = this;
         this._stream._promise = new promise(function (res, rej) { this._res = res; this._rej = rej; });
         this._stream._promise.terminal = this;
+        this._stream.prependOnceListener('end', function ()
+        {
+            this.terminal._stream = null;
+        });
         return (this._stream);
     };
     this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
