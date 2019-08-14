@@ -1224,7 +1224,7 @@
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
-                go(1);
+                if ('{{viewmode}}' == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
         }
@@ -1428,7 +1428,7 @@
                     }
                     masterUpdate(1 | 2 | 4 | 64);
 
-                    if (xxcurrentView == 0) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
+                    if (xxcurrentView == -1) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
                     break;
                 }
