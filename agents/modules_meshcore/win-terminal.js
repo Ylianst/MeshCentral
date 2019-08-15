@@ -148,7 +148,7 @@ function windows_terminal() {
     {
         if (this._stream != null)
         {
-            throw ('Concurrent Terminal sessions are not supported on Windows');
+            throw ('Concurrent terminal sessions are not supported on Windows.');
         }
         this.stopping = null;
         if (this._kernel32.GetConsoleWindow().Val == 0) {
@@ -397,11 +397,7 @@ function windows_terminal() {
             }
         }
     }
-    this._WriteCharacter = function (key, bControlKey)
-    {
-        var scanCode = this._user32.VkKeyScanA(key).Val;
-        if (scanCode < 0 || scanCode > 255) { return; }
-
+    this._WriteCharacter = function (key, bControlKey) {
         var rec = GM.CreateVariable(20);
         rec.Deref(0, 2).toBuffer().writeUInt16LE(KEY_EVENT);                                // rec.EventType 
         rec.Deref(4, 4).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.bKeyDown
@@ -409,11 +405,11 @@ function windows_terminal() {
         rec.Deref(14, 1).toBuffer()[0] = key;                                               // rec.Event.KeyEvent.uChar.AsciiChar
         rec.Deref(8, 2).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.wRepeatCount
         rec.Deref(10, 2).toBuffer().writeUInt16LE(this._user32.VkKeyScanA(key).Val);        // rec.Event.KeyEvent.wVirtualKeyCode
-        rec.Deref(12, 2).toBuffer().writeUInt16LE(this._user32.MapVirtualKeyA(scanCode, MAPVK_VK_TO_VSC).Val);
-
+        rec.Deref(12, 2).toBuffer().writeUInt16LE(this._user32.MapVirtualKeyA(this._user32.VkKeyScanA(key).Val, MAPVK_VK_TO_VSC).Val);
+        
         var dwWritten = GM.CreateVariable(4);
         if (this._kernel32.WriteConsoleInputA(this._stdinput, rec, 1, dwWritten).Val == 0) { return (false); }
-
+        
         rec.Deref(4, 4).toBuffer().writeUInt16LE(0);                                         // rec.Event.KeyEvent.bKeyDown
         return (this._kernel32.WriteConsoleInputA(this._stdinput, rec, 1, dwWritten).Val != 0);
     }
