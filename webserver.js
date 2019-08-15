@@ -590,7 +590,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var yubikeyotp = require('yubikeyotp');
                 var request = { otp: token, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
                 if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                yubikeyotp.verifyOTP(request, function (err, results) { func(results.status == 'OK'); });
+                yubikeyotp.verifyOTP(request, function (err, results) { func((results != null) && (results.status == 'OK')); });
                 return;
             }
         }
@@ -1940,7 +1940,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (!state || state.connectivity == 0) { Debug(1, 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
 
             // Check what server needs to handle this connection
-            if ((obj.parent.multiServer != null) && (cookie == null)) { // If a cookie is provided, don't allow the connection to jump again to a different server
+            if ((obj.parent.multiServer != null) && ((cookie == null) || (cookie.ps != 1))) { // If a cookie is provided and is from a peer server, don't allow the connection to jump again to a different server
                 var server = obj.parent.GetRoutingServerId(req.query.host, 2); // Check for Intel CIRA connection
                 if (server != null) {
                     if (server.serverid != obj.parent.serverId) {
