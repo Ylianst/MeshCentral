@@ -3127,11 +3127,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Indicates to ExpressJS that the public folder should be used to serve static files.
             obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
+/*
             // Handle 404 error
             obj.app.use(function (req, res, next) {
                 var domain = getDomain(req);
                 res.status(404).render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'error404-mobile' : 'error404'), { title: domain.title, title2: domain.title2 });
-            })
+            });
+*/
 
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
