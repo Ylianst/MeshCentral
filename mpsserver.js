@@ -167,11 +167,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         }
         socket.setEncoding("binary");
-        Debug(1, "MPS:New CIRA connection");
+        parent.debug('mps', "New CIRA connection");
 
         // Setup the CIRA keep alive timer
         socket.setTimeout(MAX_IDLE);
-        socket.on("timeout", () => { ciraTimeoutCount++; Debug(1, "MPS:CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
+        socket.on("timeout", () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
         socket.addListener("data", function (data) {
             if (args.mpsdebug) { var buf = Buffer.from(data, "binary"); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
@@ -299,13 +299,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             switch (cmd) {
                 case APFProtocol.KEEPALIVE_REQUEST: {
                     if (len < 5) return 0;
-                    Debug(3, 'MPS:KEEPALIVE_REQUEST');
+                    parent.debug('mpscmd', 'KEEPALIVE_REQUEST');
                     SendKeepAliveReply(socket, common.ReadInt(data, 1));
                     return 5;
                 }
                 case APFProtocol.KEEPALIVE_REPLY: {
                     if (len < 5) return 0;
-                    Debug(3, 'MPS:KEEPALIVE_REPLY');
+                    parent.debug('mpscmd', 'KEEPALIVE_REPLY');
                     return 5;
                 }
                 case APFProtocol.PROTOCOLVERSION: {
@@ -314,7 +314,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     socket.tag.MajorVersion = common.ReadInt(data, 1);
                     socket.tag.MinorVersion = common.ReadInt(data, 5);
                     socket.tag.SystemId = guidToStr(common.rstr2hex(data.substring(13, 29))).toLowerCase();
-                    Debug(3, 'MPS:PROTOCOLVERSION', socket.tag.MajorVersion, socket.tag.MinorVersion, socket.tag.SystemId);
+                    parent.debug('mpscmd', 'PROTOCOLVERSION', socket.tag.MajorVersion, socket.tag.MinorVersion, socket.tag.SystemId);
                     return 93;
                 }
                 case APFProtocol.USERAUTH_REQUEST: {
@@ -332,16 +332,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         password = data.substring(18 + usernameLen + serviceNameLen + methodNameLen, 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen);
                     }
                     //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
-                    Debug(3, 'MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
+                    parent.debug('mpscmd', 'USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
                     // Check the CIRA password
-                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; Debug(1, 'MPS:Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
 
                     // Check the CIRA username, which should be the start of the MeshID.
-                    if (usernameLen != 16) { badUserNameLengthCount++; Debug(1, 'MPS:Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
                     var meshIdStart = '/' + username, mesh = null;
                     if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { meshNotFoundCount++; Debug(1, 'MPS:Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
 
                     // If this is a agent-less mesh, use the device guid 3 times as ID.
                     if (mesh.mtype == 1) {
@@ -446,7 +446,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var xserviceNameLen = common.ReadInt(data, 1);
                     if (len < 5 + xserviceNameLen) return 0;
                     var xserviceName = data.substring(5, 5 + xserviceNameLen);
-                    Debug(3, 'MPS:SERVICE_REQUEST', xserviceName);
+                    parent.debug('mpscmd', 'SERVICE_REQUEST', xserviceName);
                     if (xserviceName == "pfwd@amt.intel.com") { SendServiceAccept(socket, "pfwd@amt.intel.com"); }
                     if (xserviceName == "auth@amt.intel.com") { SendServiceAccept(socket, "auth@amt.intel.com"); }
                     return 5 + xserviceNameLen;
@@ -463,7 +463,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 14 + requestLen + addrLen) return 0;
                         var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
                         var port = common.ReadInt(data, 10 + requestLen + addrLen);
-                        Debug(2, 'MPS:GLOBAL_REQUEST', request, addr + ':' + port);
+                        parent.debug('mpscmd', 'GLOBAL_REQUEST', request, addr + ':' + port);
                         ChangeHostname(socket, addr, socket.tag.SystemId);
                         if (socket.tag.boundPorts.indexOf(port) == -1) { socket.tag.boundPorts.push(port); }
                         SendTcpForwardSuccessReply(socket, port);
@@ -475,7 +475,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 14 + requestLen + addrLen) return 0;
                         var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
                         var port = common.ReadInt(data, 10 + requestLen + addrLen);
-                        Debug(2, 'MPS:GLOBAL_REQUEST', request, addr + ':' + port);
+                        parent.debug('mpscmd', 'GLOBAL_REQUEST', request, addr + ':' + port);
                         var portindex = socket.tag.boundPorts.indexOf(port);
                         if (portindex >= 0) { socket.tag.boundPorts.splice(portindex, 1); }
                         SendTcpForwardCancelReply(socket);
@@ -493,7 +493,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         var oport = common.ReadInt(data, 18 + requestLen + addrLen + oaddrLen);
                         var datalen = common.ReadInt(data, 22 + requestLen + addrLen + oaddrLen);
                         if (len < 26 + requestLen + addrLen + oaddrLen + datalen) return 0;
-                        Debug(2, 'MPS:GLOBAL_REQUEST', request, addr + ':' + port, oaddr + ':' + oport, datalen);
+                        parent.debug('mpscmd', 'GLOBAL_REQUEST', request, addr + ':' + port, oaddr + ':' + oport, datalen);
                         // TODO
                         return 26 + requestLen + addrLen + oaddrLen + datalen;
                     }
@@ -523,7 +523,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var SourcePort = common.ReadInt(data, 29 + ChannelTypeLength + TargetLen + SourceLen);
 
                     channelOpenCount++;
-                    Debug(3, 'MPS:CHANNEL_OPEN', ChannelType, SenderChannel, WindowSize, Target + ':' + TargetPort, Source + ':' + SourcePort);
+                    parent.debug('mpscmd', 'CHANNEL_OPEN', ChannelType, SenderChannel, WindowSize, Target + ':' + TargetPort, Source + ':' + SourcePort);
 
                     // Check if we understand this channel type
                     //if (ChannelType.toLowerCase() == "direct-tcpip")
@@ -554,7 +554,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         cirachannel.amtchannelid = SenderChannel;
                         cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
                         channelOpenConfirmCount++;
-                        Debug(3, 'MPS:CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
+                        parent.debug('mpscmd', 'CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
                         if (cirachannel.closing == 1) {
                             // Close this channel
                             SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
@@ -586,7 +586,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         var RecipientChannel = common.ReadInt(data, 1);
                         var ReasonCode = common.ReadInt(data, 5);
                         channelOpenFailCount++;
-                        Debug(3, 'MPS:CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
+                        parent.debug('mpscmd', 'CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return 17; }
                         if (cirachannel.state > 0) {
@@ -601,7 +601,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 5) return 0;
                         var RecipientChannel = common.ReadInt(data, 1);
                         channelCloseCount++;
-                        Debug(3, 'MPS:CHANNEL_CLOSE', RecipientChannel);
+                        parent.debug('mpscmd', 'CHANNEL_CLOSE', RecipientChannel);
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return 5; }
                         socket.tag.activetunnels--;
@@ -620,7 +620,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return 9; }
                         cirachannel.sendcredits += ByteToAdd;
-                        Debug(3, 'MPS:CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
+                        parent.debug('mpscmd', 'CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
                         if (cirachannel.state == 2 && cirachannel.sendBuffer != null) {
                             // Compute how much data we can send                
                             if (cirachannel.sendBuffer.length <= cirachannel.sendcredits) {
@@ -644,7 +644,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         var RecipientChannel = common.ReadInt(data, 1);
                         var LengthOfData = common.ReadInt(data, 5);
                         if (len < (9 + LengthOfData)) return 0;
-                        Debug(4, 'MPS:CHANNEL_DATA', RecipientChannel, LengthOfData);
+                        parent.debug('mpscmddata', 'CHANNEL_DATA', RecipientChannel, LengthOfData);
                         var cirachannel = socket.tag.channels[RecipientChannel];
                         if (cirachannel == null) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
                         cirachannel.amtpendingcredits += LengthOfData;
@@ -660,14 +660,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         if (len < 7) return 0;
                         var ReasonCode = common.ReadInt(data, 1);
                         disconnectCommandCount++;
-                        Debug(3, 'MPS:DISCONNECT', ReasonCode);
+                        parent.debug('mpscmd', 'DISCONNECT', ReasonCode);
                         try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
                         obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
                         return 7;
                     }
                 default:
                     {
-                        Debug(1, 'MPS:Unknown CIRA command: ' + cmd);
+                        parent.debug('mpscmd', 'Unknown CIRA command: ' + cmd);
                         return -1;
                     }
             }
@@ -675,7 +675,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
         socket.addListener("close", function () {
             socketClosedCount++;
-            Debug(1, 'MPS:CIRA connection closed');
+            parent.debug('mps', 'CIRA connection closed');
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
         });
@@ -741,7 +741,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     function SendChannelWindowAdjust(socket, channelid, bytestoadd) {
-        Debug(3, 'MPS:SendChannelWindowAdjust', channelid, bytestoadd);
+        parent.debug('mpscmd', 'SendChannelWindowAdjust', channelid, bytestoadd);
         Write(socket, String.fromCharCode(APFProtocol.CHANNEL_WINDOW_ADJUST) + common.IntToStr(channelid) + common.IntToStr(bytestoadd));
     }
 
@@ -852,17 +852,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
-
-    // Debug
-    function Debug(lvl) {
-        if (lvl > obj.parent.debugLevel) return;
-        if (arguments.length == 2) { console.log(arguments[1]); }
-        else if (arguments.length == 3) { console.log(arguments[1], arguments[2]); }
-        else if (arguments.length == 4) { console.log(arguments[1], arguments[2], arguments[3]); }
-        else if (arguments.length == 5) { console.log(arguments[1], arguments[2], arguments[3], arguments[4]); }
-        else if (arguments.length == 6) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]); }
-        else if (arguments.length == 7) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]); }
-    }
 
     return obj;
 };

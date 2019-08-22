@@ -61,15 +61,15 @@ module.exports.CreateMultiServer = function (parent, args) {
 
             // Get the web socket setup
             obj.ws = new WebSocket(obj.url + 'meshserver.ashx', { rejectUnauthorized: false, cert: obj.certificates.agent.cert, key: obj.certificates.agent.key });
-            obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Connecting to: ' + url + 'meshserver.ashx');
+            obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Connecting to: ' + url + 'meshserver.ashx');
 
             // Register the connection failed event
-            obj.ws.on('error', function (error) { obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Error: ' + error); disconnect(); });
-            obj.ws.on('close', function () { obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Disconnected'); disconnect(); });
+            obj.ws.on('error', function (error) { obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Error: ' + error); disconnect(); });
+            obj.ws.on('close', function () { obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Disconnected'); disconnect(); });
 
             // Register the connection event
             obj.ws.on('open', function () {
-                obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Connected');
+                obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Connected');
                 obj.connectionState |= 2;
                 obj.nonce = obj.crypto.randomBytes(48).toString('binary');
 
@@ -95,10 +95,10 @@ module.exports.CreateMultiServer = function (parent, args) {
                     switch (cmd) {
                         case 1: {
                             // Server authentication request
-                            if (msg.length != 98) { obj.parent.parent.debug(1, 'OutPeer: BAD MESSAGE(A1)'); return; }
+                            if (msg.length != 98) { obj.parent.parent.debug('peer', 'OutPeer: BAD MESSAGE(A1)'); return; }
 
                             // Check that the server hash matches the TLS server certificate public key hash
-                            if (obj.serverCertHash != msg.substring(2, 50)) { obj.parent.parent.debug(1, 'OutPeer: Server hash mismatch.'); disconnect(); return; }
+                            if (obj.serverCertHash != msg.substring(2, 50)) { obj.parent.parent.debug('peer', 'OutPeer: Server hash mismatch.'); disconnect(); return; }
                             obj.servernonce = msg.substring(50);
 
                             // Perform the hash signature using the server agent certificate
@@ -114,14 +114,14 @@ module.exports.CreateMultiServer = function (parent, args) {
                             var certlen = obj.common.ReadShort(msg, 2), serverCert = null;
                             var serverCertPem = '-----BEGIN CERTIFICATE-----\r\n' + Buffer.from(msg.substring(4, 4 + certlen), 'binary').toString('base64') + '\r\n-----END CERTIFICATE-----';
                             try { serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(msg.substring(4, 4 + certlen))); } catch (e) { }
-                            if (serverCert == null) { obj.parent.parent.debug(1, 'OutPeer: Invalid server certificate.'); disconnect(); return; }
+                            if (serverCert == null) { obj.parent.parent.debug('peer', 'OutPeer: Invalid server certificate.'); disconnect(); return; }
                             var serverid = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            if (serverid !== obj.agentCertificateHashBase64) { obj.parent.parent.debug(1, 'OutPeer: Server hash mismatch.'); disconnect(); return; }
+                            if (serverid !== obj.agentCertificateHashBase64) { obj.parent.parent.debug('peer', 'OutPeer: Server hash mismatch.'); disconnect(); return; }
 
                             // Server signature, verify it. This is the fast way, without using forge. (TODO: Use accelerator for this?)
                             const verify = obj.parent.crypto.createVerify('SHA384');
                             verify.end(Buffer.from(obj.serverCertHash + obj.nonce + obj.servernonce, 'binary'));
-                            if (verify.verify(serverCertPem, Buffer.from(msg.substring(4 + certlen), 'binary')) !== true) { obj.parent.parent.debug(1, 'OutPeer: Server sign check failed.'); disconnect(); return; }
+                            if (verify.verify(serverCertPem, Buffer.from(msg.substring(4 + certlen), 'binary')) !== true) { obj.parent.parent.debug('peer', 'OutPeer: Server sign check failed.'); disconnect(); return; }
 
                             // Connection is a success, clean up
                             delete obj.nonce;
@@ -129,7 +129,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             obj.serverCertHash = Buffer.from(obj.serverCertHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); // Change this value to base64
                             obj.connectionState |= 4;
                             obj.retryBackoff = 0; // Set backoff connection timer back to fast.
-                            obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
+                            obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Verified peer connection to ' + obj.url);
 
                             // Send information about our server to the peer
                             if (obj.connectionState == 15) {
@@ -152,7 +152,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             break;
                         }
                         default: {
-                            obj.parent.parent.debug(1, 'OutPeer ' + obj.serverid + ': Un-handled command: ' + cmd);
+                            obj.parent.parent.debug('peer', 'OutPeer ' + obj.serverid + ': Un-handled command: ' + cmd);
                             break;
                         }
                     }
@@ -189,7 +189,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8'), command = null;
             if (str[0] == '{') {
-                try { command = JSON.parse(str); } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str); } catch (e) { obj.parent.parent.debug('peer', 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
@@ -233,7 +233,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         obj.serverCertHash = null;
         obj.pendingData = [];
         if (obj.remoteaddr.startsWith('::ffff:')) { obj.remoteaddr = obj.remoteaddr.substring(7); }
-        obj.parent.parent.debug(1, 'InPeer: Connected (' + obj.remoteaddr + ')');
+        obj.parent.parent.debug('peer', 'InPeer: Connected (' + obj.remoteaddr + ')');
 
         // Send a message to the peer server
         obj.send = function (data) {
@@ -246,8 +246,8 @@ module.exports.CreateMultiServer = function (parent, args) {
 
         // Disconnect this server
         obj.close = function (arg) {
-            if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug(1, 'InPeer: Soft disconnect ' + obj.peerServerId + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-            if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug(1, 'InPeer: Hard disconnect ' + obj.peerServerId + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+            if ((arg == 1) || (arg == null)) { try { obj.ws.close(); obj.parent.parent.debug('peer', 'InPeer: Soft disconnect ' + obj.peerServerId + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+            if (arg == 2) { try { obj.ws._socket._parent.end(); obj.parent.parent.debug('peer', 'InPeer: Hard disconnect ' + obj.peerServerId + ' (' + obj.remoteaddr + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
             if (obj.authenticated == 3) { obj.parent.ClearPeerServer(obj, obj.peerServerId); obj.authenticated = 0; }
         };
 
@@ -283,7 +283,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 else if (cmd == 2) {
                     // Peer server certificate
-                    if ((msg.length < 4) || ((obj.receivedCommands & 2) != 0)) { obj.parent.parent.debug(1, 'InPeer: Invalid command 2.'); return; }
+                    if ((msg.length < 4) || ((obj.receivedCommands & 2) != 0)) { obj.parent.parent.debug('peer', 'InPeer: Invalid command 2.'); return; }
                     obj.receivedCommands += 2; // Peer server can't send the same command twice on the same connection ever. Block DOS attack path.
 
                     // Decode the certificate
@@ -296,12 +296,12 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (obj.peernonce == null) {
                         obj.unauthsign = msg.substring(4 + certlen);
                     } else {
-                        if (processPeerSignature(msg.substring(4 + certlen)) == false) { obj.parent.parent.debug(1, 'InPeer: Invalid signature.'); obj.close(); return; }
+                        if (processPeerSignature(msg.substring(4 + certlen)) == false) { obj.parent.parent.debug('peer', 'InPeer: Invalid signature.'); obj.close(); return; }
                     }
                     completePeerServerConnection();
                 }
                 else if (cmd == 3) {
-                    if ((msg.length < 56) || ((obj.receivedCommands & 4) != 0)) { obj.parent.parent.debug(1, 'InPeer: Invalid command 3.'); return; }
+                    if ((msg.length < 56) || ((obj.receivedCommands & 4) != 0)) { obj.parent.parent.debug('peer', 'InPeer: Invalid command 3.'); return; }
                     obj.receivedCommands += 4; // Peer server can't send the same command twice on the same connection ever. Block DOS attack path.
                     completePeerServerConnection();
                 }
@@ -309,11 +309,11 @@ module.exports.CreateMultiServer = function (parent, args) {
         });
 
         // If error, do nothing
-        ws.on('error', function (err) { obj.parent.parent.debug(1, 'InPeer: Connection Error: ' + err); });
+        ws.on('error', function (err) { obj.parent.parent.debug('peer', 'InPeer: Connection Error: ' + err); });
 
         // If the peer server web socket is closed, clean up.
-        ws.on('close', function (req) { obj.parent.parent.debug(1, 'InPeer disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });
-        // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug(1, 'Peer server TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
+        ws.on('close', function (req) { obj.parent.parent.debug('peer', 'InPeer disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); obj.close(0); });
+        // obj.ws._socket._parent.on('close', function (req) { obj.parent.parent.debug('peer', 'Peer server TCP disconnect ' + obj.nodeid + ' (' + obj.remoteaddr + ')'); });
 
         // Start authenticate the peer server by sending a auth nonce & server TLS cert hash.
         // Send 384 bits SHA382 hash of TLS cert public key + 384 bits nonce
@@ -355,7 +355,7 @@ module.exports.CreateMultiServer = function (parent, args) {
         function processServerData(msg) {
             var str = msg.toString('utf8'), command = null;
             if (str[0] == '{') {
-                try { command = JSON.parse(str); } catch (e) { obj.parent.parent.debug(1, 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
+                try { command = JSON.parse(str); } catch (e) { obj.parent.parent.debug('peer', 'Unable to parse server JSON (' + obj.remoteaddr + ').'); return; } // If the command can't be parsed, ignore it.
                 if (command.action == 'info') {
                     if (obj.authenticated != 3) {
                         // We get the peer's serverid and database identifier.
@@ -599,21 +599,21 @@ module.exports.CreateMultiServer = function (parent, args) {
 
         peerTunnel.connect = function () {
             // Get the web socket setup
-            peerTunnel.parent.parent.debug(1, 'FTunnel ' + peerTunnel.serverid + ': Start connect to ' + peerTunnel.url);
+            peerTunnel.parent.parent.debug('peer', 'FTunnel ' + peerTunnel.serverid + ': Start connect to ' + peerTunnel.url);
             peerTunnel.ws2 = new WebSocket(peerTunnel.url, { rejectUnauthorized: false });
 
             // Register the connection failed event
-            peerTunnel.ws2.on('error', function (error) { peerTunnel.parent.parent.debug(1, 'FTunnel ' + obj.serverid + ': Connection error'); peerTunnel.close(); });
+            peerTunnel.ws2.on('error', function (error) { peerTunnel.parent.parent.debug('peer', 'FTunnel ' + obj.serverid + ': Connection error'); peerTunnel.close(); });
 
             // If the peer server web socket is closed, clean up.
-            peerTunnel.ws2.on('close', function (req) { peerTunnel.parent.parent.debug(1, 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
+            peerTunnel.ws2.on('close', function (req) { peerTunnel.parent.parent.debug('peer', 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
 
             // If a message is received from the peer, Peer ---> Browser (TODO: Pipe this?)
             peerTunnel.ws2.on('message', function (msg) { try { peerTunnel.ws2._socket.pause(); peerTunnel.ws1.send(msg, function () { peerTunnel.ws2._socket.resume(); }); } catch (e) { } });
 
             // Register the connection event
             peerTunnel.ws2.on('open', function () {
-                peerTunnel.parent.parent.debug(1, 'FTunnel ' + peerTunnel.serverid + ': Connected');
+                peerTunnel.parent.parent.debug('peer', 'FTunnel ' + peerTunnel.serverid + ': Connected');
 
                 // Get the peer server's certificate and compute the server public key hash
                 var serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(peerTunnel.ws2._socket.getPeerCertificate().raw.toString('binary')));
@@ -633,19 +633,19 @@ module.exports.CreateMultiServer = function (parent, args) {
             peerTunnel.ws1.on('error', function (err) { peerTunnel.close(); });
 
             // If the web socket is closed, close the associated TCP connection.
-            peerTunnel.ws1.on('close', function (req) { peerTunnel.parent.parent.debug(1, 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
+            peerTunnel.ws1.on('close', function (req) { peerTunnel.parent.parent.debug('peer', 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
         };
 
         // Disconnect both sides of the tunnel
         peerTunnel.close = function (arg) {
             if (arg == 2) {
                 // Hard close, close the TCP socket
-                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1._socket._parent.end(); peerTunnel.parent.parent.debug(1, 'FTunnel1: Hard disconnect'); } catch (e) { console.log(e); } }
-                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2._socket._parent.end(); peerTunnel.parent.parent.debug(1, 'FTunnel2: Hard disconnect'); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Hard disconnect'); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Hard disconnect'); } catch (e) { console.log(e); } }
             } else {
                 // Soft close, close the websocket
-                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1.close(); peerTunnel.parent.parent.debug(1, 'FTunnel1: Soft disconnect '); } catch (e) { console.log(e); } }
-                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2.close(); peerTunnel.parent.parent.debug(1, 'FTunnel2: Soft disconnect '); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Soft disconnect '); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Soft disconnect '); } catch (e) { console.log(e); } }
             }
         };
 

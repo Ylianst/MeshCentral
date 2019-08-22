@@ -44,7 +44,8 @@ function CreateMeshCentralServer(config, args) {
     obj.certificates = null;
     obj.connectivityByNode = {};      // This object keeps a list of all connected CIRA and agents, by nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
     obj.peerConnectivityByNode = {};  // This object keeps a list of all connected CIRA and agents of peers, by serverid->nodeid->value (value: 1 = Agent, 2 = CIRA, 4 = AmtDirect)
-    obj.debugLevel = 0;
+    obj.debugSources = [];
+    obj.debugRemoteSources = [];
     obj.config = config;              // Configuration file
     obj.dbconfig = {};                // Persistance values, loaded from database
     obj.certificateOperations = null;
@@ -108,7 +109,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpsdebug', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'swarmdebug', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'remotedebug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -257,8 +258,17 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { obj.args.agentallowedip = null; } else { obj.args.agentallowedip = obj.args.agentallowedip.split(','); } }
         if (typeof obj.args.agentblockedip == 'string') { if (obj.args.agentblockedip == '') { obj.args.agentblockedip = null; } else { obj.args.agentblockedip = obj.args.agentblockedip.split(','); } }
         if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(','); } }
-        if (typeof obj.args.debug == 'number') obj.debugLevel = obj.args.debug;
-        if (obj.args.debug == true) obj.debugLevel = 1;
+
+        // Local console tracing
+        if (typeof obj.args.debug == 'string') { obj.debugSources = obj.args.debug.toLowerCase().split(','); }
+        else if (typeof obj.args.debug == 'object') { obj.debugSources = obj.args.debug; }
+        else if (obj.args.debug === true) { obj.debugSources = '*'; }
+
+        // Remote web application tracing
+        if (typeof obj.args.remotedebug == 'string') { obj.debugRemoteSources = obj.args.remotedebug.toLowerCase().split(','); }
+        else if (typeof obj.args.remotedebug == 'object') { obj.debugRemoteSources = obj.args.remotedebug; }
+        else if (obj.args.remotedebug === true) { obj.debugRemoteSources = '*'; }
+
         require('./db.js').CreateDB(obj,
             function (db) {
                 obj.db = db;
@@ -896,7 +906,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
                 }, 300000);
 
-                //obj.debug(1, 'Server started');
+                obj.debug('main', 'Server started');
                 if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                 obj.updateServerState('state', 'running');
 
@@ -940,7 +950,7 @@ function CreateMeshCentralServer(config, args) {
         // Set all nodes to power state of unknown (0)
         obj.db.storePowerEvent({ time: new Date(), nodeid: '*', power: 0, s: 2 }, obj.multiServer, function () {  // s:2 indicates that the server is shutting down.
             if (restoreFile) {
-                obj.debug(1, 'Server stopped, updating settings: ' + restoreFile);
+                obj.debug('main', 'Server stopped, updating settings: ' + restoreFile);
                 console.log('Updating settings folder...');
 
                 var yauzl = require("yauzl");
@@ -966,7 +976,7 @@ function CreateMeshCentralServer(config, args) {
                     zipfile.on("end", function () { setTimeout(function () { obj.fs.unlinkSync(restoreFile); process.exit(123); }); });
                 });
             } else {
-                obj.debug(1, 'Server stopped');
+                obj.debug('main', 'Server stopped');
                 process.exit(0);
             }
         });
@@ -977,26 +987,26 @@ function CreateMeshCentralServer(config, args) {
     
     // Event Dispatch
     obj.AddEventDispatch = function (ids, target) {
-        obj.debug(3, 'AddEventDispatch', ids);
+        obj.debug('dispatch', 'AddEventDispatch', ids);
         for (var i in ids) { var id = ids[i]; if (!obj.eventsDispatch[id]) { obj.eventsDispatch[id] = [target]; } else { obj.eventsDispatch[id].push(target); } }
     };
     obj.RemoveEventDispatch = function (ids, target) {
-        obj.debug(3, 'RemoveEventDispatch', id);
+        obj.debug('dispatch', 'RemoveEventDispatch', id);
         for (var i in ids) { var id = ids[i]; if (obj.eventsDispatch[id]) { var j = obj.eventsDispatch[id].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[id].length == 1) { delete obj.eventsDispatch[id]; } else { obj.eventsDispatch[id].splice(j, 1); } } } }
     };
     obj.RemoveEventDispatchId = function (id) {
-        obj.debug(3, 'RemoveEventDispatchId', id);
+        obj.debug('dispatch', 'RemoveEventDispatchId', id);
         if (obj.eventsDispatch[id] != null) { delete obj.eventsDispatch[id]; }
     };
     obj.RemoveAllEventDispatch = function (target) {
-        obj.debug(3, 'RemoveAllEventDispatch');
+        obj.debug('dispatch', 'RemoveAllEventDispatch');
         for (var i in obj.eventsDispatch) { var j = obj.eventsDispatch[i].indexOf(target); if (j >= 0) { if (obj.eventsDispatch[i].length == 1) { delete obj.eventsDispatch[i]; } else { obj.eventsDispatch[i].splice(j, 1); } } }
     };
     obj.DispatchEvent = function (ids, source, event, fromPeerServer) {
         // If the database is not setup, exit now.
         if (!obj.db) return;
 
-        obj.debug(3, 'DispatchEvent', ids);
+        obj.debug('dispatch', 'DispatchEvent', ids);
         if ((typeof event == 'object') && (!event.nolog)) {
             event.time = new Date();
             // The event we store is going to skip some of the fields so we don't store too much stuff in the database.
@@ -1340,7 +1350,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshCore].join('');
                 }
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest("binary");
-                obj.debug(1, 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
+                obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
                 //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
                 //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4)); // DEBUG, Write the core to file
             }
@@ -1583,19 +1593,19 @@ function CreateMeshCentralServer(config, args) {
             const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
             decipher.setAuthTag(cookie.slice(12, 16));
             const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug('cookie', 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
             if ((o.expire) == null || (typeof o.expire != 'number')) {
                 // Use a fixed cookie expire time
                 if (timeout == null) { timeout = 2; }
-                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
-                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             }
             return o;
-        } catch (ex) { obj.debug(1, 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
+        } catch (ex) { obj.debug('cookie', 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
     };
 
     // Decode a cookie back into an object using a key using AES256 / HMAC-SHA386. Return null if it's not a valid cookie. (key must be 80 bytes or more)
@@ -1611,28 +1621,38 @@ function CreateMeshCentralServer(config, args) {
             hmac.update(rawmsg.slice(48));
             if (Buffer.compare(hmac.digest(), Buffer.from(rawmsg.slice(0, 48))) == false) { return null; }
             const o = JSON.parse(rawmsg.slice(48).toString('utf8'));
-            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug(1, 'ERR: Bad cookie due to invalid time'); return null; }
+            if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug('cookie', 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time
             o.dtime = Date.now() - o.time; // Decode how long ago the cookie was created (in milliseconds)
             if ((o.expire) == null || (typeof o.expire != 'number')) {
                 // Use a fixed cookie expire time
                 if (timeout == null) { timeout = 2; }
-                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
-                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug(1, 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+                if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
             }
             return o;
-        } catch (ex) { obj.debug(1, 'ERR: Bad AESSHA cookie due to exception: ' + ex); return null; }
+        } catch (ex) { obj.debug('cookie', 'ERR: Bad AESSHA cookie due to exception: ' + ex); return null; }
     };
 
     // Debug
-    obj.debug = function (lvl) {
-        if (lvl > obj.debugLevel) return;
-        if (arguments.length == 2) { console.log(arguments[1]); }
-        else if (arguments.length == 3) { console.log(arguments[1], arguments[2]); }
-        else if (arguments.length == 4) { console.log(arguments[1], arguments[2], arguments[3]); }
-        else if (arguments.length == 5) { console.log(arguments[1], arguments[2], arguments[3], arguments[4]); }
+    obj.debug = function (source, ...args) {
+        // Send event to console
+        if ((obj.debugSources != null) && ((obj.debugSources == '*') || (obj.debugSources.indexOf(source) >= 0))) { console.log(source.toUpperCase() + ':', ...args); }
+
+        // Send the event to logged in administrators
+        if ((obj.debugRemoteSources != null) && ((obj.debugRemoteSources == '*') || (obj.debugRemoteSources.indexOf(source) >= 0))) {
+            for (var sessionid in obj.webserver.wssessions2) {
+                var ws = obj.webserver.wssessions2[sessionid];
+                if ((ws != null) && (ws.userid != null)) {
+                    var user = obj.webserver.users[ws.userid];
+                    if ((user != null) && (user.siteadmin == 4294967295)) {
+                        try { ws.send(JSON.stringify({ action: 'trace', source: source, args: args, time: Date.now() })); } catch (ex) { }
+                    }
+                }
+            }
+        }
     };
 
     // Update server state. Writes a server state file.

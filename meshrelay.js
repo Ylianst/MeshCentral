@@ -48,8 +48,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
     // Disconnect this agent
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug(1, 'Relay: Soft disconnect (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug(1, 'Relay: Hard disconnect (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
 
         // Aggressive cleanup
         delete obj.id;
@@ -143,7 +143,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Check that at least one connection is authenticated
                     if ((obj.authenticated != true) && (relayinfo.peer1.authenticated != true)) {
                         ws.close();
-                        parent.parent.debug(1, 'Relay without-auth: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
+                        parent.parent.debug('relay', 'Relay without-auth: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
                         delete obj.id;
                         delete obj.ws;
                         delete obj.peer;
@@ -200,7 +200,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                     }
 
-                    parent.parent.debug(1, 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
+                    parent.parent.debug('relay', 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(obj.peer.ws._socket.remoteAddress) + ')');
 
                     // Log the connection
                     if (sessionUser != null) {
@@ -214,7 +214,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 } else {
                     // Connected already, drop (TODO: maybe we should re-connect?)
                     ws.close();
-                    parent.parent.debug(1, 'Relay duplicate: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
+                    parent.parent.debug('relay', 'Relay duplicate: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
                     delete obj.id;
                     delete obj.ws;
                     delete obj.peer;
@@ -224,7 +224,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 // Wait for other relay connection
                 ws._socket.pause(); // Hold traffic until the other connection
                 parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
-                parent.parent.debug(1, 'Relay holding: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ') ' + (obj.authenticated ? 'Authenticated' : ''));
+                parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
                 if (parent.parent.multiServer != null) {
@@ -290,7 +290,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
-                    parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(peer.ws._socket.remoteAddress) + ')');
+                    parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ' --> ' + cleanRemoteAddr(peer.ws._socket.remoteAddress) + ')');
                     try { peer.ws.close(); } catch (e) { } // Soft disconnect
                     try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
 
@@ -314,7 +314,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     delete peer.ws;
                     delete peer.peer;
                 } else {
-                    parent.parent.debug(1, 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
+                    parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')');
                 }
                 try { ws.close(); } catch (ex) { }
                 delete parent.wsrelays[obj.id];
@@ -370,8 +370,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 // Send connection request to agent
                 if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 var command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
-                parent.parent.debug(1, 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
-                if (obj.sendAgentMessage(command, user._id, cookie.domainid) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+                parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
+                if (obj.sendAgentMessage(command, user._id, cookie.domainid) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
                 performRelay();
             });
             return obj;
@@ -390,12 +390,12 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                 if (req.query.tcpport != null) {
                     var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, tcpport: req.query.tcpport, tcpaddr: ((req.query.tcpaddr == null) ? '127.0.0.1' : req.query.tcpaddr) };
-                    parent.parent.debug(1, 'Relay: Sending agent TCP tunnel command: ' + JSON.stringify(command));
-                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+                    parent.parent.debug('relay', 'Relay: Sending agent TCP tunnel command: ' + JSON.stringify(command));
+                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
                 } else if (req.query.udpport != null) {
                     var command = { nodeid: req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id, udpport: req.query.udpport, udpaddr: ((req.query.udpaddr == null) ? '127.0.0.1' : req.query.udpaddr) };
-                    parent.parent.debug(1, 'Relay: Sending agent UDP tunnel command: ' + JSON.stringify(command));
-                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug(1, 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
+                    parent.parent.debug('relay', 'Relay: Sending agent UDP tunnel command: ' + JSON.stringify(command));
+                    if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + cleanRemoteAddr(ws._socket.remoteAddress) + ')'); }
                 }
                 performRelay();
             });

@@ -45,8 +45,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Disconnect this agent
     obj.close = function (arg) {
         obj.authenticated = -1;
-        if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug(1, 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug(1, 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         // If arg == 3, don't communicate with this agent anymore, but don't disconnect (Duplicate agent).
 
         // Remove this agent from the webserver list
@@ -166,11 +166,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 // Clear the core
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
                                 parent.agentStats.clearingCoreCount++;
-                                parent.parent.debug(1, 'Clearing core');
+                                parent.parent.debug('agent', 'Clearing core');
                             } else {
                                 // Update new core
                                 //obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + meshcorehash + parent.parent.defaultMeshCores[corename]); // MeshCommand_CoreModule, start core update
-                                //parent.parent.debug(1, 'Updating code ' + corename);
+                                //parent.parent.debug('agent', 'Updating code ' + corename);
 
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
                                 obj.agentCoreUpdatePending = true;
@@ -180,7 +180,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         delete obj.agentCoreUpdatePending;
                                         obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                         parent.agentStats.updatingCoreCount++;
-                                        parent.parent.debug(1, 'Updating core ' + argument.name);
+                                        parent.parent.debug('agent', 'Updating core ' + argument.name);
                                         agentCoreIsStable();
                                     } else {
                                         // This agent is probably disconnected, nothing to do.
@@ -228,7 +228,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
-                            if (obj.nodeid != null) { parent.parent.debug(1, 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
+                            if (obj.nodeid != null) { parent.parent.debug('agent', 'Agent update required, NodeID=0x' + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             parent.agentStats.agentBinaryUpdate++;
                             if (obj.agentExeInfo.data == null) {
                                 // Read the agent from disk
@@ -448,7 +448,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 //console.log('MeshID', obj.meshid);
                 obj.agentInfo.capabilities = common.ReadInt(msg, 66);
                 const computerNameLen = common.ReadShort(msg, 70);
-                obj.agentInfo.computerName = msg.substring(72, 72 + computerNameLen);
+                obj.agentInfo.computerName = Buffer.from(msg.substring(72, 72 + computerNameLen), 'binary').toString('utf8');
                 obj.dbMeshKey = 'mesh/' + domain.id + '/' + obj.meshid;
                 completeAgentConnection();
             } else if (cmd == 4) {
@@ -471,7 +471,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.nodeid != null) {
             const agentId = (obj.agentInfo && obj.agentInfo.agentId) ? obj.agentInfo.agentId : 'Unknown';
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
-            parent.parent.debug(1, 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
+            parent.parent.debug('agent', 'Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
 
             // Log the agent disconnection
             if (parent.wsagentsDisconnections[obj.nodeid] == null) {
@@ -765,7 +765,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
             // Close the duplicate agent
             parent.agentStats.duplicateAgentCount++;
-            if (obj.nodeid != null) { parent.parent.debug(1, 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
+            if (obj.nodeid != null) { parent.parent.debug('agent', 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
             dupAgent.close(3);
         } else {
             // Indicate the agent is connected
@@ -1034,7 +1034,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.receivedCommands;
         if (obj.unauthsign) delete obj.unauthsign;
         parent.agentStats.verifiedAgentConnectionCount++;
-        parent.parent.debug(1, 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddrport + ').');
+        parent.parent.debug('agent', 'Verified agent connection to ' + obj.nodeid + ' (' + obj.remoteaddrport + ').');
         obj.authenticated = 1;
         return true;
     }
