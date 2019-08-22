@@ -1830,7 +1830,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
-        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
+        if ((!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
         if ((user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
 
@@ -1879,7 +1879,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                             // See if we need to create the folder
                             var domainx = 'domain';
-                            if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
+                            if (domain.id.length > 0) { domainx = 'domain-' + domain.id; }
                             try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
                             try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
                             try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
@@ -3131,19 +3131,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Indicates to ExpressJS that the public folder should be used to serve static files.
             obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
-            // Handle 404 error
-            if (obj.args.nice404 !== false) {
-                obj.app.use(function (req, res, next) {
-                    parent.debug('web', '404 Error ' + req.url);
-                    var domain = getDomain(req);
-                    res.status(404).render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'error404-mobile' : 'error404'), { title: domain.title, title2: domain.title2 });
-                });
-            }
-
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
         }
 
+        // Handle 404 error
+        if (obj.args.nice404 !== false) {
+            obj.app.use(function (req, res, next) {
+                parent.debug('web', '404 Error ' + req.url);
+                var domain = getDomain(req);
+                res.status(404).render(obj.path.join(obj.parent.webViewsPath, isMobileBrowser(req) ? 'error404-mobile' : 'error404'), { title: domain.title, title2: domain.title2 });
+            });
+        }
+    
         // Start server on a free port
         CheckListenPort(obj.args.port, StartWebServer);
     }

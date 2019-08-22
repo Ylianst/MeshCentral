@@ -5817,7 +5817,7 @@
 
             // Check if these are files we can upload, remove all folders.
             var files = [];
-            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].type != '') && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
+            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
             if (files.length == 0) return;
 
             p13doUploadFiles(files);
@@ -7238,10 +7238,9 @@
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
                     h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + " onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")></div><a href=# style=cursor:pointer onclick='return p5folderset(\"" + encodeURIComponent(f.nx) + "\")'>" + shortname + "</a></span></div>";
                 } else {
-                    var link = shortname;
-                    var publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a href=# style=cursor:pointer title=\"Display public link\" onclick=\'return p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
-                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
+                    var link = shortname, publiclink = '';
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'return p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
+                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" download href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
                     h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span class=fsize>" + fdatestr + "</span><span style=float:right>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
                 }
 
@@ -7290,7 +7289,7 @@
             return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1 ? 's' : '') + ". " + (Math.floor(f.maxbytes / 1024 / 1024)) + 'k maxinum">' + getNiceSize(tq) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
         }
 
-        function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
+        function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); return false; }
 
         var sortorder;
         function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
@@ -7328,7 +7327,7 @@
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
         function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); return false; }
-        function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
+        function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value}); }
         function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? "<br /><br /><label><input type=checkbox id=p5recdeleteinput>Recursive delete</label><br>" : "<input type=checkbox id=p5recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?' + rec) : ('Delete selected item?' + rec)); }
@@ -7358,13 +7357,13 @@
             // Check if these are files we can upload, remove all folders.
             if (e.dataTransfer == null) return;
             var files = [];
-            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].type != '') && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
+            for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
             if (files.length == 0) return;
 
             // For Chrome & Firefox
             var error = 0;
             p5uploadFile(); // Display the the dialog box
-            try { Q('p5uploadinput').files = files; } catch (ex) { error = 1; } // Set the files in the dialog box
+            try { Q('p5uploadinput').files = e.dataTransfer.files; } catch (ex) { error = 1; } // Set the files in the dialog box
             if (error == 0) { p5uploadFileEx(); } // Press the submit button
             setDialogMode(0); // Close the dialog box
 
