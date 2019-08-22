@@ -202,11 +202,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
 
         switch (cmd) {
             case LegacyMeshProtocol.NODEPUSH: {
-                Debug(3, 'Swarm:NODEPUSH');
+                parent.debug('swarmcmd', 'NODEPUSH');
                 var nodeblock = obj.decodeNodeBlock(data);
                 if ((nodeblock != null) && (nodeblock.agenttype != null) && (nodeblock.agentversion != null)) {
                     if (socket.pingTimer == null) { socket.pingTimer = setInterval(function () { obj.SendCommand(socket, LegacyMeshProtocol.PING); }, 20000); }
-                    Debug(3, 'Swarm:NODEPUSH:' + JSON.stringify(nodeblock));
+                    parent.debug('swarmcmd', 'NODEPUSH:' + JSON.stringify(nodeblock));
 
                     // Log the agent type
                     if (obj.stats.agenttype[nodeblock.agenttype] == null) { obj.stats.agenttype[nodeblock.agenttype] = 1; } else { obj.stats.agenttype[nodeblock.agenttype]++; }
@@ -256,12 +256,12 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                 break;
             }
             case LegacyMeshProtocol.AMTPROVISIONING: {
-                Debug(3, 'Swarm:AMTPROVISIONING');
+                parent.debug('swarmcmd', 'AMTPROVISIONING');
                 obj.SendCommand(socket, LegacyMeshProtocol.AMTPROVISIONING, common.ShortToStr(1));
                 break;
             }
             case LegacyMeshProtocol.GETSTATE: {
-                Debug(3, 'Swarm:GETSTATE');
+                parent.debug('swarmcmd', 'GETSTATE');
                 if (len < 12) break;
                 var statecmd = common.ReadInt(data, 0);
                 //var statesync = common.ReadInt(data, 4);
@@ -272,13 +272,13 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                             if (socket.tag.update.binary == null) { socket.tag.update.binary = obj.parent.fs.readFileSync(socket.tag.update.path); }
                             var l = Math.min(socket.tag.update.binary.length - socket.tag.updatePtr, 16384);
                             obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(6) + common.IntToStr(socket.tag.updatePtr) + socket.tag.update.binary.toString('binary', socket.tag.updatePtr, socket.tag.updatePtr + l)); // agent.SendQuery(6, AgentFileLen + AgentBlock);
-                            Debug(3, 'Swarm:Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
+                            parent.debug('swarmcmd', 'Sending agent block, ptr = ' + socket.tag.updatePtr + ', len = ' + l);
 
                             socket.tag.updatePtr += l;
                             if (socket.tag.updatePtr >= socket.tag.update.binary.length) {
                                 // Send end-of-transfer
                                 obj.SendCommand(socket, LegacyMeshProtocol.GETSTATE, common.IntToStr(7) + common.IntToStr(socket.tag.update.binary.length)); //agent.SendQuery(7, AgentFileLen);
-                                Debug(3, 'Swarm:Sending end of agent, ptr = ' + socket.tag.updatePtr);
+                                parent.debug('swarmcmd', 'Sending end of agent, ptr = ' + socket.tag.updatePtr);
                                 obj.parent.taskLimiter.completed(socket.tag.taskid); // Indicate this task complete
                                 delete socket.tag.taskid;
                                 delete socket.tag.update;
@@ -295,11 +295,11 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
                 break;
             }
             case LegacyMeshProtocol.APPSUBSCRIBERS: {
-                Debug(3, 'Swarm:APPSUBSCRIBERS');
+                parent.debug('swarmcmd', 'APPSUBSCRIBERS');
                 break;
             }
             default: {
-                Debug(1, 'Swarm:Unknown command: ' + cmd + ' of len ' + len + '.');
+                parent.debug('swarmcmd', 'Unknown command: ' + cmd + ' of len ' + len + '.');
             }
         }
         return len;
@@ -308,18 +308,18 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
     // Called when a legacy agent connects to this server
     function onConnection(socket) {
         // Check for blocked IP address
-        if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { obj.stats.blockedConnect++; Debug(1, "SWARM:New blocked agent connection"); return; }
+        if (checkSwarmIpAddress(socket, obj.args.swarmallowedip) == false) { obj.stats.blockedConnect++; parent.debug('swarm', "New blocked agent connection"); return; }
         obj.stats.connectCount++;
 
         socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "" };
-        Debug(1, 'SWARM:New legacy agent connection');
+        parent.debug('swarm', 'New legacy agent connection');
 
         if ((socket.tag.clientCert == null) || (socket.tag.clientCert.subject == null)) { obj.stats.noCertConnectCount++; } else { obj.stats.clientCertConnectCount++; }
 
         socket.addListener("data", onData);
         socket.addListener("close", function () {
             obj.stats.onclose++;
-            Debug(1, 'Swarm:Connection closed');
+            parent.debug('swarm', 'Connection closed');
             
             // Perform aggressive cleanup
             if (this.relaySocket) { try { this.relaySocket.end(); this.relaySocket.removeAllListeners(["data", "end", "error"]); delete this.relaySocket; } catch (ex) { } }
@@ -428,17 +428,6 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
             if (ip) { for (var i = 0; i < allowedIpList.length; i++) { if (require('ipcheck').match(ip, allowedIpList[i])) { return true; } } }
         } catch (e) { console.log(e); }
         return false;
-    }
-
-    // Debug
-    function Debug(lvl) {
-        if (lvl > obj.parent.debugLevel) return;
-        if (arguments.length == 2) { console.log(arguments[1]); }
-        else if (arguments.length == 3) { console.log(arguments[1], arguments[2]); }
-        else if (arguments.length == 4) { console.log(arguments[1], arguments[2], arguments[3]); }
-        else if (arguments.length == 5) { console.log(arguments[1], arguments[2], arguments[3], arguments[4]); }
-        else if (arguments.length == 6) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]); }
-        else if (arguments.length == 7) { console.log(arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]); }
     }
 
     return obj;

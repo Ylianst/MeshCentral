@@ -838,7 +838,7 @@ NoMeshesPanel img {
         color: gray;
     }
 
-#p3events, #p16events, #p31events {
+#p3events, #p16events, #p31events, #p41events {
     height: calc(100vh - 245px);
     overflow-y: scroll;
 }
@@ -2539,4 +2539,14 @@ a {
     border-radius:4px;
     padding:6px;
     box-shadow: 0px 0px 15px #666;
+}
+
+.traceEvent {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 3px 3px 3px 0;
+    padding: 3px;
+    border-radius: 3px;
+    background-color: #DDD;
 }

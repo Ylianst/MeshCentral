@@ -148,6 +148,7 @@
                                 <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onclick=go(6) onkeypress="if (event.key == 'Enter') go(6)">General</td>
                                 <td tabindex=0 id=ServerStats class="topbar_td style3x" onclick=go(40) onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
                                 <td tabindex=0 id=ServerConsole class="topbar_td style3x" onclick=go(115) onkeypress="if (event.key == 'Enter') go(115)">Console</td>
+                                <td tabindex=0 id=ServerTrace class="topbar_td style3x" onclick=go(41) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -783,7 +784,7 @@
                 </table>
                 <div id=p31events style=""></div>
             </div>
-            <div id=p40 style="display:none;">
+            <div id=p40 style="display:none">
                 <h1>My Server Stats</h1>
                 <div class="areaHead">
                     <div class="toright2">
@@ -806,6 +807,27 @@
                     </div>
                 </div>
                 <canvas id=serverMainStats style=""></canvas>
+            </div>
+            <div id=p41 style="display:none">
+                <h1>My Server Tracing</h1>
+                <div class="areaHead">
+                    <div class="toright2">
+                        Show
+                        <select id=p41limitdropdown onchange=displayServerTrace()>
+                            <option value=100>Last 100</option>
+                            <option value=250>Last 250</option>
+                            <option value=500>Last 500</option>
+                            <option value=1000>Last 1000</option>
+                        </select>
+                        <input value="Clear" type="button" onclick="clearServerTracing()" />
+                        <img src=images/link4.png height=10 width=10 title="Download trace (.csv)" style=cursor:pointer onclick=p41downloadServerTrace()>&nbsp;
+                    </div>
+                    <div>
+                        <input value="Tracing" type="button" onclick="setServerTracing()" />
+                        <span id="p41traceStatus">None</span>
+                    </div>
+                </div>
+                <div id=p41events style=""></div>
             </div>
             <br id="column_l_bottomgap" />
         </div>
@@ -1283,6 +1305,7 @@
             }
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
             QV('ServerConsole', userinfo.siteadmin === 0xFFFFFFFF);
+            QV('ServerTrace', userinfo.siteadmin === 0xFFFFFFFF);
             if ((xxcurrentView == 115) && (userinfo.siteadmin != 0xFFFFFFFF)) { go(6); }
             if ((xxcurrentView == 6) && ((userinfo.siteadmin & 21) == 0)) { go(1); }
 
@@ -1361,6 +1384,22 @@
 
         function onMessage(server, message) {
             switch (message.action) {
+                case 'trace': {
+                    serverTrace.unshift(message);
+                    displayServerTrace();
+                    break;
+                }
+                case 'traceinfo': {
+                    if (typeof message.traceSources == 'object') {
+                        serverTraceSources = message.traceSources;
+                        if (message.traceSources.length > 0) {
+                            QH('p41traceStatus', EscapeHtml(message.traceSources.join(', ')));
+                        } else {
+                            QH('p41traceStatus', 'None');
+                        }
+                    }
+                    break;
+                }
                 case 'serverstats': {
                     updateGeneralServerStats(message);
                     break;
@@ -2076,6 +2115,17 @@
                             var n = { text: message.event.value, title: message.event.title, icon: message.event.icon };
                             if (message.event.tag != null) { n.tag = message.event.tag; }
                             addNotification(n);
+                            break;
+                        }
+                        case 'traceinfo': {
+                            if (typeof message.event.traceSources == 'object') {
+                                serverTraceSources = message.event.traceSources;
+                                if (message.event.traceSources.length > 0) {
+                                    QH('p41traceStatus', EscapeHtml(message.event.traceSources.join(', ')));
+                                } else {
+                                    QH('p41traceStatus', 'None');
+                                }
+                            }
                             break;
                         }
                         case 'stopped': { // Server is stopping.
@@ -8546,6 +8596,57 @@
         }
 
         //
+        // My Server Tracing
+        //
+
+        var serverTrace = [];
+        var serverTraceSources = [];
+
+        function displayServerTrace() {
+            var x = '', max = parseInt(Q('p41limitdropdown').value);
+            if (serverTrace.length > max) { serverTrace.splice(max); }
+            for (var i in serverTrace) { x += '<div class=traceEvent>' + EscapeHtml(new Date(serverTrace[i].time).toLocaleTimeString()) + ' - <b>' + EscapeHtml(serverTrace[i].source.toUpperCase()) + '</b>: ' + EscapeHtml(serverTrace[i].args.join(', ')) + '</div>' }
+            QH('p41events', x);
+        }
+
+        function clearServerTracing() { serverTrace = []; displayServerTrace(); }
+
+        function setServerTracing() {
+            var x = '';
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Core Server</b></div>';
+            x += "<div><label><input type=checkbox id=p41c1 " + ((serverTraceSources.indexOf('cookie') >= 0) ? 'checked' : '') + ">Cookie encoder</label></div>";
+            x += "<div><label><input type=checkbox id=p41c2 " + ((serverTraceSources.indexOf('dispatch') >= 0) ? 'checked' : '') + ">Message Dispatcher</label></div>";
+            x += "<div><label><input type=checkbox id=p41c3 " + ((serverTraceSources.indexOf('main') >= 0) ? 'checked' : '') + ">Main Server Messages</label></div>";
+            x += "<div><label><input type=checkbox id=p41c4 " + ((serverTraceSources.indexOf('peer') >= 0) ? 'checked' : '') + ">MeshCentral Server Peering</label></div>";
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Web Server</b></div>';
+            x += "<div><label><input type=checkbox id=p41c5 " + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + ">Web Server</label></div>";
+            x += "<div><label><input type=checkbox id=p41c6 " + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + ">Web Server Requests</label></div>";
+            x += "<div><label><input type=checkbox id=p41c7 " + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + ">Web Socket Relay</label></div>";
+            //x += "<div><label><input type=checkbox id=p41c8 " + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + ">Traffic Relay 2 Data</label></div>";
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Intel AMT</b></div>';
+            x += "<div><label><input type=checkbox id=p41c9 " + ((serverTraceSources.indexOf('webrelay') >= 0) ? 'checked' : '') + ">Connection Relay</label></div>";
+            x += "<div><label><input type=checkbox id=p41c10 " + ((serverTraceSources.indexOf('mps') >= 0) ? 'checked' : '') + ">CIRA Server</label></div>";
+            x += "<div><label><input type=checkbox id=p41c11 " + ((serverTraceSources.indexOf('mpscmd') >= 0) ? 'checked' : '') + ">CIRA Server Commands</label></div>";
+            //x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Legacy</b></div>';
+            //x += "<div><label><input type=checkbox id=p41c12 " + ((serverTraceSources.indexOf('swarm') >= 0) ? 'checked' : '') + ">Legacy Swarm Server</label></div>";
+            //x += "<div><label><input type=checkbox id=p41c13 " + ((serverTraceSources.indexOf('swarmcmd') >= 0) ? 'checked' : '') + ">Legacy Swarm Server Commands</label></div>";
+            setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
+        }
+
+        function setServerTracingEx(b) {
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd'];
+            if (b == 1) { for (var i = 1; i < 13; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            meshserver.send({ action: 'traceinfo', traceSources: sources });
+        }
+
+        function p41downloadServerTrace() {
+            var csv = "time, source, message\r\n";
+            for (var i in serverTrace) { csv += '\"' + new Date(serverTrace[i].time).toLocaleTimeString() + '\",\"' + serverTrace[i].source + '\",\"' + serverTrace[i].args.join(', ') + '\"\r\n'; }
+            saveAs(new Blob([csv], { type: "application/octet-stream" }), "servertrace.csv");
+            return false;
+        }
+
+        //
         // POPUP DIALOG
         //
 
@@ -8608,7 +8709,7 @@
             QV('uiMenu', false);
 
             // Edit this line when adding a new screen
-            for (var i = 0; i < 41; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 42; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Remove top bar selection
@@ -8666,8 +8767,8 @@
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
-            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 115: 'ServerConsole' };
+            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41);
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');

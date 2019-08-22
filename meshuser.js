@@ -53,8 +53,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Disconnect this user
     obj.close = function (arg) {
-        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug(1, 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug(1, 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
 
         // Perform cleanup
         parent.parent.RemoveAllEventDispatch(ws);
@@ -313,6 +313,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Send user information to web socket, this is the first thing we send
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
+
+            // Send server tracing information
+            if (user.siteadmin == 0xFFFFFFFF) {
+                try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
+            }
 
             // We are all set, start receiving data
             ws._socket.resume();
@@ -2727,6 +2732,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.invitationLinkEncryptionKey);
                 if (inviteCookie == null) break;
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, expire: command.expire, cookie: inviteCookie }));
+                break;
+            }
+            case 'traceinfo': {
+                if ((user.siteadmin == 0xFFFFFFFF) && (typeof command.traceSources == 'object')) {
+                    parent.parent.debugRemoteSources = command.traceSources;
+                    parent.parent.DispatchEvent(['*'], obj, { action: 'traceinfo', userid: user._id, username: user.name, traceSources: command.traceSources, nolog: 1, domain: domain.id });
+                }
                 break;
             }
             default: {

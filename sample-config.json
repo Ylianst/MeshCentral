@@ -10,6 +10,7 @@
     "_Minify": 1,
     "_SessionTime": 30,
     "_SessionKey": "MyReallySecretPassword1",
+    "_SessionSameSite": "strict",
     "_DbEncryptKey": "MyReallySecretPassword2",
     "_DbExpire": {
       "events": 1728000,
@@ -20,6 +21,7 @@
     "_AllowLoginToken": true,
     "_AllowFraming": true,
     "_WebRTC": false,
+    "_Nice404": false,
     "_ClickOnce": false,
     "_SelfUpdate": true,
     "_AgentPing": 60,
