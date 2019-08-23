@@ -513,8 +513,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Check the 2-step auth token
     function checkUserOneTimePassword(req, domain, user, token, hwtoken, func) {
+        parent.debug('web', 'checkUserOneTimePassword()');
         const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (parent.config.settings.no2factorauth !== true));
-        if (twoStepLoginSupported == false) { func(true); return; };
+        if (twoStepLoginSupported == false) { parent.debug('web', 'checkUserOneTimePassword: not supported.'); func(true); return; };
 
         // Check hardware key
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
@@ -556,13 +557,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         };
 
                         var webauthnResponse = null;
-                        try { webauthnResponse = obj.webauthn.verifyAuthenticatorAssertionResponse(clientAssertionResponse.response, assertionExpectations); } catch (ex) { console.log(ex); }
+                        try { webauthnResponse = obj.webauthn.verifyAuthenticatorAssertionResponse(clientAssertionResponse.response, assertionExpectations); } catch (ex) { parent.debug('web', 'checkUserOneTimePassword: exception ' + ex); console.log(ex); }
                         if ((webauthnResponse != null) && (webauthnResponse.verified === true)) {
                             // Update the hardware key counter and accept the 2nd factor
                             webAuthnKey.counter = webauthnResponse.counter;
                             obj.db.SetUser(user);
+                            parent.debug('web', 'checkUserOneTimePassword: success.');
                             func(true);
                         } else {
+                            parent.debug('web', 'checkUserOneTimePassword: fail.');
                             func(false);
                         }
                         return;
@@ -600,6 +603,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
+        parent.debug('web', 'checkUserOneTimePassword: fail (2).');
         func(false);
     }
 
@@ -615,10 +619,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                 req.session.u2fchallenge = authnOptions.challenge;
+                parent.debug('web', 'getHardwareKeyChallenge: success');
                 func(JSON.stringify(authnOptions));
                 return;
             }
         }
+        parent.debug('web', 'getHardwareKeyChallenge: fail');
         func('');
     }
 
@@ -757,7 +763,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { res.sendStatus(404); return; }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
+            parent.debug('web', 'handleCreateAccountRequest: failed checks.');
+            res.sendStatus(404);
+            return;
+        }
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -770,7 +780,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) {
             domainUserCount = 0;
             for (var i in obj.users) { if (obj.users[i].domain == domain.id) { domainUserCount++; } }
-            if (domainUserCount > 0) { res.sendStatus(401); return; }
+            if (domainUserCount > 0) {
+                parent.debug('web', 'handleCreateAccountRequest: domainUserCount > 1.');
+                res.sendStatus(401);
+                return;
+            }
         }
 
         // Check if this request is for an allows email domain
@@ -1051,25 +1065,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
+                    parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
                     res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
                 } else {
                     obj.db.Get('user/' + cookie.u.toLowerCase(), function (err, docs) {
                         if (docs.length == 0) {
+                            parent.debug('web', 'handleCheckMailRequest: Invalid username.');
                             res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid username \"' + EscapeHtml(idsplit[1]) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                         } else {
                             var user = docs[0];
                             if (user.email != cookie.e) {
+                                parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                             } else {
                                 if (cookie.a == 1) {
                                     // Account email verification
                                     if (user.emailVerified == true) {
+                                        parent.debug('web', 'handleCheckMailRequest: email already verified.');
                                         res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
                                             if (docs.length > 0) {
+                                                parent.debug('web', 'handleCheckMailRequest: email already in use.');
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
                                             } else {
+                                                parent.debug('web', 'handleCheckMailRequest: email verification success.');
+
                                                 // Set the verified flag
                                                 obj.users[user._id].emailVerified = true;
                                                 user.emailVerified = true;
@@ -1091,6 +1112,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 } else if (cookie.a == 2) {
                                     // Account reset
                                     if (user.emailVerified != true) {
+                                        parent.debug('web', 'handleCheckMailRequest: email not verified.');
                                         res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         // Set a temporary password
@@ -1117,6 +1139,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                                                 // Send the new password
                                                 res.render(obj.path.join(obj.parent.webViewsPath, 'message'), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                parent.debug('web', 'handleCheckMailRequest: send temporary password.');
                                             }, 0);
                                         });
                                     }
@@ -1149,6 +1172,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (mesh == null) { res.sendStatus(404); return; }
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
+            parent.debug('web', 'handleAgentInviteRequest using cookie.');
             res.render(obj.path.join(obj.parent.webViewsPath, 'agentinvite'), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
@@ -1157,6 +1181,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var installflags = 0;
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
+            parent.debug('web', 'handleAgentInviteRequest using meshid.');
             res.render(obj.path.join(obj.parent.webViewsPath, 'agentinvite'), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
         }
     }
@@ -1172,7 +1197,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url + getQueryPortion(req)); return; }
         var user = obj.users[req.session.userid];
-        if (!user) return;
+        if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
         obj.authenticate(user.name, req.body.apassword1, domain, function (err, userid) {
@@ -1202,7 +1227,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session = null;
                 res.redirect(domain.url + getQueryPortion(req));
                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+                parent.debug('web', 'handleDeleteAccountRequest: removed user.');
             } else {
+                parent.debug('web', 'handleDeleteAccountRequest: auth failed.');
                 res.redirect(domain.url + getQueryPortion(req));
             }
         });
@@ -1214,9 +1241,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (user.passtype != null) {
             // IIS default clear or weak password hashing (SHA-1)
             require('./pass').iishash(user.passtype, password, user.salt, function (err, hash) {
-                if (err) return func(false);
+                if (err) { parent.debug('web', 'checkUserPassword: SHA-1 fail.'); return func(false); }
                 if (hash == user.hash) {
-                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { return func(false); } // Account is locked
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: SHA-1 locked.'); return func(false); } // Account is locked
+                    parent.debug('web', 'checkUserPassword: SHA-1 ok.'); 
                     return func(true); // Allow password change
                 }
                 func(false);
@@ -1224,9 +1252,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else {
             // Default strong password hashing (pbkdf2 SHA384)
             require('./pass').hash(password, user.salt, function (err, hash, tag) {
-                if (err) return func(false);
+                if (err) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 fail.'); return func(false); }
                 if (hash == user.hash) {
-                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { return func(false); } // Account is locked
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 locked.'); return func(false); } // Account is locked
+                    parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 ok.'); 
                     return func(true); // Allow password change
                 }
                 func(false);
@@ -1238,24 +1267,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handlePasswordChangeRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
-            parent.debug('web', 'handlePasswordChangeRequest: failed checks.');
+            parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).');
             res.sendStatus(404);
             return;
         }
 
         // Check if the user is logged and we have all required parameters
-        if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url + getQueryPortion(req)); return; }
+        if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) {
+            parent.debug('web', 'handlePasswordChangeRequest: failed checks (2).');
+            res.redirect(domain.url + getQueryPortion(req)); return;
+        }
 
         // Get the current user
         var user = obj.users[req.session.userid];
-        if (!user) { res.redirect(domain.url + getQueryPortion(req)); return; }
+        if (!user) {
+            parent.debug('web', 'handlePasswordChangeRequest: user not found.');
+            res.redirect(domain.url + getQueryPortion(req)); return;
+        }
 
         // Check old password
         obj.checkUserPassword(domain, user, req.body.apassword0, function (result) {
             if (result == true) {
                 // Update the password
                 require('./pass').hash(req.body.apassword1, function (err, salt, hash, tag) {
-                    if (err) throw err;
+                    if (err) { parent.debug('web', 'handlePasswordChangeRequest: hash error.'); throw err; }
                     user.salt = salt;
                     user.hash = hash;
                     if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) hint = hint.substring(0, 250); user.passhint = hint; } else { delete user.passhint; }
@@ -1278,10 +1313,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
             // Login using SSPI
-            domain.sspi.authenticate(req, res, function (err) { if ((err != null) || (req.connection.user == null)) { res.end('Authentication Required...'); } else { handleRootRequestEx(req, res, domain); } });
+            domain.sspi.authenticate(req, res, function (err) {
+                if ((err != null) || (req.connection.user == null)) {
+                    parent.debug('web', 'handleRootRequest: SSPI auth required.');
+                    res.end('Authentication Required...');
+                } else {
+                    parent.debug('web', 'handleRootRequest: SSPI auth ok.');
+                    handleRootRequestEx(req, res, domain);
+                }
+            });
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
@@ -1298,7 +1342,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
 
         // Check if we have an incomplete domain name in the path
-        if ((domain.id != '') && (domain.dns == null) && (req.url.split('/').length == 2)) { res.redirect(domain.url + getQueryPortion(req)); return; }
+        if ((domain.id != '') && (domain.dns == null) && (req.url.split('/').length == 2)) {
+            parent.debug('web', 'handleRootRequestEx: incomplete domain name in the path.');
+            res.redirect(domain.url + getQueryPortion(req));
+            return;
+        }
 
         if (obj.args.nousers == true) {
             // If in single user mode, setup things here.
@@ -1308,11 +1356,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.currentNode = '';
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
+                parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
                 obj.users[req.session.userid] = { type: 'user', _id: req.session.userid, name: '~', email: '~', domain: domain.id, siteadmin: 4294967295 };
                 obj.db.SetUser(obj.users[req.session.userid]);
             }
         } else if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
             // If a default user is active, setup the session here.
+            parent.debug('web', 'handleRootRequestEx: auth using default user.');
             if (req.session && req.session.loginmode) { delete req.session.loginmode; }
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
@@ -1321,15 +1371,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
+                parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
                 if (req.session && req.session.loginmode) { delete req.session.loginmode; }
                 req.session.userid = loginCookie.u;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
+            } else {
+                parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
         } else if (domain.sspi != null) {
             // SSPI login (Windows only)
             //console.log(req.connection.user, req.connection.userSid);
             if ((req.connection.user == null) || (req.connection.userSid == null)) {
+                parent.debug('web', 'handleRootRequestEx: SSPI no user auth.');
                 res.sendStatus(404); return;
             } else {
                 nologout = true;
@@ -1352,6 +1406,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var event = { etype: 'user', userid: req.session.userid, username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id };
                     if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
+                    parent.debug('web', 'handleRootRequestEx: SSPI new domain user.');
                 }
             }
         }
@@ -1366,11 +1421,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If a user exists and is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
             var user = obj.users[req.session.userid];
-            if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
+            if (req.session.domainid != domain.id) { // Check is the session is for the correct domain
+                parent.debug('web', 'handleRootRequestEx: incorrect domain.');
+                req.session = null;
+                res.redirect(domain.url + getQueryPortion(req));
+                return;
+            }
 
             // Check if this is a locked account
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) {
                 // Locked account
+                parent.debug('web', 'handleRootRequestEx: locked account.');
                 delete req.session.userid;
                 delete req.session.domainid;
                 delete req.session.currentNode;
@@ -1430,6 +1491,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
             // Fetch the web state
+            parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
                 var webstate = (states.length == 1) ? states[0].state : '';
                 if (obj.args.minify && !req.query.nominify) {
@@ -1452,6 +1514,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((req.session.loginmode == '4') && (req.session.tokenusername)) {
                 var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername.toLowerCase()];
                 if (user != null) {
+                    parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
                     getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
                     return;
                 }
@@ -1460,13 +1523,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((req.session.loginmode == '5') && (req.session.tokenemail)) {
                 obj.db.GetUserWithVerifiedEmail(domain.id, req.session.tokenemail, function (err, docs) {
                     if ((err != null) || (docs.length == 0)) {
+                        parent.debug('web', 'handleRootRequestEx: password recover 2FA fail.');
                         req.session = null;
                         res.redirect(domain.url + getQueryPortion(req));
                     } else {
                         var user = obj.users[docs[0]._id];
                         if (user != null) {
+                            parent.debug('web', 'handleRootRequestEx: password recover 2FA challenge.');
                             getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
                         } else {
+                            parent.debug('web', 'handleRootRequestEx: password recover 2FA no user.');
                             req.session = null;
                             res.redirect(domain.url + getQueryPortion(req));
                         }
@@ -1479,6 +1545,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
+        parent.debug('web', 'handleRootRequestLogin()');
         var features = 0;
         if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
@@ -1550,7 +1617,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) {
+            parent.debug('web', 'handleTermsRequest: Bad domain');
+            res.sendStatus(404);
+            return;
+        }
 
         // See if term.txt was loaded from the database
         if ((parent.configurationFiles != null) && (parent.configurationFiles['terms.txt'] != null)) {
@@ -1570,7 +1641,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var p = obj.path.join(obj.parent.datapath, 'terms.txt');
             if (obj.fs.existsSync(p)) {
                 obj.fs.readFile(p, 'utf8', function (err, data) {
-                    if (err != null) { res.sendStatus(404); return; }
+                    if (err != null) { parent.debug('web', 'handleTermsRequest: no terms.txt'); res.sendStatus(404); return; }
 
                     // Send the terms from terms.txt
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -1586,6 +1657,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             } else {
                 // Send the default terms
+                parent.debug('web', 'handleTermsRequest: sending default terms');
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
                 if (req.session && req.session.userid) {
                     if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
@@ -1603,7 +1675,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render the messenger application.
     function handleMessengerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
+        parent.debug('web', 'handleMessengerRequest()');
 
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
@@ -1623,7 +1696,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleRootCertRequest: invalid ip'); return; } // Check server-wide IP filter only.
+        parent.debug('web', 'handleRootCertRequest()');
         try {
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + certificates.RootName + '.cer"' });
         } catch (ex) {
@@ -3187,7 +3261,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
 
             // Indicates to ExpressJS that the public folder should be used to serve static files.
-            obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
+            obj.app.use(url, obj.express.static(obj.parent.webPublicPath, { maxAge: '1h' }));
 
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
