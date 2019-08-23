@@ -2376,7 +2376,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-request':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
                         var otplib = null;
@@ -2390,7 +2390,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-setup':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
                         var otplib = null;
@@ -2418,7 +2418,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-clear':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Clear the one time password secret
                         if (user.otpsecret) {
@@ -2441,7 +2441,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otpauth-getpasswords':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Perform a sub-action
@@ -2476,7 +2476,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-get':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
                     // Send back the list of keys we have, just send the list of names and index
@@ -2489,7 +2489,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'otp-hkey-remove':
                 {
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false || command.index == null) break;
 
                     // Remove a key
@@ -2510,14 +2510,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
-                    if (parent.parent.config.settings.no2factorauth === true) return;
-
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
                     var yubikeyotp = null;
                     try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
 
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
@@ -2565,10 +2563,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
-                    if (parent.parent.config.settings.no2factorauth === true) return;
-
                     // Check is 2-step login is supported
-                    const twoStepLoginSupported = ((domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.lanonly !== true) && (args.nousers !== true));
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.name == null)) break;
 
                     // Send the registration request
@@ -2579,8 +2575,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
-                    if (parent.parent.config.settings.no2factorauth === true) return;
-                    if (obj.webAuthnReqistrationRequest == null) return;
+                    const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
+                    if ((twoStepLoginSupported == false) || (obj.webAuthnReqistrationRequest == null)) return;
 
                     // Figure out the origin
                     var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
