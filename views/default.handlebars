@@ -1391,10 +1391,11 @@
                 }
                 case 'traceinfo': {
                     if (typeof message.traceSources == 'object') {
-                        serverTraceSources = message.traceSources;
-                        if (message.traceSources.length > 0) {
+                        if ((message.traceSources != null) && (message.traceSources.length > 0)) {
+                            serverTraceSources = message.traceSources;
                             QH('p41traceStatus', EscapeHtml(message.traceSources.join(', ')));
                         } else {
+                            serverTraceSources = [];
                             QH('p41traceStatus', 'None');
                         }
                     }
@@ -2119,10 +2120,11 @@
                         }
                         case 'traceinfo': {
                             if (typeof message.event.traceSources == 'object') {
-                                serverTraceSources = message.event.traceSources;
-                                if (message.event.traceSources.length > 0) {
+                                if ((message.event.traceSources != null) && (message.event.traceSources.length > 0)) {
+                                    serverTraceSources = message.event.traceSources;
                                     QH('p41traceStatus', EscapeHtml(message.event.traceSources.join(', ')));
                                 } else {
+                                    serverTraceSources = [];
                                     QH('p41traceStatus', 'None');
                                 }
                             }
@@ -4878,7 +4880,7 @@
                 case 2:
                     break;
                 case 3:
-                    if (desktop.serverIsRecording == true) { QV('deskRecordIcon', true); }
+                    if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
                     break;
                 default:
                     //console.log('Unknown onDesktopStateChange state', state);
@@ -5444,7 +5446,7 @@
                     break;
                 case 3:
                     QE('termSizeList', false);
-                    if (xterminal.serverIsRecording == true) { QV('termRecordIcon', true); }
+                    if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
                     break;
                 default:
                     QE('termSizeList', false);
@@ -5596,8 +5598,10 @@
                     break;
                 case 3:
                     p13targetpath = '';
-                    files.sendText({ action: 'ls', reqid: 1, path: '' });
-                    if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
+                    if (files) {
+                        files.sendText({ action: 'ls', reqid: 1, path: '' });
+                        if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
+                    }
                     break;
                 default:
                     //console.log('Unknown onFilesStateChange state', state);
