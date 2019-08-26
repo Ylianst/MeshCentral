@@ -3131,7 +3131,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-            secure: (obj.args.notls != true) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
+            secure: ((obj.args.notls != true) && (obj.args.tlsoffload == null)) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
         }
         if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
