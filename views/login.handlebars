@@ -41,7 +41,8 @@
                         </td>
                         <td id="logincell">
                             <div id=loginpanel style="display:none">
-                                <form action="login" method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=login />
                                     <div id=message1>
                                         {{{message}}}
                                     </div>
@@ -73,7 +74,8 @@
                                 </form>
                             </div>
                             <div id=createpanel style="display:none;position:relative">
-                                <form action=createaccount method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=createaccount />
                                     <div id=message2>
                                         {{{message}}}
                                     </div>
@@ -118,7 +120,8 @@
                                 </form>
                             </div>
                             <div id=resetpanel style="display:none">
-                                <form action=resetaccount method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=resetaccount />
                                     <div id=message3>
                                         {{{message}}}
                                     </div>
@@ -142,7 +145,9 @@
                                 </form>
                             </div>
                             <div id=tokenpanel style="display:none">
-                                <form action=tokenlogin method=post autocomplete=off>
+                                <form method=post autocomplete=off>
+                                    <input type=hidden name=action value=tokenlogin />
+                                    <input type=hidden name=hwstate value="{{{hwstate}}}" />
                                     <div id=message4>
                                         {{{message}}}
                                     </div>
@@ -165,7 +170,8 @@
                                 </form>
                             </div>
                             <div id=resettokenpanel style="display:none">
-                                <form action=resetaccount method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=resetaccount />
                                     <div id=message5>
                                         {{{message}}}
                                     </div>
@@ -188,7 +194,8 @@
                                 </form>
                             </div>
                             <div id=resetpasswordpanel style="display:none;position:relative">
-                                <form action=resetpassword method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=resetpassword />
                                     <div id=message6>
                                         {{{message}}}
                                     </div>
