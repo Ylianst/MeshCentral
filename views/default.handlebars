@@ -6469,7 +6469,7 @@
         function account_showDeleteAccount() {
             if (xxdialogMode) return false;
             var x = "To delete this account, type in the account password in both boxes below and hit ok.<br /><br />";
-            x += "<form action='" + domainUrl + "deleteaccount' method=post><table style=margin-left:80px><tr>";
+            x += "<form method=post><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=" + authCookie + " /><table style=margin-left:80px><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
@@ -6486,7 +6486,7 @@
             if (xxdialogMode) return false;
             var x = "Change your account password by entering the old password and new password twice in the boxes below.";
             if (features & 0x00010000) { " Password hint can be used but is not recommanded."; }
-            x += "<br /><br />";;
+            x += "<br /><br />";
             //x += "<form action='" + domainUrl + "changepassword' method=post>";
             x += "<table style=margin-left:60px>";
             x += "<tr><td align=right>Old password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>";

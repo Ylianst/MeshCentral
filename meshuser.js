@@ -872,7 +872,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Always lowercase the email address
                     command.email = command.email.toLowerCase();
 
-                    if (parent.users[req.session.userid].email != command.email) {
+                    if (obj.user.email != command.email) {
                         // Check if this email is already validated on a different account
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                             if ((docs != null) && (docs.length > 0)) {
@@ -914,7 +914,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Always lowercase the email address
                     command.email = command.email.toLowerCase();
 
-                    if ((parent.parent.mailserver != null) && (parent.users[req.session.userid].email.toLowerCase() == command.email)) {
+                    if ((parent.parent.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
                         // Send the verification email
                         parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
                     }

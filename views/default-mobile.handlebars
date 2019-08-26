@@ -1188,7 +1188,7 @@
 
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
-            var x = "<form action='" + domainUrl + "deleteaccount' method=post><table style=margin-left:10px><tr>";
+            var x = "<form method=post><table style=margin-left:10px><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=" + authCookie + " /><tr>";
             x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
@@ -1200,20 +1200,33 @@
             Q('apassword1').focus();
         }
 
+
         function account_showChangePassword() {
-            if (xxdialogMode) return;
-            var x = "<form action='" + domainUrl + "changepassword' method=post><table style=margin-left:10px>";
-            x += "<tr><td align=right>Old Password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
-            x += "<tr><td align=right>New Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
-            x += "<tr><td align=right>New Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
-            if (features & 0x00010000) { x += "<tr><td align=right>Hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off /></td></tr>"; }
-            x += '</table><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
-            x += '</div><br /></form>';
-            setDialogMode(2, "Change Password", 0, null, x);
-            account_validateNewPassword();
+            if (xxdialogMode) return false;
+            var x = "<table style=margin-left:10px>";
+            x += "<tr><td align=right>Old&nbsp;password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>";
+            x += "<tr><td align=right>New&nbsp;password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
+            x += "<tr><td align=right>New&nbsp;password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
+            if (features & 0x00010000) { x += "<tr><td align=right>Password hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>"; }
+            x += '</table>'
+            if (passRequirements) {
+                var r = [], rc = 0;
+                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
+                if (rc > 0) { x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+            }
+            x += '<br />';
+            setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
             Q('apassword0').focus();
+            account_validateNewPassword();
+            return false;
+        }
+
+        function account_showChangePasswordEx() {
+            if (Q('apassword1').value == Q('apassword2').value) {
+                var r = { action: 'changepassword', oldpass: Q('apassword0').value, newpass: Q('apassword1').value };
+                if (features & 0x00010000) { r.hint = Q('apasswordhint').value; }
+                meshserver.send(r);
+            }
         }
 
         function account_createMesh() {
@@ -1256,15 +1269,16 @@
                 if (passRequirements == null || passRequirements == '') {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('apassword1').value);
-                    if (passStrength >= 80) { r = '<span style=color:green>&#9679;<span>'; } else if (passStrength >= 60) { r = '<span style=color:blue>&#9679;<span>'; } else { r = '<span style=color:red>&#9679;<span>'; }
+                    if (passStrength >= 80) { r = '<span style=color:green>Strong<span>'; } else if (passStrength >= 60) { r = '<span style=color:blue>&#9679;<span>'; } else { r = '<span style=color:red>&#9679;<span>'; }
                 } else {
                     // Password requirements provided, use that
                     var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
-                    if (passReq == false) { ok = false; r = '<span style=color:red>&#9679;<span>' }
+                    if (passReq == false) { ok = false; r = '<span style=color:red>Policy<span>' }
                 }
             }
             QH('dxPassWarn', r);
-            QE('account_dlgOkButton', ok);
+            //QE('account_dlgOkButton', ok);
+            QE('idx_dlgOkButton', ok);
         }
 
         // Return a password strength score

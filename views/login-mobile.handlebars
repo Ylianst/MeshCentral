@@ -44,7 +44,8 @@
                     <tr>
                         <td align=center>
                             <div id=loginpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both;display:none">
-                                <form action="login" method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=login />
                                     <div id=message1>
                                         {{{message}}}
                                     </div>
@@ -77,7 +78,8 @@
                             </div>
                             <div id=createpanel style="display:none">
                                 <div style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both;position:relative">
-                                    <form action=createaccount method=post>
+                                    <form method=post>
+                                        <input type=hidden name=action value=createaccount />
                                         <div id=message2>
                                             {{{message}}}
                                         </div>
@@ -123,7 +125,8 @@
                                 </div>
                             </div>
                             <div id=resetpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
-                                <form action=resetaccount method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=resetaccount />
                                     <div id=message3>
                                         {{{message}}}
                                     </div>
@@ -147,7 +150,9 @@
                                 </form>
                             </div>
                             <div id=tokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
-                                <form action=tokenlogin method=post autocomplete=off>
+                                <form method=post autocomplete=off>
+                                    <input type=hidden name=action value=tokenlogin />
+                                    <input type=hidden name=hwstate value="{{{hwstate}}}" />
                                     <div id=message4>
                                         {{{message}}}
                                     </div>
@@ -171,7 +176,8 @@
                             </div>
 
                             <div id=resettokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
-                                <form action=resetaccount method=post autocomplete=off>
+                                <form method=post autocomplete=off>
+                                    <input type=hidden name=action value=resetaccount />
                                     <div id=message5>
                                         {{{message}}}
                                     </div>
@@ -195,7 +201,8 @@
                             </div>
 
                             <div id=resetpasswordpanel style="position:relative;background-color:#979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
-                                <form action=resetpassword method=post>
+                                <form method=post>
+                                    <input type=hidden name=action value=resetpassword />
                                     <div id=message6>
                                         {{{message}}}
                                     </div>

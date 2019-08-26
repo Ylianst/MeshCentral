@@ -628,7 +628,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         func('');
     }
 
-    function handleLoginRequest(req, res) {
+    function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleLoginRequest: invalid domain'); res.sendStatus(404); return; }
 
@@ -661,12 +661,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.loginmode = '4';
                                 req.session.tokenusername = xusername;
                                 req.session.tokenpassword = xpassword;
-                                res.redirect(domain.url + getQueryPortion(req));
+                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
                         } else {
                             // Login succesful
                             parent.debug('web', 'handleLoginRequest: succesful 2FA login');
-                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword);
+                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
                         }
                     });
                     return;
@@ -674,7 +674,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Login succesful
                 parent.debug('web', 'handleLoginRequest: succesful login');
-                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword);
+                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
             } else {
                 // Login failed, wait a random delay
                 setTimeout(function () {
@@ -694,13 +694,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     } else {
                         delete req.session.passhint;
                     }
-                    res.redirect(domain.url + getQueryPortion(req));
+
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095)); // Wait for 2 to ~6 seconds.
             }
         });
     }
 
-    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword) {
+    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct) {
         // Check if we need to change the password
         if ((typeof user.passchange == 'number') && ((user.passchange == -1) || ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.reset == 'number') && (user.passchange + (domain.passwordrequirements.reset * 86400) < Math.floor(Date.now() / 1000))))) {
             // Request a password change
@@ -709,7 +710,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.error = '<b style=color:#8C001A>Password change requested.</b>';
             req.session.resettokenusername = xusername;
             req.session.resettokenpassword = xpassword;
-            res.redirect(domain.url + getQueryPortion(req));
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             return;
         }
 
@@ -749,19 +750,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
                 console.log("CurrentNode: " + req.session.currentNode);
                 // This redirect happens after finding node is completed
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             });
             */
             parent.debug('web', 'handleLoginRequest: login ok (1)');
-            res.redirect(domain.url + getQueryPortion(req)); // Temporary
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); } // Temporary
         } else {
             parent.debug('web', 'handleLoginRequest: login ok (2)');
-            res.redirect(domain.url + getQueryPortion(req));
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
         }
         //});
     }
 
-    function handleCreateAccountRequest(req, res) {
+    function handleCreateAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
             parent.debug('web', 'handleCreateAccountRequest: failed checks.');
@@ -795,7 +796,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
                 req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
             var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
@@ -804,7 +805,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');
                 req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
         }
@@ -815,14 +816,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 parent.debug('web', 'handleCreateAccountRequest: account limit reached');
                 req.session.loginmode = '2';
                 req.session.error = '<b style=color:#8C001A>Account limit reached.</b>';
-                console.log('max', req.session);
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             } else {
                 if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
                     parent.debug('web', 'handleCreateAccountRequest: unable to create account (3)');
                     req.session.loginmode = '2';
                     req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
-                    res.redirect(domain.url + getQueryPortion(req));
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 } else {
                     // Check if this email was already verified
                     obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
@@ -830,14 +830,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleCreateAccountRequest: Existing account with this email address');
                             req.session.loginmode = '2';
                             req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';
-                            res.redirect(domain.url + getQueryPortion(req));
+                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         } else {
                             // Check if there is domain.newAccountToken, check if supplied token is valid
                             if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
                                 parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
                                 req.session.loginmode = '2';
                                 req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
-                                res.redirect(domain.url + getQueryPortion(req));
+                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 return;
                             }
                             // Check if user exists
@@ -868,7 +868,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                 obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                             }
-                            res.redirect(domain.url + getQueryPortion(req));
+                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         }
                     });
                 }
@@ -877,7 +877,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Called to process an account password reset
-    function handleResetPasswordRequest(req, res) {
+    function handleResetPasswordRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
 
         // Check everything is ok
@@ -892,7 +892,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.success;
             delete req.session.error;
             delete req.session.passhint;
-            res.redirect(domain.url + getQueryPortion(req));
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             return;
         }
 
@@ -907,7 +907,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (1)');
                     req.session.loginmode = '6';
                     req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
-                    res.redirect(domain.url + getQueryPortion(req));
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     return;
                 }
 
@@ -918,7 +918,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (2)');
                         req.session.loginmode = '6';
                         req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
-                        res.redirect(domain.url + getQueryPortion(req));
+                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     } else {
                         // Update the password, use a different salt.
                         require('./pass').hash(req.body.rpassword1, function (err, salt, hash, tag) {
@@ -937,7 +937,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
-                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword);
+                            completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
                         }, 0);
                     }
                 }, 0);
@@ -953,14 +953,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.success;
                 delete req.session.error;
                 delete req.session.passhint;
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
         });
     }
 
     // Called to process an account reset request
-    function handleResetAccountRequest(req, res) {
+    function handleResetAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) {
             parent.debug('web', 'handleResetAccountRequest: check failed');
@@ -980,14 +980,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('web', 'handleResetAccountRequest: Invalid email');
             req.session.loginmode = '3';
             req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
-            res.redirect(domain.url + getQueryPortion(req));
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
         } else {
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
                 if ((err != null) || (docs.length == 0)) {
                     parent.debug('web', 'handleResetAccountRequest: Account not found');
                     req.session.loginmode = '3';
                     req.session.error = '<b style=color:#8C001A>Account not found.</b>';
-                    res.redirect(domain.url + getQueryPortion(req));
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 } else {
                     // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
                     var responseSent = false;
@@ -1003,7 +1003,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
                                         req.session.loginmode = '5';
                                         req.session.tokenemail = email;
-                                        res.redirect(domain.url + getQueryPortion(req));
+                                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                     }
                                 } else {
                                     // Send email to perform recovery.
@@ -1014,14 +1014,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
                                             req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
-                                            res.redirect(domain.url + getQueryPortion(req));
+                                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                         }
                                     } else {
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
                                             req.session.loginmode = '3';
                                             req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
-                                            res.redirect(domain.url + getQueryPortion(req));
+                                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                         }
                                     }
                                 }
@@ -1034,14 +1034,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
                                     req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
-                                    res.redirect(domain.url + getQueryPortion(req));
+                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }
                             } else {
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
                                     req.session.loginmode = '3';
                                     req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
-                                    res.redirect(domain.url + getQueryPortion(req));
+                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }
                             }
                         }
@@ -1186,7 +1186,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
-    function handleDeleteAccountRequest(req, res) {
+    function handleDeleteAccountRequest(req, res, direct) {
+        parent.debug('web', 'handleDeleteAccountRequest()');
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
             parent.debug('web', 'handleDeleteAccountRequest: failed checks.');
@@ -1194,9 +1195,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             return;
         }
 
-        // Check if the user is logged and we have all required parameters
-        if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) { res.redirect(domain.url + getQueryPortion(req)); return; }
-        var user = obj.users[req.session.userid];
+        var user = null;
+        if (req.body.authcookie) {
+            // If a authentication cookie is provided, decode it here
+            var loginCookie = obj.parent.decodeCookie(req.body.authcookie, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+            if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { user = obj.users[loginCookie.userid]; }
+        } else {
+            // Check if the user is logged and we have all required parameters
+            if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) {
+                parent.debug('web', 'handleDeleteAccountRequest: required parameters not present.');
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                return;
+            } else {
+                user = obj.users[req.session.userid];
+            }
+        }
         if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
@@ -1225,12 +1238,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.db.Remove(user._id);
                 delete obj.users[user._id];
                 req.session = null;
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
                 parent.debug('web', 'handleDeleteAccountRequest: removed user.');
             } else {
                 parent.debug('web', 'handleDeleteAccountRequest: auth failed.');
-                res.redirect(domain.url + getQueryPortion(req));
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             }
         });
     }
@@ -1264,7 +1277,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Handle password changes
-    function handlePasswordChangeRequest(req, res) {
+    function handlePasswordChangeRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
             parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).');
@@ -1275,14 +1288,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) {
             parent.debug('web', 'handlePasswordChangeRequest: failed checks (2).');
-            res.redirect(domain.url + getQueryPortion(req)); return;
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
         }
 
         // Get the current user
         var user = obj.users[req.session.userid];
         if (!user) {
             parent.debug('web', 'handlePasswordChangeRequest: user not found.');
-            res.redirect(domain.url + getQueryPortion(req)); return;
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
         }
 
         // Check old password
@@ -1298,7 +1313,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     delete user.passtype;
                     obj.db.SetUser(user);
                     req.session.viewmode = 2;
-                    res.redirect(domain.url + getQueryPortion(req));
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
                 }, 0);
             }
@@ -1306,7 +1321,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
-    function handleRootRequest(req, res) {
+    function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); res.sendStatus(404); return; }
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
@@ -1319,7 +1334,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     res.end('Authentication Required...');
                 } else {
                     parent.debug('web', 'handleRootRequest: SSPI auth ok.');
-                    handleRootRequestEx(req, res, domain);
+                    handleRootRequestEx(req, res, domain, direct);
                 }
             });
         } else if (req.query.user && req.query.pass) {
@@ -1329,22 +1344,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                handleRootRequestEx(req, res, domain);
+                handleRootRequestEx(req, res, domain, direct);
             });
         } else {
             // Login using a different system
-            handleRootRequestEx(req, res, domain);
+            handleRootRequestEx(req, res, domain, direct);
         }
     }
 
-    function handleRootRequestEx(req, res, domain) {
+    function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null, features = 0;
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
 
         // Check if we have an incomplete domain name in the path
         if ((domain.id != '') && (domain.dns == null) && (req.url.split('/').length == 2)) {
             parent.debug('web', 'handleRootRequestEx: incomplete domain name in the path.');
-            res.redirect(domain.url + getQueryPortion(req));
+            res.redirect(domain.url + getQueryPortion(req)); // BAD***
             return;
         }
 
@@ -1424,7 +1439,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.session.domainid != domain.id) { // Check is the session is for the correct domain
                 parent.debug('web', 'handleRootRequestEx: incorrect domain.');
                 req.session = null;
-                res.redirect(domain.url + getQueryPortion(req));
+                res.redirect(domain.url + getQueryPortion(req)); // BAD***
                 return;
             }
 
@@ -1437,7 +1452,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.currentNode;
                 delete req.session.passhint;
                 req.session.error = '<b style=color:#8C001A>Account locked.</b>';
-                res.redirect(domain.url + getQueryPortion(req));
+                res.redirect(domain.url + getQueryPortion(req)); // BAD***
                 return;
             }
 
@@ -1500,7 +1515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
             // Normal login 2 factor request
-            if ((req.session.loginmode == '4') && (req.session.tokenusername)) {
+            if (req.session && (req.session.loginmode == '4') && (req.session.tokenusername)) {
                 var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername.toLowerCase()];
                 if (user != null) {
                     parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
@@ -1509,12 +1524,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             }
             // Password recovery 2 factor request
-            if ((req.session.loginmode == '5') && (req.session.tokenemail)) {
+            if (req.session && (req.session.loginmode == '5') && (req.session.tokenemail)) {
                 obj.db.GetUserWithVerifiedEmail(domain.id, req.session.tokenemail, function (err, docs) {
                     if ((err != null) || (docs.length == 0)) {
                         parent.debug('web', 'handleRootRequestEx: password recover 2FA fail.');
                         req.session = null;
-                        res.redirect(domain.url + getQueryPortion(req));
+                        res.redirect(domain.url + getQueryPortion(req)); // BAD***
                     } else {
                         var user = obj.users[docs[0]._id];
                         if (user != null) {
@@ -1523,7 +1538,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             parent.debug('web', 'handleRootRequestEx: password recover 2FA no user.');
                             req.session = null;
-                            res.redirect(domain.url + getQueryPortion(req));
+                            res.redirect(domain.url + getQueryPortion(req)); // BAD***
                         }
                     }
                 });
@@ -1539,8 +1554,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        var loginmode = req.session.loginmode;
-        delete req.session.loginmode; // Clear this state, if the user hits refresh, we want to go back to the login page.
+        var loginmode = '';
+        if (req.session) { loginmode = req.session.loginmode; delete req.session.loginmode; } // Clear this state, if the user hits refresh, we want to go back to the login page.
 
         // Format an error message if needed
         var err = null, msg = null, passhint = null;
@@ -1561,8 +1576,33 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var newAccountsAllowed = true;
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) { for (var i in obj.users) { if (obj.users[i].domain == domain.id) { newAccountsAllowed = false; break; } } }
 
+        // Encrypt the hardware key challenge state if needed
+        var hwstate = null;
+        if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
+
         // Render the login page
-        res.render(getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null });
+        res.render(getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null, hwstate: hwstate });
+    }
+
+    // Handle a post request on the root
+    function handleRootPostRequest(req, res) {
+        parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
+        switch (req.body.action) {
+            case 'login': { handleLoginRequest(req, res, true); break; }
+            case 'tokenlogin': {
+                if (req.body.hwstate) {
+                    var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 10);
+                    if (cookie != null) { req.session.tokenusername = cookie.u; req.session.tokenpassword = cookie.p; req.session.u2fchallenge = cookie.c; }
+                }
+                handleLoginRequest(req, res, true); break;
+            }
+            case 'changepassword': { handlePasswordChangeRequest(req, res, true); break; }
+            case 'deleteaccount': { handleDeleteAccountRequest(req, res, true); break; }
+            case 'createaccount': { handleCreateAccountRequest(req, res, true); break; }
+            case 'resetpassword': { handleResetPasswordRequest(req, res, true); break; }
+            case 'resetaccount': { handleResetAccountRequest(req, res, true); break; }
+            default: { handleLoginRequest(req, res, true); break; }
+        }
     }
 
     // Return true if it looks like we are using a real TLS certificate.
@@ -3131,6 +3171,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var url = parent.config.domains[i].url;
             obj.app.get(url, handleRootRequest);
+            obj.app.post(url, handleRootPostRequest);
             obj.app.get(url + 'backup.zip', handleBackupRequest);
             obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest);
             obj.app.get(url + 'terms', handleTermsRequest);
