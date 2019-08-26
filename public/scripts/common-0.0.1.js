@@ -99,3 +99,6 @@ function random(max) { return Math.floor(Math.random() * max); }
 
 // Trademarks
 function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, '&trade;'); }
+
+// Pad a number with zeros on the left
+function zeroPad(num, c) { if (c == null) { c = 2; } var s = "00000000" + num; return s.substr(s.length - c); }
