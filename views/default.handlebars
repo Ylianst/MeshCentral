@@ -495,6 +495,7 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
+                            <span id="DeskTimer" title="Session time"></span>&nbsp;
                             <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
@@ -568,6 +569,7 @@
                         <tr>
                             <td class="areaFoot">
                                 <div class="toright2">
+                                    <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
@@ -994,6 +996,7 @@
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
         var sessionActivity = Date.now();
+        var updateSessionTimer = null;
         
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -4881,6 +4884,8 @@
                     break;
                 case 3:
                     if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
+                    desktop.startTime = new Date();
+                    if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     break;
                 default:
                     //console.log('Unknown onDesktopStateChange state', state);
@@ -4889,6 +4894,28 @@
             updateDesktopButtons();
             deskAdjust();
             setTimeout(deskAdjust, 50);
+        }
+
+        function updateSessionTime() {
+            // Desktop
+            var seconds = 0;
+            if (desktop && desktop.startTime) {
+                seconds = Math.floor((new Date() - desktop.startTime) / 1000);
+                QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('DeskTimer', '');
+            }
+
+            // Terminal
+            seconds = 0;
+            if (terminal && terminal.startTime) {
+                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
+                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('TermTimer', '');
+            }
+
+            if ((desktop == null) && (terminal == null)) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
         }
 
         function showDesktopSettings() {
@@ -5447,6 +5474,8 @@
                 case 3:
                     QE('termSizeList', false);
                     if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
+                    terminal.startTime = new Date();
+                    if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     break;
                 default:
                     QE('termSizeList', false);
