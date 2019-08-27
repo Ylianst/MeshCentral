@@ -1812,6 +1812,39 @@ function createMeshCore(agent)
                     }
                     break;
                 }
+                case 'dump':
+                    if (args['_'].length < 1)
+                    {
+                        response = 'Proper usage: dump [on/off/status]'; // Display correct command usage
+                    }
+                    else
+                    {
+                        switch(args['_'][0].toLowerCase())
+                        {
+                            case 'on':
+                                process.coreDumpLocation = process.platform == 'win32' ? process.execPath.replace('.exe', '.dmp') : (process.execPath + '.dmp');
+                                response = 'enabled';
+                                break;
+                            case 'off':
+                                process.coreDumpLocation = null;
+                                response = 'disabled';
+                                break;
+                            case 'status':
+                                if (process.coreDumpLocation)
+                                {
+                                    response = 'Core Dump: [ENABLED' + (require('fs').existsSync(process.coreDumpLocation) ? (', (DMP file exists)]') : (']'));
+                                }
+                                else
+                                {
+                                    response = 'Core Dump: [DISABLED]';
+                                }
+                                break;
+                            default:
+                                response = 'Proper usage: dump [on/off/status]'; // Display correct command usage
+                                break;
+                        }
+                    }
+                    break;
                 case 'eval': { // Eval JavaScript
                     if (args['_'].length < 1) {
                         response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
