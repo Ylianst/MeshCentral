@@ -26,6 +26,7 @@ function CreateMeshCentralServer(config, args) {
     obj.webserver = null;
     obj.redirserver = null;
     obj.mpsserver = null;
+    obj.apfserver = null;
     obj.swarmserver = null;
     obj.mailserver = null;
     obj.amtEventHandler = null;
@@ -819,6 +820,8 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
                 if (!obj.args.sessionkey) { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
 
+                // Create APF server to hook into webserver
+                obj.apfserver = require('./apfserver.js').CreateApfServer(obj, obj.db, obj.args);
                 // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
                 if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
