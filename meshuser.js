@@ -51,6 +51,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
 
+    // Clean a IPv6 address that encodes a IPv4 address
+    function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
+
     // Disconnect this user
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
@@ -142,7 +145,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                     command.username = user.name;       // Add user name
                     command.userid = user._id;          // Add user id
-                    command.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip; // User's IP address
+                    command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
                     delete command.nodeid;              // Remove the nodeid since it's implied
                     try { agent.send(JSON.stringify(command)); } catch (ex) { }
                 }
@@ -160,7 +163,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                         command.username = user.name;           // Add user name
                         command.userid = user._id;              // Add user id
-                        command.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip; // User's IP address
+                        command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                     }
                 }
@@ -765,8 +768,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'relays': {
                             for (var i in parent.wsrelays) {
                                 r += 'id: ' + i + ', state: ' + parent.wsrelays[i].state;
-                                if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.ws._socket.remoteAddress); }
-                                if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.ws._socket.remoteAddress); }
+                                if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.ip); }
+                                if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.ip); }
                                 r += '<br />';
                             }
                             if (r == '') { r = 'No relays.'; }
@@ -2863,8 +2866,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Return true if at least one element of arr2 is in arr1
     function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
 
-    // Clean a IPv6 address that encodes a IPv4 address
-    function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
     function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
     return obj;

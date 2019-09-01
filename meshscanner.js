@@ -137,16 +137,19 @@ module.exports.CreateMeshScanner = function (parent) {
         try { info = obj.parent.config.domains[''].title2; } catch (ex) { }
         try { info = obj.parent.args.localdiscovery.info; } catch (ex) { }
 
+        // Figure out the correct websocket port
+        var port = (parent.args.aliasport)?parent.args.aliasport:parent.args.port;
+
         // Build the IPv4 response
-        var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + parent.args.port + '/agent.ashx';
+        var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + port + '/agent.ashx';
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
         obj.multicastPacket4x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         // Build the IPv6 response
-        url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + parent.args.port + '/agent.ashx';
+        url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + parent.args.port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
         obj.multicastPacket6x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         setupServers();

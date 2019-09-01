@@ -2119,7 +2119,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var fd = obj.fs.openSync(recFullFilename, 'w');
                 if (fd != null) {
                     // Write the recording file header
-                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(ws._socket.remoteAddress), nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
+                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(req.ip), nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
                     recordingEntry(fd, 1, 0, firstBlock, function () { });
                     ws.logfile = { fd: fd, lock: false };
                     if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
@@ -2213,7 +2213,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // If error, close the associated TCP connection.
                 ws.on('error', function (err) {
-                    console.log('CIRA server websocket error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
+                    console.log('CIRA server websocket error from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Websocket relay closed on error.');
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
 
@@ -2306,8 +2306,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // If error, close the associated TCP connection.
                 ws.on('error', function (err) {
-                    console.log('Error with relay web socket connection from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.');
-                    parent.debug('webrelay', 'Error with relay web socket connection from ' + ws._socket.remoteAddress + '.');
+                    console.log('Error with relay web socket connection from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.');
+                    parent.debug('webrelay', 'Error with relay web socket connection from ' + cleanRemoteAddr(req.ip) + '.');
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
@@ -2419,7 +2419,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
         
         // Fetch the remote IP:Port for logging
-        ws.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
+        ws.remoteaddr = cleanRemoteAddr(req.ip);
         ws.remoteaddrport = ws.remoteaddr + ':' + ws._socket.remotePort;
 
         // When data is received from the web socket, echo it back
@@ -2606,7 +2606,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
 
         // If error, do nothing.
-        ws.on('error', function (err) { console.log('Echo server error from ' + ws._socket.remoteAddress + ', ' + err.toString().split('\r')[0] + '.'); });
+        ws.on('error', function (err) { console.log('Echo server error from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.'); });
 
         // If closed, do nothing
         ws.on('close', function (req) { });
@@ -3233,8 +3233,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Receive mesh agent connections
             obj.app.ws(url + 'agent.ashx', function (ws, req) {
                 var domain = checkAgentIpAddress(ws, req);
-                if (domain == null) { parent.debug('web', 'Got agent connection from blocked IP address ' + ws._socket.remoteAddress + ', holding.'); return; }
-                // console.log('Agent connect: ' + ws._socket.remoteAddress);
+                if (domain == null) { parent.debug('web', 'Got agent connection from blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                //console.log('Agent connect: ' + cleanRemoteAddr(req.ip));
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
 
