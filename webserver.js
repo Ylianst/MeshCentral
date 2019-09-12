@@ -737,6 +737,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
+        req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -853,6 +854,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
+                                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
@@ -937,6 +939,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
+                            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
                         }, 0);
                     }
@@ -1344,6 +1347,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
+                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
                 handleRootRequestEx(req, res, domain, direct);
             });
         } else {
@@ -1369,6 +1373,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/~';
             req.session.domainid = domain.id;
             req.session.currentNode = '';
+            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
                 parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
@@ -1382,8 +1387,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
             req.session.currentNode = '';
+            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+            if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
                 parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
@@ -1391,6 +1398,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = loginCookie.u;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
+                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
             } else {
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
@@ -1407,6 +1415,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.usersGroups = req.connection.userGroups;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
+                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -1499,11 +1508,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
 
             // Create a authentication cookie
-            const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
+            const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
 
             // Send the master web application
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+
+            // Clean up the U2F challenge is needed
+            if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
 
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
@@ -3133,7 +3145,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
             secure: ((obj.args.notls != true) && (obj.args.tlsoffload == null)) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
         }
-        if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; }
+        if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; } else { sessionOptions.sameSite = 'strict'; }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
         obj.app.use(obj.session(sessionOptions));
 
@@ -3158,6 +3170,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
+
+            // Check the session if bound to the external IP address
+            if ((req.session.ip != null) && (req.session.ip == cleanRemoteAddr(req.ip))) { req.session = {}; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
@@ -3357,6 +3372,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
+                if ((cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip))) { cookie = null; } // If the cookie if binded to an IP address, check here.
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
                     // Valid cookie, we are authenticated
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
