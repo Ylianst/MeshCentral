@@ -102,7 +102,11 @@
         "meshcommander": "https://www.meshcommander.com/"
       },
       "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
-      "_httpheaders": { "Strict-Transport-Security": "max-age=360000" },
+      "_httpheaders": {
+        "Strict-Transport-Security": "max-age=360000",
+        "x-frame-options": "SAMEORIGIN",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+      },
       "_agentConfig": [ "webSocketMaskOverride=1" ],
       "_SessionRecording": {
         "_filepath": "C:\\temp",

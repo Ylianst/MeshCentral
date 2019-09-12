@@ -1084,7 +1084,7 @@
             //window.addEventListener("focus", ondocfocus, false);
             window.addEventListener("blur", ondocblur, false);
             window.onresize = function () { masterUpdate(512); }
-            setTimeout("masterUpdate(512)", 200);
+            setTimeout(function() { masterUpdate(512); }, 200);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
@@ -2197,7 +2197,7 @@
             putstore("_deviceView", Q('viewselect').value);
             putstore("_viewsize", Q('sizeselect').value);
             masterUpdate(4);
-            setTimeout("masterUpdate(512)", 200);
+            setTimeout(function () { masterUpdate(512); }, 200);
         }
 
         function ondockeypress(e) {
