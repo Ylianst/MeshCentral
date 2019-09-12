@@ -1204,7 +1204,7 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
         var action = 'acmactivate';
         if (settings.action == 'amtccm') { action = 'ccmactivate'; }
         if (settings.action == 'amtdiscover') { action = 'amtdiscover'; }
-        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], modes: allowedModes, currentMode: mestate.controlMode });
+        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], build: mestate.vers['Build Number'], modes: allowedModes, currentMode: mestate.controlMode });
     });
     connection.end();
 }
