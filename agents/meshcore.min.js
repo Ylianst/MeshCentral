@@ -1671,6 +1671,20 @@ function createMeshCore(agent)
                     break;
                 }
                 /*
+                case 'npm': {
+                    var child = require('child_process').execFile('C:\\Program Files\\nodejs\\node.exe', ['-v']);
+                    child.stdout.str = '';
+                    child.stdout.on('data', function (chunk) {
+                        sendConsoleText(chunk, sessionid);
+                        //this.str += chunk.toString();
+                    });
+                    child.waitExit();
+                    response = 'Response: ' + child.stdout.str;
+                    //exec('npm -v', function (error, stdout, stderr) { console.log('stdout: ', stdout); });
+                    break;
+                }
+                */
+                /*
                 case 'border':
                     {
                         if ((args['_'].length == 1) && (args['_'][0] == 'on')) {
