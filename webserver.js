@@ -2267,7 +2267,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // Log to recording file
                             data = Buffer.from(data, 'binary');
-                            recordingEntry(ws.logfile.fd, 2, 2, data, function () { try { ws.send(data); } catch (e) { } }); // TODO: Add TLS support
+                            recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } }); // TODO: Add TLS support
                         }
                     } 
                 };
