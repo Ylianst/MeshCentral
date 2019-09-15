@@ -1856,14 +1856,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Use the logo in the database
                 res.set({ 'Content-Type': 'image/jpeg' });
                 res.send(parent.configurationFiles[domain.titlepicture]);
+                return;
             } else {
                 // Use the logo on file
-                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); } catch (e) {
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
-                }
+                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.titlepicture)); return; } catch (ex) { }
             }
+        }
+
+        if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/logoback.png'))) {
+            // Use the override logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
         } else {
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (e) { res.sendStatus(404); }
+            // Use the default logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
         }
     }
 
@@ -1877,14 +1882,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Use the welcome image in the database
                 res.set({ 'Content-Type': 'image/jpeg' });
                 res.send(parent.configurationFiles[domain.welcomepicture]);
-            } else {
-                // Use the logo on file
-                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); } catch (e) {
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (e) { res.sendStatus(404); }
-                }
+                return;
             }
+        }
+
+        if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg'))) {
+            // Use the override logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
         } else {
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (e) { res.sendStatus(404); }
+            // Use the default logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
         }
     }
 
@@ -3252,10 +3259,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var p = obj.path.join(obj.parent.datapath, 'server.png');
                     if (obj.fs.existsSync(p)) {
                         // Use the data folder server picture
-                        try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                        try { res.sendFile(p); } catch (ex) { res.sendStatus(404); }
                     } else {
-                        // Use the default server picture
-                        try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-256.png')); } catch (e) { res.sendStatus(404); }
+                        if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/server-256.png'))) {
+                            // Use the override server picture
+                            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/server-256.png')); } catch (ex) { res.sendStatus(404); }
+                        } else {
+                            // Use the default server picture
+                            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-256.png')); } catch (ex) { res.sendStatus(404); }
+                        }
                     }
                 }
             });
