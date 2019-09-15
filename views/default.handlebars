@@ -4230,7 +4230,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
+                if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) { document.title = decodeURIComponent("{{{extitle}}}") + ' - ' + currentNode.name + ' - ' + mesh.name; } else { document.title = decodeURIComponent("{{{extitle}}}"); }
 
                 // Clear user consent status if present
                 p11clearConsoleMsg();

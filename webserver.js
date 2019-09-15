@@ -1515,7 +1515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
             // Clean up the U2F challenge is needed
-            if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
+            //if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
 
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
@@ -3160,7 +3160,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
             if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) {
                 res.set(domain.httpheaders);
-            } else {
+            }
+            /*
+            else {
                 // Use default security headers
                 res.set({
                     "X-Frame-Options": "sameorigin",
@@ -3170,6 +3172,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
+            */
 
             // Check the session if bound to the external IP address
             if ((req.session.ip != null) && (req.session.ip == cleanRemoteAddr(req.ip))) { req.session = {}; }

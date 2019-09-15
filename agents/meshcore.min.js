@@ -1672,15 +1672,11 @@ function createMeshCore(agent)
                 }
                 /*
                 case 'npm': {
-                    var child = require('child_process').execFile('C:\\Program Files\\nodejs\\node.exe', ['-v']);
+                    var child = require('child_process').execFile('C:\\Program Files\\nodejs\\node.exe', ['node.exe', '-v']);
                     child.stdout.str = '';
-                    child.stdout.on('data', function (chunk) {
-                        sendConsoleText(chunk, sessionid);
-                        //this.str += chunk.toString();
-                    });
+                    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
                     child.waitExit();
                     response = 'Response: ' + child.stdout.str;
-                    //exec('npm -v', function (error, stdout, stderr) { console.log('stdout: ', stdout); });
                     break;
                 }
                 */
