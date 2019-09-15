@@ -260,8 +260,13 @@
                     agentDesktop.ProcessData(data);
                 } else if (recFileProtocol == 101) {
                     // Intel AMT KVM
-                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) { readState = 1; } // We are not authenticated, KVM data starts here.
-                    else if (readState == 1) { amtDesktop.ProcessData(data); }
+                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
+                        // We are not authenticated, KVM data starts here.
+                        readState = 1;
+                        if (data.length > 8) { amtDesktop.ProcessData(data.substring(8)); }
+                    } else if (readState == 1) {
+                        amtDesktop.ProcessData(data);
+                    }
                 }
             } else if ((type == 2) && flagBinary && flagUser) {
                 // User --> Device data
