@@ -1390,7 +1390,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
+            //if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
                 parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
@@ -3175,7 +3175,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             */
 
             // Check the session if bound to the external IP address
-            if ((req.session.ip != null) && (req.session.ip == cleanRemoteAddr(req.ip))) { req.session = {}; }
+            //if ((req.session.ip != null) && (req.session.ip == cleanRemoteAddr(req.ip))) { req.session = {}; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
@@ -3376,7 +3376,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
-                if ((cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip))) { cookie = null; } // If the cookie if binded to an IP address, check here.
+                //if ((cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip))) { cookie = null; } // If the cookie if binded to an IP address, check here.
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
                     // Valid cookie, we are authenticated
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
