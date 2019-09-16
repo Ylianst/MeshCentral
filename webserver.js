@@ -1514,8 +1514,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
-            // Clean up the U2F challenge is needed
-            //if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
+            // Clean up the U2F challenge if needed
+            if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
 
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
