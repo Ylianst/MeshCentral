@@ -47,7 +47,7 @@ var amtMeiTmpState = null;
 var SMBiosTables = null;
 var globalDebugFlags = 0; // 1 = IDER Debug
 var pendingAmtConfigActions = 0;
-const RCSMessageProtocolVersion = 1; // RCS Message Protocol Version.  Needs to be less than or equal to RCS server Message Protocol Version
+var RCSMessageProtocolVersion = 1; // RCS Message Protocol Version.  Needs to be less than or equal to RCS server Message Protocol Version
 
 // MeshCommander for Firmware (GZIP'ed, Base64) v0.7.8
 var Large_IntelAmtWebApp_etag = "zVObfGF4CXPIxvxSUu+3";
