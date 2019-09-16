@@ -1861,6 +1861,13 @@ function createMeshCore(agent)
                     }
                     else
                     {
+                        try
+                        {
+                            diagnosticAgent_uninstall();
+                        }
+                        catch(x)
+                        {
+                        }
                         var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
                         this.child = require('child_process').execFile(process.execPath, [process.platform == 'win32' ? (process.execPath.split('\\').pop()) : (process.execPath.split('/').pop()), '-b64exec', Buffer.from(js).toString('base64')], { type: 4, detached: true });
                     }
