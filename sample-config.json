@@ -145,6 +145,11 @@
     "host": "smtp.myserver.com",
     "port": 25,
     "from": "myemail@myserver.com",
-    "tls": false
+    "__tls__": "When 'tls' is set to true, TLS is used immidiatly when connecting. For SMTP servers that use TLSSTART, set this to 'false' and TLS will still be used.",
+    "tls": false,
+    "___tlscertcheck__": "When set to false, the TLS certificate of the SMTP server is not checked.",
+    "_tlscertcheck": false,
+    "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
+    "_tlsstrict": true
   }
 }
