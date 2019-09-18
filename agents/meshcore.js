@@ -1853,6 +1853,25 @@ function createMeshCore(agent)
                     }
                     break;
                 }
+                case 'uninstallagent':
+                    var agentName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    if (!require('service-manager').manager.getService(agentName).isMe())
+                    {
+                        response = 'Uininstall failed, this instance is not the service instance';
+                    }
+                    else
+                    {
+                        try
+                        {
+                            diagnosticAgent_uninstall();
+                        }
+                        catch(x)
+                        {
+                        }
+                        var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
+                        this.child = require('child_process').execFile(process.execPath, [process.platform == 'win32' ? (process.execPath.split('\\').pop()) : (process.execPath.split('/').pop()), '-b64exec', Buffer.from(js).toString('base64')], { type: 4, detached: true });
+                    }
+                    break;
                 case 'notify': { // Send a notification message to the mesh
                     if (args['_'].length != 1) {
                         response = 'Proper usage: notify "message" [--session]'; // Display correct command usage
