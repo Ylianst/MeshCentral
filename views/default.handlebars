@@ -7027,6 +7027,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>Show Only Self Events</label><br>';
             x += '</div>';
             if (userid == null) {
                 setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
@@ -7052,6 +7053,7 @@
                     if (meshrights & 32) { Q('p20meshserverfiles').checked = true; }
                     if (meshrights & 64) { Q('p20wakedevices').checked = true; }
                     if (meshrights & 128) { Q('p20editnotes').checked = true; }
+                    if (meshrights & 8192) { Q('p20limitevents').checked = true; }
                 }
             }
             p20validateAddMeshUserDialog();
@@ -7105,6 +7107,7 @@
             QE('p20meshserverfiles', !Q('p20fulladmin').checked);
             QE('p20wakedevices', !Q('p20fulladmin').checked);
             QE('p20editnotes', !Q('p20fulladmin').checked);
+            QE('p20limitevents', !Q('p20fulladmin').checked);
             QE('p20remoteview', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
             QE('p20remotelimitedinput', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
             QE('p20noterminal', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
@@ -7131,6 +7134,7 @@
                     if (Q('p20nofiles').checked == true) meshadmin += 1024;
                     if (Q('p20noamt').checked == true) meshadmin += 2048;
                     if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
+                    if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 }
 
                 if (t == null) {
@@ -7165,6 +7169,7 @@
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r += ', No Files';
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r += ', Limited Input';
+                    if ((meshrights & 8192) != 0) r += ', Self Events Only';
                 }
                 r = r.substring(2);
                 if (r == '') { r = 'No Rights'; }
