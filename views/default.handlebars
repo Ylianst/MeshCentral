@@ -3026,7 +3026,7 @@
                 var portStr = (serverinfo.port == 443)?'':(":" + serverinfo.port);
                 if ((features & 0x2000) == 0)
                 {
-                    Q('agins_linux_area').value = "(wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + domainUrlNoSlash + " '" + meshid.split('/')[2] + "'\r\n";
+                    Q('agins_linux_area').value = "(wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://" + servername + portStr + domainUrlNoSlash + " '" + meshid.split('/')[2] + "'\r\n";
                     Q('agins_linux_area_un').value = "(wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
                 }
                 else
@@ -3041,7 +3041,7 @@
                 var portStr = (serverinfo.port == 80) ? '' : (":" + serverinfo.port);
                 if ((features & 0x2000) == 0)
                 {
-                    Q('agins_linux_area').value = "(wget http://" + servername + portStr + domainUrl + "meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + domainUrlNoSlash + " '" + meshid.split('/')[2] + "'\r\n";
+                    Q('agins_linux_area').value = "(wget http://" + servername + portStr + domainUrl + "meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh http://" + servername + portStr + domainUrlNoSlash + " '" + meshid.split('/')[2] + "'\r\n";
                     Q('agins_linux_area_un').value = "(wget http://" + servername + portStr + domainUrl + "meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
                 }
                 else
