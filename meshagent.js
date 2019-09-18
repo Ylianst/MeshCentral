@@ -1206,12 +1206,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Log a value in the event log
                         if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
                             var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
+                            var targets = ['*', obj.dbMeshKey];
                             if (typeof command.userid == 'string') {
                                 var loguser = parent.users[command.userid];
-                                if (loguser) { event.userid = command.userid; event.username = loguser.name; }
+                                if (loguser) { event.userid = command.userid; event.username = loguser.name; targets.push(command.userid); }
                             }
                             if ((typeof command.sessionid == 'string') && (command.sessionid.length < 500)) { event.sessionid = command.sessionid; }
-                            parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
+                            parent.parent.DispatchEvent(targets, obj, event);
                         }
                         break;
                     }

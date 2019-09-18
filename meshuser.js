@@ -819,18 +819,44 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             });
                         }
                     } else if (common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
-                        // TODO: Check that the user has access to this nodeid
-                        var limit = 10000;
-                        if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+                        // Check that the user has access to this nodeid
+                        if (obj.user.links == null) return;
+                        db.Get(command.nodeid, function (err, nodes) {
+                            if (nodes.length != 1) return;
+                            const node = nodes[0];
 
-                        // Send the list of most recent events for this session, up to 'limit' count
-                        db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
-                            if (err != null) return;
-                            try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
+                            var meshlink = obj.user.links[node.meshid];
+                            if ((meshlink != null) && (meshlink.rights != 0)) {
+                                // Put a limit on the number of returned entries if present
+                                var limit = 10000;
+                                if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+
+                                if ((meshlink.rights & 8192) != 0) {
+                                    // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
+                                    db.GetNodeEventsSelfWithLimit(command.nodeid, domain.id, user._id, limit, function (err, docs) {
+                                        if (err != null) return;
+                                        try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
+                                    });
+                                } else {
+                                    // Send the list of most recent events for this nodeid, up to 'limit' count
+                                    db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
+                                        if (err != null) return;
+                                        try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
+                                    });
+                                }
+                            }
                         });
                     } else {
+                        // Create a filter for device groups
+                        if (obj.user.links == null) return;
+
                         // All events
-                        var filter = user.subscriptions;
+                        var exGroupFilter2 = [], filter = [], filter2 = user.subscriptions;
+
+                        // Remove MeshID's that we do not have rights to see events for
+                        for (var link in obj.user.links) { if (((obj.user.links[link].rights & 8192) != 0) && ((obj.user.links[link].rights != 0xFFFFFFFF))) { exGroupFilter2.push(link); } }
+                        for (var i in filter2) { if (exGroupFilter2.indexOf(filter2[i]) == -1) { filter.push(filter2[i]); } }
+
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
                             db.GetEvents(filter, domain.id, function (err, docs) {
@@ -2192,7 +2218,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                 event.node = node2;
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                                parent.parent.DispatchEvent(['*', node.meshid], obj, event);
+                                parent.parent.DispatchEvent(['*', node.meshid, user._id], obj, event);
                             }
                         }
                     });
