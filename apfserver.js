@@ -140,7 +140,7 @@ module.exports.CreateApfServer = function (parent, db, args) {
         parent.debug('apf',"WS Extensions:"+socket.extensions);
         parent.debug('apf',"WS Binary type:"+socket.binaryType);
 
-        socket._socket.on('data', function(chunk) { console.log(chunk.toString('hex'))});
+        //socket._socket.on('data', function(chunk) { console.log(chunk.toString('hex'))});
 
         // Setup the APF keep alive timer
         // Websocket does not have timout
