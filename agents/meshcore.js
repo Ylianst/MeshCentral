@@ -306,6 +306,7 @@ function createMeshCore(agent)
     var amtscanner = null;
     var nextTunnelIndex = 1;
     var amtPolicy = null;
+    var apftunnel = null;
 
     // Add to the server event log
     function MeshServerLog(msg, state) {
@@ -1667,7 +1668,7 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo.';
+                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo, apf.';
                     break;
                 }
                 /*
@@ -2290,6 +2291,49 @@ function createMeshCore(agent)
                         if (diag) { diag.close(); diag = null; }
                         break;
                     }
+                case 'apf': {
+                    if (meshCoreObj.intelamt!==null) {
+                        if (args['_'].length == 1) {
+                            if (args['_'][0] == 'on') {
+                                response = 'Starting APF tunnel'
+                                var apfarg = {
+                                    mpsurl: mesh.ServerUrl.replace('agent.ashx','apf.ashx'),
+                                    mpsuser: Buffer.from(mesh.ServerInfo.MeshID,'hex').toString('base64').substring(0,16),
+                                    mpspass: Buffer.from(mesh.ServerInfo.MeshID,'hex').toString('base64').substring(0,16),
+                                    mpskeepalive: 60000,
+                                    clientname: require('os').hostname(),
+                                    clientaddress: '127.0.0.1',
+                                    clientuuid: meshCoreObj.intelamt.uuid
+                                };
+                                var tobj = { debug: false }; //
+                                apftunnel= require('apfclient')(tobj,apfarg);
+                                try {
+                                    apftunnel.connect();
+                                    response += "..success";
+                                } catch (e) {
+                                    response += JSON.stringify(e);
+                                }                             
+                            } else if (args['_'][0] == 'off') {
+                                response = 'Stopping APF tunnel';
+                                try {
+                                    apftunnel.disconnect();
+                                    response += "..success";
+                                } catch (e) {
+                                    response += JSON.stringify(e);
+                                }
+                                apftunnel=null;
+                            } else {
+                                response = 'Invalid command.\r\nCmd syntax: apf on|off';
+                            }
+                        } else {                            
+                            response = 'APF tunnel is '+ (apftunnel == null ? 'off': 'on' );                            
+                        }
+                        
+                    } else {
+                        response = 'APF tunnel requires Intel AMT';
+                    }
+                    break;
+                }
                 default: { // This is an unknown command, return an error message
                     response = 'Unknown command \"' + cmd + '\", type \"help\" for list of avaialble commands.';
                     break;

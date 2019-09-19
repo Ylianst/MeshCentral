@@ -132,17 +132,20 @@ module.exports.CreateApfServer = function (parent, db, args) {
         };
     }
 
-    obj.onConnection = function(socket) {
-        console.log("Here");
+    obj.onConnection = function(socket) {        
         connectionCount++;
         // treat APS over WS like tlsoffload APF
         socket.tag = { first: true, clientCert: null, accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };        
         parent.debug('apf', "New APF connection");
+        parent.debug('apf',"WS Extensions:"+socket.extensions);
+        parent.debug('apf',"WS Binary type:"+socket.binaryType);
+
+        socket._socket.on('data', function(chunk) { console.log(chunk.toString('hex'))});
 
         // Setup the APF keep alive timer
         // Websocket does not have timout
         // socket.setTimeout(MAX_IDLE);
-        //socket.on("timeout", () => { ciraTimeoutCount++; parent.debug('mps', "APF timeout, disconnecting."); try { socket.terminate(); } catch (e) { } });
+        //socket.on("timeout", () => { ciraTimeoutCount++; parent.debug('apf', "APF timeout, disconnecting."); try { socket.terminate(); } catch (e) { } });
         //use on message instead because of websocket
         socket.on("message", function (data) {
             // use the same debug flag like APF
@@ -206,13 +209,13 @@ module.exports.CreateApfServer = function (parent, db, args) {
                     parent.debug('apfcmd', 'USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
                     // Check the APF password
-                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('apf', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
 
                     // Check the APF username, which should be the start of the MeshID.
-                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('apf', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
                     var meshIdStart = '/' + username, mesh = null;
                     if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if (mesh == null) { meshNotFoundCount++; parent.debug('apf', 'Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
 
                     // If this is a agent-less mesh, use the device guid 3 times as ID.
                     if (mesh.mtype == 1) {
@@ -547,14 +550,14 @@ module.exports.CreateApfServer = function (parent, db, args) {
 
         socket.addListener("close", function () {
             socketClosedCount++;
-            parent.debug('mps', 'APF connection closed');
+            parent.debug('apf', 'APF connection closed');
             try { delete obj.apfConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 8);
         });
 
-        socket.addListener("error", function () {
+        socket.addListener("error", function (e) {
             socketErrorCount++;
-            //console.log("APF Error: " + socket.remoteAddress);
+            console.log("APF Error: " + e);
         });
 
     }
