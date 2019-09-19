@@ -230,13 +230,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'sessionStart', sessionid: ws.sessionId }); }
 
             // Handle events
-            ws.HandleEvent = function (source, event) {
+            ws.HandleEvent = function (source, event, ids, id) {
                 if (!event.domain || event.domain == domain.id) {
                     try {
                         if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
                         else if (event == 'updatefiles') { updateUserFiles(user, ws, domain); }
-                        else { ws.send(JSON.stringify({ action: 'event', event: event })); }
+                        else {
+                            // Because of the device group "Show Self Events Only", we need to do more checks here.
+                            if (id.startsWith('mesh/')) {
+                                // Check if we have rights to get this message. If we have limited events on this mesh, don't send the event to the user.
+                                var meshlink = obj.user.links[id];
+                                if ((meshlink != null) && ((meshlink.rights == 0xFFFFFFFF) || ((meshlink.rights & 8192) == 0) || (ids.indexOf(user._id) >= 0))) {
+                                    // We have the device group rights to see this event or we are directly targetted by the event
+                                    ws.send(JSON.stringify({ action: 'event', event: event }));
+                                } else {
+                                    // Check if no other users are targeted by the event, if not, we can get this event.
+                                    var userTarget = false;
+                                    for (var i in ids) { if (ids[i].startsWith('user/')) { userTarget = true; } }
+                                    if (userTarget == false) { ws.send(JSON.stringify({ action: 'event', event: event })); }
+                                }
+                            } else {
+                                // This is not a device group event, we can get this event.
+                                ws.send(JSON.stringify({ action: 'event', event: event }));
+                            }
+                        }
                     } catch (e) { }
                 }
             };

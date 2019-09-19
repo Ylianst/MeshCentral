@@ -1024,7 +1024,7 @@ function CreateMeshCentralServer(config, args) {
                 for (var i in obj.eventsDispatch[id]) {
                     if (targets.indexOf(obj.eventsDispatch[id][i]) == -1) { // Check if we already displatched to this target
                         targets.push(obj.eventsDispatch[id][i]);
-                        try { obj.eventsDispatch[id][i].HandleEvent(source, event); } catch (ex) {
+                        try { obj.eventsDispatch[id][i].HandleEvent(source, event, ids, id); } catch (ex) {
                             console.log(ex, obj.eventsDispatch[id][i]);
                         }
                     }
