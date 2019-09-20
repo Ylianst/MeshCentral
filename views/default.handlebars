@@ -2879,7 +2879,8 @@
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
             x += "<div id=dlgAddCira0>To add a new Intel&reg; AMT device to device group \"" + EscapeHtml(mesh.name) + "\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.<br /><br />";
-            x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
+            //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
+            x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshid + '" download>cira_setup.mescript</a>');
             x += addHtmlValue('Cleanup CIRA', '<a href="mescript.ashx?type=2" download>cira_clean.mescript</a>');
             x += "</div>";
 
