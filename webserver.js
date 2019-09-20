@@ -737,7 +737,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
-        req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+        if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -854,7 +854,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
-                                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+                                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
@@ -939,7 +939,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
-                            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+                            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
                         }, 0);
                     }
@@ -1347,7 +1347,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
                 handleRootRequestEx(req, res, domain, direct);
             });
         } else {
@@ -1373,7 +1373,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/~';
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
                 parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
@@ -1387,7 +1387,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
             //if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
@@ -1398,7 +1398,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = loginCookie.u;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
             } else {
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
@@ -1415,7 +1415,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.usersGroups = req.connection.userGroups;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = cleanRemoteAddr(req.ip); // Bind this session to the IP address of the request
+                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -1737,7 +1737,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the CIRA configuration script
-    obj.getCiraConfigurationScript = function(meshid, func) {
+    obj.getCiraConfigurationScript = function (meshid, func) {
+        var meshidx = meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
         var serverNameSplit = obj.certificates.AmtMpsName.split('.');
 
         // Figure out the MPS port, use the alias if set
@@ -1754,7 +1755,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.AmtMpsName; // Set the server IPv4 address name
                 scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.AmtMpsName; // Set the server certificate name
                 scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                scriptFile.scriptBlocks[3].vars.username.value = meshid; // Set the username
+                scriptFile.scriptBlocks[3].vars.username.value = meshidx; // Set the username
                 scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
                 scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
                 //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
@@ -1779,7 +1780,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
                 scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.AmtMpsName; // Set the server DNS name
                 scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                scriptFile.scriptBlocks[3].vars.username.value = meshid; // Set the username
+                scriptFile.scriptBlocks[3].vars.username.value = meshidx; // Set the username
                 scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
                 scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
                 //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
@@ -1803,7 +1804,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.query.type == 1) {
             obj.getCiraConfigurationScript(req.query.meshid, function (script) {
                 if (script == null) { res.sendStatus(404); } else {
-                    res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup.mescript"' });
+                    try {
+                        var cirafilename = obj.meshes[req.query.meshid].name.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+                        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup_' + cirafilename + '.mescript"' });
+                    } catch (ex) {
+                        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup.mescript"' });
+                    }
                     res.send(script);
                 }
             });
@@ -3710,7 +3716,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
     // Clean a IPv6 address that encodes a IPv4 address
-    function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
+    function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
 
     // Record a new entry in a recording log
     function recordingEntry(fd, type, flags, data, func, tag) {
