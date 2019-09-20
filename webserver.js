@@ -3667,35 +3667,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (minify) {
                     p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-mobile-min');
                     if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Minify + Override document
-                } else {
-                    p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-mobile');
-                    if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Override document
                 }
+                p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-mobile');
+                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Override document
             }
             if (minify) {
                 p = obj.path.join(obj.parent.webViewsPath, pagename + '-mobile-min');
                 if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Minify document
-            } else {
-                p = obj.path.join(obj.parent.webViewsPath, pagename + '-mobile');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile document
             }
+            p = obj.path.join(obj.parent.webViewsPath, pagename + '-mobile');
+            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile document
         }
         if (obj.parent.webViewsOverridePath != null) {
             if (minify) {
                 p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-min');
                 if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Minify + Override document
-            } else {
-                p = obj.path.join(obj.parent.webViewsOverridePath, pagename);
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Override document
             }
+            p = obj.path.join(obj.parent.webViewsOverridePath, pagename);
+            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Override document
         }
         if (minify) {
             p = obj.path.join(obj.parent.webViewsPath, pagename + '-min');
             if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Minify document
-        } else {
-            p = obj.path.join(obj.parent.webViewsPath, pagename);
-            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Default document
         }
+        p = obj.path.join(obj.parent.webViewsPath, pagename);
+        if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Default document
+        return null;
     }
 
     // Return true if a mobile browser is detected.
