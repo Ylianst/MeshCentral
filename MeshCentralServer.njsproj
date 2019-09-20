@@ -60,8 +60,8 @@
     <Compile Include="agents\modules_meshcore\amt-wsman.js" />
     <Compile Include="agents\modules_meshcore\amt-xml.js" />
     <Compile Include="agents\modules_meshcore\amt.js" />
+    <Compile Include="agents\modules_meshcore\apfclient.js" />
     <Compile Include="agents\modules_meshcore\identifiers.js" />
-    <Compile Include="agents\modules_meshcore\linux-dbus.js" />
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
     <Compile Include="agents\modules_meshcore\power-monitor.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
@@ -139,6 +139,7 @@
     <Content Include="agents\meshagent_arm-linaro" />
     <Content Include="agents\meshagent_arm64" />
     <Content Include="agents\meshagent_armhf" />
+    <Content Include="agents\meshagent_mips" />
     <Content Include="agents\meshagent_osx-x86-64" />
     <Content Include="agents\meshagent_pogo" />
     <Content Include="agents\meshagent_poky" />
