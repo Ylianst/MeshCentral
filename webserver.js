@@ -737,7 +737,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
-        if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+        req.session.ip = req.ip;
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -854,7 +854,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
-                                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+                                req.session.ip = req.ip; // Bind this session to the IP address of the request
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
@@ -939,7 +939,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
-                            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+                            req.session.ip = req.ip; // Bind this session to the IP address of the request
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
                         }, 0);
                     }
@@ -1347,7 +1347,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+                req.session.ip = req.ip; // Bind this session to the IP address of the request
                 handleRootRequestEx(req, res, domain, direct);
             });
         } else {
@@ -1373,7 +1373,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/~';
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+            req.session.ip = req.ip; // Bind this session to the IP address of the request
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
                 parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
@@ -1387,7 +1387,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+            req.session.ip = req.ip; // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
             //if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
@@ -1398,7 +1398,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = loginCookie.u;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+                req.session.ip = req.ip; // Bind this session to the IP address of the request
             } else {
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
@@ -1415,7 +1415,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.usersGroups = req.connection.userGroups;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                if (typeof req.ip == 'string') { req.session.ip = cleanRemoteAddr(req.ip); } // Bind this session to the IP address of the request
+                req.session.ip = req.ip; // Bind this session to the IP address of the request
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -3188,7 +3188,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             */
 
             // Check the session if bound to the external IP address
-            //if ((req.session.ip != null) && (req.session.ip == cleanRemoteAddr(req.ip))) { req.session = {}; }
+            //if ((req.session.ip != null) && (req.ip != null) && (req.session.ip != req.ip)) { req.session = {}; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {

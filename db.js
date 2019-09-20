@@ -206,7 +206,7 @@ module.exports.CreateDB = function (parent, func) {
     if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
-        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true }, function (err, client) {
+        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
 
