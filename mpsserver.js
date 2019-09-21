@@ -791,8 +791,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 return true;
             }
             // Send a part of the message
-            cirachannel.sendBuffer = data.substring(cirachannel.sendcredits);
-            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, data.substring(0, cirachannel.sendcredits));
+            cirachannel.sendBuffer = data.toString('binary').substring(cirachannel.sendcredits);
+            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, data.toString('binary').substring(0, cirachannel.sendcredits));
             cirachannel.sendcredits = 0;
             return false;
         };

@@ -16,12 +16,12 @@ limitations under the License.
 
 /** 
 * @description Intel(r) AMT WSMAN Stack
-* @author Ylian Saint-Hilaire
+* @author Ylian Saint-Hilaire/Joko Sastriawan
 * @version v0.2.0
 */
 
 // Construct a MeshServer object
-function WsmanStackCreateService(CreateWsmanComm, host, port, user, pass, tls, extra)
+function WsmanStackCreateService(CreateWsmanComm, host, port, user, pass, tls, extra, parent, mode)
 {
     var obj = {_ObjectID: 'WSMAN'};
     //obj.onDebugMessage = null;          // Set to a function if you want to get debug messages.
@@ -38,7 +38,7 @@ function WsmanStackCreateService(CreateWsmanComm, host, port, user, pass, tls, e
     {
         var CreateWsmanComm = arguments[0];
         if (CreateWsmanComm) { 
-            obj.comm = new CreateWsmanComm(host, port, user, pass, tls, extra);             
+            obj.comm = new CreateWsmanComm(host, port, user, pass, tls, extra, parent, mode);             
         }
     }
 
