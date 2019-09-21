@@ -1,6 +1,6 @@
 ﻿/** 
 * @description Intel(r) AMT WSMAN communication using Node.js TLS
-* @author Ylian Saint-Hilaire
+* @author Ylian Saint-Hilaire/Joko Sastriawan
 * @version v0.2.0b
 */
 
@@ -39,7 +39,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.xtls = tls;
     obj.xtlsoptions = tlsoptions;
     obj.parent = parent;
-    obj.mode = mode;//0: webrelay; 1: direct, 2: CIRA, 3: APF relay
+    obj.mode = mode;//1: direct, 2: CIRA, 3: APF relay
     obj.xtlsFingerprint;
     obj.xtlsCertificate = null;
     obj.xtlsCheck = 0; // 0 = No TLS, 1 = CA Checked, 2 = Pinned, 3 = Untrusted
@@ -167,17 +167,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if (obj.mode==0 && obj.xtlsoptions && obj.xtlsoptions.meshServerConnect) { //Webrelay
-            // Use the websocket wrapper to connect to MeshServer server
-            obj.socket = CreateWebSocketWrapper(obj.xtlsoptions.host, obj.xtlsoptions.port, '/webrelay.ashx?user=' + encodeURIComponent(obj.xtlsoptions.username) + '&pass=' + encodeURIComponent(obj.xtlsoptions.password) + '&host=' + encodeURIComponent(obj.host) + '&p=1&tls1only=' + obj.xtlsMethod, obj.xtlsoptions.xtlsFingerprint);
-            obj.socket.setEncoding('binary');
-            obj.socket.setTimeout(6000); // Set socket idle timeout
-            obj.socket.ondata = obj.xxOnSocketData;
-            obj.socket.onclose = function () { if (obj.xtlsDataReceived == false) { obj.xtlsMethod = 1 - obj.xtlsMethod; } obj.xxOnSocketClosed(); }
-            obj.socket.ontimeout = function () { if (obj.xtlsDataReceived == false) { obj.xtlsMethod = 1 - obj.xtlsMethod; } obj.xxOnSocketClosed(); }
-            obj.socket.connect(obj.xxOnSocketConnected);
-            obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
-        } else if (obj.mode==1 ) { //Direct 
+        if (obj.mode==1 ) { //Direct 
             if (obj.xtls != 1) {
                 // Connect without TLS
                 obj.socket = new obj.net.Socket();
@@ -214,7 +204,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                 obj.socket = obj.parent.apfserver.SetupCiraChannel(apfconn, obj.port);
             }
             obj.socket.onData = function (ccon, data) {
-                _OnSocketData(data);
+                obj.xxOnSocketData(data);
             }
 
             obj.socket.onStateChange = function (ccon, state) {
@@ -225,11 +215,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                         obj.socketHeader = null;
                         obj.socketData = '';
                         obj.socketState = 0;
-                        _OnSocketClosed();
+                        obj.xxOnSocketClosed();
                     } catch (e) { }
                 } else if (state == 2) {
                     // channel open success
-                    _OnSocketConnected();
+                    obj.xxOnSocketConnected();
                 }
             }
         }
@@ -289,8 +279,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
 
     // NODE.js specific private method
     obj.xxOnSocketData = function (data) {
-        obj.xtlsDataReceived = true;
-        if (urlvars && urlvars['wsmantrace']) { console.log("WSMAN-RECV(" + data.length + "): " + data); }
+        //console.log("RECV:"+data);
+        obj.xtlsDataReceived = true;        
         if (typeof data === 'object') {
             // This is an ArrayBuffer, convert it to a string array (used in IE)
             var binary = "", bytes = new Uint8Array(data), length = bytes.byteLength;
@@ -305,7 +295,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
             if (obj.socketParseState == 0) {
                 var headersize = obj.socketAccumulator.indexOf("\r\n\r\n");
                 if (headersize < 0) return;
-                //obj.Debug(obj.socketAccumulator.substring(0, headersize)); // Display received HTTP header
+                //obj.Debug("Header: "+obj.socketAccumulator.substring(0, headersize)); // Display received HTTP header
                 obj.socketHeader = obj.socketAccumulator.substring(0, headersize).split("\r\n");
                 if (obj.amtVersion == null) { for (var i in obj.socketHeader) { if (obj.socketHeader[i].indexOf('Server: Intel(R) Active Management Technology ') == 0) { obj.amtVersion = obj.socketHeader[i].substring(46); } } }
                 obj.socketAccumulator = obj.socketAccumulator.substring(headersize + 4);
@@ -361,8 +351,10 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         var s = parseInt(header.Directive[1]);
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
-            obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry
-            obj.socket.end();
+            obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
+            if (obj.mode==1) {
+                obj.socket.end();
+            } 
         } else {
             var r = obj.pendingAjaxCall.shift();
             if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
@@ -378,7 +370,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.xxOnSocketClosed = function (data) {
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
-        if (obj.socket != null) { obj.socket.destroy(); obj.socket = null; }
+        if (obj.mode ==1 && obj.socket != null) { obj.socket.destroy(); obj.socket = null; }
         if (obj.pendingAjaxCall.length > 0) {
             var r = obj.pendingAjaxCall.shift();
             var retry = r[5];
@@ -389,8 +381,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     // NODE.js specific private method
     obj.xxSend = function (x) {
         if (obj.socketState == 2) {
-            if (urlvars && urlvars['wsmantrace']) { console.log("WSMAN-SEND(" + x.length + "): " + x); }
-            obj.socket.write(new Buffer(x, "binary"));
+            obj.socket.write(Buffer.from(x, "binary"));
         }
     }
 
