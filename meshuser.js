@@ -48,6 +48,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.user = user;
     obj.domain = domain;
 
+    // Server side amt stack
+    var WsmanComm = require('./amt/amt-wsman-comm.js');
+    var Wsman = require('./amt/amt-wsman.js');
+    var Amt = require('./amt/amt.js');
+
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
 
@@ -2784,6 +2789,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'amt': {
+                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                if (common.validateInt(command.mode, 0, 3) == false) break; // Check connection mode
+                // validate if communication mode is possible                
+                if (command.mode == null || command.mode==0)  {
+                    break;//unsupported
+                } else if (command.mode == 1) {
+                    var state = parent.parent.GetConnectivityState(command.nodeid);
+                    if ( (state == null) || (state.connectivity & 4)==0 ) break;
+                } else if (command.mode == 2) {
+                    if (parent.parent.mpsserver.ciraConnections[command.nodeid] == null) break;
+                } else if (command.mode == 3) {
+                    if (parent.parent.apfserver.apfConnections[command.nodeid] == null) break;
+                }
+                var nodeid = command.nodeid;
+                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                    // Get the device
+                    db.Get(nodeid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length != 1)) return;
+                        var node = nodes[0];
+
+                        // Get the mesh for this device
+                        mesh = parent.meshes[node.meshid];
+                        if (mesh) {
+                            // Check if this user has rights to do this
+                            if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
+                                handleAmtCommand(command, node);
+                            }
+                        }
+                    });
+                }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
@@ -2911,6 +2949,34 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
 
     function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+
+    function handleAmtCommand(cmd, node) {
+        if (cmd==null) return;
+        var host = cmd.nodeid;
+        if (cmd.mode==1) {
+            host = node.host;
+        }
+        var tlsoptions = null;
+        var wsman = new Wsman(WsmanComm, host, node.intelamt.tls? 16993: 16992, node.intelamt.user, node.intelamt.pass, 
+            node.intelamt.tls,tlsoptions, parent.parent, cmd.mode);
+        var amt = new Amt(wsman);
+        switch (cmd.command) {
+            case "Get-GeneralSettings": {
+                amt.Get("AMT_GeneralSettings", function(obj, name, response, status) {
+                    if (status==200) {
+                        var resp = { action: 'amt', nodeid: cmd.nodeid, command: 'Get-GeneralSettings', value: response.Body}
+                        ws.send(JSON.stringify(resp));
+                    } else {
+                        ws.send(JSON.stringify({"error": error}));
+                    }
+                });
+                break;
+            }
+            default: {
+                // do nothing
+            }
+        }
+    }
 
     return obj;
 };
