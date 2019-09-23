@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -25,6 +25,7 @@ if (args['_'].length == 0) {
     console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
     console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
     console.log("  SendInviteEmail           - Send an agent install invitation email.");
+    console.log("  GenerateInviteLink        - Create an invitation link.");
     console.log("  Broadcast                 - Display a message to all online users.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
@@ -96,6 +97,12 @@ if (args['_'].length == 0) {
             else { ok = true; }
             break;
         }
+        case 'generateinvitelink': {
+            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            else if (args.hours == null) { console.log("Invitation validity period missing, use --hours [hours]"); }
+            else { ok = true; }
+            break;
+        }
         case 'help': {
             if (args['_'].length < 2) {
                 console.log("Get help on an action. Type:\r\n\r\n  help [action]\r\n\r\nPossible actions are: " + possibleCommands.join(', ') + '.');
@@ -107,6 +114,15 @@ if (args['_'].length == 0) {
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --id [groupid]         - Device group identifier.");
                         console.log("  --email [email]        - Email address.");
+                        break;
+                    }
+                    case 'generateinvitelink': {
+                        console.log("Generate a agent invitation URL for a given group. Example usage:\r\n");
+                        console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 24");
+                        console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 0");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
                         break;
                     }
                     case 'serverinfo': {
@@ -395,6 +411,11 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'generateinvitelink': {
+                var op = { action: "createInviteLink", meshid: args.id, expire: args.hours, flags: 0, responseid: 'meshctrl' }
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'broadcast': {
                 var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
@@ -439,7 +460,7 @@ function serverConnect() {
             case 'deletemesh': // REMOVEDEVICEGROUP
             case 'addmeshuser': //
             case 'removemeshuser': //
-            case 'inviteAgent':
+            case 'inviteAgent': //
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
@@ -449,6 +470,13 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'createInviteLink':
+                if (data.responseid == 'meshctrl') {
+                    if (data.url) { console.log(data.url); }
+                    else console.log(data.result);
+                    process.exit();
+                }
+                break;
             case 'users': { // LISTUSERS
                 if (args.json) {
                     console.log(JSON.stringify(data.users, ' ', 2));
