@@ -332,7 +332,7 @@ function CreateAPFClient(parent, args) {
                 if (pfwd_ports.indexOf(p_res.target_port) >= 0) {
                     // connect socket to that port
                     obj.downlinks[p_res.sender_chan] = obj.net.createConnection({ host: obj.args.clientaddress, port: p_res.target_port }, function () {
-                        obj.downlinks[p_res.sender_chan].setEncoding('binary');//assume everything is binary, not interpreting
+                        //obj.downlinks[p_res.sender_chan].setEncoding('binary');//assume everything is binary, not interpreting
                         SendChannelOpenConfirm(socket.ws, p_res);
                     });
 
@@ -348,8 +348,10 @@ function CreateAPFClient(parent, args) {
                     obj.downlinks[p_res.sender_chan].on('end', function () {
                         if (obj.downlinks[p_res.sender_chan]) {
                             try {
+                                Debug("Socket ends.");
                                 SendChannelClose(socket.ws, p_res.sender_chan);
-                                delete obj.downlinks[p_res.sender_chan];
+                                // add some delay before removing... otherwise race condition
+                                setTimeout(function () { delete obj.downlinks[p_res.sender_chan];},100);
                             } catch (e) {
                                 Debug("Downlink connection exception: " + e);
                             }
@@ -449,14 +451,14 @@ function CreateAPFClient(parent, args) {
 
     function SendChannelData(socket, chan, len, data) {
         var buf = String.fromCharCode(APFProtocol.CHANNEL_DATA) + IntToStr(chan) + IntToStr(len) + data;
-        socket.write(Buffer.from(buf, 'binary'));
+        socket.write(buf);
         Debug("APF: Send ChannelData: " + rstr2hex(buf));
     }
 
     function SendChannelClose(socket, chan) {
         var buf = String.fromCharCode(APFProtocol.CHANNEL_CLOSE) + IntToStr(chan);
-        socket.write(Buffer.from(buf, 'binary'));
-        Debug("APF: Send ChannelClose: " + rstr2hex(buf));
+        socket.write(buf);
+        Debug("APF: Send ChannelClose ");
     }
 
     obj.connect = function () {
