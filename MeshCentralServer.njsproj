@@ -96,6 +96,10 @@
     <Compile Include="amt\amt-ider-module.js" />
     <Compile Include="amt\amt-ider.js" />
     <Compile Include="amt\amt-redir-mesh.js" />
+    <Compile Include="amt\amt-wsman-comm.js" />
+    <Compile Include="amt\amt-wsman.js" />
+    <Compile Include="amt\amt-xml.js" />
+    <Compile Include="amt\amt.js" />
     <Compile Include="apfserver.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="letsencrypt.js" />

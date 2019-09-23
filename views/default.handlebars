@@ -119,6 +119,7 @@
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onclick=go(13) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onclick=go(16) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onclick=go(17) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
                                 <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onclick=go(14) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg; AMT</td>
                                 <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onclick=go(15) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
@@ -730,6 +731,13 @@
                     </tr>
                 </table>
                 <div id=p16events></div>
+            </div>
+            <div id=p17 style="display:none">
+                <div id="p17title">
+                    <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Details - <span id=p17deviceName></span></h1>
+                </div>
+                <div id=p17info></div>
             </div>
             <div id=p20 style="display:none">
                 <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
@@ -1482,6 +1490,74 @@
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
                     for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
                     if (currentNode._id == message.nodeid) { masterUpdate(256); }
+                    break;
+                }
+                case 'getsysinfo': {
+                    if (message.nodeid != powerTimelineReq) break;
+                    console.log('getsysinfo', message);
+                    if (message.noinfo === true) {
+                        QH('p17info', 'No information for this device.');
+                    } else {
+                        var x = '', s = {};
+                        if (message.hardware) {
+                            if (message.hardware.identifiers) {
+                                var ident = message.hardware.identifiers;
+                                // BIOS
+                                x += '<div class=DevSt style=margin-bottom:3px><b>BIOS</b></div>';
+                                if (ident.bios_vendor) { x += addDetailItem('Vendor', ident.bios_vendor, s); }
+                                if (ident.bios_version) { x += addDetailItem('Version', ident.bios_version, s); }
+                                x += '<br />';
+
+                                // Motherboard
+                                x += '<div class=DevSt style=margin-bottom:3px><b>Motherboard</b></div>';
+                                if (ident.board_vendor) { x += addDetailItem('Vendor', ident.board_vendor, s); }
+                                if (ident.board_name) { x += addDetailItem('Name', ident.board_name, s); }
+                                if (ident.board_serial && (ident.board_serial != '')) { x += addDetailItem('Serial', ident.board_serial, s); }
+                                if (ident.board_version) { x += addDetailItem('Version', ident.board_version, s); }
+                                if (ident.product_uuid) { x += addDetailItem('Identifier', ident.product_uuid, s); }
+                                x += '<br />';
+                            }
+
+                            if (message.hardware.windows) {
+                                if (message.hardware.windows.memory) {
+                                    // Memory
+                                    x += '<div class=DevSt style=margin-bottom:3px><b>Memory</b></div>';
+
+                                    // Sort Memory
+                                    function memorySort(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; }
+                                    message.hardware.windows.memory.sort(memorySort);
+
+                                    x += '<table style=width:100%>';
+                                    for (var i in message.hardware.windows.memory) {
+                                        var m = message.hardware.windows.memory[i];
+                                        x += '<tr><td VALIGN=Top style=width:38px><img src="images/ram2.png" />'
+                                        x += '<td><div style=background-color:lightgray;border-radius:5px;padding:8px>';
+                                        x += '<div><b>' + m.BankLabel + '</b></div>';
+                                        if (m.Capacity) { x += addDetailItem('Capacity / Speed', ( m.Capacity / 1024 / 1024) + ' Mb, ' + m.Speed + ' Mhz', s); }
+                                        if (m.PartNumber) { x += addDetailItem('Part Number', ((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + m.PartNumber, s); }
+                                        x += '</div>';
+                                    }
+                                    x += '</table><br />';
+                                }
+
+                                if (message.hardware.windows.osinfo) {
+                                    // Operating System
+                                    var m = message.hardware.windows.osinfo;
+                                    x += '<div class=DevSt style=margin-bottom:3px><b>Operating System</b></div>';
+                                    if (m.Caption) { x += addDetailItem('Name', m.Caption, s); }
+                                    if (m.Version) { x += addDetailItem('Version', m.Version, s); }
+                                    if (m.OSArchitecture) { x += addDetailItem('Architecture', m.OSArchitecture, s); }
+                                    x += '<br />';
+                                }
+
+                                // Disks
+                                //x += '<div class=DevSt style=margin-bottom:3px><b>Disks</b></div>';
+                                //x += '<br />';
+                            }
+                        }
+
+                        QH('p17info', x);
+                    }
                     break;
                 }
                 case 'lastconnect': {
@@ -4002,6 +4078,7 @@
                 QH('p14deviceName', nname);
                 QH('p15deviceName', 'Console - ' + nname);
                 QH('p16deviceName', nname);
+                QH('p17deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -4221,6 +4298,8 @@
                     powerTimelineReq = currentNode._id;
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
+                    meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
+                    QH('p17info', '');
                 }
 
                 // Reset the desktop tools
@@ -8811,7 +8890,7 @@
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 115: 'ServerConsole' };
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -8886,6 +8965,9 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function addDetailItem(title, value, state) {
+            return '<div><span style=float:right>' + value + '</span><span>' + title + '</span></div>';
+        }
     </script>
 </body>
 </html>
