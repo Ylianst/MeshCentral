@@ -823,49 +823,9 @@ function createMeshCore(agent)
                 }
                 case 'sysinfo': {
                     // Fetch system information
-                    if (process.platform != 'win32') break; // Remove this when Linux/MacOS support this.
-                    try {
-                        var results = { hardware: require('identifiers').get(), pendingReboot: require('win-info').pendingReboot() }; // Hardware & pending reboot
-                        if (results.hardware.windows) {
-                            var x = results.hardware.windows.osinfo;
-                            try { delete x.FreePhysicalMemory; } catch (ex) { }
-                            try { delete x.FreeSpaceInPagingFiles; } catch (ex) { }
-                            try { delete x.FreeVirtualMemory; } catch (ex) { }
-                            try { delete x.LocalDateTime; } catch (ex) { }
-                            try { delete x.MaxProcessMemorySize; } catch (ex) { }
-                            try { delete x.TotalVirtualMemorySize; } catch (ex) { }
-                            try { delete x.TotalVisibleMemorySize; } catch (ex) { }
-                        }
-                        /*
-                        if (process.platform == 'win32')
-                        {
-                            var defragResult = function (r)
-                            {
-                                if (typeof r == 'object') { results[this.callname] = r; }
-                                if (this.callname == 'defrag')
-                                {
-                                    var pr = require('win-info').installedApps(); // Installed apps
-                                    pr.callname = 'installedApps';
-                                    pr.sessionid = data.sessionid;
-                                    pr.then(defragResult, defragResult);
-                                }
-                                else
-                                {
-                                    results.winpatches = require('win-info').qfe(); // Windows patches
-                                    results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
-                                    if (data.hash != results.hash) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
-                                }
-                            }
-                            var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag TODO
-                            pr.callname = 'defrag';
-                            pr.sessionid = data.sessionid;
-                            pr.then(defragResult, defragResult);
-                        } else {
-                        */
-                            results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
-                            if (data.hash != results.hash) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
-                        //}
-                    } catch (ex) { }
+                    getSystemInformation(function (results) {
+                        if ((results != null) && (data.hash != results.hash)) { mesh.SendCommand({ "action": "sysinfo", "sessionid": this.sessionid, "data": results }); }
+                    });
                     break;
                 }
                 case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
@@ -885,6 +845,54 @@ function createMeshCore(agent)
         if ((response != undefined) && (response != null)) { this.tunnel.s.write(JSON.stringify(response)); }
     }
     */
+
+    function getSystemInformation(func) {
+        try {
+            var results = { hardware: require('identifiers').get() }; // Hardware info
+            if (results.hardware && results.hardware.windows) {
+                // Remove extra entries and things that change quickly
+                var x = results.hardware.windows.osinfo;
+                try { delete x.FreePhysicalMemory; } catch (ex) { }
+                try { delete x.FreeSpaceInPagingFiles; } catch (ex) { }
+                try { delete x.FreeVirtualMemory; } catch (ex) { }
+                try { delete x.LocalDateTime; } catch (ex) { }
+                try { delete x.MaxProcessMemorySize; } catch (ex) { }
+                try { delete x.TotalVirtualMemorySize; } catch (ex) { }
+                try { delete x.TotalVisibleMemorySize; } catch (ex) { }
+                try {
+                    if (results.hardware.windows.memory) { for (var i in results.hardware.windows.memory) { delete results.hardware.windows.memory[i].Node; } }
+                    if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
+                    if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
+                } catch (ex) { }
+            }
+            if (process.platform == 'win32') { results.pendingReboot = require('win-info').pendingReboot(); } // Pending reboot
+            /*
+            if (process.platform == 'win32') {
+                var defragResult = function (r) {
+                    if (typeof r == 'object') { results[this.callname] = r; }
+                    if (this.callname == 'defrag') {
+                        var pr = require('win-info').installedApps(); // Installed apps
+                        pr.callname = 'installedApps';
+                        pr.sessionid = data.sessionid;
+                        pr.then(defragResult, defragResult);
+                    }
+                    else {
+                        results.winpatches = require('win-info').qfe(); // Windows patches
+                        results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                        func(results);
+                    }
+                }
+                var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag TODO
+                pr.callname = 'defrag';
+                pr.sessionid = data.sessionid;
+                pr.then(defragResult, defragResult);
+            } else {
+            */
+                results.hash = require('SHA384Stream').create().syncHash(JSON.stringify(results)).toString('hex');
+                func(results);
+            //}
+        } catch (ex) { func(null, ex); }
+    }
 
     // Get a formated response for a given directory path
     function getDirectoryInfo(reqpath) {
@@ -1903,28 +1911,9 @@ function createMeshCore(agent)
                     break;
                 }
                 case 'sysinfo': { // Return system information
-                    var results = { hardware: require('identifiers').get() }; // Hardware && pending reboot
-                    if (process.platform == 'win32') {
-                        results.pendingReboot = require('win-info').pendingReboot();
-                        var defragResult = function (r) {
-                            if (typeof r == 'object') { results[this.callname] = r; }
-                            if (this.callname == 'defrag') {
-                                var pr = require('win-info').installedApps(); // Installed apps
-                                pr.sessionid = sessionid;
-                                pr.callname = 'installedApps';
-                                pr.then(defragResult, defragResult);
-                            } else {
-                                results.winpatches = require('win-info').qfe(); // Windows patches
-                                sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
-                            }
-                        }
-                        var pr = require('win-info').defrag({ volume: 'C:' }); // Defrag
-                        pr.sessionid = sessionid;
-                        pr.callname = 'defrag';
-                        pr.then(defragResult, defragResult);
-                    } else {
-                        response = JSON.stringify(results, null, 1);
-                    }
+                    getSystemInformation(function (results, err) {
+                        if (results == null) { sendConsoleText(err, this.sessionid); } else { sendConsoleText(JSON.stringify(results, null, 1), this.sessionid); }
+                    });
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module

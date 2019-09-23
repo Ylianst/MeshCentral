@@ -479,6 +479,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'powertimeline':
                 {
+                    // TODO: Check that we have permissions for this node.
+
                     // Query the database for the power timeline for a given node
                     // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
                     if (common.validateString(command.nodeid, 0, 128) == false) return;
@@ -510,13 +512,43 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
+            case 'getsysinfo':
+                {
+                    // TODO: Check that we have permissions for this node.
+
+                    if (common.validateString(command.nodeid, 0, 128) == false) break;
+                    var snode = command.nodeid.split('/');
+                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
+                    // Query the database system information
+                    db.Get('si' + command.nodeid, function (err, docs) {
+                        if ((docs != null) && (docs.length > 0)) {
+                            var doc = docs[0];
+                            doc.action = 'getsysinfo';
+                            doc.nodeid = command.nodeid;
+                            doc.tag = command.tag;
+                            delete doc.type;
+                            delete doc.domain;
+                            delete doc._id;
+                            try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                        } else {
+                            try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true })); } catch (ex) { }
+                        }
+                    });
+                    break;
+                }
             case 'lastconnect':
                 {
+                    // TODO: Check that we have permissions for this node.
+
                     if (common.validateString(command.nodeid, 0, 128) == false) return;
+                    var snode = command.nodeid.split('/');
+                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
 
                     // Query the database for the last time this node connected
                     db.Get('lc' + command.nodeid, function (err, docs) {
-                        if ((docs != null) && (docs.length > 0)) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { } }
+                        if ((docs != null) && (docs.length > 0)) {
+                            try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                        }
                     });
                     break;
                 }
