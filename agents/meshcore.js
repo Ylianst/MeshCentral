@@ -1645,8 +1645,15 @@ function createMeshCore(agent)
         try {
             switch (process.platform) {
                 case 'win32':
-                    //child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER, uid: require('user-sessions').Current().Active[0].SessionId });
-                    child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ["/c", "start", url], { type: childProcess.SpawnTypes.USER });
+                    var user = require('user-sessions').getUsername(require('user-sessions').consoleUid());
+                    child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd']);
+                    child.stderr.on('data', function () { });
+                    child.stdout.on('data', function () { });
+                    child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 /RU ' + user + ' /TR "' + process.env['windir'] + '\\system32\\cmd.exe /C START ' + url + '"\r\n');
+                    child.stdin.write('SCHTASKS /RUN /TN MeshChatTask\r\n');
+                    child.stdin.write('SCHTASKS /DELETE /F /TN MeshChatTask\r\n');
+                    child.stdin.write('exit\r\n');
+                    child.waitExit();
                     break;
                 case 'linux':
                     child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });
