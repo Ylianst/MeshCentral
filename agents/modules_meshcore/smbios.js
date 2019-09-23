@@ -276,10 +276,10 @@ function SMBiosTables()
                     var settings = data[131].peek();
                     if (settings[0] & 0x04) { retVal.TXT = (settings[0] & 0x08) ? true : false; }
                     if (settings[0] & 0x10) { retVal.VMX = (settings[0] & 0x20) ? true : false; }
-                    retVal.MEBX = settings.readUInt16LE(10).toString() + '.' + settings.readUInt16LE(8).toString() + '.' + settings.readUInt16LE(6).toString() + '.' + settings.readUInt16LE(4).toString();
+                    retVal.MEBX = settings.readUInt16LE(4).toString() + '.' + settings.readUInt16LE(6).toString() + '.' + settings.readUInt16LE(8).toString() + '.' + settings.readUInt16LE(10).toString();
 
                     var mecap = settings.slice(20, 32);
-                    retVal.ManagementEngine = mecap.readUInt16LE(6).toString() + '.' + mecap.readUInt16LE(4).toString() + '.' + mecap.readUInt16LE(2).toString() + '.' + mecap.readUInt16LE(0).toString();
+                    retVal.ManagementEngine = mecap.readUInt16LE(6).toString() + '.' + mecap.readUInt16LE(4).toString() + '.' + mecap.readUInt16LE(10).toString() + '.' + mecap.readUInt16LE(8).toString();
 
                     //var lan = settings.slice(36, 48);
                     //console.log(lan.toString('hex'));
