@@ -48,10 +48,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.user = user;
     obj.domain = domain;
 
-    // Server side amt stack
-    var WsmanComm = require('./amt/amt-wsman-comm.js');
-    var Wsman = require('./amt/amt-wsman.js');
-    var Amt = require('./amt/amt.js');
+    // Server side Intel AMT stack
+    const WsmanComm = require('./amt/amt-wsman-comm.js');
+    const Wsman = require('./amt/amt-wsman.js');
+    const Amt = require('./amt/amt.js');
 
     // Send a message to the user
     //obj.send = function (data) { try { if (typeof data == 'string') { ws.send(Buffer.from(data, 'binary')); } else { ws.send(data); } } catch (e) { } }
@@ -2772,14 +2772,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'createInviteLink': {
-                if (common.validateString(command.meshid, 8, 128) == false) break; // Check the meshid
-                if (common.validateInt(command.expire, 0, 99999) == false) break; // Check the expire time in hours
-                if (common.validateInt(command.flags, 0, 256) == false) break; // Check the flags
+                var err = null;
+                if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid group id'; } // Check the meshid
+                else if (common.validateInt(command.expire, 0, 99999) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
+                else if (common.validateInt(command.flags, 0, 256) == false) { err = 'Invalid flags'; }; // Check the flags
+                if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                var smesh = command.meshid.split('/');
+                if ((smesh.length != 3) || (smesh[0] != 'mesh') || (smesh[1] != domain.id)) { err = 'Invalid group id'; }
+
+                // Handle any errors
+                if (err != null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: err })); } catch (ex) { } }
+                    break;
+                }
+
                 mesh = parent.meshes[command.meshid];
-                if (mesh == null) break;
+                if (mesh == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: 'Unable to find this device group id' })); } catch (ex) { } } break; }
                 const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.invitationLinkEncryptionKey);
-                if (inviteCookie == null) break;
-                ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, expire: command.expire, cookie: inviteCookie }));
+                if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: 'Unable to generate invitation cookie' })); } catch (ex) { } } break; }
+
+                // Create the server url
+                var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                var xdomain = (domain.dns == null) ? domain.id : '';
+                if (xdomain != '') xdomain += "/";
+                var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agentinvite?c=" + inviteCookie;
+
+                ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, url: url, expire: command.expire, cookie: inviteCookie, responseid: command.responseid, tag: command.tag }));
                 break;
             }
             case 'traceinfo': {
@@ -2792,9 +2810,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'amt': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                 if (common.validateInt(command.mode, 0, 3) == false) break; // Check connection mode
-                // validate if communication mode is possible                
+                // Validate if communication mode is possible                
                 if (command.mode == null || command.mode==0)  {
-                    break;//unsupported
+                    break; //unsupported
                 } else if (command.mode == 1) {
                     var state = parent.parent.GetConnectivityState(command.nodeid);
                     if ( (state == null) || (state.connectivity & 4)==0 ) break;
@@ -2811,7 +2829,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var node = nodes[0];
 
                         // Get the mesh for this device
-                        mesh = parent.meshes[node.meshid];
+                        var mesh = parent.meshes[node.meshid];
                         if (mesh) {
                             // Check if this user has rights to do this
                             if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
@@ -2951,29 +2969,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
 
     function handleAmtCommand(cmd, node) {
-        if (cmd==null) return;
+        if (cmd == null) return;
         var host = cmd.nodeid;
-        if (cmd.mode==1) {
-            host = node.host;
-        }
+        if (cmd.mode == 1) { host = node.host; }
         var tlsoptions = null;
-        var wsman = new Wsman(WsmanComm, host, node.intelamt.tls? 16993: 16992, node.intelamt.user, node.intelamt.pass, 
-            node.intelamt.tls,tlsoptions, parent.parent, cmd.mode);
+        var wsman = new Wsman(WsmanComm, host, node.intelamt.tls ? 16993 : 16992, node.intelamt.user, node.intelamt.pass,
+            node.intelamt.tls, tlsoptions, parent.parent, cmd.mode);
         var amt = new Amt(wsman);
         switch (cmd.command) {
             case "Get-GeneralSettings": {
-                amt.Get("AMT_GeneralSettings", function(obj, name, response, status) {
-                    if (status==200) {
-                        var resp = { action: 'amt', nodeid: cmd.nodeid, command: 'Get-GeneralSettings', value: response.Body}
+                amt.Get("AMT_GeneralSettings", function (obj, name, response, status) {
+                    if (status == 200) {
+                        var resp = { action: 'amt', nodeid: cmd.nodeid, command: 'Get-GeneralSettings', value: response.Body }
                         ws.send(JSON.stringify(resp));
                     } else {
-                        ws.send(JSON.stringify({"error": error}));
+                        ws.send(JSON.stringify({ "error": error }));
                     }
                 });
                 break;
             }
             default: {
-                // do nothing
+                // Do nothing
             }
         }
     }

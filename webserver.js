@@ -3173,9 +3173,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
             if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) {
                 res.set(domain.httpheaders);
-            }
-            /*
-            else {
+            } else {
                 // Use default security headers
                 res.set({
                     "X-Frame-Options": "sameorigin",
@@ -3185,10 +3183,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
-            */
 
             // Check the session if bound to the external IP address
-            //if ((req.session.ip != null) && (req.ip != null) && (req.session.ip != req.ip)) { req.session = {}; }
+            if ((req.session.ip != null) && (req.ip != null) && (req.session.ip != req.ip)) { req.session = {}; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {

@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const PDH_FMT_LONG = 0x00000100;
-const PDH_FMT_DOUBLE = 0x00000200;
+var PDH_FMT_LONG = 0x00000100;
+var PDH_FMT_DOUBLE = 0x00000200;
 
 var promise = require('promise');
 if (process.platform == 'win32')
