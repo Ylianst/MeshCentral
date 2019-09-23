@@ -1746,7 +1746,7 @@
                 case 'otpauth-getpasswords': {
                     if (xxdialogMode) return;
                     var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
-                    x += "<div style='border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px'><div style='padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold'><table style=width:100%;text-align:center>";
+                    x += "<div style='border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px'><div style='padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold'><table class=selecttext style=width:100%;text-align:center>";
                     if (message.passwords) {
                         var j = 0;
                         for (var i in message.passwords) {
