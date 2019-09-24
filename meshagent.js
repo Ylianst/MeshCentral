@@ -1307,12 +1307,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                 case 'sysinfo': {
-                    //console.log('sysinfo', obj.nodeid, JSON.stringify(command.data.hash));
-                    command.data._id = 'si' + obj.dbNodeKey;
-                    command.data.type = 'sysinfo';
-                    command.data.domain = domain.id;
-                    command.data.time = Date.now();
-                    db.Set(command.data); // Update system information in the database.
+                    if ((typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
+                        command.data._id = 'si' + obj.dbNodeKey;
+                        command.data.type = 'sysinfo';
+                        command.data.domain = domain.id;
+                        command.data.time = Date.now();
+                        db.Set(command.data); // Update system information in the database.
+
+                        // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
+                        var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
+                        parent.parent.DispatchEvent(['*', obj.dbMeshKey], obj, event);
+                    }
                     break;
                 }
                 case 'sysinfocheck': {

@@ -2529,16 +2529,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (twoStepLoginSupported == false) break;
 
                     // Perform a sub-action
-                    var actionTaken = false;
+                    var actionTaken = false, actionText = null;
                     if (command.subaction == 1) { // Generate a new set of tokens
                         var randomNumbers = [], v;
                         for (var i = 0; i < 10; i++) { do { v = getRandomEightDigitInteger(); } while (randomNumbers.indexOf(v) >= 0); randomNumbers.push(v); }
                         user.otpkeys = { keys: [] };
                         for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
                         actionTaken = true;
+                        actionText = 'New 2FA backup codes generated.';
                     } else if (command.subaction == 2) { // Clear all tokens
                         actionTaken = (user.otpkeys != null);
                         user.otpkeys = null;
+                        if (actionTaken) { actionText = '2FA backup codes cleared.'; }
                     }
 
                     // Save the changed user
@@ -2550,11 +2552,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Notify change
-                    var targets = ['*', 'server-users', user._id];
-                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id };
-                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                    parent.parent.DispatchEvent(targets, obj, event);
+                    if (actionText != null) {
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: actionText, domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
                     break;
                 }
             case 'otp-hkey-get':
