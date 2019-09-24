@@ -1556,6 +1556,11 @@ a {
     clear: both;
 }
 
+    .filelist:hover {
+        background: #EEE;
+        border-radius: 3px;
+    }
+
 .noselect {
     -webkit-touch-callout: none;
     -webkit-user-select: none;

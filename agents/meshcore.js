@@ -1912,7 +1912,9 @@ function createMeshCore(agent)
                 }
                 case 'sysinfo': { // Return system information
                     getSystemInformation(function (results, err) {
-                        if (results == null) { sendConsoleText(err, this.sessionid); } else { sendConsoleText(JSON.stringify(results, null, 1), this.sessionid); }
+                        if (results == null) { sendConsoleText(err, this.sessionid); } else {
+                            sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
+                        }
                     });
                     break;
                 }

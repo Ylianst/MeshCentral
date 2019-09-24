@@ -1494,7 +1494,7 @@
                 }
                 case 'getsysinfo': {
                     if (message.nodeid != powerTimelineReq) break;
-                    console.log('getsysinfo', message);
+                    //console.log('getsysinfo', message); // ***********************
                     if (message.noinfo === true) {
                         QH('p17info', 'No information for this device.');
                     } else {
@@ -1748,12 +1748,18 @@
                     var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
                     x += "<div style='border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px'><div style='padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold'><table class=selecttext style=width:100%;text-align:center>";
                     if (message.passwords) {
-                        var j = 0;
+                        var j = 0, clipb = '';
                         for (var i in message.passwords) {
                             if (++j % 2) { x += '<tr>'; }
                             var p = '' + message.passwords[i].p;
                             while (p.length < 8) { p = '0' + p; }
-                            if (message.passwords[i].u === true) { x += '<td>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); } else { x += '<td><strike style=color:#BBB>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); + '</strike>'; }
+                            if (message.passwords[i].u === true) {
+                                x += '<td>' + p.substring(0, 4) + '&nbsp;' + p.substring(4);
+                                if (clipb != '') { clipb += ' '; }
+                                clipb += p;
+                            } else {
+                                x += '<td><strike style=color:#BBB>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); + '</strike>';
+                            }
                         }
                     } else {
                         x += '<tr><td>No Active Tokens';
@@ -1761,7 +1767,10 @@
                     x += "</table></div></div><br />";
                     x += "<div><input type=button value='Close' onclick=setDialogMode(0) style=float:right></input>";
                     x += "<input type=button value='Generate New Tokens' onclick='account_manageOtp(1);'></input>";
-                    if (message.passwords != null) { x += "<input type=button value='Clear Tokens' onclick='account_manageOtp(2);'></input>"; }
+                    if (message.passwords != null) {
+                        x += "<input type=button value='Clear Tokens' onclick='account_manageOtp(2);'></input>";
+                        x += '&nbsp;<img src=images/link4.png height=10 width=10 title="Copy valid codes to clipboard" style=cursor:pointer onclick=copyTextToClip2("' + encodeURIComponent(clipb) + '")>';
+                    }
                     x += "</div><br />";
                     setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
                     break;
@@ -2206,6 +2215,13 @@
                                     serverTraceSources = [];
                                     QH('p41traceStatus', 'None');
                                 }
+                            }
+                            break;
+                        }
+                        case 'sysinfohash': {
+                            // If the sysinfo document has changed and we are looking at it, request an update.
+                            if ((currentNode != null) && (message.event.nodeid == powerTimelineReq)) {
+                                meshserver.send({ action: 'getsysinfo', nodeid: message.event.nodeid });
                             }
                             break;
                         }
