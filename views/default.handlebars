@@ -2848,7 +2848,7 @@
             }
             if (mesh.mtype == 2) {
                 r += ' <a href=# style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>Add Agent</a>';
-                r += ' <a href=# style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent on this mesh." onclick=\'return inviteAgentToMesh(\"' + mesh._id + '\")\'>Invite</a>';
+                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title="Invite someone to install the mesh agent on this mesh." onclick=\'return inviteAgentToMesh(\"' + mesh._id + '\")\'>Invite</a>'; }
             }
             return r;
         }
@@ -7168,10 +7168,13 @@
 
         function p20validateAddMeshUserDialog() {
             var meshrights = currentMesh.links[userinfo._id].rights;
-            var ok = true, xusers = null;
+            var ok = true;
             if (Q('dp20username')) {
-                Q('dp20username').value.split(',');
-                for (var i in xusers) { var xuser = xusers[i] = xusers[i].trim(); if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; } }
+                var xusers = Q('dp20username').value.split(',');
+                for (var i in xusers) {
+                    var xuser = xusers[i] = xusers[i].trim();
+                    if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; }
+                }
 
                 // Fill the suggestion box
                 var showsuggestbox = false, exactMatch = false;

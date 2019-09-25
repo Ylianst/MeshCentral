@@ -3180,7 +3180,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     "Referrer-Policy": "no-referrer",
                     "X-XSS-Protection": "1; mode=block",
                     "X-Content-Type-Options": "nosniff",
-                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self' ws" + ((args.notls !== true)?'s':'') + "://" + req.headers.host + "; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
 

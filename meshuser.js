@@ -2815,6 +2815,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                 var smesh = command.meshid.split('/');
                 if ((smesh.length != 3) || (smesh[0] != 'mesh') || (smesh[1] != domain.id)) { err = 'Invalid group id'; }
+                var serverName = parent.getWebServerName(domain);
+                if (parent.args.lanonly == true) { err = 'Server has not fixed IP or DNS name.'; }
 
                 // Handle any errors
                 if (err != null) {
@@ -2831,7 +2833,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += "/";
-                var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agentinvite?c=" + inviteCookie;
+                var url = "http" + (args.notls ? '' : 's') + "://" + serverName + ":" + httpsPort + "/" + xdomain + "agentinvite?c=" + inviteCookie;
 
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, url: url, expire: command.expire, cookie: inviteCookie, responseid: command.responseid, tag: command.tag }));
                 break;
