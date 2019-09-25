@@ -908,7 +908,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check that the user has access to this nodeid
                         if (obj.user.links == null) return;
                         db.Get(command.nodeid, function (err, nodes) {
-                            if ((node == null) || (nodes.length != 1)) return;
+                            if ((nodes == null) || (nodes.length != 1)) return;
                             const node = nodes[0];
 
                             var meshlink = obj.user.links[node.meshid];
@@ -1987,7 +1987,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
                         db.Get(command.nodeids[i], function (err, nodes) {
-                            if ((node == null) || (nodes.length != 1)) return;
+                            if ((nodes == null) || (nodes.length != 1)) return;
                             const node = nodes[0];
 
                             // Check if already in the right mesh
