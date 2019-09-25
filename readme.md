@@ -1,7 +1,8 @@
 MeshCentral
 ===========
 
-For more information, [visit MeshCommander.com/MeshCentral2](http://www.meshcommander.com/meshcentral2).
+For more information, [visit MeshCommander.com/MeshCentral2](https://www.meshcommander.com/meshcentral2).
+Discussion forum on [Reddit](https://www.reddit.com/r/MeshCentral/).
 
 Download the [full PDF user's guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) with more information on configuring and running MeshCentral2. In addition, the [installation guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf) can help get MeshCentral installed on Amazon AWS, Microsoft Azure, Ubuntu or Raspberry Pi.
 

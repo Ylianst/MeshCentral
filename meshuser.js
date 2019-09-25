@@ -479,75 +479,106 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'powertimeline':
                 {
-                    // TODO: Check that we have permissions for this node.
+                    // Perform pre-validation
+                    if (common.validateString(command.nodeid, 0, 128) == false) break;
+                    var snode = command.nodeid.split('/');
+                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
 
-                    // Query the database for the power timeline for a given node
-                    // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
-                    if (common.validateString(command.nodeid, 0, 128) == false) return;
-                    db.getPowerTimeline(command.nodeid, function (err, docs) {
-                        if ((err == null) && (docs != null) && (docs.length > 0)) {
-                            var timeline = [], time = null, previousPower;
-                            for (i in docs) {
-                                var doc = docs[i], j = parseInt(i);
-                                doc.time = Date.parse(doc.time);
-                                if (time == null) { // First element
-                                    // Skip all starting power 0 events.
-                                    if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
-                                    time = doc.time;
-                                    if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
-                                } else if (previousPower != doc.power) { // Delta element
-                                    // If this event is of a short duration (2 minutes or less), skip it.
-                                    if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
-                                    timeline.push((doc.time - time) / 1000, doc.power);
-                                    time = doc.time;
+                    // Check that we have permissions for this node.
+                    if (obj.user.links == null) return;
+                    db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes == null || nodes.length != 1) return;
+                        const node = nodes[0];
+
+                        var meshlink = obj.user.links[node.meshid];
+                        if ((meshlink != null) && (meshlink.rights != 0)) {
+                            // Query the database for the power timeline for a given node
+                            // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
+                            db.getPowerTimeline(command.nodeid, function (err, docs) {
+                                if ((err == null) && (docs != null) && (docs.length > 0)) {
+                                    var timeline = [], time = null, previousPower;
+                                    for (i in docs) {
+                                        var doc = docs[i], j = parseInt(i);
+                                        doc.time = Date.parse(doc.time);
+                                        if (time == null) { // First element
+                                            // Skip all starting power 0 events.
+                                            if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
+                                            time = doc.time;
+                                            if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
+                                        } else if (previousPower != doc.power) { // Delta element
+                                            // If this event is of a short duration (2 minutes or less), skip it.
+                                            if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
+                                            timeline.push((doc.time - time) / 1000, doc.power);
+                                            time = doc.time;
+                                        }
+                                        previousPower = doc.power;
+                                    }
+                                    try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
+                                } else {
+                                    // No records found, send current state if we have it
+                                    var state = parent.parent.GetConnectivityState(command.nodeid);
+                                    if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
                                 }
-                                previousPower = doc.power;
-                            }
-                            try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
-                        } else {
-                            // No records found, send current state if we have it
-                            var state = parent.parent.GetConnectivityState(command.nodeid);
-                            if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                            });
                         }
                     });
                     break;
                 }
             case 'getsysinfo':
                 {
-                    // TODO: Check that we have permissions for this node.
-
+                    // Perform pre-validation
                     if (common.validateString(command.nodeid, 0, 128) == false) break;
                     var snode = command.nodeid.split('/');
                     if ((snode.length != 3) || (snode[1] != domain.id)) break;
-                    // Query the database system information
-                    db.Get('si' + command.nodeid, function (err, docs) {
-                        if ((docs != null) && (docs.length > 0)) {
-                            var doc = docs[0];
-                            doc.action = 'getsysinfo';
-                            doc.nodeid = command.nodeid;
-                            doc.tag = command.tag;
-                            delete doc.type;
-                            delete doc.domain;
-                            delete doc._id;
-                            try { ws.send(JSON.stringify(doc)); } catch (ex) { }
-                        } else {
-                            try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true })); } catch (ex) { }
+
+                    // Check that we have permissions for this node.
+                    if (obj.user.links == null) return;
+                    db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes == null || nodes.length != 1) return;
+                        const node = nodes[0];
+
+                        var meshlink = obj.user.links[node.meshid];
+                        if ((meshlink != null) && (meshlink.rights != 0)) {
+                            // Query the database system information
+                            db.Get('si' + command.nodeid, function (err, docs) {
+                                if ((docs != null) && (docs.length > 0)) {
+                                    var doc = docs[0];
+                                    doc.action = 'getsysinfo';
+                                    doc.nodeid = command.nodeid;
+                                    doc.tag = command.tag;
+                                    delete doc.type;
+                                    delete doc.domain;
+                                    delete doc._id;
+                                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                                } else {
+                                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true })); } catch (ex) { }
+                                }
+                            });
                         }
                     });
                     break;
                 }
             case 'lastconnect':
                 {
-                    // TODO: Check that we have permissions for this node.
-
+                    // Perform pre-validation
                     if (common.validateString(command.nodeid, 0, 128) == false) return;
                     var snode = command.nodeid.split('/');
                     if ((snode.length != 3) || (snode[1] != domain.id)) break;
 
-                    // Query the database for the last time this node connected
-                    db.Get('lc' + command.nodeid, function (err, docs) {
-                        if ((docs != null) && (docs.length > 0)) {
-                            try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                    // Check that we have permissions for this node.
+                    if (obj.user.links == null) return;
+                    db.Get(command.nodeid, function (err, nodes) {
+                        if (nodes == null || nodes.length != 1) return;
+                        const node = nodes[0];
+
+                        var meshlink = obj.user.links[node.meshid];
+                        if ((meshlink != null) && (meshlink.rights != 0)) {
+                            // Query the database for the last time this node connected
+                            db.Get('lc' + command.nodeid, function (err, docs) {
+                                if ((docs != null) && (docs.length > 0)) {
+                                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                                }
+                            });
                         }
                     });
                     break;
@@ -877,7 +908,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check that the user has access to this nodeid
                         if (obj.user.links == null) return;
                         db.Get(command.nodeid, function (err, nodes) {
-                            if (nodes.length != 1) return;
+                            if ((node == null) || (nodes.length != 1)) return;
                             const node = nodes[0];
 
                             var meshlink = obj.user.links[node.meshid];
@@ -1956,7 +1987,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
                         db.Get(command.nodeids[i], function (err, nodes) {
-                            if (nodes.length != 1) return;
+                            if ((node == null) || (nodes.length != 1)) return;
                             const node = nodes[0];
 
                             // Check if already in the right mesh
