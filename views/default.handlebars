@@ -1350,6 +1350,7 @@
             }
         }
 
+        var backupCodesWarningDone = false;
         function updateSelf() {
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
@@ -1358,6 +1359,13 @@
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
             masterUpdate(4 + 128 + 4096);
+
+            // Check if backup codes should really be enabled
+            if ((backupCodesWarningDone == false) && !(userinfo.otpkeys > 0) && (((userinfo.otpsecret == 1) && !(userinfo.otphkeys > 0)) || ((userinfo.otpsecret != 1) && (userinfo.otphkeys == 1)))) {
+                var n = { text: 'Please add two-factor backup codes. If the current factor is lost, there is not way to recover this account.', title: 'Two factor authentication' };
+                addNotification(n);
+                backupCodesWarningDone = true;
+            }
 
             // If we can't create new groups, hide all links that can do that.
             var newGroupsAllowed = ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0));
