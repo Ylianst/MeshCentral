@@ -336,6 +336,7 @@
                                 <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
                                 <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
                                 <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
+                                <!--<input type=button id=p5ViewFileButton disabled="disabled" value="View" onclick="p5viewfile()" />&nbsp;-->
                                 <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
                                 <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
                                 <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
@@ -623,6 +624,7 @@
                                 <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" />&nbsp;
                                 <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" />&nbsp;
                                 <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" />&nbsp;
+                                <input type=button id=p13ViewFileButton disabled="disabled" value="View" onclick="p13viewfile()" />&nbsp;
                                 <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" />&nbsp;
                                 <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" />&nbsp;
                                 <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
@@ -5908,6 +5910,7 @@
                 QE('p13NewFolderButton', false);
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
+                QE('p13ViewFileButton', false);
                 QE('p13SelectAllButton', false);
                 Q('p13SelectAllButton').value = 'Select All';
                 QE('p13RefreshButton', false);
@@ -5921,6 +5924,7 @@
                 QE('p13NewFolderButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13ViewFileButton', (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
                 Q('p13SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
                 QE('p13RefreshButton', true);
@@ -5943,6 +5947,17 @@
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+        function p13viewfile() {
+            var checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
+                        p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
+                    } else { messagebox('File Viewer', 'Only files less than 200k can be viewed.'); }
+                    break;
+                }
+            }
+        }
 
         var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
         function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
@@ -5991,9 +6006,9 @@
         var downloadFile; // Global state for file download
 
         // Called by the html page to start a download, arguments are: path, file name and file size.
-        function p13downloadfile(x, y, z) {
+        function p13downloadfile(x, y, z, tag) {
             if (xxdialogMode || downloadFile || !files) return;
-            downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
+            downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
             //console.log('p13downloadFileCancel', downloadFile);
             files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
             setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
@@ -6019,7 +6034,12 @@
                 Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
             }
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
-                saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
+                if (downloadFile.tag == 'viewer') {
+                    setDialogMode(2, downloadFile.file, 9, null, '<div style="max-height:400px;overflow:auto"><pre>' + EscapeHtml(downloadFile.data) + '</pre></div>');
+                    downloadFile = null;
+                } else {
+                    saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
+                }
             } else {
                 files.sendText({ action: 'download', sub: 'ack', id: downloadFile.id }); // Send the ACK
             }
@@ -7463,6 +7483,7 @@
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
+            //QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? 'Select None' : 'Select All');
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
@@ -7489,6 +7510,17 @@
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+        /*
+        function p5viewfile() {
+            var checkboxes = document.getElementsByName('fc');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    console.log(filetreelocation.join('/') + '/' + checkboxes[i].value); // TODO: Download and show this file
+                    break;
+                }
+            }
+        }
+        */
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
