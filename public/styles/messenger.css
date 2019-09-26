@@ -104,6 +104,21 @@
     background-color: orange;
 }
 
+.icon12 {
+    background: url(../images/messenger32.png) -352px 0px;
+    background-color: gray;
+}
+
+.icon13 {
+    background: url(../images/messenger32.png) -384px 0px;
+    background-color: gray;
+}
+
+.icon14 {
+    background: url(../images/messenger32.png) -416px 0px;
+    background-color: gray;
+}
+
 .fileicon {
     background: url(../images/messenger32.png) -96px 0px;
     height: 32px;

@@ -263,6 +263,7 @@
     <Content Include="public\styles\font-awesome\scss\_screen-reader.scss" />
     <Content Include="public\styles\font-awesome\scss\_stacked.scss" />
     <Content Include="public\styles\font-awesome\scss\_variables.scss" />
+    <Content Include="public\styles\messenger.css" />
     <Content Include="public\styles\style.css" />
     <Content Include="readme.md" />
     <Content Include="sample-config.json" />
