@@ -12,6 +12,7 @@
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
         <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
+            <div id="notifyButton" class="icon13 topButton" style="margin-right:4px" title="Enable browser notification" onclick="enableNotificationsButtonClick()"></div>
             <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
             <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
             <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
@@ -52,6 +53,7 @@
             var remoteStream = null;
             var multiWebRtc = true;             // if set to true, multiple WebRTC sessions will be setup. If false, everything uses one session.
             var userMediaSupport = 0;
+            var notification = null;
             getUserMediaSupport(function (x) { userMediaSupport = x; })
             var webrtcconfiguration = "{{{webrtconfig}}}";
             if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: \"' + webrtcconfiguration + '\".'); webrtcconfiguration = null; } }
@@ -65,13 +67,23 @@
             // Set the title
             if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
             
+            // Setup web notifications
+            if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+
             // Listen to drag & drop events
             document.addEventListener('dragover', haltEvent, false);
             document.addEventListener('dragleave', haltEvent, false);
             document.addEventListener('drop', fileDrop, false);
 
+            document.onclick = function (e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
+            }
+
             // Trap document key up events
             document.onkeyup = function ondockeypress(e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
                 if (state == 2) {
                     if ((e.keyCode == 8) && (userInputFocus == 0)) {
                         // Backspace
@@ -84,6 +96,8 @@
 
             // Trap document key presses
             document.onkeypress = function ondockeypress(e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
                 if (state == 2) {
                     if (e.keyCode == 13) {
                         // Return
@@ -148,10 +162,23 @@
             function displayRemote(msg) {
                 QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + msg + '</div><div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+
+                // If web notifications are granted, use it.
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (Notification && (Notification.permission == "granted")) {
+                    if (notification != null) { notification.close(); notification = null; }
+                    if (args.title) {
+                        notification = new Notification("MeshMessenger - " + args.title, { body: msg });
+                    } else {
+                        notification = new Notification("MeshMessenger", { body: msg });
+                    }
+                }
             }
 
             // Display and send a message from the local user
             function xsend(event) {
+                if (notification != null) { notification.close(); notification = null; }
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
                     Q('xouttext').value = '';
@@ -486,6 +513,12 @@
                 send({ action: 'fileUploadAck', id: msg.id });
             }
 
+            // Toggle notification
+            function enableNotificationsButtonClick() {
+                if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != "granted"); }); }
+                return false;
+            }
+
             // Camera button
             function camButtonClick() {
                 if (localStream == null) { startLocalStream({ video: true, audio: true }); }
@@ -603,6 +636,7 @@
                 if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
                 if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
             }
+
         </script>
 </body>
 </html>
