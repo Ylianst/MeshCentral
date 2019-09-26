@@ -1890,6 +1890,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.send(parent.configurationFiles[domain.welcomepicture]);
                 return;
             }
+
+            // Use the configured logo picture
+            try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
         }
 
         if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg'))) {
