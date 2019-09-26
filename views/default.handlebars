@@ -8862,7 +8862,7 @@
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { window.open(window.location.origin + '?node=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
-                } else {
+                } else if (x < 10) {
                     window.open(window.location.origin + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
                 }
                 return;

@@ -169,30 +169,41 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     var sessionUser = obj.user;
                     if (sessionUser == null) { sessionUser = obj.peer.user; }
                     if ((sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(req.query.p)) >= 0))))) {
-                        var now = new Date(Date.now());
-                        var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.id + '.mcrec'
-                        var recFullFilename = null;
-                        if (domain.sessionrecording.filepath) {
-                            try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
-                            recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
-                        } else {
-                            try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
-                            recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
-                        }
-                        parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
-                            if (err != null) {
-                                // Unable to record
-                                try { ws.send('c'); } catch (ex) { } // Send connect to both peers
-                                try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                        // Get the computer name
+                        parent.db.Get(req.query.nodeid, function (err, nodes) {
+                            var xusername = '', xdevicename = '', xdevicename2 = null;
+                            if ((nodes != null) && (nodes.length == 1)) { xdevicename2 = nodes[0].name; xdevicename = '-' + parent.common.makeFilename(nodes[0].name); }
+
+                            // Get the username and make it acceptable as a filename
+                            if (sessionUser._id) { xusername = '-' + parent.common.makeFilename(sessionUser._id.split('/')[2]); }
+
+                            var now = new Date(Date.now());
+                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + obj.id + '.mcrec'
+                            var recFullFilename = null;
+                            if (domain.sessionrecording.filepath) {
+                                try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
+                                recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
                             } else {
-                                // Write the recording file header
-                                var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid });
-                                recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
-                                    relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
-                                    try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
-                                    try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
-                                });
+                                try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
+                                recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
                             }
+                            parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
+                                if (err != null) {
+                                    // Unable to record
+                                    try { ws.send('c'); } catch (ex) { } // Send connect to both peers
+                                    try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                                } else {
+                                    // Write the recording file header
+                                    var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid };
+                                    if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
+                                    var firstBlock = JSON.stringify(metadata);
+                                    recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
+                                        relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
+                                        try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
+                                        try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
+                                    });
+                                }
+                            });
                         });
                     } else {
                         // Send session start
