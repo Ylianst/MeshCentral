@@ -624,7 +624,7 @@
                                 <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" />&nbsp;
                                 <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" />&nbsp;
                                 <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" />&nbsp;
-                                <input type=button id=p13ViewFileButton disabled="disabled" value="View" onclick="p13viewfile()" />&nbsp;
+                                <input type=button id=p13ViewFileButton disabled="disabled" value="Edit" onclick="p13viewfile()" />&nbsp;
                                 <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" />&nbsp;
                                 <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" />&nbsp;
                                 <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
@@ -5953,7 +5953,7 @@
                 if (checkboxes[i].checked) {
                     if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
                         p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
-                    } else { messagebox('File Viewer', 'Only files less than 200k can be viewed.'); }
+                    } else { messagebox('File Editor', 'Only files less than 200k can be edited.'); }
                     break;
                 }
             }
@@ -6035,14 +6035,25 @@
             }
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 if (downloadFile.tag == 'viewer') {
-                    setDialogMode(2, downloadFile.file, 9, null, '<div style="max-height:400px;overflow:auto"><pre>' + EscapeHtml(downloadFile.data) + '</pre></div>');
+                    // View the file in the dialog box
+                    //setDialogMode(2, downloadFile.file, 9, null, '<div style="height:400px;max-height:400px;overflow:auto"><pre>' + EscapeHtml(downloadFile.data) + '</pre></div>');
+                    setDialogMode(2, EscapeHtml(downloadFile.file), 3, p13editSaveBack, '<textarea id=p13fileeditarea style="height:400px;max-height:400px;width:100%;overflow:auto;resize:none">' + EscapeHtml(downloadFile.data) + '</textarea>', downloadFile.file);
+                    QS('dialog').width = 'auto';
+                    QS('dialog').left = '100px';
+                    QS('dialog').right = '100px';
                     downloadFile = null;
                 } else {
+                    // Save the file to disk
                     saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
                 }
             } else {
                 files.sendText({ action: 'download', sub: 'ack', id: downloadFile.id }); // Send the ACK
             }
+        }
+
+        function p13editSaveBack(b, tag) {
+            var data = new TextEncoder().encode(Q('p13fileeditarea').value);
+            p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: "text/plain", xdata: data }]);
         }
 
         /*
@@ -6114,6 +6125,29 @@
         var uploadFile;
         function p13doUploadFiles(files) {
             if (xxdialogMode) return;
+
+            // Check if we are going to overwrite any files
+            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var targetFiles = [], overWriteCount = 0;
+            for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
+            for (var i = 0; i < files.length; i++) {
+                if (winAgent) {
+                    if (targetFiles.indexOf(files[i].name.toLowerCase()) >= 0) { overWriteCount++; }
+                } else {
+                    if (targetFiles.indexOf(files[i].name) >= 0) { overWriteCount++; }
+                }
+            }
+
+            if (overWriteCount == 0) {
+                // If no overwrite, go ahead with upload
+                p13uploadFileContinue(1, files);
+            } else {
+                // Otherwise, prompt for confirmation
+                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, 'Upload will overwrite ' + overWriteCount + ' file' + addLetterS(overWriteCount) + '. Continue?', files);
+            }
+        }
+
+        function p13uploadFileContinue(b, files) {
             uploadFile = {};
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
@@ -6125,7 +6159,7 @@
         function onFileUploadStateChange(xdownloadFile, state) {
             switch (state) {
                 case 0:
-                    p13folderup(9999);
+                    setTimeout(function () { p13folderup(9999); }, 200); // Delay the file refresh
                     break;
                 case 3:
                     p13uploadNextFile();
@@ -6154,12 +6188,19 @@
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
 
-                uploadFile.xreader = new FileReader();
-                uploadFile.xreader.onload = function() {
-                    uploadFile.xdata = uploadFile.xreader.result;
+                if (file.xdata == null) {
+                    // Load the data
+                    uploadFile.xreader = new FileReader();
+                    uploadFile.xreader.onload = function () {
+                        uploadFile.xdata = uploadFile.xreader.result;
+                        uploadFile.ws.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    };
+                    uploadFile.xreader.readAsArrayBuffer(file);
+                } else {
+                    // Data already loaded
+                    uploadFile.xdata = file.xdata;
                     uploadFile.ws.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
-                };
-                uploadFile.xreader.readAsArrayBuffer(file);
+                }
             } else {
                 p13uploadFileCancel();
             }
@@ -8847,6 +8888,9 @@
             xxdialogFunc = f;
             xxdialogButtons = b;
             xxdialogTag = tag;
+            QS('dialog').width = null; // Reset dialog size
+            QS('dialog').left = null;
+            QS('dialog').right = null;
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
