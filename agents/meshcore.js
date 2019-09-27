@@ -1696,10 +1696,10 @@ function createMeshCore(agent)
                             fin += (f + ',\r\n');
                             f = '';
                         }
-                        f += (((f != '') ? ', ' : ' ') + availcommands.shift().trim());
+                        f += (((f != '') ? ', ' : ' ') + availcommands.shift());
                     }
                     if (f != '') { fin += f; }
-                    response = 'Available commands: \r\n ' + fin.trim() + '.';
+                    response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
                 /*
