@@ -777,16 +777,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If the email is the username, set this here.
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
+        // Count the number of users in this domain
+        var domainUserCount = 0;
+        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { domainUserCount++; } }
+
         // Check if we are allowed to create new users using the login screen
-        var domainUserCount = -1;
-        if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) {
-            domainUserCount = 0;
-            for (var i in obj.users) { if (obj.users[i].domain == domain.id) { domainUserCount++; } }
-            if (domainUserCount > 0) {
-                parent.debug('web', 'handleCreateAccountRequest: domainUserCount > 1.');
-                res.sendStatus(401);
-                return;
-            }
+        if ((domain.newaccounts !== 1) && (domain.newaccounts !== true) && (domainUserCount > 0)) {
+            parent.debug('web', 'handleCreateAccountRequest: domainUserCount > 1.');
+            res.sendStatus(401);
+            return;
         }
 
         // Check if this request is for an allows email domain
