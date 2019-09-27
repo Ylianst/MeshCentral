@@ -1683,7 +1683,23 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo, apf.';
+                    var fin = '';
+                    var f = '';
+                    var availcommands = 'help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget, nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi, scanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm, amtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo, apf';
+                    availcommands = availcommands.split(',');
+                    for (f in availcommands) { availcommands[f] = availcommands[f].trim(); }
+                    availcommands = availcommands.sort(); f = '';
+                    while (availcommands.length > 0)
+                    {
+                        if (f.length > 100)
+                        {
+                            fin += (f + ',\r\n');
+                            f = '';
+                        }
+                        f += (((f != '') ? ', ' : ' ') + availcommands.shift());
+                    }
+                    if (f != '') { fin += f; }
+                    response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
                 /*
