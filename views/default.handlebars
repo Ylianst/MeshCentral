@@ -944,7 +944,7 @@
             </div>
         </div>
         <iframe name="fileUploadFrame" style="display:none"></iframe>
-        <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style="display:none" /></form>
+        <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name"><input id=p5fileDragAuthCookie name="auth"><input id=p5fileDragSize name="size"><input id=p5fileDragType name="type"><input id=p5fileDragData name="data"><input id=p5fileDragLink name="link"><input type=submit id=p5loginSubmit2 style="display:none" /></form>
         <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name"><input id=p13fileDragSize name="size"><input id=p13fileDragType name="type"><input id=p13fileDragData name="data"><input id=p13fileDragLink name="link"><input type=submit id=p13loginSubmit2 style="display:none" /></form>
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
     </div>
@@ -7548,7 +7548,7 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
         /*
@@ -7583,10 +7583,32 @@
             for (var i in e.dataTransfer.files) { if ((e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0)) { files.push(e.dataTransfer.files[i]); } }
             if (files.length == 0) return;
 
+            // Check if these files are duplicates of existing files.
+            var filetreex = filetree, allfiles = [], overWriteCount = 0;
+            for (var i in filetreelocation) {
+                if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) { filetreex = filetreex.f[filetreelocation[i]]; }
+            }
+            if (filetreex.f != null) {
+                for (var i in filetreex.f) { allfiles.push(i); }
+                for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                    if (allfiles.indexOf(e.dataTransfer.files[i].name) >= 0) { overWriteCount++; } // TODO: If the server is Windows, we need to lowercase both names.
+                }
+            }
+
+            if (overWriteCount == 0) {
+                // If no overwrite, go ahead with upload
+                p5PerformUpload(1, files);
+            } else {
+                // Otherwise, prompt for confirmation
+                setDialogMode(2, "Upload File", 3, p5PerformUpload, 'Upload will overwrite ' + overWriteCount + ' file' + addLetterS(overWriteCount) + '. Continue?', files);
+            }
+        }
+
+        function p5PerformUpload(b, files) {
             // For Chrome & Firefox
             var error = 0;
             p5uploadFile(); // Display the the dialog box
-            try { Q('p5uploadinput').files = e.dataTransfer.files; } catch (ex) { error = 1; } // Set the files in the dialog box
+            try { Q('p5uploadinput').files = files; } catch (ex) { error = 1; } // Set the files in the dialog box
             if (error == 0) { p5uploadFileEx(); } // Press the submit button
             setDialogMode(0); // Close the dialog box
 
@@ -7609,6 +7631,7 @@
                             Q('p5fileDragType').value = types.join('*');
                             Q('p5fileDragData').value = datas.join('*'); // This will not work for large files, there is a limit on the data size in a field.
                             Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
+                            Q('p5fileDragAuthCookie').value = authCookie;
                             Q('p5loginSubmit2').click();
                         }
                     }

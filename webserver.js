@@ -1999,14 +1999,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
-        if ((!req.session) || (req.session == null) || (!req.session.userid) || (domain.userQuota == -1)) { res.sendStatus(401); return; }
-        const user = obj.users[req.session.userid];
-        if ((user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
-
+        if (domain.userQuota == -1) { res.sendStatus(401); return; }
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
         const multiparty = require('multiparty');
         const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
-            if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ res.sendStatus(404); return; }
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if (authUserid == null) { res.sendStatus(401); return; }
+
+            // Get the user
+            const user = obj.users[authUserid];
+            if ((user == null) || (user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
+
+            if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ console.log('err4'); res.sendStatus(404); return; }
             var xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0]));
             if (xfile == null) { res.sendStatus(404); return; }
             // Get total bytes in the path
