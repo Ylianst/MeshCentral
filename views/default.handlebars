@@ -873,6 +873,7 @@
                     <div id=d3localmode style="display:none">
                         <div>Upload File</div>
                         <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
+                            <input type=text id=d3auth name=auth style="display:none" />
                             <input type=text id=d3attrib name=attrib style="display:none" />
                             <input type=file id=d3localFile name=files onchange=d3setActions() />
                             <input type=submit id=d3submit style="display:none" />
@@ -6491,6 +6492,7 @@
         function p15uploadCore2() {
             if (xxdialogMode) return;
             Q('d3localmodeform').action = 'uploadmeshcorefile.ashx';
+            Q('d3auth').value = authCookie;
             Q('d3attrib').value = currentNode._id;
             setDialogMode(3, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
             d3init();
@@ -6836,6 +6838,7 @@
             if (xxdialogMode) return false;
             var x = 'Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing.<br /><br />';
             x += '<form action="/restoreserver.ashx" enctype="multipart/form-data" method="post"><div>';
+            x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
             x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=OK style=float:right;width:80px onclick=dialogclose(1)>';
