@@ -1974,13 +1974,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleUploadMeshCoreFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
-        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        const user = obj.users[req.session.userid];
-        if (user.siteadmin != 0xFFFFFFFF) { res.sendStatus(401); return; } // Check if we have mesh core upload rights (Full admin only)
+        if (domain.id !== '') { res.sendStatus(401); return; }
+
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
 
         const multiparty = require('multiparty');
         const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if (authUserid == null) { res.sendStatus(401); return; }
+
+            // Get the user
+            const user = obj.users[authUserid];
+            if (user.siteadmin != 0xFFFFFFFF) { res.sendStatus(401); return; } // Check if we have mesh core upload rights (Full admin only)
+
             if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
             for (var i in files.files) {
                 var file = files.files[i];
@@ -2785,13 +2798,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRestoreRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
-        if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
-        const user = obj.users[req.session.userid];
-        if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
-
+        if (obj.parent.args.noserverbackup == 1) { res.sendStatus(401); return; }
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
         const multiparty = require('multiparty');
         const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if (authUserid == null) { res.sendStatus(401); return; }
+
+            // Get the user
+            const user = obj.users[req.session.userid];
+            if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
+
             res.send('Server must be restarted, <a href="' + domain.url + '">click here to login</a>.');
             parent.Stop(files.datafile[0].path);
         });
