@@ -64,7 +64,7 @@ function AMTScanner() {
             if (masknum <= 16 || masknum > 32) return null;
             masknum = 32 - masknum;
             for (var i = 0; i < masknum; i++) { mask = (mask << 1); mask++; }
-            return { min: ip & (0xFFFFFFFF - mask), max: (ip & (0xFFFFFFFF - mask)) + mask };
+            return { min: (ip & (0xFFFFFFFF - mask))+1, max: (ip & (0xFFFFFFFF - mask)) + mask -1 };//remove network and broadcast address to avoid irrecoverable socket error
         }
         x = this.parseIpv4Addr(range);
         if (x == null) return null;
@@ -83,7 +83,7 @@ function AMTScanner() {
         return ((num >> 24) & 0xFF) + '.' + ((num >> 16) & 0xFF) + '.' + ((num >> 8) & 0xFF) + '.' + (num & 0xFF);
     }
 
-    this.scan = function (rangestr, timeout) {
+    this.scan = function (rangestr, timeout, callback) {
         var iprange = this.parseIPv4Range(rangestr);
         var rmcp = this.buildRmcpPing(0);
         var server = this.dgram.createSocket({ type: 'udp4' });
@@ -91,11 +91,15 @@ function AMTScanner() {
         server.scanResults = [];
         server.on('error', function (err) { console.log('Error:' + err); });
         server.on('message', function (msg, rinfo) { if (rinfo.size > 4) { this.parent.parseRmcpPacket(this, msg, rinfo, function (s, res) { s.scanResults.push(res); }) }; });
-        server.on('listening', function () { for (var i = iprange.min; i <= iprange.max; i++) { server.send(rmcp, 623, server.parent.IPv4NumToStr(i)); } });
+        server.on('listening', function () { for (var i = iprange.min; i <= iprange.max; i++) {             
+            server.send(rmcp, 623, server.parent.IPv4NumToStr(i)); } });
         server.bind({ address: '0.0.0.0', port: 0, exclusive: true });
         var tmout = setTimeout(function cb() {
             //console.log("Server closed");
             server.close();
+            if (callback) {
+                callback(server.scanResults);
+            }
             server.parent.emit('found', server.scanResults);
             delete server;
         }, timeout);
