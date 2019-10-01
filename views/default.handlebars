@@ -4174,7 +4174,13 @@
                             str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
-                    x += addDeviceAttribute('Intel&reg; AMT', str);
+
+                    var meName = '<span title="Intel&reg; Manageability Engine">Intel&reg; ME<span>';
+                    if (typeof node.intelamt.sku == 'number') {
+                        if ((node.intelamt.sku & 8) != 0) { meName = '<span title="Intel&reg; Active Management Technology">Intel&reg; AMT<span>'; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = '<span title="Intel&reg; Standard Manageability">Intel&reg; SM<span>'; }
+                    }
+                    x += addDeviceAttribute(meName, str);
                 }
 
                 if (mesh.mtype == 2) {
@@ -4298,7 +4304,10 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((meshrights & 8) || (meshrights & 256)));
+                QV('MainDevDesktop', (((mesh.mtype == 1) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
+                    || ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
+                    && ((meshrights & 8) || (meshrights & 256))
+                    );
                 QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8) && fileAccess);
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
@@ -4788,7 +4797,17 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((meshrights & 8) || (meshrights & 256)) && (mesh.mtype == 2) && (currentNode.agent.caps & 1));
-            QV('connectbutton1hspan', (deskState == 0) && (meshrights & 8) && ((currentNode.intelamt != null) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton1hspan',
+                (deskState == 0) &&
+                (meshrights & 8) &&
+                ((mesh.mtype == 1) ||
+                  ((currentNode.intelamt != null) &&
+                  (currentNode.intelamt.state == 2) &&
+                  (currentNode.intelamt.ver != null) &&
+                  (typeof currentNode.intelamt.sku == 'number') &&
+                  ((currentNode.intelamt.sku & 8) != 0))
+                )
+            );
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
@@ -5423,7 +5442,11 @@
             if (services != null) {
                 for (var i in services) {
                     if (services[i].status) {
+                        // Windows
                         s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: i });
+                    } else if (services[i].serviceType) {
+                        // Linux (TODO: This the service status is not displayed, not sure start/stop/restart will work).
+                        s.push({ p: services[i].serviceType, d: services[i].name, i: i });
                     }
                 }
                 if (deskTools.ssort == 0) { s.sort(sortProcessPid); } else if (deskTools.ssort == 1) { s.sort(sortProcessName); }

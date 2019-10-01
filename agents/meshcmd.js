@@ -438,13 +438,21 @@ function run(argv) {
             nextStepStorageUpload();
         }
     } else if ((settings.action == 'amtversion') || (settings.action == 'amtversions') || (settings.action == 'amtver')) {
-        // Display Intel AMT versions
+        // Display Intel ME versions
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
         amtMei.getVersion(function (val) {
-            console.log("MEI Version = " + val.BiosVersion.toString());
-            for (var version in val.Versions) { console.log(val.Versions[version].Description + " = " + val.Versions[version].Version); }
+            console.log("BIOS Version = " + val.BiosVersion.toString());
+            for (var version in val.Versions) {
+                var extras = '', skuBits = ['', 'iQST', 'ASF', 'AMT', 'ISM', 'TPM', '', '', 'HomeIT', '', 'WOX', '', '', 'AT-p', 'Corporate', 'L3 Mgt Upgrade'];
+                if (val.Versions[version].Description == 'Sku') {
+                    var n = parseInt(val.Versions[version].Version), x = [], xx = 1;
+                    for (var i = 0; i < skuBits.length; i++) { if ((n & xx) != 0) { x.push(skuBits[i]); } xx = xx << 1; }
+                    if (x.length > 0) { extras = ' (' + x.join(', ') + ')' }
+                }
+                console.log(val.Versions[version].Description + " = " + val.Versions[version].Version + extras);
+            }
             exit(1); return;
         });
     } else if (settings.action == 'amthashes') {
@@ -472,7 +480,14 @@ function run(argv) {
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-        amtMei.getVersion(function (result) { if (result) { for (var version in result.Versions) { if (result.Versions[version].Description == 'AMT') { mestate.ver = result.Versions[version].Version; } } } });
+        amtMei.getVersion(function (result) {
+            if (result) {
+                for (var version in result.Versions) {
+                    if (result.Versions[version].Description == 'AMT') { mestate.ver = result.Versions[version].Version; }
+                    if (result.Versions[version].Description == 'Sku') { mestate.sku = parseInt(result.Versions[version].Version); }
+                }
+            }
+        });
         amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
         amtMei.getProvisioningMode(function (result) { if (result) { mestate.ProvisioningMode = result; } });
         amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = result; } });
@@ -484,7 +499,9 @@ function run(argv) {
         amtMei.getDnsSuffix(function (result) {
             if (result) { mestate.dns = result; }
             if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
-                var str = 'Intel AMT v' + mestate.ver;
+                var str = 'Intel ME v' + mestate.ver;
+                if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
+                else if (mestate.sku & 16) { str = 'Intel SM v' + mestate.ver }
                 if (mestate.ProvisioningState.stateStr == 'PRE') { str += ', pre-provisioning state'; }
                 else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
                 else if (mestate.ProvisioningState.stateStr == 'POST') {
@@ -1138,6 +1155,7 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
             try { cmd = JSON.parse(data); } catch (ex) { console.log('Unable to parse server response: ' + data); exit(100); return; }
             if (typeof cmd != 'object') { console.log('Invalid server response: ' + cmd); exit(100); return; }
             if (typeof cmd.errorText == 'string') { console.log('Server error: ' + cmd.errorText); exit(100); return; }
+            if (typeof cmd.messageText == 'string') { console.log('Server: ' + cmd.messageText); return; }
             switch (cmd.action) {
                 case 'acmactivate': {
                     // Server responded with ACM activation response
@@ -1204,7 +1222,7 @@ function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
         var action = 'acmactivate';
         if (settings.action == 'amtccm') { action = 'ccmactivate'; }
         if (settings.action == 'amtdiscover') { action = 'amtdiscover'; }
-        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], build: mestate.vers['Build Number'], modes: allowedModes, currentMode: mestate.controlMode });
+        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], build: mestate.vers['Build Number'], sku: parseInt(mestate.vers['Sku']), modes: allowedModes, currentMode: mestate.controlMode, hostname: require('os').hostname() });
     });
     connection.end();
 }
