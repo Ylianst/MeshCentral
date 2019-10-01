@@ -137,6 +137,7 @@
     <Compile Include="webauthn.js" />
     <Compile Include="webserver.js" />
     <Compile Include="winservice.js" />
+    <Content Include="agents\codesign.cer" />
     <Content Include="agents\compressModules.bat" />
     <Content Include="agents\MeshAgentOSXPackager.zip" />
     <Content Include="agents\meshagent_arm" />
