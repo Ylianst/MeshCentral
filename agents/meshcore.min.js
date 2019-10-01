@@ -1683,7 +1683,14 @@ function createMeshCore(agent)
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    response = 'Available commands: help, info, osinfo, args, print, type, dbget, dbset, dbcompact, eval, parseuri, httpget,\r\nwslist, wsconnect, wssend, wsclose, notify, ls, ps, kill, amt, netinfo, location, power, wakeonlan, scanwifi,\r\nscanamt, setdebug, smbios, rawsmbios, toast, lock, users, sendcaps, openurl, amtreset, amtccm, amtacm,\r\namtdeactivate, amtpolicy, getscript, getclip, setclip, log, av, cpuinfo, sysinfo, apf.';
+                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt';
+                    availcommands = availcommands.split(',').sort();
+                    while (availcommands.length > 0) {
+                        if (f.length > 100) { fin += (f + ',\r\n'); f = ''; }
+                        f += (((f != '') ? ', ' : ' ') + availcommands.shift());
+                    }
+                    if (f != '') { fin += f; }
+                    response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
                 /*
@@ -2401,7 +2408,7 @@ function createMeshCore(agent)
                 try {
                     if (meinfo == null) return;
                     var intelamt = {}, p = false;
-                    if ((meinfo.Versions != null) && (meinfo.Versions.AMT != null)) { intelamt.ver = meinfo.Versions.AMT; p = true; }
+                    if ((meinfo.Versions != null) && (meinfo.Versions.AMT != null)) { intelamt.ver = meinfo.Versions.AMT; p = true; if (meinfo.Versions.Sku != null) { intelamt.sku = parseInt(meinfo.Versions.Sku); } }
                     if (meinfo.ProvisioningState != null) { intelamt.state = meinfo.ProvisioningState; p = true; }
                     if (meinfo.Flags != null) { intelamt.flags = meinfo.Flags; p = true; }
                     if (meinfo.OsHostname != null) { intelamt.host = meinfo.OsHostname; p = true; }

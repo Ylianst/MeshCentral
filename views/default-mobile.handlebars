@@ -1918,7 +1918,13 @@
                             str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
-                    x += addDeviceAttribute('Intel&reg; AMT', str);
+
+                    var meName = 'Intel&reg; ME';
+                    if (typeof node.intelamt.sku == 'number') {
+                        if ((node.intelamt.sku & 8) != 0) { meName = 'Intel&reg; AMT'; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = 'Intel&reg; SM'; }
+                    }
+                    x += addDeviceAttribute(meName, str);
                 }
 
                 // Attribute: Mesh Agent Tag
@@ -2012,7 +2018,11 @@
             QV('p10files', currentDevicePanel == 2);
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
-            if ((currentDevicePanel != 1) && (currentNode != null) && ((meshrights & 8) || (meshrights & 256)) && ((currentNode.mtype == 1) || (currentNode.agent.caps & 1))) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
+            if ((currentDevicePanel != 1) &&
+                (currentNode != null) &&
+                ((meshrights & 8) || (meshrights & 256)) &&
+                (((meshes[currentNode.meshid].mtype == 1) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
+            ) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
         }
@@ -2245,7 +2255,17 @@
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
             QV('connectbutton1', (deskState == 0) && (mesh.mtype == 2) && ((meshrights & 8) || (meshrights & 256)));
-            QV('connectbutton1h', (deskState == 0) && ((currentNode.intelamt != null) && (meshrights & 8) && (mesh.mtype == 1 || currentNode.intelamt.state == 2) && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton1h',
+                (deskState == 0) &&
+                (meshrights & 8) &&
+                ((mesh.mtype == 1) ||
+                  ((currentNode.intelamt.state == 2) &&
+                  (currentNode.intelamt.ver != null) &&
+                  (currentNode.intelamt != null) &&
+                  (typeof currentNode.intelamt.sku == 'number') &&
+                  ((currentNode.intelamt.sku & 8) != 0))
+                )
+            );
 
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));

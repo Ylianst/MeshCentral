@@ -2488,11 +2488,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (cmd.version != 1) { ws.send(JSON.stringify({ errorText: 'Unsupported version' })); ws.close(); return; }
                     if (obj.common.validateString(cmd.realm, 16, 256) == false) { ws.send(JSON.stringify({ errorText: 'Invalid realm argument' })); ws.close(); return; }
                     if (obj.common.validateString(cmd.uuid, 36, 36) == false) { ws.send(JSON.stringify({ errorText: 'Invalid UUID argument' })); ws.close(); return; }
-                    if (typeof cmd.hashes != 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
-                    if (typeof cmd.fqdn != 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
+                    if (typeof cmd.hashes !== 'object') { ws.send(JSON.stringify({ errorText: 'Invalid hashes' })); ws.close(); return; }
+                    if (typeof cmd.fqdn !== 'string') { ws.send(JSON.stringify({ errorText: 'Invalid FQDN' })); ws.close(); return; }
                     if ((obj.common.validateString(cmd.ver, 5, 16) == false) || (cmd.ver.split('.').length != 3)) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT version' })); ws.close(); return; }
                     if (obj.common.validateArray(cmd.modes, 1, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid activation modes' })); ws.close(); return; }
                     if (obj.common.validateInt(cmd.currentMode, 0, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid current mode' })); ws.close(); return; }
+                    if (typeof cmd.sku !== 'number') { ws.send(JSON.stringify({ errorText: 'Invalid SKU number' })); ws.close(); return; }
 
                     // Get the current Intel AMT policy
                     var mesh = obj.meshes[ws.meshid], activationMode = 4; // activationMode: 2 = CCM, 4 = ACM
@@ -2518,21 +2519,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
                         }
                         // If no cert match or wildcard match which is not yet supported, do CCM activation.
-                        if ((matchingHash == null) || (matchingCN == '*')) { activationMode = 2; } else { cmd.hash = matchingHash; }
+                        if ((matchingHash == null) || (matchingCN == '*')) { ws.send(JSON.stringify({ messageText: 'No matching ACM activation certificates, activating in CCM instead...' })); activationMode = 2; } else { cmd.hash = matchingHash; }
                     }
 
                     // Check if we are going to activate in an allowed mode. cmd.modes: 1 = CCM, 2 = ACM
-                    if ((activationMode == 4) && (cmd.modes.indexOf(2) == -1)) { activationMode = 2; } // We want to do ACM, but mode is not allowed. Change to CCM.
+                    if ((activationMode == 4) && (cmd.modes.indexOf(2) == -1)) { ws.send(JSON.stringify({ messageText: 'ACM not allowed on this machine, activating in CCM instead...' })); activationMode = 2; } // We want to do ACM, but mode is not allowed. Change to CCM.
 
                     // If we want to do CCM, but mode is not allowed. Error out.
-                    if ((activationMode == 2) && (cmd.modes.indexOf(1) == -1)) { ws.send(JSON.stringify({ errorText: 'Unsupported activation mode' })); ws.close(); return; } 
+                    if ((activationMode == 2) && (cmd.modes.indexOf(1) == -1)) { ws.send(JSON.stringify({ errorText: 'CCM is not an allowed activation mode' })); ws.close(); return; } 
 
                     // Get the Intel AMT admin password, randomize if needed.
                     var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
                     if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
 
                     // Save some state, if activation is succesful, we need this to add the device
-                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, pass: amtpassword, flags: activationMode, ver: cmd.ver }; // Flags: 2 = CCM, 4 = ACM
+                    ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, hostname: cmd.hostname, pass: amtpassword, flags: activationMode, ver: cmd.ver, sku: cmd.sku }; // Flags: 2 = CCM, 4 = ACM
 
                     if (activationMode == 4) {
                         // ACM: Agent is asking the server to sign an Intel AMT ACM activation request
@@ -2567,7 +2568,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (obj.common.validateArray(cmd.modes, 1, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid activation modes' })); ws.close(); return; }
                         if (obj.common.validateInt(cmd.currentMode, 0, 2) == false) { ws.send(JSON.stringify({ errorText: 'Invalid current mode' })); ws.close(); return; }
                         var activationMode = 0; if (cmd.currentMode == 1) { activationMode = 2; } else if (cmd.currentMode == 2) { activationMode = 4; }
-                        ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, flags: activationMode, ver: cmd.ver }; // Flags: 2 = CCM, 4 = ACM
+                        ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, hostname: cmd.hostname, flags: activationMode, ver: cmd.ver, sku: cmd.sku }; // Flags: 2 = CCM, 4 = ACM
                     } else {
                         // If this is an activation success, check that state was set already.
                         if (ws.xxstate == null) { ws.send(JSON.stringify({ errorText: 'Invalid command' })); ws.close(); return; }
@@ -2581,6 +2582,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (mesh == null) { ws.send(JSON.stringify({ errorText: 'Unknown device group' })); ws.close(); return; }
 
                     // Fix the computer name if needed
+                    if ((ws.xxstate.name == null) || (ws.xxstate.name.length == 0)) { ws.xxstate.name = ws.xxstate.hostname; }
                     if ((ws.xxstate.name == null) || (ws.xxstate.name.length == 0)) { ws.xxstate.name = ws.xxstate.uuid; }
 
                     db.getAmtUuidNode(ws.meshid, ws.xxstate.uuid, function (err, nodes) {
@@ -2589,7 +2591,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.crypto.randomBytes(48, function (err, buf) {
                                 // Create the new node
                                 var xxnodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                                var device = { type: 'node', _id: xxnodeid, meshid: ws.meshid, name: ws.xxstate.name, rname: ws.xxstate.name, host: ws.remoteaddr, domain: domain.id, intelamt: { state: 2, flags: ws.xxstate.flags, tls: 0, uuid: ws.xxstate.uuid, realm: ws.xxstate.realm, tag: ws.xxstate.tag, ver: ws.xxstate.ver } };
+                                var device = { type: 'node', _id: xxnodeid, meshid: ws.meshid, name: ws.xxstate.name, rname: ws.xxstate.name, host: ws.remoteaddr, domain: domain.id, intelamt: { state: 2, flags: ws.xxstate.flags, tls: 0, uuid: ws.xxstate.uuid, realm: ws.xxstate.realm, tag: ws.xxstate.tag, ver: ws.xxstate.ver, sku: ws.xxstate.sku } };
                                 if (ws.xxstate.pass != null) { device.intelamt.user = 'admin'; device.intelamt.pass = ws.xxstate.pass; }
                                 if (device.intelamt.flags != 0) { device.intelamt.state = 2; } else { device.intelamt.state = 0; }
                                 db.Set(device);
@@ -2616,6 +2618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (ws.xxstate.realm == null) { delete device.intelamt.tag; }
                             else if (device.intelamt.tag != ws.xxstate.tag) { device.intelamt.tag = ws.xxstate.tag; }
                             if (device.intelamt.ver != ws.xxstate.ver) { device.intelamt.ver = ws.xxstate.ver; }
+                            if (device.intelamt.sku != ws.xxstate.sku) { device.intelamt.sku = ws.xxstate.sku; }
                             db.Set(device);
 
                             // Event the new node
