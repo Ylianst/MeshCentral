@@ -120,10 +120,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     email: obj.parent.config.letsencrypt.email,
                     agreeTos: true,
                     rsaKeySize: rsaKeySize,
-                    challengeType: 'http-01'
-                    //renewWithin: 15 * 24 * 60 * 60 * 1000 // 15 days
-                    //renewWithin: 81 * 24 * 60 * 60 * 1000, // 81 days
-                    //renewBy: 80 * 24 * 60 * 60 * 1000 // 80 days
+                    challengeType: 'http-01',
+                    renewWithin: 45 * 24 * 60 * 60 * 1000,       // Certificate renewal may begin at this time (45 days)
+                    renewBy: 60 * 24 * 60 * 60 * 1000            // Certificate renewal should happen by this time (60 days)
                 }).then(function (xresults) {
                     obj.parent.performServerCertUpdate(); // Reset the server, TODO: Reset all peers
                 }, function (err) {
