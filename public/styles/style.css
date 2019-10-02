@@ -2032,7 +2032,7 @@ a {
     position: relative;
     overflow: hidden;
     width: 100%;
-    max-height: calc(100vh - 270px); /*  + 24px hight of submenu */
+    max-height: calc(100vh - 270px); /*  + 24px height of submenu */
     height: calc(100vh - 270px);
 }
 
@@ -2043,8 +2043,8 @@ a {
 
 .fulldesk #deskarea3x {
     grid-area: deskarea3;
-    max-height: none;
-    height: calc(100vh - 52px);
+    max-height: 100%;
+    height: 100%;
     -ms-grid-column: 1;
     -ms-grid-row: 3;
 }

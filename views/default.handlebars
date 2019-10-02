@@ -1223,6 +1223,8 @@
             } else {
                 QC('body').add("fullscreen");
                 if (hide & 16) QC('body').add("arg_hide"); // This is replacement for QV('page_leftbar', !(hide & 16));
+                QV('page_leftbar', !(hide & 16));
+                QV('MainMenuSpan', !(hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
             }
@@ -5121,16 +5123,15 @@
             fullscreen = !fullscreen;
             if (fullscreen) {
                 QC('body').add("fulldesk");
-                //QS('deskarea3x').height = null;
+                QS('deskarea3x')['height'] = '100%';
+                QS('deskarea3x')['max-height'] = '100%';
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
             } else {
                 QC('body').remove("fulldesk");
-                if (browserfullscreen == true) {
-                    exitBrowserFullscreen();
-                    browserfullscreen = false;
-                    toggleFullScreen();
-                }
+                QS('deskarea3x')['height'] = null;
+                QS('deskarea3x')['max-height'] = null;
+                if (browserfullscreen == true) { exitBrowserFullscreen(); browserfullscreen = false; }
             }
             deskAdjust();
             updateDesktopButtons();
@@ -8979,11 +8980,11 @@
 
         function go(x, event) {
             setSessionActivity();
-            if (xxdialogMode || xxcurrentView == x) return;
+            if (xxdialogMode) return;
             QV('uiMenu', false);
 
             // If "shift" is pressed, open a new tab.
-            if (event && (event.shiftKey == true) && (x != 15)) {
+            if (event && (event.shiftKey == true) && (x != 15) && ('{{currentNode}}' == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { window.open(window.location.origin + '?node=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
@@ -8992,6 +8993,8 @@
                 }
                 return;
             }
+
+            if (xxcurrentView == x) return;
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 42; i++) { QV('p' + i, i == x); }
