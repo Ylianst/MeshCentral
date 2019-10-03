@@ -27,6 +27,7 @@ function CreateMeshCentralServer(config, args) {
     obj.redirserver = null;
     obj.mpsserver = null;
     obj.apfserver = null;
+    obj.mqttbroker = null;
     obj.swarmserver = null;
     obj.mailserver = null;
     obj.amtEventHandler = null;
@@ -822,6 +823,9 @@ function CreateMeshCentralServer(config, args) {
 
                 // Create APF server to hook into webserver
                 obj.apfserver = require('./apfserver.js').CreateApfServer(obj, obj.db, obj.args);
+                // Create MQTT Broker to hook into webserver and mpsserver
+                obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj,obj.db,obj.args);
+
                 // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
                 if (obj.redirserver != null) { obj.redirserver.hookMainWebServer(obj.certificates); }
