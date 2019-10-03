@@ -196,6 +196,18 @@ module.exports.CreateDB = function (parent, func) {
     obj.escapeBase64 = function escapeBase64(val) { return (val.replace(/\+/g, '@').replace(/\//g, '$')); }
 
     // Encrypt an database object
+    obj.performRecordEncryptionRecode = function (func) {
+        var count = 0;
+        obj.GetAllType('user', function (err, docs) {
+            if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
+            obj.GetAllType('node', function (err, docs) {
+                if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
+                func(count);
+            });
+        });
+    }
+
+    // Encrypt an database object
     function performTypedRecordDecrypt(data) {
         if ((obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
         for (var i in data) {
@@ -237,10 +249,11 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an object and return a base64.
     function performRecordEncrypt(plainobj) {
         if (obj.dbRecordsEncryptKey == null) return null;
-        const iv = parent.crypto.randomBytes(16);
-        const aes = parent.crypto.createCipheriv('aes-256-cbc', obj.dbRecordsEncryptKey, iv);
+        const iv = parent.crypto.randomBytes(12);
+        const aes = parent.crypto.createCipheriv('aes-256-gcm', obj.dbRecordsEncryptKey, iv);
         var ciphertext = aes.update(JSON.stringify(plainobj));
-        ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+        var cipherfinal = aes.final();
+        ciphertext = Buffer.concat([iv, aes.getAuthTag(), ciphertext, cipherfinal]);
         return ciphertext.toString('base64');
     }
 
@@ -248,12 +261,17 @@ module.exports.CreateDB = function (parent, func) {
     function performRecordDecrypt(ciphertext) {
         if (obj.dbRecordsDecryptKey == null) return null;
         const ciphertextBytes = Buffer.from(ciphertext, 'base64');
-        const iv = ciphertextBytes.slice(0, 16);
-        const data = ciphertextBytes.slice(16);
-        const aes = parent.crypto.createDecipheriv('aes-256-cbc', obj.dbRecordsDecryptKey, iv);
-        var plaintextBytes = Buffer.from(aes.update(data));
-        plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
-        return JSON.parse(plaintextBytes.toString());
+        const iv = ciphertextBytes.slice(0, 12);
+        const data = ciphertextBytes.slice(28);
+        const aes = parent.crypto.createDecipheriv('aes-256-gcm', obj.dbRecordsDecryptKey, iv);
+        aes.setAuthTag(ciphertextBytes.slice(12, 16));
+        var plaintextBytes, r;
+        try {
+            plaintextBytes = Buffer.from(aes.update(data));
+            plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+            r = JSON.parse(plaintextBytes.toString());
+        } catch (e) { throw "Incorrect DbRecordsDecryptKey/DbRecordsEncryptKey or invalid database _CRYPT data: " + e; }
+        return r;
     }
 
     // Clone an object (TODO: Make this more efficient)
