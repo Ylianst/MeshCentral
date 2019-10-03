@@ -34,6 +34,8 @@ module.exports.CreateDB = function (parent, func) {
     const common = require('./common.js');
     obj.identifier = null;
     obj.dbKey = null;
+    obj.dbRecordsEncryptKey = null;
+    obj.dbRecordsDecryptKey = null;
     obj.changeStream = false;
 
     obj.SetupDatabase = function (func) {
@@ -193,14 +195,87 @@ module.exports.CreateDB = function (parent, func) {
     obj.getValueOfTheDay = function (id, startValue, func) { obj.Get(id, function (err, docs) { var date = new Date(), t = date.toLocaleDateString(); if (docs.length == 1) { var r = docs[0]; if (r.day == t) { func({ _id: id, value: r.value, day: t }); return; } } func({ _id: id, value: startValue, day: t }); }); };
     obj.escapeBase64 = function escapeBase64(val) { return (val.replace(/\+/g, '@').replace(/\//g, '$')); }
 
-    function Clone(v) { return JSON.parse(JSON.stringify(v)); }
+    // Encrypt an database object
+    function performTypedRecordDecrypt(data) {
+        if ((obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
+        for (var i in data) {
+            if (data[i].type == 'user') {
+                data[i] = performPartialRecordDecrypt(data[i]);
+            } else if ((data[i].type == 'node') && (data[i].intelamt != null)) {
+                data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt);
+            }
+        }
+        return data;
+    }
 
+    // Encrypt an database object
+    function performTypedRecordEncrypt(data) {
+        if (obj.dbRecordsEncryptKey == null) return data;
+        if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash']); }
+        else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass']); return xdata; }
+        return data;
+    }
+
+    // Encrypt an object and return a buffer.
+    function performPartialRecordEncrypt(plainobj, encryptNames) {
+        if (typeof plainobj != 'object') return plainobj;
+        var enc = {}, enclen = 0;
+        for (var i in encryptNames) { if (plainobj[encryptNames[i]] != null) { enclen++; enc[encryptNames[i]] = plainobj[encryptNames[i]]; delete plainobj[encryptNames[i]]; } }
+        if (enclen > 0) { plainobj._CRYPT = performRecordEncrypt(enc); } else { delete plainobj._CRYPT; }
+        return plainobj;
+    }
+
+    // Encrypt an object and return a buffer.
+    function performPartialRecordDecrypt(plainobj) {
+        if ((typeof plainobj != 'object') || (plainobj._CRYPT == null)) return plainobj;
+        var enc = performRecordDecrypt(plainobj._CRYPT);
+        if (enc != null) { for (var i in enc) { plainobj[i] = enc[i]; } }
+        delete plainobj._CRYPT;
+        return plainobj;
+    }
+
+    // Encrypt an object and return a base64.
+    function performRecordEncrypt(plainobj) {
+        if (obj.dbRecordsEncryptKey == null) return null;
+        const iv = parent.crypto.randomBytes(16);
+        const aes = parent.crypto.createCipheriv('aes-256-cbc', obj.dbRecordsEncryptKey, iv);
+        var ciphertext = aes.update(JSON.stringify(plainobj));
+        ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+        return ciphertext.toString('base64');
+    }
+
+    // Takes a base64 and return an object.
+    function performRecordDecrypt(ciphertext) {
+        if (obj.dbRecordsDecryptKey == null) return null;
+        const ciphertextBytes = Buffer.from(ciphertext, 'base64');
+        const iv = ciphertextBytes.slice(0, 16);
+        const data = ciphertextBytes.slice(16);
+        const aes = parent.crypto.createDecipheriv('aes-256-cbc', obj.dbRecordsDecryptKey, iv);
+        var plaintextBytes = Buffer.from(aes.update(data));
+        plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+        return JSON.parse(plaintextBytes.toString());
+    }
+
+    // Clone an object (TODO: Make this more efficient)
+    function Clone(v) { return JSON.parse(JSON.stringify(v)); }
 
     // Read expiration time from configuration file
     if (typeof parent.args.dbexpire == 'object') {
         if (typeof parent.args.dbexpire.events == 'number') { expireEventsSeconds = parent.args.dbexpire.events; }
         if (typeof parent.args.dbexpire.powerevents == 'number') { expirePowerEventsSeconds = parent.args.dbexpire.powerevents; }
         if (typeof parent.args.dbexpire.statsevents == 'number') { expireServerStatsSeconds = parent.args.dbexpire.statsevents; }
+    }
+
+    // If a DB record encryption key is provided, perform database record encryption
+    if ((typeof parent.args.dbrecordsencryptkey == 'string') && (parent.args.dbrecordsencryptkey.length != 0)) {
+        // Hash the database password into a AES256 key and setup encryption and decryption.
+        obj.dbRecordsEncryptKey = obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsencryptkey).digest("raw").slice(0, 32);
+    }
+
+    // If a DB record decryption key is provided, perform database record decryption
+    if ((typeof parent.args.dbrecordsdecryptkey == 'string') && (parent.args.dbrecordsdecryptkey.length != 0)) {
+        // Hash the database password into a AES256 key and setup encryption and decryption.
+        obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsdecryptkey).digest("raw").slice(0, 32);
     }
 
     if (parent.args.mongodb) {
@@ -517,7 +592,9 @@ module.exports.CreateDB = function (parent, func) {
     function setupFunctions(func) {
         if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) { obj.file.updateOne({ _id: data._id }, { $set: data }, { upsert: true }, func); };
+            obj.Set = function (data, func) {
+                obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func);
+            };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -529,19 +606,19 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }).toArray(func2);
+                    obj.file.find({ _id: id }).toArray(function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
                 } else {
-                    obj.file.find({ _id: id }).toArray(func);
+                    obj.file.find({ _id: id }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
-            obj.GetAll = function (func) { obj.file.find({}).toArray(func); };
-            obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(func); };
-            obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(func); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }).toArray(func); };
-            obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(func); };
-            obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(func); };
-            obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).project({ type: 0 }).toArray(func); };
-            obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).project({ type: 0 }).toArray(func); };
+            obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id) { obj.file.deleteOne({ _id: id }); };
             obj.RemoveAll = function (func) { obj.file.deleteMany({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.deleteMany({ type: type }, { multi: true }, func); };
@@ -611,7 +688,7 @@ module.exports.CreateDB = function (parent, func) {
             }
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
-            obj.Set = function (data, func) { obj.file.update({ _id: data._id }, data, { upsert: true }, func); };
+            obj.Set = function (data, func) { var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -623,20 +700,19 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }, func2);
-                }
-                else {
-                    obj.file.find({ _id: id }, func);
+                    obj.file.find({ _id: id }, function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
+                } else {
+                    obj.file.find({ _id: id }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
-            obj.GetAll = function (func) { obj.file.find({}, func); };
+            obj.GetAll = function (func) { obj.file.find({}, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }, { _id: 0, hash: 1 }, func); };
-            obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, func); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, func); };
-            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, func); };
-            obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, func); };
-            obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, func); };
-            obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, { type: 0 }, func); };
+            obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id) { obj.file.remove({ _id: id }); };
             obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };

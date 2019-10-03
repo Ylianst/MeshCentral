@@ -3680,7 +3680,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     };
 
     // Clone a safe version of a user object, remove everything that is secret.
-    obj.CloneSafeUser = function(user) {
+    obj.CloneSafeUser = function (user) {
         if (typeof user != 'object') { return user; }
         var user2 = obj.common.Clone(user);
         delete user2.hash;
@@ -3690,9 +3690,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.domain;
         delete user2.subscriptions;
         delete user2.passtype;
-        if (typeof user2.otpsecret == 'string') { user2.otpsecret = 1; } // Indicates a time secret is present.
-        if (typeof user2.otpkeys == 'object') { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
-        if (typeof user2.otphkeys == 'object') { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
+        if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
+        if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
+        if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
         return user2;
     }
 
