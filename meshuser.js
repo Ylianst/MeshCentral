@@ -2570,7 +2570,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         actionText = 'New 2FA backup codes generated.';
                     } else if (command.subaction == 2) { // Clear all tokens
                         actionTaken = (user.otpkeys != null);
-                        user.otpkeys = null;
+                        delete user.otpkeys;
                         if (actionTaken) { actionText = '2FA backup codes cleared.'; }
                     }
 

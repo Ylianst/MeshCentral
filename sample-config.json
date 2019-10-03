@@ -12,6 +12,8 @@
     "_SessionKey": "MyReallySecretPassword1",
     "_SessionSameSite": "strict",
     "_DbEncryptKey": "MyReallySecretPassword2",
+    "_DbRecordsEncryptKey": "MyReallySecretPassword",
+    "_DbRecordsDecryptKey": "MyReallySecretPassword",
     "_DbExpire": {
       "events": 1728000,
       "powerevents": 864000
