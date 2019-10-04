@@ -492,6 +492,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Return the mesh for this device, in some cases, we may auto-create the mesh.
     function getMeshAutoCreate() {
         var mesh = parent.meshes[obj.dbMeshKey];
+
+        // If the mesh was not found and we are in LAN mode, check of the domain can be corrected
+        if ((args.lanonly == true) && (mesh == null)) {
+            var smesh = obj.dbMeshKey.split('/');
+            for (var i in parent.parent.config.domains) {
+                mesh = parent.meshes['mesh/' + i + '/' + smesh[2]];
+                if (mesh != null) {
+                    obj.domain = domain = parent.parent.config.domains[i];
+                    obj.meshid = smesh[2];
+                    obj.dbMeshKey = 'mesh/' + i + '/' + smesh[2];
+                    obj.dbNodeKey = 'node/' + domain.id + '/' + obj.nodeid;
+                    break;
+                }
+            }
+        }
+
         if ((mesh == null) && (typeof domain.orphanagentuser == 'string')) {
             const adminUser = parent.users['user/' + domain.id + '/' + domain.orphanagentuser.toLowerCase()];
             if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
