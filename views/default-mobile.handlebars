@@ -2259,9 +2259,9 @@
                 (deskState == 0) &&
                 (meshrights & 8) &&
                 ((mesh.mtype == 1) ||
+                  (currentNode.intelamt != null) &&
                   ((currentNode.intelamt.state == 2) &&
                   (currentNode.intelamt.ver != null) &&
-                  (currentNode.intelamt != null) &&
                   (typeof currentNode.intelamt.sku == 'number') &&
                   ((currentNode.intelamt.sku & 8) != 0))
                 )
