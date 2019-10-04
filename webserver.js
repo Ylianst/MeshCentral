@@ -3323,6 +3323,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
 
+            // MQTT broker over websocket
+            obj.app.ws(url+'mqtt.ashx', function (ws, req) {
+                var ser = SerialTunnel();
+                ws.on('message', function(b) { ser.updateBuffer(Buffer.from(b,'binary'))});
+                ser.forwardwrite = function(b) { ws.send(b,"binary")}
+                ws.on("close", function() { ser.emit('end');});                  
+                //pass socket wrapper to mqtt broker
+                obj.parent.mqttbroker.handle(ser);
+            })
+
             // Memory Tracking
             if (typeof obj.args.memorytracking == 'number') {
                 obj.app.get(url + 'memorytracking.csv', function (req, res) {
