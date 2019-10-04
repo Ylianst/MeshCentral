@@ -42,7 +42,7 @@ if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchSt
 
 // Construct a HTTP server object
 module.exports.CreateWebServer = function (parent, db, args, certificates) {
-    var obj = {}, i  = 0;
+    var obj = {}, i = 0;
 
     // Modules
     obj.fs = require('fs');
@@ -208,7 +208,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Fetch all meshes from the database, keep this in memory
         obj.db.GetAllType('mesh', function (err, docs) {
             obj.common.unEscapeAllLinksFieldName(docs);
-            for (var i in docs) {obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
+            for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
 
             // We loaded the users and mesh state, start the server
             serverStart();
@@ -451,7 +451,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
                 if (closeIfThis === false) { try { req.close(); } catch (e) { } }
-            } 
+            }
         } catch (e) { console.log(e); } // Should never happen
         return false;
     }
@@ -646,7 +646,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             var randomWaitTime = 0;
-                            
+
                             // 2-step auth is required, but the token is not present or not valid.
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
@@ -1251,7 +1251,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check a user's password
-    obj.checkUserPassword = function(domain, user, password, func) {
+    obj.checkUserPassword = function (domain, user, password, func) {
         // Check the old password
         if (user.passtype != null) {
             // IIS default clear or weak password hashing (SHA-1)
@@ -1259,7 +1259,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (err) { parent.debug('web', 'checkUserPassword: SHA-1 fail.'); return func(false); }
                 if (hash == user.hash) {
                     if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: SHA-1 locked.'); return func(false); } // Account is locked
-                    parent.debug('web', 'checkUserPassword: SHA-1 ok.'); 
+                    parent.debug('web', 'checkUserPassword: SHA-1 ok.');
                     return func(true); // Allow password change
                 }
                 func(false);
@@ -1270,7 +1270,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (err) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 fail.'); return func(false); }
                 if (hash == user.hash) {
                     if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 locked.'); return func(false); } // Account is locked
-                    parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 ok.'); 
+                    parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 ok.');
                     return func(true); // Allow password change
                 }
                 func(false);
@@ -1728,7 +1728,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the CIRA configuration script
-    obj.getCiraCleanupScript = function(func) {
+    obj.getCiraCleanupScript = function (func) {
         obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
             if (err != null) { func(null); return; }
             func(Buffer.from(data));
@@ -1904,7 +1904,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Handle domain redirection
-    obj.handleDomainRedirect = function(req, res) {
+    obj.handleDomainRedirect = function (req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
         var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split("?");
@@ -2116,7 +2116,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRelayWebSocket(ws, req, domain, user, cookie) {
         if (!(req.query.host)) { console.log('ERR: No host target specified'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
         parent.debug('web', 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
-        
+
         try { ws._socket.setKeepAlive(true, 240000); } catch (ex) { }   // Set TCP keep alive
 
         // Fetch information about the target
@@ -2308,7 +2308,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             data = Buffer.from(data, 'binary');
                             recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } }); // TODO: Add TLS support
                         }
-                    } 
+                    }
                 };
 
                 ws.forwardclient.onSendOk = function (ciraconn) {
@@ -2468,7 +2468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const mesh = obj.meshes[ws.meshid];
         if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group' })); ws.close(); return; }
         if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
-        
+
         // Fetch the remote IP:Port for logging
         ws.remoteaddr = cleanRemoteAddr(req.ip);
         ws.remoteaddrport = ws.remoteaddr + ':' + ws._socket.remotePort;
@@ -2526,7 +2526,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((activationMode == 4) && (cmd.modes.indexOf(2) == -1)) { ws.send(JSON.stringify({ messageText: 'ACM not allowed on this machine, activating in CCM instead...' })); activationMode = 2; } // We want to do ACM, but mode is not allowed. Change to CCM.
 
                     // If we want to do CCM, but mode is not allowed. Error out.
-                    if ((activationMode == 2) && (cmd.modes.indexOf(1) == -1)) { ws.send(JSON.stringify({ errorText: 'CCM is not an allowed activation mode' })); ws.close(); return; } 
+                    if ((activationMode == 2) && (cmd.modes.indexOf(1) == -1)) { ws.send(JSON.stringify({ errorText: 'CCM is not an allowed activation mode' })); ws.close(); return; }
 
                     // Get the Intel AMT admin password, randomize if needed.
                     var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
@@ -2992,7 +2992,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     };
 
     // Get the web server hostname. This may change if using a domain with a DNS name.
-    obj.getWebServerName = function(domain) {
+    obj.getWebServerName = function (domain) {
         if (domain.dns != null) return domain.dns;
         return obj.certificates.CommonName;
     }
@@ -3152,7 +3152,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Get the list of power events and send them
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="powerevents.csv"' });
                 obj.db.getPowerTimeline(node._id, function (err, docs) {
-                    var xevents = [ 'Time, State, Previous State' ], prevState = 0;
+                    var xevents = ['Time, State, Previous State'], prevState = 0;
                     for (var i in docs) {
                         if (docs[i].power != prevState) {
                             prevState = docs[i].power;
@@ -3220,7 +3220,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     "Referrer-Policy": "no-referrer",
                     "X-XSS-Protection": "1; mode=block",
                     "X-Content-Type-Options": "nosniff",
-                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self' ws" + ((args.notls !== true)?'s':'') + "://" + req.headers.host + "; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self' ws" + ((args.notls !== true) ? 's' : '') + "://" + req.headers.host + "; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
 
@@ -3277,7 +3277,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
-            obj.app.ws(url+'apf.ashx', function (ws, req) { obj.parent.apfserver.onConnection(ws);})
+            obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.apfserver.onConnection(ws); })
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
             obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
             obj.app.get(url + 'health.ashx', function (req, res) { res.send('ok'); }); // TODO: Perform more server checking.
@@ -3323,15 +3323,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
 
-            // MQTT broker over websocket
-            obj.app.ws(url+'mqtt.ashx', function (ws, req) {
-                var ser = SerialTunnel();
-                ws.on('message', function(b) { ser.updateBuffer(Buffer.from(b,'binary'))});
-                ser.forwardwrite = function(b) { ws.send(b,"binary")}
-                ws.on("close", function() { ser.emit('end');});                  
-                //pass socket wrapper to mqtt broker
-                obj.parent.mqttbroker.handle(ser);
-            })
+            // Setup MQTT broker over websocket
+            if (obj.parent.mqttbroker != null) {
+                obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
+                    var ser = SerialTunnel();
+                    ws.on('message', function (b) { ser.updateBuffer(Buffer.from(b, 'binary')) });
+                    ser.forwardwrite = function (b) { ws.send(b, "binary") }
+                    ws.on("close", function () { ser.emit('end'); });
+                    obj.parent.mqttbroker.handle(ser); // Pass socket wrapper to MQTT broker
+                });
+            }
 
             // Memory Tracking
             if (typeof obj.args.memorytracking == 'number') {
@@ -3384,7 +3385,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.status(404).render(getRenderPage('error404', req), { title: domain.title, title2: domain.title2 });
             });
         }
-    
+
         // Start server on a free port
         CheckListenPort(obj.args.port, StartWebServer);
     }
