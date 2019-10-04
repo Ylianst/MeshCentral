@@ -824,8 +824,9 @@ function CreateMeshCentralServer(config, args) {
 
                 // Create APF server to hook into webserver
                 obj.apfserver = require('./apfserver.js').CreateApfServer(obj, obj.db, obj.args);
+
                 // Create MQTT Broker to hook into webserver and mpsserver
-                obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj,obj.db,obj.args);
+                if (obj.config.mqtt != null) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
 
                 // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);
@@ -1828,6 +1829,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        if (config.mqtt != null) { modules.push('mqtt'); modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
