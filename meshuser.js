@@ -2876,6 +2876,54 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'getmqttlogin': {
+                var err = null;
+                if (parent.parent.mqttbroker == null) { err = 'MQTT not supported on this server'; }
+                if (common.validateString(command.nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; } // Check the nodeid
+
+                // Handle any errors
+                if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+
+                var nodeid = command.nodeid;
+                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                    // Get the device
+                    db.Get(nodeid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length != 1)) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } return; } }
+                        var node = nodes[0];
+                        
+                        // Get the device group for this node
+                        var mesh = parent.meshes[node.meshid];
+                        if (mesh) {
+                            // Check if this user has rights to do this
+                            if ((mesh.links[user._id] != null) && (mesh.links[user._id].rights == 0xFFFFFFFF)) {
+                                var token = parent.parent.mqttbroker.generateLogin(mesh._id, node._id);
+                                var r = { action: 'getmqttlogin', responseid: command.responseid, nodeid: node._id, user: token.user, pass: token.pass };
+                                const serverName = parent.getWebServerName(domain);
+
+                                // Add MPS URL
+                                if (parent.parent.mpsserver != null) {
+                                    r.mpsCertHashSha384 = parent.parent.certificateOperations.getCertHash(parent.parent.mpsserver.certificates.mps.cert);
+                                    r.mpsCertHashSha1 = parent.parent.certificateOperations.getCertHashSha1(parent.parent.mpsserver.certificates.mps.cert);
+                                    r.mpsUrl = 'mqtts://' + serverName + ':' + ((args.mpsaliasport != null) ? args.mpsaliasport : args.mpsport) + '/';
+                                }
+
+                                // Add WS URL
+                                var xdomain = (domain.dns == null) ? domain.id : '';
+                                if (xdomain != '') xdomain += "/";
+                                var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                                r.wsUrl = "ws" + (args.notls ? '' : 's') + "://" + serverName + ":" + httpsPort + "/" + xdomain + "mqtt.ashx";
+                                r.wsTrustedCert = parent.isTrustedCert(domain);
+
+                                try { ws.send(JSON.stringify(r)); } catch (ex) { }
+                            } else {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Unable to perform this operation' })); } catch (ex) { } }
+                            }
+                        }
+                    });
+                }
+
+                break;
+            }
             case 'amt': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                 if (common.validateInt(command.mode, 0, 3) == false) break; // Check connection mode
