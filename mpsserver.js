@@ -238,9 +238,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         socket.removeAllListeners("close");
                         socket.setNoDelay(true);
                         socket.serialtunnel = SerialTunnel();
-                        socket.on('data', function (b) { socket.serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
+                        socket.serialtunnel.xtransport = 'mps';
+                        socket.serialtunnel.xip = socket.remoteAddress;
+                        socket.on("data", function (b) { socket.serialtunnel.updateBuffer(Buffer.from(b, "binary")) });
                         socket.serialtunnel.forwardwrite = function (b) { socket.write(b, "binary") }
-                        socket.on("close", function () { socket.serialtunnel.emit('end'); });
+                        socket.on("close", function () { socket.serialtunnel.emit("end"); });
 
                         // Pass socket wrapper to the MQTT broker
                         parent.mqttbroker.handle(socket.serialtunnel);

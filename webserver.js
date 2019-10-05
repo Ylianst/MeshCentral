@@ -3326,11 +3326,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Setup MQTT broker over websocket
             if (obj.parent.mqttbroker != null) {
                 obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
-                    var ser = SerialTunnel();
-                    ws.on('message', function (b) { ser.updateBuffer(Buffer.from(b, 'binary')) });
-                    ser.forwardwrite = function (b) { ws.send(b, "binary") }
-                    ws.on("close", function () { ser.emit('end'); });
-                    obj.parent.mqttbroker.handle(ser); // Pass socket wrapper to MQTT broker
+                    var domain = checkAgentIpAddress(ws, req);
+                    if (domain == null) { parent.debug('web', 'Got agent connection from blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                    var serialtunnel = SerialTunnel();
+                    serialtunnel.xtransport = 'ws';
+                    serialtunnel.xdomain = domain;
+                    serialtunnel.xip = req.ip;
+                    ws.on('message', function (b) { serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
+                    serialtunnel.forwardwrite = function (b) { ws.send(b, "binary") }
+                    ws.on("close", function () { serialtunnel.emit('end'); });
+                    obj.parent.mqttbroker.handle(serialtunnel); // Pass socket wrapper to MQTT broker
                 });
             }
 
