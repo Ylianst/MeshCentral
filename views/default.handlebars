@@ -6942,7 +6942,7 @@
                 var consent = 0;
                 if (currentMesh.consent) { consent = currentMesh.consent; }
                 if (serverinfo.consent) { consent |= serverinfo.consent; }
-                if (consent & 0x0008) { meshFeatures.push('Desktop Prompt'); } else { if (consent & 0x0001) { meshFeatures.push('Desktop Notify'); } }
+                if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push('Desktop Prompt+Toolbar'); } else if (consent & 0x0040) { meshFeatures.push('Desktop Toolbar'); } else if (consent & 0x0008) { meshFeatures.push('Desktop Prompt'); } else { if (consent & 0x0001) { meshFeatures.push('Desktop Notify'); } }
                 if (consent & 0x0010) { meshFeatures.push('Terminal Prompt'); } else { if (consent & 0x0002) { meshFeatures.push('Terminal Notify'); } }
                 if (consent & 0x0020) { meshFeatures.push('Files Prompt'); } else { if (consent & 0x0004) { meshFeatures.push('Files Notify'); } }
                 if (consent == 7) { meshFeatures = ['Always Notify']; }
@@ -7142,9 +7142,9 @@
             if (xxdialogMode) return;
             var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>Desktop</b></div>';
-            if (debugmode) { x += "<div><label><input type=checkbox id=d20flag2 " + ((consent & 0x0040) ? 'checked' : '') + ">Show connection toolbar</label></div>"; }
             x += "<div><label><input type=checkbox id=d20flag1 " + ((consent & 0x0001) ? 'checked' : '') + ">Notify user</label></div>";
             x += "<div><label><input type=checkbox id=d20flag2 " + ((consent & 0x0008) ? 'checked' : '') + ">Prompt for user consent</label></div>";
+            if (debugmode) { x += "<div><label><input type=checkbox id=d20flag7 " + ((consent & 0x0040) ? 'checked' : '') + ">Show connection toolbar</label></div>"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Terminal</b></div>';
             x += "<div><label><input type=checkbox id=d20flag3 " + ((consent & 0x0002) ? 'checked' : '') + ">Notify user</label></div>";
             x += "<div><label><input type=checkbox id=d20flag4 " + ((consent & 0x0010) ? 'checked' : '') + ">Prompt for user consent</label></div>";
@@ -7159,12 +7159,14 @@
                 if (serverinfo.consent & 0x0010) { Q('d20flag4').checked = true; }
                 if (serverinfo.consent & 0x0004) { Q('d20flag5').checked = true; }
                 if (serverinfo.consent & 0x0020) { Q('d20flag6').checked = true; }
+                if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; }
                 QE('d20flag1', !(serverinfo.consent & 0x0001));
                 QE('d20flag2', !(serverinfo.consent & 0x0008));
                 QE('d20flag3', !(serverinfo.consent & 0x0002));
                 QE('d20flag4', !(serverinfo.consent & 0x0010));
                 QE('d20flag5', !(serverinfo.consent & 0x0004));
                 QE('d20flag6', !(serverinfo.consent & 0x0020));
+                QE('d20flag7', !(serverinfo.consent & 0x0040));
             }
         }
 
@@ -7176,6 +7178,7 @@
             if (Q('d20flag4').checked) { consent += 0x0010; }
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
+            if (Q('d20flag7').checked) { consent += 0x0040; }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent });
         }
 
