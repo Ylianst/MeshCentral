@@ -1771,6 +1771,7 @@
                 if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
                 else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
+                if ((node.conn & 16) != 0) { states.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
@@ -1945,6 +1946,7 @@
                     if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
                     else if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span title="Software agent is reachable using another agent as relay.">Agent Relay</span>');
+                    if ((node.conn & 16) != 0) cstate.push('<span title="MQTT connection to the device is active.">MQTT</span>');
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
 
@@ -1984,6 +1986,7 @@
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Agent connected">Mesh Agent</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="MQTT connected">MQTT channel connected</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon

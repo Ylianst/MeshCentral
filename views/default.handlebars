@@ -2151,11 +2151,13 @@
                                     if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: 'Agent connected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: 'Intel AMT detected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: 'Intel AMT CIRA connected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { addNotification({ text: 'MQTT connected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
                                 if (n & 4) {
                                     if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { addNotification({ text: 'Agent disconnected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: 'Intel AMT not detected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: 'Intel AMT CIRA disconnected', title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { addNotification({ text: 'MQTT disconnected', title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
 
                                 // Change the node connection state
@@ -2569,6 +2571,7 @@
                             if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
                             else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">AMT</span>'); }
                             if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
+                            if ((node.conn & 16) != 0) { states.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
                         }
                         r += '<tr><td><div id=devs class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
@@ -3221,6 +3224,7 @@
                 if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
                 else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
+                if ((node.conn & 16) != 0) { states.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
@@ -4233,6 +4237,7 @@
                     if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
                     else if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span title="Mesh agent is reachable using another agent as relay.">Mesh Relay</span>');
+                    if ((node.conn & 16) != 0) { cstate.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
                     x += addDeviceAttribute('Connectivity', cstate.join(', '));
                 }
 
@@ -4285,6 +4290,7 @@
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Agent connected">Agent connected</span>'; }
                 if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="MQTT connected">MQTT channel connected</span>'; }
                 if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>Last seen:<br />' + printDateTime(new Date(node.lastconnect)) + '</span>'; }
                 QH('MainComputerState', powerstate);
 
@@ -7136,6 +7142,7 @@
             if (xxdialogMode) return;
             var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>Desktop</b></div>';
+            if (debugmode) { x += "<div><label><input type=checkbox id=d20flag2 " + ((consent & 0x0040) ? 'checked' : '') + ">Show connection toolbar</label></div>"; }
             x += "<div><label><input type=checkbox id=d20flag1 " + ((consent & 0x0001) ? 'checked' : '') + ">Notify user</label></div>";
             x += "<div><label><input type=checkbox id=d20flag2 " + ((consent & 0x0008) ? 'checked' : '') + ">Prompt for user consent</label></div>";
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>Terminal</b></div>';
