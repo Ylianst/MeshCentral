@@ -826,7 +826,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.apfserver = require('./apfserver.js').CreateApfServer(obj, obj.db, obj.args);
 
                 // Create MQTT Broker to hook into webserver and mpsserver
-                if (obj.config.settings.mqtt != null) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
+                if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
 
                 // Start the web server and if needed, the redirection web server.
                 obj.webserver = require('./webserver.js').CreateWebServer(obj, obj.db, obj.args, obj.certificates);

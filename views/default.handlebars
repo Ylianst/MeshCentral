@@ -2274,6 +2274,24 @@
                     QV('agentInvitationLinkDiv', true);
                     break;
                 }
+                case 'getmqttlogin': {
+                    if ((currentNode == null) || (currentNode._id != message.nodeid) || (xxdialogMode != null)) return;
+                    var x = "These settings can be used to connect MQTT for this device.<br /><br />";
+                    delete message.action;
+                    delete message.nodeid;
+                    x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>' + JSON.stringify(message) + '</textarea>';
+                    /*
+                    x += addHtmlValue('Username', '<input style=width:230px readonly value="' + message.user + '" />');
+                    x += addHtmlValue('Password', '<input style=width:230px readonly value="' + message.pass + '" />');
+                    x += addHtmlValue('WS URL', '<input style=width:230px readonly value="' + message.wsUrl + '" />');
+                    if (message.mpsUrl && message.mpsCertHash) {
+                        x += addHtmlValue('MPS URL', '<input style=width:230px readonly value="' + message.mpsUrl + '" />');
+                        x += addHtmlValue('MPS Cert Hash', '<input style=width:230px readonly value="' + message.mpsCertHash + '" />');
+                    }
+                    */
+                    setDialogMode(2, "MQTT Credentials", 1, null, x);
+                    break;
+                }
                 case 'stopped': { // Server is stopping.
                     // Disconnect
                     autoReconnect = false;
@@ -4280,6 +4298,9 @@
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title="Requires Microsoft ClickOnce support in your browser.">WinSCP</a>&nbsp;';
                     }
                 }
+
+                // MQTT options
+                if ((meshrights == 0xFFFFFFFF) && (features & 0x00400000)) { x += '<a href=# onclick=p10showMqttLoginDialog("' + node._id + '") title="Get MQTT login credentials for this device.">MQTT Login</a>&nbsp;'; }
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -4663,6 +4684,9 @@
             x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer download href="meshagents?meshaction=winrouter" onclick="setDialogMode(0)">MeshCentralRouter.exe</a>');
             setDialogMode(2, "MeshCentral Router", 1, null, x, "fileDownload");
         }
+
+        // Request MQTT login credentials
+        function p10showMqttLoginDialog(nodeid) { meshserver.send({ action: 'getmqttlogin', nodeid: nodeid }); }
 
         // Show MeshCmd dialog
         function p10showMeshCmdDialog(mode, nodeid) {
