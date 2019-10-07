@@ -1505,6 +1505,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
             if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
+            if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
@@ -1617,7 +1618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return true if it looks like we are using a real TLS certificate.
-    function isTrustedCert(domain) {
+    obj.isTrustedCert = function(domain) {
         if (obj.args.notls == true) return false; // We are not using TLS, so not trusted cert.
         if ((domain != null) && (typeof domain.trustedcert == 'boolean')) return domain.trustedcert; // If the status of the cert specified, use that.
         if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
@@ -2886,7 +2887,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="' + scriptInfo.rname + '"' });
             var data = scriptInfo.data;
             var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' }
-            if (isTrustedCert(domain) != true) {
+            if (obj.isTrustedCert(domain) != true) {
                 cmdoptions.wgetoptionshttps += '--no-check-certificate ';
                 cmdoptions.curloptionshttps += '-k ';
             }
@@ -3350,7 +3351,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
             // It's not advised to use this to create login tokens since the URL is often logged and you got credentials in the URL.
             // Since it's bad, it's only offered when an untrusted certificate is used as a way to help developers get started. 
-            if (isTrustedCert() == false) {
+            if (obj.isTrustedCert() == false) {
                 obj.app.get(url + 'createLoginToken.ashx', function (req, res) {
                     // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
                     if ((req.query.user != null) && (req.query.pass != null)) {
