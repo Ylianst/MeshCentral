@@ -242,6 +242,21 @@ module.exports.CertificateOperations = function (parent) {
     };
 
     // Return the SHA384 hash of the certificate, return hex
+    obj.getCertHashSha1 = function (cert) {
+        try {
+            var md = obj.forge.md.sha1.create();
+            md.update(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(obj.pki.certificateFromPem(cert))).getBytes());
+            return md.digest().toHex();
+        } catch (ex) {
+            // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
+            var x1 = cert.indexOf('-----BEGIN CERTIFICATE-----'), x2 = cert.indexOf('-----END CERTIFICATE-----');
+            if ((x1 >= 0) && (x2 > x1)) {
+                return obj.crypto.createHash('sha1').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('hex');
+            } else { console.log('ERROR: Unable to decode certificate.'); return null; }
+        }
+    };
+
+    // Return the SHA384 hash of the certificate, return hex
     obj.getCertHash = function (cert) {
         try {
             var md = obj.forge.md.sha384.create();
