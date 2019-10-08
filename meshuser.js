@@ -2107,6 +2107,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 64) != 0)) {
 
+                                        // If this device is connected on MQTT, send a wake action.
+                                        if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', 'wake'); }
+
                                         // Get the device interface information
                                         db.Get('if' + node._id, function (err, nodeifs) {
                                             if ((nodeifs != null) && (nodeifs.length == 1)) {
@@ -2146,6 +2149,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (common.validateInt(command.actiontype, 2, 4) == false) break; // Check actiontype
                     for (i in command.nodeids) {
                         nodeid = command.nodeids[i];
                         var powerActions = 0;
@@ -2159,6 +2163,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Get the mesh for this device
                                 mesh = parent.meshes[node.meshid];
                                 if (mesh) {
+                                    // If this device is connected on MQTT, send a power action.
+                                    if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(nodeid, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
 
                                     // Check if this user has rights to do this
                                     if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"

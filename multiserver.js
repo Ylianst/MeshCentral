@@ -456,6 +456,10 @@ module.exports.CreateMultiServer = function (parent, args) {
         var userid, i;
         //console.log('ProcessPeerServerMessage', peerServerId, msg);
         switch (msg.action) {
+            case 'mqtt': {
+                if ((obj.parent.mqttbroker != null) && (msg.nodeid != null)) { obj.parent.mqttbroker.publishNoPeers(msg.nodeid, msg.topic, msg.message); } // Dispatch in the MQTT broker
+                break;
+            }
             case 'bus': {
                 obj.parent.DispatchEvent(msg.ids, null, msg.event, true); // Dispatch the peer event
                 break;
