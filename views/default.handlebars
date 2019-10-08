@@ -3329,7 +3329,7 @@
                 p10showChangeGroupDialog(getCheckedDevices());
             } else {
                 // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
             }
         }
 
@@ -4465,7 +4465,7 @@
                 meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
             } else {
                 // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
             }
         }
 
@@ -4875,9 +4875,9 @@
             QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on MacOS
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
-            QV('DeskWD', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
+            QV('DeskWD', inputAllowed);
             QE('DeskWD', deskState == 3);
-            QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5) && inputAllowed);
+            QV('deskkeys', inputAllowed);
             QE('deskkeys', deskState == 3);
 
             QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
