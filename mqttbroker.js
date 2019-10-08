@@ -29,18 +29,9 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         return { meshid: meshid, nodeid: nodeid, user: username, pass: parent.config.settings.mqtt.auth.keyid + ':' + nonce + ':' + parent.crypto.createHash('sha384').update(username + ':' + nonce + ':' + parent.config.settings.mqtt.auth.key).digest("base64") };
     }
 
-    // Publish a message to a specific nodeid & topic
-    obj.publish = function (nodeid, topic, message) {
-        var clients = obj.connections[nodeid];
-        if (clients == null) return;
-        if (typeof message == 'string') { message = new Buffer(message); }
-        for (var i in clients) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
-    }
-
     // Connection Authentication
     aedes.authenticate = function (client, username, password, callback) {
         obj.parent.debug("mqtt", "Authentication User:" + username + ", Pass:" + password.toString() + ", ClientID:" + client.id + ", " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
-        console.log('MQTT Connect');
 
         // Parse the username and password
         var usersplit = username.split(':');
@@ -117,21 +108,30 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         // Handle a published message
         obj.parent.debug("mqtt", "AuthorizePublish, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
         handleMessage(client.xdbNodeKey, client.xdbNodeKey, packet.topic, packet.payload);
-        //callback(denyError); // Deny all, clients can't publish anything to other agents.
-        //callback(null); // Deny all, clients can't publish anything to other agents.
+        // We don't accept that any client message be published, so don't call the callback.
     }
 
-    // Check if a client can forward a packet
-    //aedes.authorizeForward = function (client, packet) {
-        // TODO: add forwarding control
-        //obj.parent.debug("mqtt", "AuthorizeForward, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
-        //return packet;
-    //}
+    // Publish a message to a specific nodeid & topic, also send this to peer servers.
+    obj.publish = function (nodeid, topic, message) {
+        // Publish this message on peer servers.
+        if (parent.multiServer != null) { parent.multiServer.DispatchMessage(JSON.stringify({ action: 'mqtt', nodeid: nodeid, topic: topic, message: message })); }
+        obj.publishNoPeers(nodeid, topic, message);
+    }
+
+    // Publish a message to a specific nodeid & topic, don't send to peer servers.
+    obj.publishNoPeers = function (nodeid, topic, message) {
+        // Look for any MQTT connections to send this to
+        var clients = obj.connections[nodeid];
+        if (clients == null) return;
+        if (typeof message == 'string') { message = new Buffer(message); }
+        for (var i in clients) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
+    }
 
     // Handle messages coming from clients
     function handleMessage(nodeid, meshid, topic, message) {
-        console.log('handleMessage', nodeid, topic, message.toString());
-        obj.publish(nodeid, 'abc', "This is a server reply");
+        // TODO: Handle messages here.
+        //console.log('handleMessage', nodeid, topic, message.toString());
+        //obj.publish(nodeid, 'echoTopic', "Echo: " + message.toString());
     }
 
     // Clean a IPv6 address that encodes a IPv4 address

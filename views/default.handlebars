@@ -3310,7 +3310,7 @@
                 p10showChangeGroupDialog(getCheckedDevices());
             } else {
                 // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
             }
         }
 
@@ -4446,7 +4446,7 @@
                 meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
             } else {
                 // Power operation
-                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: op });
+                meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
             }
         }
 
