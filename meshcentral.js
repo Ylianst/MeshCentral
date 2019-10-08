@@ -865,6 +865,11 @@ function CreateMeshCentralServer(config, args) {
                 // Dispatch an event that the server is now running
                 obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
 
+                obj.pluginHandler = require("./pluginHandler.js").pluginHandler(obj);
+                
+                // Plugin hook. Need to run something at server startup? This is the place.
+                obj.pluginHandler.callHook("server_startup");
+                
                 // Load the login cookie encryption key from the database if allowed
                 if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
                     obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
@@ -1347,7 +1352,8 @@ function CreateMeshCentralServer(config, args) {
                     }
                 }
             }
-
+            obj.pluginHandler = require("./pluginHandler.js").pluginHandler(obj);
+            obj.pluginHandler.addMeshCoreModules(modulesAdd);
             // Merge the cores and compute the hashes
             for (var i in modulesAdd) {
                 if ((i == 'windows-recovery') || (i == 'linux-recovery')) {
