@@ -60,7 +60,9 @@ module.exports.pluginHandler = function (parent) {
       };
       obj.registerPluginTab = function(pluginRegInfo) {
         var d = pluginRegInfo();
-        QA('p19headers', '<span onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\');">'+d.tabTitle+'</span>');
+        if (!Q(d.tabId)) {
+          QA('p19headers', '<span onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\');">'+d.tabTitle+'</span>');
+        }
       };
       obj.callPluginPage = function(id) {
         var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
