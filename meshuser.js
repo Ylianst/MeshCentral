@@ -2882,6 +2882,45 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'sendmqttmsg': {
+                if (common.validateArray(command.nodeids, 1) == false) { err = 'Invalid nodeids'; }; // Check nodeid's
+                if (common.validateString(command.topic, 1, 64) == false) { err = 'Invalid topic'; } // Check the topic
+                if (common.validateString(command.msg, 1, 4096) == false) { err = 'Invalid msg'; } // Check the message
+
+                // Handle any errors
+                if (err != null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'sendmqttmsg', responseid: command.responseid, result: err })); } catch (ex) { } }
+                    break;
+                }
+
+                // TODO: We can optimize this a lot.
+                // - We should get a full list of all MAC's to wake first.
+                // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
+                for (i in command.nodeids) {
+                    nodeid = command.nodeids[i];
+                    var wakeActions = 0;
+                    if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                    if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                        // Get the device
+                        db.Get(nodeid, function (err, nodes) {
+                            if ((nodes == null) || (nodes.length != 1)) return;
+                            var node = nodes[0];
+
+                            // Get the mesh for this device
+                            mesh = parent.meshes[node.meshid];
+                            if (mesh) {
+                                // Check if this user has rights to do this
+                                if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 64) != 0)) {
+                                    // If this device is connected on MQTT, send a wake action.
+                                    if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, command.topic, command.msg); }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                break;
+            }
             case 'getmqttlogin': {
                 var err = null;
                 if (parent.parent.mqttbroker == null) { err = 'MQTT not supported on this server'; }
@@ -2927,7 +2966,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     });
                 }
-
                 break;
             }
             case 'amt': {
