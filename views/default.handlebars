@@ -844,9 +844,23 @@
             </div>
             <div id=p19 style="display:none">
                 <h1>Plugins - <span id=p19deviceName></span></h1>
-                <div class="p19headers">
-                </div>
-                <div id=p19pages style=""></div>
+                <style>
+                #p19headers {
+                  padding-right: 7px;
+                  padding-bottom: 10px;
+                  font-weight: bold;
+                  border-bottom: 1px dotted blue;
+                }
+                #p19headers > span:nth-child(n+2) {
+                        border-left: 1px solid black;
+                }
+                #p19headers > span {
+                        padding-left: 4px;   
+                        padding-right: 4px;
+                }
+                </style>
+                <div id="p19headers"></div>
+                <div id=p19pages></div>
             </div>
             <br id="column_l_bottomgap" />
         </div>
@@ -1015,7 +1029,8 @@
         var nightMode = (getstore('_nightMode', '0') == '1');
         var sessionActivity = Date.now();
         var updateSessionTimer = null;
-        var pluginHandler = {{{pluginHandler}}};
+        var pluginHandlerBuilder = {{{pluginHandler}}};
+        var pluginHandler = new pluginHandlerBuilder();
         
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -2309,8 +2324,7 @@
                 case 'plugin': {
                   if (typeof message.plugin == 'string') {
                     try { 
-                      var ph = pluginHandler();
-                      ph[message.plugin][message.method](server, message);
+                      pluginHandler[message.plugin][message.method](server, message);
                     } catch (e) {
                       console.log('Error loading plugin handler ('+ e + ')');
                     }
@@ -4149,6 +4163,7 @@
                 QH('p15deviceName', 'Console - ' + nname);
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
+                QH('p19deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -4404,6 +4419,8 @@
                 p11clearConsoleMsg();
                 p12clearConsoleMsg();
                 p13clearConsoleMsg();
+                
+                pluginHandler.onDeviceRefeshEnd(nodeid, panel, refresh, event); 
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;

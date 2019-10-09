@@ -33,7 +33,7 @@ module.exports.pluginHandler = function (parent) {
                   obj.plugins[plugin] = require(obj.pluginPath + '/' + plugin + '/' + plugin + '.js')[plugin](obj);
                   obj.exports[plugin] = obj.plugins[plugin].exports;
               } catch (e) {
-                  console.log("Error loading plugin: " + plugin + " (" + e + "). It has been disabled");
+                  console.log("Error loading plugin: " + plugin + " (" + e + "). It has been disabled.", e.stack);
               }
           }
       });
@@ -49,7 +49,27 @@ module.exports.pluginHandler = function (parent) {
            str += '        obj.'+ p +'.'+ l + ' = '+ obj.plugins[p][l].toString()+'\r\n';
          }
       }
-      str += 'return obj; };\r\n';
+      
+      str += 'obj.enabled = '+ obj.enabled +';\r\n';
+      str += `obj.onDeviceRefeshEnd = function(nodeid, panel, refresh, event) {
+        for (const p of Object.keys(obj)) { 
+          if (typeof obj[p].onDeviceRefreshEnd == 'function') {
+            obj[p].onDeviceRefreshEnd(nodeid, panel, refresh, event);
+          }
+        }
+      };
+      obj.registerPluginTab = function(pluginRegInfo) {
+        var d = pluginRegInfo();
+        QA('p19headers', '<span onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\');">'+d.tabTitle+'</span>');
+      };
+      obj.callPluginPage = function(id) {
+        var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
+        for (const i of pages) {
+          i.style.display = 'none';
+        }
+        QV(id, true);
+      };
+      return obj; };`;
       return str;
     }
     

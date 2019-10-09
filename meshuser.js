@@ -2963,6 +2963,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'plugin': {
+                command.userid = user._id;
+                
+                if (command.routeToNode === true) {
+                  routeCommandToNode(command);
+                } else {
+                  // TODO
+                }
+                
+              break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
