@@ -798,6 +798,7 @@ function createMeshCore(agent)
                     // Display a toast message
                     if (data.title && data.msg) {
                         MeshServerLog('Displaying toast message, title=' + data.title + ', message=' + data.msg, data);
+                        data.msg = data.msg.split('\r').join('\\r').split('\n').join('\\n');
                         try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
                     }
                     break;
@@ -1139,7 +1140,7 @@ function createMeshCore(agent)
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting Terminal Access. Grant access?', 10);
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting Terminal Access. Grant access?', 30);
                         pr.ws = this;
                         this.pause();
 
@@ -1229,7 +1230,7 @@ function createMeshCore(agent)
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting KVM Access. Grant access?', 10);
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting KVM Access. Grant access?', 30);
                         pr.ws = this;
                         this.pause();
 
@@ -1287,7 +1288,7 @@ function createMeshCore(agent)
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'Waiting for user to grant access...' }));
-                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting remote file access. Grant access?', 10);
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + ' requesting remote file access. Grant access?', 30);
                         pr.ws = this;
                         this.pause();
 
@@ -1788,8 +1789,7 @@ function createMeshCore(agent)
                     break;
                 }
                 case 'toast': {
-                    if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else
-                    {
+                    if (args['_'].length < 1) { response = 'Proper usage: toast "message"'; } else {
                         require('toaster').Toast('MeshCentral', args['_'][0]).then(sendConsoleText, sendConsoleText);
                     }
                     break;
