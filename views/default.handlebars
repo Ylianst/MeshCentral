@@ -703,6 +703,12 @@
                                         <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
                                     </td>
                                     <td>&nbsp;</td>
+                                    <td id="p15outputselecttd">
+                                        <select id=p15outputselect>
+                                            <option value=1>Agent</option>
+                                            <option value=2>MQTT</option>
+                                        </select>
+                                    </td>
                                     <td style="width:1%"><input id="id_p15consoleClear" type="button" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
                                 </tr>
                             </table>
@@ -1614,7 +1620,7 @@
                         if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
                         if (index != -1) {
                             // Node was found, dispatch the message
-                            if (message.type == 'console') { p15consoleReceive(nodes[index], message.value); } // This is a console message.
+                            if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
                             else if (message.type == 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
@@ -3315,8 +3321,13 @@
         }
 
         function groupActionFunction() {
+            var mqttx = '';
+            if (features & 0x00400000) { // Check if any of the selected devices have a MQTT connection active
+                var nodeids = getCheckedDevices();
+                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { mqttx = '<option value=103>Send MQTT Message</option>'; } }
+            }
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights.<br /><br />";
-            x += addHtmlValue('Operation', '<select id=d2groupop><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move to device group</option><option value=101>Delete devices</option></select>');
+            x += addHtmlValue('Operation', '<select id=d2groupop><option value=100>Wake-up devices</option><option value=4>Sleep devices</option><option value=3>Reset devices</option><option value=2>Power off devices</option><option value=102>Move to device group</option>' + mqttx + '<option value=101>Delete devices</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -3341,6 +3352,9 @@
             } else if (op == 102) {
                 // Move computers to a different group
                 p10showChangeGroupDialog(getCheckedDevices());
+            } else if (op == 103) {
+                // Send MQTT Message
+                p10showSendMqttMsgDialog(getCheckedDevices());
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -4470,6 +4484,7 @@
             var y = '<select id=d2deviceop style=float:right;width:250px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
             if ((meshrights & 8) != 0) { y += '<option value=4>Sleep</option><option value=3>Reset</option><option value=2>Power off</option>'; } // Remote control permission
+            if ((currentNode.conn & 16) != 0) { y += '<option value=103>Send MQTT Message</option>'; }
             y += '</select>';
             x += addHtmlValue('Operation', y);
             setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
@@ -4479,7 +4494,10 @@
             var op = Q('d2deviceop').value;
             if (op == 100) {
                 // Device wake
-                meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] });
+                meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
+            } else if (op == 103) {
+                // Send MQTT Message
+                p10showSendMqttMsgDialog([currentNode._id]);
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
@@ -4606,6 +4624,24 @@
                 tag.node.intelamt.tls = Q('dp10tls').value;
                 if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 300); }
             }
+        }
+
+        function p10showSendMqttMsgDialog(nodeids) {
+            if (xxdialogMode) return false;
+            var x = addHtmlValue('Topic', '<input id=dp2topic style=width:230px maxlength=64 onchange=p10validateSendMqttMsgDialog() onkeyup=p10validateSendMqttMsgDialog(event,1) />');
+            x += addHtmlValue('Message', '<div style=width:230px;margin:0;padding:0><textarea id=dp2msg maxlength=4096 style=width:100%;height:150px;resize:none onchange=p10validateSendMqttMsgDialog() onkeyup=p10validateSendMqttMsgDialog(event,1)></textarea></div>');
+            setDialogMode(2, "Send MQTT message", 3, p10showSendMqttMsgDialogEx, x, nodeids);
+            p10validateSendMqttMsgDialog();
+            Q('dp2topic').focus();
+            return false;
+        }
+
+        function p10validateSendMqttMsgDialog() {
+            QE('idx_dlgOkButton', (Q('dp2topic').value.length > 0) && (Q('dp2msg').value.length > 0));
+        }
+
+        function p10showSendMqttMsgDialogEx(b, nodeids) {
+            meshserver.send({ action: 'sendmqttmsg', nodeids: nodeids, topic: Q('dp2topic').value, msg: Q('dp2msg').value });
         }
 
         function p10showChangeGroupDialog(nodeids) {
@@ -6452,6 +6488,7 @@
                 QE('p15consoleText', true);
                 QH('p15statetext', '');
                 QH('p15coreName', '');
+                QV('p15outputselecttd', false);
 
                 if (samenode == false) {
                     QH('p15agentConsoleText', consoleServerText);
@@ -6470,14 +6507,18 @@
                         QH('p15agentConsoleText', consoleNode.consoleText);
                         Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                     }
-                    var online = ((consoleNode.conn & 1) != 0) ? true : false;
-                    QH('p15statetext', online ? "Agent is online" : "Agent is offline");
+                    var online = (((consoleNode.conn & 1) != 0) || ((consoleNode.conn & 16) != 0)) ? true : false;
+                    var onlineText = ((consoleNode.conn & 1) != 0) ? "Agent is online" : "Agent is offline"
+                    if ((consoleNode.conn & 16) != 0) { onlineText += ', MQTT is online' }
+                    QH('p15statetext', onlineText);
                     QE('p15consoleText', online);
                     QE('p15uploadCore', online);
+                    QV('p15outputselecttd', (consoleNode.conn & 17) == 17);
                 } else {
                     QH('p15statetext', 'Access Denied');
                     QE('p15consoleText', false);
                     QE('p15uploadCore', false);
+                    QV('p15outputselecttd', false);
                 }
             }
         }
@@ -6497,20 +6538,28 @@
         var consoleHistory = [];
         function p15consoleSend(e) {
             if (e && e.keyCode != 13) return;
-            var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(Q('p15consoleText').value) + '<br/></div>';
-            Q('p15agentConsoleText').innerHTML += t;
-            Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
-            Q('p15consoleText').value = '';
+            var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + v + '<br/></div>';
 
             if (xxcurrentView == 115) {
                 // Send the command to the server - TODO: In the future, we may support multiple servers.
                 consoleServerText += t;
                 meshserver.send({ action: 'serverconsole', value: v });
             } else {
-                // Send the command to the mesh agent
-                consoleNode.consoleText += t;
-                meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value: v });
+                if (((consoleNode.conn & 16) != 0) && ((Q('p15outputselect').value == 2) || ((consoleNode.conn & 1) == 0))) {
+                    // Send the command to MQTT
+                    t = '<div style=color:orange>MQTT&gt; ' + EscapeHtml(v) + '<br/></div>';
+                    consoleNode.consoleText += t;
+                    meshserver.send({ action: 'sendmqttmsg', topic: 'console', nodeids: [ consoleNode._id ], msg: v });
+                } else {
+                    // Send the command to the mesh agent
+                    consoleNode.consoleText += t;
+                    meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value: v });
+                }
             }
+
+            Q('p15agentConsoleText').innerHTML += t;
+            Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
+            Q('p15consoleText').value = '';
 
             // Add command to history list
             if (v.length > 0) {
@@ -6523,10 +6572,10 @@
         }
 
         // Handle Mesh Agent console data
-        function p15consoleReceive(node, data) {
-            data = '<div>' + data + '</div>'
+        function p15consoleReceive(node, data, source) {
             if (node === 'serverconsole') {
                 // Server console data
+                data = '<div>' + EscapeHtml(data) + '</div>'
                 consoleServerText += data;
                 if (consoleNode == 'server') {
                     Q('p15agentConsoleText').innerHTML += data;
@@ -6534,6 +6583,7 @@
                 }
             } else {
                 // Agent console data
+                if (source == 'MQTT') { data = '<div style=color:red>MQTT&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + EscapeHtml(data) + '</div>' }
                 if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
                 if (consoleNode == node) {
                     Q('p15agentConsoleText').innerHTML += data;
