@@ -1447,6 +1447,7 @@
                 case 'serverinfo': {
                     serverinfo = message.serverinfo;
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
+                    if (debugmode == 1) { console.log("Server time: ", printDateTime(new Date(serverinfo.serverTime))); }
                     break;
                 }
                 case 'userinfo': {
@@ -6476,7 +6477,7 @@
                     if ((consoleNode.conn & 16) != 0) { onlineText += ', MQTT is online' }
                     QH('p15statetext', onlineText);
                     QE('p15consoleText', online);
-                    QE('p15uploadCore', online);
+                    QE('p15uploadCore', ((consoleNode.conn & 1) != 0));
                     QV('p15outputselecttd', (consoleNode.conn & 17) == 17);
                 } else {
                     QH('p15statetext', 'Access Denied');
@@ -6502,7 +6503,7 @@
         var consoleHistory = [];
         function p15consoleSend(e) {
             if (e && e.keyCode != 13) return;
-            var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + v + '<br/></div>';
+            var v = Q('p15consoleText').value, t = '<div style=color:green>&gt; ' + EscapeHtml(v) + '<br/></div>';
 
             if (xxcurrentView == 115) {
                 // Send the command to the server - TODO: In the future, we may support multiple servers.
@@ -6539,7 +6540,7 @@
         function p15consoleReceive(node, data, source) {
             if (node === 'serverconsole') {
                 // Server console data
-                data = '<div>' + EscapeHtml(data) + '</div>'
+                data = '<div>' + data + '</div>'
                 consoleServerText += data;
                 if (consoleNode == 'server') {
                     Q('p15agentConsoleText').innerHTML += data;
@@ -6547,7 +6548,7 @@
                 }
             } else {
                 // Agent console data
-                if (source == 'MQTT') { data = '<div style=color:red>MQTT&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + EscapeHtml(data) + '</div>' }
+                if (source == 'MQTT') { data = '<div style=color:red>MQTT&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + data + '</div>' }
                 if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
                 if (consoleNode == node) {
                     Q('p15agentConsoleText').innerHTML += data;
