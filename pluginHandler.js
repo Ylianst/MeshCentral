@@ -21,10 +21,17 @@ module.exports.pluginHandler = function (parent) {
     obj.path = require('path');
     obj.parent = parent;
     obj.pluginPath = obj.parent.path.join(obj.parent.datapath, 'plugins');
-    obj.enabled = obj.parent.config.settings.plugins.enabled;
-    obj.loadList = obj.parent.config.settings.plugins.list;
     obj.plugins = {};
     obj.exports = {};
+    
+    try {
+      obj.enabled = obj.parent.config.settings.plugins.enabled;
+      obj.loadList = obj.parent.config.settings.plugins.list;
+    } catch (e) { // Config file options not present, disable self
+      obj.enabled = false;
+      obj.loadList = {};
+      console.log('Plugin options not added to the config file. Plugins disabled. Please see the documentation.');
+    }
     
     if (obj.enabled) {
       obj.loadList.forEach(function(plugin, index) {
