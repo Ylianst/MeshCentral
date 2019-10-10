@@ -198,7 +198,11 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
                                     recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {
-                                        relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false };
+                                        try { relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false }; } catch (ex) {
+                                            try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
+                                            try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                                            return;
+                                        }
                                         try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
                                         try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
                                     });
