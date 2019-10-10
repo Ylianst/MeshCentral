@@ -122,6 +122,7 @@
                                 <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onclick=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
                                 <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onclick=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg; AMT</td>
                                 <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onclick=go(15,event) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onclick=go(19,event) onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -847,6 +848,26 @@
                 </div>
                 <div id=p41events style=""></div>
             </div>
+            <div id=p19 style="display:none">
+                <h1>Plugins - <span id=p19deviceName></span></h1>
+                <style>
+                #p19headers {
+                  padding-right: 7px;
+                  padding-bottom: 10px;
+                  font-weight: bold;
+                  border-bottom: 1px dotted blue;
+                }
+                #p19headers > span:nth-child(n+2) {
+                        border-left: 1px solid black;
+                }
+                #p19headers > span {
+                        padding-left: 4px;   
+                        padding-right: 4px;
+                }
+                </style>
+                <div id="p19headers"></div>
+                <div id=p19pages></div>
+            </div>
             <br id="column_l_bottomgap" />
         </div>
         <div id="footer">
@@ -1014,6 +1035,8 @@
         var nightMode = (getstore('_nightMode', '0') == '1');
         var sessionActivity = Date.now();
         var updateSessionTimer = null;
+        var pluginHandlerBuilder = {{{pluginHandler}}};
+        var pluginHandler = new pluginHandlerBuilder();
         
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -2304,6 +2327,16 @@
                     autoReconnect = false;
                     QH('p0span', message.msg);
                     break;
+                }
+                case 'plugin': {
+                  if (typeof message.plugin == 'string') {
+                    try { 
+                      pluginHandler[message.plugin][message.method](server, message);
+                    } catch (e) {
+                      console.log('Error loading plugin handler ('+ e + ')');
+                    }
+                  }
+                  break;
                 }
                 default:
                     //console.log('Unknown message.action', message.action);
@@ -4145,6 +4178,7 @@
                 QH('p15deviceName', 'Console - ' + nname);
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
+                QH('p19deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -4400,6 +4434,8 @@
                 p11clearConsoleMsg();
                 p12clearConsoleMsg();
                 p13clearConsoleMsg();
+                
+                pluginHandler.onDeviceRefeshEnd(nodeid, panel, refresh, event); 
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -9141,7 +9177,7 @@
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 115: 'ServerConsole' };
+            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 19: 'Plugins', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');

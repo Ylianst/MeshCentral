@@ -1277,6 +1277,18 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     });
                     break;
                 }
+                case 'plugin': {
+                    if (typeof command.plugin == 'string') {
+                      try { 
+                        var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
+                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                      } catch (e) {
+                        
+                        console.log('Error loading plugin handler ('+ e + ')');
+                      }
+                    }
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++; 
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
