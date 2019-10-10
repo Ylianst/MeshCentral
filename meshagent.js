@@ -526,7 +526,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 db.SetUser(adminUser);
-                parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
             }
         } else {
             if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {
@@ -547,7 +547,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // Send out an event indicating this mesh was "created"
-                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', links: mesh.links, msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
+                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
 
                 // Mark the mesh as active
                 delete mesh.deleted;
@@ -617,7 +617,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     adminUser.links[obj.meshid] = { rights: 0xFFFFFFFF };
                     //adminUser.subscriptions = parent.subscribe(adminUser._id, ws);
                     db.SetUser(user);
-                    parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                    parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
                 }
             }
 

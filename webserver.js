@@ -1229,7 +1229,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(obj.common.escapeLinksFieldName(mesh)); }
                             // Notify mesh change
                             var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
-                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', msg: change, domain: domain.id });
                         }
                     }
                 }
