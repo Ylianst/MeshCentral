@@ -3753,6 +3753,80 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return null;
     }
 
+    // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
+    obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
+        // Route a message.
+        // If this command has a sessionid, that is the target.
+        if (command.sessionid != null) {
+            if (typeof command.sessionid != 'string') return;
+            var splitsessionid = command.sessionid.split('/');
+            // Check that we are in the same domain and the user has rights over this node.
+            if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
+                // Check if this user has rights to get this message
+                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+
+                // See if the session is connected. If so, go ahead and send this message to the target node
+                var ws = obj.wssessions2[command.sessionid];
+                if (ws != null) {
+                    command.nodeid = nodeid; // Set the nodeid, required for responses.
+                    delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
+                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
+                } else if (parent.multiServer != null) {
+                    // See if we can send this to a peer server
+                    var serverid = obj.wsPeerSessions2[command.sessionid];
+                    if (serverid != null) {
+                        command.fromNodeid = nodeid;
+                        parent.multiServer.DispatchMessageSingleServer(command, serverid);
+                    }
+                }
+            }
+        } else if (command.userid != null) { // If this command has a userid, that is the target.
+            if (typeof command.userid != 'string') return;
+            var splituserid = command.userid.split('/');
+            // Check that we are in the same domain and the user has rights over this node.
+            if ((splituserid[0] == 'user') && (splituserid[1] == domainid)) {
+                // Check if this user has rights to get this message
+                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+
+                // See if the session is connected
+                var sessions = obj.wssessions[command.userid];
+
+                // Go ahead and send this message to the target node
+                if (sessions != null) {
+                    command.nodeid = nodeid; // Set the nodeid, required for responses.
+                    delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
+                    for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
+                }
+
+                if (parent.multiServer != null) {
+                    // TODO: Add multi-server support
+                }
+            }
+        } else { // Route this command to the mesh
+            command.nodeid = nodeid;
+            var cmdstr = JSON.stringify(command);
+            for (var userid in obj.wssessions) { // Find all connected users for this mesh and send the message
+                var user = obj.users[userid];
+                if ((user != null) && (user.links != null)) {
+                    var rights = user.links[meshid];
+                    if (rights != null) { // TODO: Look at what rights are needed for message routing
+                        var xsessions = obj.wssessions[userid];
+                        // Send the message to all users on this server
+                        for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
+                    }
+                }
+            }
+
+            // Send the message to all users of other servers
+            if (parent.multiServer != null) {
+                delete command.nodeid;
+                command.fromNodeid = nodeid;
+                command.meshid = meshid;
+                parent.multiServer.DispatchMessage(command);
+            }
+        }
+    }
+
     // Return true if a mobile browser is detected.
     // This code comes from "http://detectmobilebrowsers.com/" and was modified, This is free and unencumbered software released into the public domain. For more information, please refer to the http://unlicense.org/
     function isMobileBrowser(req) {

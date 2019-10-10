@@ -320,7 +320,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
 
             // Build server information object
-            var serverinfo = { name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1)), domainauth: ((domain.auth == 'sspi') || (domain.auth == 'ldap')) };
+            var serverinfo = { name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1)), domainauth: ((domain.auth == 'sspi') || (domain.auth == 'ldap')), serverTime: Date.now() };
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
                 var matchingDomains = [];
@@ -2013,6 +2013,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 agentSession.meshid = command.meshid.split('/')[2]; // Switch the agent mesh
                                 agentSession.sendUpdatedIntelAmtPolicy(); // Send the new Intel AMT policy
                             }
+
+                            // If any MQTT sessions are connected on this server, switch it now.
+                            if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.changeDeviceMesh(node._id, command.meshid); }
 
                             // Add the connection state
                             const state = parent.parent.GetConnectivityState(node._id);
