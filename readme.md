@@ -1,4 +1,4 @@
-Hacktober-MeshCentral
+MeshCentral
 ===========
 
 For more information, [visit MeshCommander.com/MeshCentral2](https://www.meshcommander.com/meshcentral2).
@@ -75,8 +75,8 @@ Command line arguments on any platform:
 | ------------------------------------- | -----------
 | --notls 				| Use HTTP instead of HTTPS for the main web server.
 | --user [username] 			| Always login as [username] if the account exists.
-| --port [number] 			| Web server port number (default to 443).
-| --mpsport [number] 			| Intel AMT server port number (default to 4433).
+| --port [number] 			| Web server port number (default is 443).
+| --mpsport [number] 			| Intel AMT server port number (default is 4433).
 | --redirport [number] 			| Redirection web server, redirects users to the HTTPS server (default to 80).
 | --exactports 				| Server must run with correct ports or exit.
 | --cert [name], (country), (org) 	| Create a web server certificate with a server name. Country and organization can optionaly be set.
