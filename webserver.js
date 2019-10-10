@@ -1697,7 +1697,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Render the messenger application.
     function handleMessengerRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
         parent.debug('web', 'handleMessengerRequest()');
 
