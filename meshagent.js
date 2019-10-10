@@ -1278,14 +1278,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'plugin': {
-                    if (typeof command.plugin == 'string') {
-                      try { 
+                    if (typeof command.plugin != 'string') break;
+                    try { 
                         var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
                         pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                      } catch (e) {
-                        
-                        console.log('Error loading plugin handler ('+ e + ')');
-                      }
+                    } catch (e) {
+                        console.log('Error loading plugin handler (' + e + ')');
                     }
                     break;
                 }
