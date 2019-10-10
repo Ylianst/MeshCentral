@@ -671,7 +671,8 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }).toArray(func); };
-            obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }).toArray(func); };
+            obj.getAmtUuidMeshNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }).toArray(func); };
+            obj.getAmtUuidNode = function (uuid, func) { obj.file.find({ type: 'node', 'intelamt.uuid': uuid }).toArray(func); };
 
             // TODO: Starting in MongoDB 4.0.3, you should use countDocuments() instead of count() that is deprecated. We should detect MongoDB version and switch.
             // https://docs.mongodb.com/manual/reference/method/db.collection.countDocuments/
@@ -794,7 +795,8 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
-            obj.getAmtUuidNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
+            obj.getAmtUuidMeshNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
+            obj.getAmtUuidNode = function (uuid, func) { obj.file.find({ type: 'node', 'intelamt.uuid': uuid }, func); };
             obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { obj.file.count({ type: type, domain: domainid }, function (err, count) { func((err != null) || (count > max), count); }); } }
 
             // Database actions on the events collection

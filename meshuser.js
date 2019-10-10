@@ -2017,6 +2017,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // If any MQTT sessions are connected on this server, switch it now.
                             if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.changeDeviceMesh(node._id, command.meshid); }
 
+                            // If any CIRA sessions are connected on this server, switch it now.
+                            if (parent.parent.mpsserver != null) { parent.parent.mpsserver.changeDeviceMesh(node._id, command.meshid); }
+
                             // Add the connection state
                             const state = parent.parent.GetConnectivityState(node._id);
                             if (state) {
