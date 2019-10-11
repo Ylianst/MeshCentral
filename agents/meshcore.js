@@ -1785,6 +1785,7 @@ function createMeshCore(agent) {
                 */
                 case 'av':
                     if (process.platform == 'win32') {
+                        // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
                         response = JSON.stringify(require('win-info').av(), null, 1);
                     } else {
                         response = 'Not supported on the platform';
@@ -2513,6 +2514,7 @@ function createMeshCore(agent) {
 
         if ((flags & 4) && (process.platform == 'win32')) {
             // Update anti-virus information
+            // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
             var av, pr;
             try { av = require('win-info').av(); } catch (ex) { av = null; } // Antivirus
             //if (process.platform == 'win32') { try { pr = require('win-info').pendingReboot(); } catch (ex) { pr = null; } } // Pending reboot

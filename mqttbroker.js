@@ -125,7 +125,10 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         var clients = obj.connections[nodeid];
         if (clients == null) return;
         if (typeof message == 'string') { message = new Buffer(message); }
-        for (var i in clients) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
+        for (var i in clients) {
+            // if (clients[i].subscriptions[topic] != null) { } // Add this if we only want to send subscribed topics.
+            clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false });
+        }
     }
 
     // Handle messages coming from clients
