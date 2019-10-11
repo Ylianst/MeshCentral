@@ -20,7 +20,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.db = db;
     obj.args = args;
     obj.certificates = certificates;
-    obj.ciraConnections = {};
+    obj.ciraConnections = {};       // NodeID --> Socket
     var tlsSessionStore = {};       // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
@@ -272,41 +272,26 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     socket.tag.connectTime = Date.now();
                     socket.tag.host = '';
 
-                    // Fetch the mesh
-                    obj.db.Get(socket.tag.meshid, function (err, meshes) {
-                        if ((meshes != null) && (meshes.length === 1)) {
-                            var mesh = meshes[0];
-                            obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-                                if ((nodes == null) || (nodes.length !== 1)) {
-                                    if (mesh.mtype == 1) {
-                                        // Check if we already have too many devices for this domain
-                                        if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
-                                            db.isMaxType(domain.limits.maxdevices, 'node', domain.id, function (ismax, count) {
-                                                if (ismax == true) {
-                                                    // Too many devices in this domain.
-                                                    maxDomainDevicesReached++;
-                                                    console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
-                                                    socket.end();
-                                                } else {
-                                                    // We are under the limit, create the new device.
-                                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
-                                                    obj.db.Set(device);
-
-                                                    // Event the new node
-                                                    addedTlsDeviceCount++;
-                                                    var device2 = common.Clone(device);
-                                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                                    var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
-
-                                                    // Add the connection to the MPS connection list
-                                                    obj.ciraConnections[socket.tag.nodeid] = socket;
-                                                    obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
-                                                }
-                                            });
-                                            return;
+                    // Fetch the node
+                    obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length !== 1)) {
+                            var mesh = obj.parent.webserver.meshes[socket.tag.meshid];
+                            if (mesh == null) {
+                                unknownTlsMeshIdCount++;
+                                console.log('ERROR: Intel AMT CIRA connected with unknown groupid: ' + socket.tag.meshid);
+                                socket.end();
+                                return;
+                            } else if (mesh.mtype == 1) {
+                                // Check if we already have too many devices for this domain
+                                if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                                    db.isMaxType(domain.limits.maxdevices, 'node', domain.id, function (ismax, count) {
+                                        if (ismax == true) {
+                                            // Too many devices in this domain.
+                                            maxDomainDevicesReached++;
+                                            console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
+                                            socket.end();
                                         } else {
+                                            // We are under the limit, create the new device.
                                             // Node is not in the database, add it. Credentials will be empty until added by the user.
                                             var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
                                             obj.db.Set(device);
@@ -317,30 +302,42 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                             if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                             var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
                                             obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
-                                        }
-                                    } else {
-                                        // New CIRA connection for unknown node, disconnect.
-                                        unknownTlsNodeCount++;
-                                        console.log('CIRA connection for unknown node with incorrect group type. meshid: ' + socket.tag.meshid);
-                                        socket.end();
-                                        return;
-                                    }
-                                } else {
-                                    // Node is already present
-                                    var node = nodes[0];
-                                    if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
-                                }
 
-                                // Add the connection to the MPS connection list
-                                obj.ciraConnections[socket.tag.nodeid] = socket;
-                                obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
-                            });
+                                            // Add the connection to the MPS connection list
+                                            obj.ciraConnections[socket.tag.nodeid] = socket;
+                                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                        }
+                                    });
+                                    return;
+                                } else {
+                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                    obj.db.Set(device);
+
+                                    // Event the new node
+                                    addedTlsDeviceCount++;
+                                    var device2 = common.Clone(device);
+                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
+                                    var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+                                }
+                            } else {
+                                // New CIRA connection for unknown node, disconnect.
+                                unknownTlsNodeCount++;
+                                console.log('CIRA connection for unknown node with incorrect group type. meshid: ' + socket.tag.meshid);
+                                socket.end();
+                                return;
+                            }
                         } else {
-                            unknownTlsMeshIdCount++;
-                            console.log('ERROR: Intel AMT CIRA connected with unknown groupid: ' + socket.tag.meshid);
-                            socket.end();
-                            return;
+                            // Node is already present
+                            var node = nodes[0];
+                            socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
+                            if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                         }
+
+                        // Add the connection to the MPS connection list
+                        obj.ciraConnections[socket.tag.nodeid] = socket;
+                        obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
                     });
                 } else {
                     // This node connected without certificate authentication, use password auth
@@ -410,7 +407,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
                     var meshIdStart = '/' + username, mesh = null;
                     if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Mesh not found', username, password); SendUserAuthFail(socket); return -1; }
+                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
 
                     // If this is a agent-less mesh, use the device guid 3 times as ID.
                     if (mesh.mtype == 1) {
@@ -470,6 +467,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             } else {
                                 // Node is already present
                                 var node = nodes[0];
+                                socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
                                 if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                             }
 
@@ -480,8 +478,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         });
                     } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                         // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
-                        obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
-                            if ((nodes == null) || (nodes.length !== 1)) {
+                        obj.db.getAmtUuidNode(socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
+                            if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
                                 // New CIRA connection for unknown node, disconnect.
                                 unknownNodeCount++;
                                 console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
@@ -489,11 +487,27 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 return;
                             }
 
+                            // Looking at nodes that match this UUID, select one in the same domain and mesh type.
+                            var node = null;
+                            for (var i in nodes) {
+                                if (mesh.domain == nodes[i].domain) {
+                                    var nodemesh = obj.parent.webserver.meshes[nodes[i].meshid];
+                                    if ((nodemesh != null) && (nodemesh.mtype == 2)) { node = nodes[i]; }
+                                }
+                            }
+
+                            if (node == null) {
+                                // New CIRA connection for unknown node, disconnect.
+                                unknownNodeCount++;
+                                console.log('CIRA connection for unknown node. candidate(s): ' + nodes.length + ', groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
+                                socket.end();
+                                return;
+                            }
+
                             // Node is present
-                            var node = nodes[0];
                             if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
                             socket.tag.nodeid = node._id;
-                            socket.tag.meshid = mesh._id;
+                            socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
                             socket.tag.connectTime = Date.now();
 
                             // Add the connection to the MPS connection list
@@ -918,6 +932,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 obj.parent.DispatchEvent(['*', node.meshid], obj, event);
             });
         });
+    }
+
+    // Change a node to a new meshid, this is called when a node changes groups.
+    obj.changeDeviceMesh = function (nodeid, newMeshId) {
+        var socket = obj.ciraConnections[nodeid];
+        if ((socket != null) && (socket.tag != null)) { socket.tag.meshid = newMeshId; }
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }

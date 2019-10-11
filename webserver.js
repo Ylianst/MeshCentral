@@ -1229,7 +1229,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(obj.common.escapeLinksFieldName(mesh)); }
                             // Notify mesh change
                             var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
-                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', msg: change, domain: domain.id });
                         }
                     }
                 }
@@ -1517,12 +1517,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Clean up the U2F challenge if needed
             if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
-
+                        
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
                 var webstate = (states.length == 1) ? states[0].state : '';
-                res.render(getRenderPage('default', req), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate) });
+                res.render(getRenderPage('default', req), { authCookie: authCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null)?'null':parent.pluginHandler.prepExports() });
             });
         } else {
             // Send back the login application
@@ -1697,7 +1697,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Render the messenger application.
     function handleMessengerRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
         parent.debug('web', 'handleMessengerRequest()');
 
@@ -3749,6 +3749,80 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         p = obj.path.join(obj.parent.webViewsPath, pagename);
         if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Default document
         return null;
+    }
+
+    // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
+    obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
+        // Route a message.
+        // If this command has a sessionid, that is the target.
+        if (command.sessionid != null) {
+            if (typeof command.sessionid != 'string') return;
+            var splitsessionid = command.sessionid.split('/');
+            // Check that we are in the same domain and the user has rights over this node.
+            if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
+                // Check if this user has rights to get this message
+                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+
+                // See if the session is connected. If so, go ahead and send this message to the target node
+                var ws = obj.wssessions2[command.sessionid];
+                if (ws != null) {
+                    command.nodeid = nodeid; // Set the nodeid, required for responses.
+                    delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
+                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
+                } else if (parent.multiServer != null) {
+                    // See if we can send this to a peer server
+                    var serverid = obj.wsPeerSessions2[command.sessionid];
+                    if (serverid != null) {
+                        command.fromNodeid = nodeid;
+                        parent.multiServer.DispatchMessageSingleServer(command, serverid);
+                    }
+                }
+            }
+        } else if (command.userid != null) { // If this command has a userid, that is the target.
+            if (typeof command.userid != 'string') return;
+            var splituserid = command.userid.split('/');
+            // Check that we are in the same domain and the user has rights over this node.
+            if ((splituserid[0] == 'user') && (splituserid[1] == domainid)) {
+                // Check if this user has rights to get this message
+                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+
+                // See if the session is connected
+                var sessions = obj.wssessions[command.userid];
+
+                // Go ahead and send this message to the target node
+                if (sessions != null) {
+                    command.nodeid = nodeid; // Set the nodeid, required for responses.
+                    delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
+                    for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
+                }
+
+                if (parent.multiServer != null) {
+                    // TODO: Add multi-server support
+                }
+            }
+        } else { // Route this command to the mesh
+            command.nodeid = nodeid;
+            var cmdstr = JSON.stringify(command);
+            for (var userid in obj.wssessions) { // Find all connected users for this mesh and send the message
+                var user = obj.users[userid];
+                if ((user != null) && (user.links != null)) {
+                    var rights = user.links[meshid];
+                    if (rights != null) { // TODO: Look at what rights are needed for message routing
+                        var xsessions = obj.wssessions[userid];
+                        // Send the message to all users on this server
+                        for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
+                    }
+                }
+            }
+
+            // Send the message to all users of other servers
+            if (parent.multiServer != null) {
+                delete command.nodeid;
+                command.fromNodeid = nodeid;
+                command.meshid = meshid;
+                parent.multiServer.DispatchMessage(command);
+            }
+        }
     }
 
     // Return true if a mobile browser is detected.

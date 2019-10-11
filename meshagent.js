@@ -526,7 +526,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 db.SetUser(adminUser);
-                parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                parent.parent.DispatchEvent(['*', obj.dbMeshKey, adminUser._id], obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
             }
         } else {
             if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {
@@ -547,7 +547,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // Send out an event indicating this mesh was "created"
-                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', links: mesh.links, msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
+                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
 
                 // Mark the mesh as active
                 delete mesh.deleted;
@@ -617,7 +617,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     adminUser.links[obj.meshid] = { rights: 0xFFFFFFFF };
                     //adminUser.subscriptions = parent.subscribe(adminUser._id, ws);
                     db.SetUser(user);
-                    parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                    parent.parent.DispatchEvent(['*', meshid, user._id], obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
                 }
             }
 
@@ -1064,76 +1064,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             switch (command.action) {
                 case 'msg':
                     {
-                        // Route a message.
-                        // If this command has a sessionid, that is the target.
-                        if (command.sessionid != null) {
-                            if (typeof command.sessionid != 'string') break;
-                            var splitsessionid = command.sessionid.split('/');
-                            // Check that we are in the same domain and the user has rights over this node.
-                            if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domain.id)) {
-                                // Check if this user has rights to get this message
-                                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
-
-                                // See if the session is connected. If so, go ahead and send this message to the target node
-                                var ws = parent.wssessions2[command.sessionid];
-                                if (ws != null) {
-                                    command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
-                                    delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
-                                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
-                                } else if (parent.parent.multiServer != null) {
-                                    // See if we can send this to a peer server
-                                    var serverid = parent.wsPeerSessions2[command.sessionid];
-                                    if (serverid != null) {
-                                        command.fromNodeid = obj.dbNodeKey;
-                                        parent.parent.multiServer.DispatchMessageSingleServer(command, serverid);
-                                    }
-                                }
-                            }
-                        } else if (command.userid != null) { // If this command has a userid, that is the target.
-                            if (typeof command.userid != 'string') break;
-                            var splituserid = command.userid.split('/');
-                            // Check that we are in the same domain and the user has rights over this node.
-                            if ((splituserid[0] == 'user') && (splituserid[1] == domain.id)) {
-                                // Check if this user has rights to get this message
-                                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
-
-                                // See if the session is connected
-                                var sessions = parent.wssessions[command.userid];
-
-                                // Go ahead and send this message to the target node
-                                if (sessions != null) {
-                                    command.nodeid = obj.dbNodeKey; // Set the nodeid, required for responses.
-                                    delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
-                                    for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
-                                }
-
-                                if (parent.parent.multiServer != null) {
-                                    // TODO: Add multi-server support
-                                }
-                            }
-                        } else { // Route this command to the mesh
-                            command.nodeid = obj.dbNodeKey;
-                            var cmdstr = JSON.stringify(command);
-                            for (var userid in parent.wssessions) { // Find all connected users for this mesh and send the message
-                                var user = parent.users[userid];
-                                if ((user != null) && (user.links != null)) {
-                                    var rights = user.links[obj.dbMeshKey];
-                                    if (rights != null) { // TODO: Look at what rights are needed for message routing
-                                        var xsessions = parent.wssessions[userid];
-                                        // Send the message to all users on this server
-                                        for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
-                                    }
-                                }
-                            }
-
-                            // Send the message to all users of other servers
-                            if (parent.parent.multiServer != null) {
-                                delete command.nodeid;
-                                command.fromNodeid = obj.dbNodeKey;
-                                command.meshid = obj.dbMeshKey;
-                                parent.parent.multiServer.DispatchMessage(command);
-                            }
-                        }
+                        // Route a message
+                        parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
                     }
                 case 'coreinfo':
@@ -1343,6 +1275,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     db.GetHash('si' + obj.dbNodeKey, function (err, results) {
                         if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
                     });
+                    break;
+                }
+                case 'plugin': {
+                    if (typeof command.plugin != 'string') break;
+                    try { 
+                        var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
+                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                    } catch (e) {
+                        console.log('Error loading plugin handler (' + e + ')');
+                    }
                     break;
                 }
                 default: {
