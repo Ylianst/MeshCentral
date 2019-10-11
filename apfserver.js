@@ -248,10 +248,8 @@ module.exports.CreateApfServer = function (parent, db, args) {
 
                                             // Event the new node
                                             addedDeviceCount++;
-                                            var device2 = common.Clone(device);
-                                            if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                             var change = 'APF added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
 
                                             // Add the connection to the APF connection list
                                             obj.apfConnections[socket.tag.nodeid] = socket;
@@ -268,10 +266,8 @@ module.exports.CreateApfServer = function (parent, db, args) {
 
                                     // Event the new node
                                     addedDeviceCount++;
-                                    var device2 = common.Clone(device);
-                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                     var change = 'APF added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
                                 }
                             } else {
                                 // Node is already present
@@ -717,9 +713,7 @@ module.exports.CreateApfServer = function (parent, db, args) {
 
                 // Event the node change
                 event.msg = 'APF changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                var node2 = common.Clone(node);
-                if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                event.node = node2;
+                event.node = parent.webserver.CloneSafeNode(node);
                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 obj.parent.DispatchEvent(['*', node.meshid], obj, event);
             });

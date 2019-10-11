@@ -2599,7 +2599,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 db.Set(device);
 
                                 // Event the new node
-                                var device2 = obj.common.Clone(device);
+                                var device2 = Object.assign({}, device); // Shallow clone
+                                device2.intelamt = Object.assign({}, device2.intelamt); // Shallow clone
                                 delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                 parent.DispatchEvent(['*', ws.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: 'Added device ' + ws.xxstate.name + ' to mesh ' + mesh.name, domain: domain.id });
                             });
@@ -2624,7 +2625,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             db.Set(device);
 
                             // Event the new node
-                            var device2 = obj.common.Clone(device);
+                            var device2 = Object.assign({}, device); // Shallow clone
+                            device2.intelamt = Object.assign({}, device2.intelamt); // Shallow clone
                             delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.DispatchEvent(['*', ws.meshid], obj, { etype: 'node', action: 'changenode', nodeid: device2._id, node: device2, msg: 'Changed device ' + device.name + ' in mesh ' + mesh.name, domain: domain.id });
@@ -2736,9 +2738,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                                                         // Event the node change
                                                         var event = { etype: 'node', action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Intel(R) AMT host change ' + node.name + ' from group ' + mesh.name + ': ' + oldname + ' to ' + amthost };
-                                                        var node2 = obj.common.Clone(node);
-                                                        if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                                        event.node = node2;
+
+                                                        // Remove the Intel AMT password before eventing this.
+                                                        event.node = node;
+                                                        if (event.node.intelamt && event.node.intelamt.pass) {
+                                                            event.node = Object.assign({}, event.node); // Shallow clone
+                                                            event.node.intelamt = Object.assign({}, event.node.intelamt); // Shallow clone
+                                                            delete event.node.intelamt.pass;
+                                                        }
+
                                                         if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                                                         obj.parent.DispatchEvent(['*', node.meshid], obj, event);
                                                     }
@@ -3218,12 +3226,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.set(domain.httpheaders);
             } else {
                 // Use default security headers
+                var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
+                var selfurl = ((args.notls !== true) ? (" wss://" + req.headers.host) : (" ws://" + req.headers.host)); 
                 res.set({
                     "X-Frame-Options": "sameorigin",
                     "Referrer-Policy": "no-referrer",
                     "X-XSS-Protection": "1; mode=block",
                     "X-Content-Type-Options": "nosniff",
-                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self' ws" + ((args.notls !== true) ? 's' : '') + "://" + req.headers.host + "; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
                 });
             }
 
@@ -3701,7 +3711,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Clone a safe version of a user object, remove everything that is secret.
     obj.CloneSafeUser = function (user) {
         if (typeof user != 'object') { return user; }
-        var user2 = obj.common.Clone(user);
+        var user2 = Object.assign({}, user); // Shallow clone
         delete user2.hash;
         delete user2.passhint;
         delete user2.salt;
@@ -3713,6 +3723,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
         if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
         return user2;
+    }
+
+    // Clone a safe version of a node object, remove everything that is secret.
+    obj.CloneSafeNode = function (node) {
+        if (typeof node != 'object') { return node; }
+        var r = node;
+        if (r.intelamt && r.intelamt.pass) {
+            r = Object.assign({}, r); // Shallow clone
+            r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
+            delete r.intelamt.pass; // Remove the Intel AMT password from the node
+        }
+        return r;
+    }
+
+    // Clone a safe version of a mesh object, remove everything that is secret.
+    obj.CloneSafeMesh = function (mesh) {
+        if (typeof mesh != 'object') { return mesh; }
+        var r = mesh;
+        if (r.amt && r.amt.password) {
+            r = Object.assign({}, r); // Shallow clone
+            r.amt = Object.assign({}, r.amt); // Shallow clone
+            delete r.amt.password; // Remove the Intel AMT password from the policy
+        }
+        return r;
     }
 
     // Return the correct render page given mobile, minify and override path.

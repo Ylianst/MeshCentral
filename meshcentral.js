@@ -1449,7 +1449,7 @@ function CreateMeshCentralServer(config, args) {
                 });
                 stream.on('end', function () {
                     // Add the agent to the agent table with all information and the hash
-                    obj.meshAgentInstallScripts[this.info.id] = obj.common.Clone(this.info);
+                    obj.meshAgentInstallScripts[this.info.id] = Object.assign({}, this.info);
                     obj.meshAgentInstallScripts[this.info.id].hash = this.hash.digest('hex');
                     obj.meshAgentInstallScripts[this.info.id].path = this.agentpath;
                     obj.meshAgentInstallScripts[this.info.id].data = this.xdata;
@@ -1515,7 +1515,7 @@ function CreateMeshCentralServer(config, args) {
             if ((stats != null)) {
                 // If file exists
                 archcount++;
-                obj.meshAgentBinaries[archid] = obj.common.Clone(obj.meshAgentsArchitectureNumbers[archid]);
+                obj.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
                 obj.meshAgentBinaries[archid].path = agentpath;
                 obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;

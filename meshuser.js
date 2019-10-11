@@ -400,12 +400,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var docs = [];
                     for (i in user.links) {
                         if ((parent.meshes[i]) && (parent.meshes[i].deleted == null)) {
-                            if (parent.meshes[i].amt && parent.meshes[i].amt.password) {
-                                // Remove the Intel AMT password if present
-                                var m = common.Clone(parent.meshes[i]); delete m.amt.password; docs.push(m);
-                            } else {
-                                docs.push(parent.meshes[i]);
-                            }
+                            // Remove the Intel AMT password if present
+                            docs.push(parent.CloneSafeMesh(parent.meshes[i]));
                         }
                     }
                     try { ws.send(JSON.stringify({ action: 'meshes', meshes: docs, tag: command.tag })); } catch (ex) { }
@@ -1911,7 +1907,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (command.amtpolicy.type === 3) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, cirasetup: command.amtpolicy.cirasetup }; }
                         mesh.amt = amtpolicy;
                         db.Set(common.escapeLinksFieldName(mesh));
-                        var amtpolicy2 = common.Clone(amtpolicy);
+                        var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
                         delete amtpolicy2.password;
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', msg: change, domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
@@ -1959,9 +1955,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(device);
 
                             // Event the new node
-                            var device2 = common.Clone(device);
-                            delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                            parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: device2, msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
+                            parent.parent.DispatchEvent(['*', command.meshid], obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
                         });
                     }
                     break;
@@ -2312,9 +2306,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Event the node change. Only do this if the database will not do it.
                                 event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                                var node2 = common.Clone(node);
-                                if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                                event.node = node2;
+                                event.node = parent.CloneSafeNode(device);
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                                 parent.parent.DispatchEvent(['*', node.meshid, user._id], obj, event);
                             }
