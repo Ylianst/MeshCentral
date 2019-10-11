@@ -298,10 +298,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Event the new node
                                             addedTlsDeviceCount++;
-                                            var device2 = common.Clone(device);
-                                            if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                             var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
 
                                             // Add the connection to the MPS connection list
                                             obj.ciraConnections[socket.tag.nodeid] = socket;
@@ -316,10 +314,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Event the new node
                                     addedTlsDeviceCount++;
-                                    var device2 = common.Clone(device);
-                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                     var change = 'CIRA added device ' + socket.tag.name + ' to mesh ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: domainid });
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
                                 }
                             } else {
                                 // New CIRA connection for unknown node, disconnect.
@@ -440,10 +436,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Event the new node
                                             addedDeviceCount++;
-                                            var device2 = common.Clone(device);
-                                            if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                             var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
 
                                             // Add the connection to the MPS connection list
                                             obj.ciraConnections[socket.tag.nodeid] = socket;
@@ -459,10 +453,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                     // Event the new node
                                     addedDeviceCount++;
-                                    var device2 = common.Clone(device);
-                                    if (device2.intelamt.pass != null) delete device2.intelamt.pass; // Remove the Intel AMT password before eventing this.
                                     var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: device2, msg: change, domain: mesh.domain });
+                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
                                 }
                             } else {
                                 // Node is already present
@@ -925,9 +917,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                 // Event the node change
                 event.msg = 'CIRA changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                var node2 = common.Clone(node);
-                if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                event.node = node2;
+                event.node = parent.webserver.CloneSafeNode(node);
                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 obj.parent.DispatchEvent(['*', node.meshid], obj, event);
             });

@@ -332,9 +332,7 @@ module.exports.CreateAmtScanner = function (parent) {
 
                     // Event the node change
                     event.msg = 'Intel&reg; AMT changed device ' + node.name + ' from mesh ' + mesh.name + ': ' + changes.join(', ');
-                    var node2 = obj.parent.common.Clone(node);
-                    if (node2.intelamt && node2.intelamt.pass) delete node2.intelamt.pass; // Remove the Intel AMT password before eventing this.
-                    event.node = node2;
+                    event.node = obj.parent.webserver.CloneSafeNode(node);
                     if (obj.parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     obj.parent.DispatchEvent(['*', node.meshid], obj, event);
                 }
