@@ -1192,7 +1192,8 @@ function createMeshCore(agent)
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
 
-                    this.end = function () {
+                    this.end = function ()
+                    {
                         --this.desktop.kvm.connectionCount;
 
                         // Unpipe the web socket
@@ -1205,14 +1206,55 @@ function createMeshCore(agent)
                             this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
                         }
 
-                        if (this.desktop.kvm.connectionCount == 0) {
+                        if (this.desktop.kvm.connectionCount == 0)
+                        {
                             // Display a toast message. This may not be supported on all platforms.
                             // try { require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.'); } catch (ex) { }
                             
                             this.httprequest.desktop.kvm.end();
+                            if(this.httprequest.desktop.kvm.connectionBar)
+                            {
+                                this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+                                this.httprequest.desktop.kvm.connectionBar.close();
+                                this.httprequest.desktop.kvm.connectionBar = null;
+                            }
+                        }
+                        else
+                        {
+                            for(var i in this.httprequest.desktop.kvm.users)
+                            {
+                                if(this.httprequest.desktop.kvm.users[i] == this.httprequest.username)
+                                {
+                                    this.httprequest.desktop.kvm.users.splice(i, 1);
+                                    this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+                                    this.httprequest.desktop.kvm.connectionBar.close();
+
+                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '));
+                                    this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
+                                    this.httprequest.desktop.kvm.connectionBar.on('close', function ()
+                                    {
+                                        MeshServerLog('Remote Desktop Connection forcefully closed by local user (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                        for (var i in this.httprequest.desktop.kvm._pipedStreams)
+                                        {
+                                            this.httprequest.desktop.kvm._pipedStreams[i].end();
+                                        }
+                                        this.httprequest.desktop.kvm.end();
+                                    });
+                                    break;
+                                }
+                            }
                         }
                     };
-                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount")) { this.httprequest.desktop.kvm.connectionCount++; } else { this.httprequest.desktop.kvm.connectionCount = 1; }
+                    if (this.httprequest.desktop.kvm.hasOwnProperty("connectionCount"))
+                    {
+                        this.httprequest.desktop.kvm.connectionCount++;
+                        this.httprequest.desktop.kvm.users.push(this.httprequest.username);
+                    }
+                    else
+                    {
+                        this.httprequest.desktop.kvm.connectionCount = 1;
+                        this.httprequest.desktop.kvm.users = [this.httprequest.username];
+                    }
 
                     if ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))) {
                         // If we have remote control rights, pipe the KVM input
@@ -1239,9 +1281,31 @@ function createMeshCore(agent)
                                 // Success
                                 MeshServerLog('Starting remote desktop after local user accepted (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) 
+                                {
                                     // User Notifications is required
                                     try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
+                                }
+                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40))
+                                {
+                                    // Connection Bar is required
+                                    MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
+                                    if (this.ws.httprequest.desktop.kvm.connectionBar)
+                                    {
+                                        this.ws.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+                                        this.ws.httprequest.desktop.kvm.connectionBar.close();
+                                    }
+                                    this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.ws.httprequest.desktop.kvm.users.sort().join(', '));
+                                    this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
+                                    this.ws.httprequest.desktop.kvm.connectionBar.on('close', function ()
+                                    {
+                                        MeshServerLog('Remote Desktop Connection forcefully closed by local user (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                        for (var i in this.httprequest.desktop.kvm._pipedStreams)
+                                        {
+                                            this.httprequest.desktop.kvm._pipedStreams[i].end();
+                                        }
+                                        this.httprequest.desktop.kvm.end();
+                                    });
                                 }
                                 this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
                                 this.ws.resume();
@@ -1256,12 +1320,35 @@ function createMeshCore(agent)
                     else
                     {
                         // User Consent Prompt is not required
-                        if (this.httprequest.consent && (this.httprequest.consent & 1)) {
+                        if (this.httprequest.consent && (this.httprequest.consent & 1))
+                        {
                             // User Notifications is required
                             MeshServerLog('Started remote desktop with toast notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote desktop session.'); } catch (ex) { }
-                        } else {
+                        } else
+                        {
                             MeshServerLog('Started remote desktop without notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                        }
+                        if (this.httprequest.consent && (this.httprequest.consent & 0x40))
+                        {
+                            // Connection Bar is required
+                            MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                            if(this.httprequest.desktop.kvm.connectionBar)
+                            {
+                                this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+                                this.httprequest.desktop.kvm.connectionBar.close();
+                            }
+                            this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '));
+                            this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
+                            this.httprequest.desktop.kvm.connectionBar.on('close', function ()
+                            {
+                                MeshServerLog('Remote Desktop Connection forcefully closed by local user (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                                for (var i in this.httprequest.desktop.kvm._pipedStreams)
+                                {
+                                    this.httprequest.desktop.kvm._pipedStreams[i].end();
+                                }
+                                this.httprequest.desktop.kvm.end();
+                            });
                         }
                         this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 });
                     }
