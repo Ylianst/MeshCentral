@@ -1027,8 +1027,13 @@ function CreateMeshCentralServer(config, args) {
         if ((typeof event == 'object') && (!event.nolog)) {
             event.time = new Date();
             // The event we store is going to skip some of the fields so we don't store too much stuff in the database.
-            var storeEvent = {};
-            for (var i in event) { if (i != 'node') { storeEvent[i] = event[i]; } } // Skip the "node" field. May skip more in the future.
+            var storeEvent = Object.assign({}, event);
+            if (storeEvent.node) { delete storeEvent.node; } // Skip the "node" field. May skip more in the future.
+            if (storeEvent.links) {
+                // Escape "links" names that may have "." and/or "$"
+                storeEvent.links = Object.assign({}, storeEvent.links);
+                for (var i in storeEvent.links) { var ue = obj.common.escapeFieldName(i); if (ue !== i) { storeEvent.links[ue] = storeEvent.links[i]; delete storeEvent.links[i]; } }
+            }
             storeEvent.ids = ids;
             obj.db.StoreEvent(storeEvent);
         }
