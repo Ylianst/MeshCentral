@@ -110,13 +110,6 @@ As an alternative to using command line arguments, you can create a `./node-modu
 				"title": "Customer2",
 				"title2": "Other String"
 			}
-		},
-		"peers": {
-			"serverId" : "Server1",
-			"servers": {
-				"Server1": { "url": "wss://192.168.1.100:443/" },
-				"Server2": { "url": "wss://192.168.1.101:443/" }
-			}
 		}
 	}
 ```
@@ -132,8 +125,6 @@ For the configuration above, the root domain and two other domains will be acces
 ```
 
 When you setup many domains, the server considers each domain separately. Each domain has separate user accounts, administrators, etc. Within each domain, you can put a `title` and `title2` as strings that will show up at the top of the web site. `userQuota` indicates the default maximum amount of data a user can have in it's "My Files" folder. `meshQuota` is the maximum total size of files in each mesh folder. `newAccounts` indicates if new accounts can be created from the login page, `0` if not allowed, `1` if allowed. Note that if a web site has no accounts, the new account option will be available until an account is created and the first account will be the site administrator.
-
-MeshCentral also supports server peering, add the `peers` section with a list of all peers. If you want to do server peering, make sure all servers are configured to use the same database. Also, the `serverId` value is optional. If it's not specified, the computer hostname is used instead.
 
 Other Notes
 -----------
@@ -151,7 +142,6 @@ How to install MeshCentral2 in a few minutes.
 
 Demonstration of MeshCentral2 usages and more tips & tricks.  
 [![MeshCentral2 - Usages](https://img.youtube.com/vi/1E3NqGJzYds/mqdefault.jpg)](https://www.youtube.com/watch?v=1E3NqGJzYds)
-
 
 How to setup Intel&reg; AMT client initiated remote access (CIRA) to connect to MeshCentral2.  
 [![MeshCentral2 - Intel AMT CIRA](https://img.youtube.com/vi/rA2KHa2jkO0/mqdefault.jpg)](https://www.youtube.com/watch?v=rA2KHa2jkO0)
