@@ -1161,7 +1161,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Called to process an agent invite request
     function handleAgentInviteRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req);
         if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) {
             parent.debug('web', 'handleAgentInviteRequest: failed checks.');
             res.sendStatus(404);
