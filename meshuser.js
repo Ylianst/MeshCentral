@@ -2306,7 +2306,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Event the node change. Only do this if the database will not do it.
                                 event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                                event.node = parent.CloneSafeNode(device);
+                                event.node = parent.CloneSafeNode(node);
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                                 parent.parent.DispatchEvent(['*', node.meshid, user._id], obj, event);
                             }
