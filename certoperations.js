@@ -229,6 +229,7 @@ module.exports.CertificateOperations = function (parent) {
     // Load a configuration file
     obj.fileLoad = function (filename, encoding) {
         if ((parent.configurationFiles != null) && (parent.configurationFiles[filename] != null)) {
+            if (typeof parent.configurationFiles[filename] == 'string') { return fixEndOfLines(parent.configurationFiles[filename]); }
             return fixEndOfLines(parent.configurationFiles[filename].toString());
         } else {
             return fixEndOfLines(obj.fs.readFileSync(parent.getConfigFilePath(filename), encoding));
@@ -571,7 +572,7 @@ module.exports.CertificateOperations = function (parent) {
                 return r;
             }
         }
-        if (parent.configurationFiles != null) { console.log("Error: Database missing some certificates."); process.exit(0); return null; }
+        if (parent.configurationFiles != null) { console.log("Error: Vault/Database missing some certificates."); process.exit(0); return null; }
 
         console.log("Generating certificates, may take a few minutes...");
         parent.updateServerState("state", "generatingcertificates");
