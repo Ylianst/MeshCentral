@@ -116,7 +116,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -164,7 +164,7 @@ function CreateMeshCentralServer(config, args) {
 
         // If "--launch" is in the arguments, launch now
         if (obj.args.launch) {
-            obj.StartEx();
+            if (obj.args.vault) { obj.StartVault(); } else { obj.StartEx(); }
         } else {
             // if "--launch" is not specified, launch the server as a child process.
             var startArgs = [];
@@ -250,6 +250,108 @@ function CreateMeshCentralServer(config, args) {
 
     // Initiate server self-update
     obj.performServerCertUpdate = function () { console.log('Updating server certificates...'); process.exit(200); };
+
+    // Start by loading configuration from Vault
+    obj.StartVault = function () {
+        // Check that the configuration can only be loaded from one place
+        if ((obj.args.vault != null) && (obj.args.loadconfigfromdb != null)) { console.log("Can't load configuration from both database and Vault."); process.exit(); return; }
+
+        // Fix arguments if needed
+        if (typeof obj.args.vault == 'string') {
+            obj.args.vault = { endpoint: obj.args.vault };
+            if (typeof obj.args.token == 'string') { obj.args.vault.token = obj.args.token; }
+            if (typeof obj.args.unsealkey == 'string') { obj.args.vault.unsealkey = obj.args.unsealkey; }
+            if (typeof obj.args.name == 'string') { obj.args.vault.name = obj.args.name; }
+        }
+
+        // Load configuration for HashiCorp's Vault if needed
+        if (obj.args.vault) {
+            if (obj.args.vault.endpoint == null) { console.log('Missing Vault endpoint.'); process.exit(); return; }
+            if (obj.args.vault.token == null) { console.log('Missing Vault token.'); process.exit(); return; }
+            if (obj.args.vault.unsealkey == null) { console.log('Missing Vault unsealkey.'); process.exit(); return; }
+            if (obj.args.vault.name == null) { obj.args.vault.name = 'meshcentral'; }
+
+            // Get new instance of the client
+            var vault = require("node-vault")({ endpoint: obj.args.vault.endpoint, token: obj.args.vault.token });
+            vault.unseal({ key: obj.args.vault.unsealkey })
+                .then(() => {
+                    if (obj.args.vaultdeleteconfigfiles) {
+                        vault.delete('secret/data/' + obj.args.vault.name)
+                            .then(function (r) { console.log('Done.'); process.exit(); })
+                            .catch(function (x) { console.log(x); process.exit(); });
+                    } else if (obj.args.vaultpushconfigfiles) {
+                        // Push configuration files into Vault
+                        if ((obj.args.vaultpushconfigfiles == '*') || (obj.args.vaultpushconfigfiles === true)) { obj.args.vaultpushconfigfiles = obj.datapath; }
+                        obj.fs.readdir(obj.args.vaultpushconfigfiles, function (err, files) {
+                            if (err != null) { console.log('ERROR: Unable to read from folder ' + obj.args.vaultpushconfigfiles); process.exit(); return; }
+                            var configFound = false;
+                            for (var i in files) { if (files[i] == 'config.json') { configFound = true; } }
+                            if (configFound == false) { console.log('ERROR: No config.json in folder ' + obj.args.vaultpushconfigfiles); process.exit(); return; }
+                            var configFiles = {};
+                            for (var i in files) {
+                                const file = files[i];
+                                if ((file == 'config.json') || file.endsWith('.key') || file.endsWith('.crt') || (file == 'terms.txt') || file.endsWith('.jpg') || file.endsWith('.png')) {
+                                    const path = obj.path.join(obj.args.vaultpushconfigfiles, files[i]), binary = Buffer.from(obj.fs.readFileSync(path, { encoding: 'binary' }), 'binary');
+                                    console.log('Pushing ' + file + ', ' + binary.length + ' bytes.');
+                                    if (file.endsWith('.json') || file.endsWith('.key') || file.endsWith('.crt')) { configFiles[file] = binary.toString(); } else { configFiles[file] = binary.toString('base64'); }
+                                }
+                            }
+                            vault.write('secret/data/' + obj.args.vault.name, { "data": configFiles })
+                                .then(function (r) { console.log('Done.'); process.exit(); })
+                                .catch(function (x) { console.log(x); process.exit(); });
+                        });
+                    } else {
+                        // Read configuration files from Vault
+                        vault.read('secret/data/' + obj.args.vault.name)
+                            .then(function (r) {
+                                if ((r == null) || (r.data == null) || (r.data.data == null)) { console.log('Unable to read configuration from Vault.'); process.exit(); return; }
+                                var configFiles = obj.configurationFiles = r.data.data;
+
+                                // Decode Base64 when needed
+                                for (var file in configFiles) { if (!file.endsWith('.json') && !file.endsWith('.key') && !file.endsWith('.crt')) { configFiles[file] = Buffer.from(configFiles[file], 'base64'); } }
+
+                                // Save all of the files
+                                if (obj.args.vaultpullconfigfiles) {
+                                    for (var i in configFiles) {
+                                        var fullFileName = obj.path.join(obj.args.vaultpullconfigfiles, i);
+                                        try { obj.fs.writeFileSync(fullFileName, configFiles[i]); } catch (ex) { console.log('Unable to write to ' + fullFileName); process.exit(); return; }
+                                        console.log('Pulling ' + i + ', ' + configFiles[i].length + ' bytes.');
+                                    }
+                                    console.log('Done.');
+                                    process.exit();
+                                }
+
+                                // Parse the new configuration file
+                                var config2 = null;
+                                try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from Vault.'); process.exit(); return; }
+
+                                // Set the command line arguments to the config file if they are not present
+                                if (!config2.settings) { config2.settings = {}; }
+                                for (var i in args) { config2.settings[i] = args[i]; }
+                                obj.args = args = config2.settings;
+
+                                // Lower case all keys in the config file
+                                try {
+                                    require('./common.js').objKeysToLower(config2, ["ldapoptions"]);
+                                } catch (ex) {
+                                    console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
+                                    process.exit();
+                                    return;
+                                }
+
+                                // Grad some of the values from the original config.json file if present.
+                                if ((config.settings.vault != null) && (config2.settings != null)) { config2.settings.vault = config.settings.vault; }
+
+                                // We got a new config.json from the database, let's use it.
+                                config = obj.config = config2;
+                                obj.StartEx();
+                            })
+                            .catch(function (x) { console.log(x); process.exit(); });
+                    }
+                }).catch(function (x) { console.log(x); process.exit(); });
+            return;
+        }
+    }
 
     // Look for easy command line instructions and do them here.
     obj.StartEx = function () {
@@ -532,7 +634,7 @@ function CreateMeshCentralServer(config, args) {
                             obj.StartEx1b();
                         });
                     } else {
-                        config = obj.config = getConfig(true);
+                        config = obj.config = getConfig(obj.args.vault == null);
                         obj.StartEx1b();
                     }
                 });
@@ -1848,6 +1950,7 @@ function mainStart() {
         if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
+        if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 
