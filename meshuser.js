@@ -2453,7 +2453,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
                             if ((nodes == null) || (nodes.length == 1)) {
                                 meshlinks = user.links[nodes[0].meshid];
-                                if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights & parent.MESHRIGHT_SETNOTES != 0)) {
+                                if ((meshlinks) && (meshlinks.rights) && ((meshlinks.rights & MESHRIGHT_SETNOTES) != 0)) {
                                     // Set the id's notes
                                     if (common.validateString(command.notes, 1) == false) {
                                         db.Remove('nt' + command.id); // Delete the note for this node
