@@ -1988,7 +1988,10 @@
                                 meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                             } else {
                                 // This is an existing mesh
-                                if (message.event.name != null) { meshes[message.event.meshid].name = message.event.name; }
+                                if (message.event.name != null) {
+                                    meshes[message.event.meshid].name = message.event.name;
+                                    for (var i in nodes) { if (nodes[i].meshid == message.event.meshid) { nodes[i].meshnamel = message.event.name.toLowerCase(); } }
+                                }
                                 if (message.event.desc != null) { meshes[message.event.meshid].desc = message.event.desc; }
                                 if (message.event.flags != null) { meshes[message.event.meshid].flags = message.event.flags; }
                                 if (message.event.consent != null) { meshes[message.event.meshid].consent = message.event.consent; }

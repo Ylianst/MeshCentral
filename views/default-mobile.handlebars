@@ -888,7 +888,10 @@
                                 meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                             } else {
                                 // This is an existing mesh
-                                meshes[message.event.meshid].name = message.event.name;
+                                if (meshes[message.event.meshid].name != message.event.name) {
+                                    meshes[message.event.meshid].name = message.event.name;
+                                    for (var i in nodes) { if (nodes[i].meshid == message.event.meshid) { nodes[i].meshnamel = message.event.name.toLowerCase(); } }
+                                }
                                 meshes[message.event.meshid].desc = message.event.desc;
                                 meshes[message.event.meshid].links = message.event.links;
 
