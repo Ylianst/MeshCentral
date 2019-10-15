@@ -1567,11 +1567,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'meshmessenger':
                 {
-                    // Send a notification message to a user
-                    if ((user.siteadmin & 2) == 0) break;
-
                     // Setup a user-to-user session
                     if (common.validateString(command.userid, 1, 2048)) {
+                        // Send a notification message to a user
+                        if ((user.siteadmin & 2) == 0) break;
 
                         // Can only perform this operation on other users of our group.
                         var chguser = parent.users[command.userid];
@@ -1596,14 +1595,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.nodeid, 1, 2048)) {
                         if (args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
 
-                        // Create the server url
-                        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
-                        var xdomain = (domain.dns == null) ? domain.id : '';
-                        if (xdomain != '') xdomain += "/";
-                        var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+                        // Get the device
+                        db.Get(command.nodeid, function (err, nodes) {
+                            if ((nodes == null) || (nodes.length != 1)) return;
+                            var node = nodes[0];
 
-                        // Create the notification message
-                        routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
+                            // Get the mesh for this device
+                            mesh = parent.meshes[node.meshid];
+                            if (mesh) {
+                                // Check if this user has rights to do this
+                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & MESHRIGHT_REMOTECONTROL) == 0)) return;
+
+                                // Create the server url
+                                var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                                var xdomain = (domain.dns == null) ? domain.id : '';
+                                if (xdomain != '') xdomain += "/";
+                                var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+
+                                // Create the notification message
+                                routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
+                            }
+                        });
                     }
 
                     break;
