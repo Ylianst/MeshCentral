@@ -18,7 +18,17 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.ws = ws;
     obj.id = req.query.id;
     obj.user = user;
+    obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
+
+    // Check relay authentication
+    if ((user == null) && (req.query.rauth != null)) {
+        var rcookie = parent.parent.decodeCookie(req.query.rauth, parent.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+        if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; }
+    }
+
+    // If there is no authentication, drop this connection
+    if ((obj.id.startsWith('meshmessenger/') == false) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication (' + cleanRemoteAddr(req.ip) + ')'); } catch (e) { console.log(e); } return; }
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
@@ -148,6 +158,20 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         delete obj.ws;
                         delete obj.peer;
                         return null;
+                    }
+
+                    // Check that both connection are for the same user
+                    if (!obj.id.startsWith('meshmessenger/')) {
+                        var u1 = obj.user ? obj.user._id : obj.ruserid;
+                        var u2 = relayinfo.peer1.user ? relayinfo.peer1.user._id : relayinfo.peer1.ruserid;
+                        if (u1 != u2) {
+                            ws.close();
+                            parent.parent.debug('relay', 'Relay auth mismatch: ' + obj.id + ' (' + cleanRemoteAddr(req.ip) + ')');
+                            delete obj.id;
+                            delete obj.ws;
+                            delete obj.peer;
+                            return null;
+                        }
                     }
 
                     // Connect to peer
