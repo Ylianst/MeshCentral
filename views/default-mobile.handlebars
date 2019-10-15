@@ -603,6 +603,8 @@
         var domain = "{{{domain}}}";
         var domainUrl = "{{{domainurl}}}";
         var authCookie = "{{{authCookie}}}";
+        var authRelayCookie = "{{{authRelayCookie}}}";
+        var authCookieRenewTimer = null;
         var meshserver = null;
         var xdr = null;
         var serverinfo = null;
@@ -658,13 +660,14 @@
                 if (errorCode == 'noauth') { QH('p0span', 'Unable to perform authentication'); return; }
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
                 // Clean up here
-
+                if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes' });
                 meshserver.send({ action: 'files' });
                 if (xxcurrentView < 2) { go(2); }
+                authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
             QV('topMenuIcon', state == 2);
         }
@@ -713,6 +716,12 @@
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     QV('p3AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
                     QV('logoutMenuOption', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide logout if in single user mode or domain authentication
+                    break;
+                }
+                case 'authcookie': {
+                    // Got an authentication cookie refresh
+                    authCookie = message.cookie;
+                    authRelayCookie = message.rcookie;
                     break;
                 }
                 case 'userinfo': {
@@ -2312,7 +2321,7 @@
                     desktop.contype = 2;
                 } else {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, domainUrl);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -2670,7 +2679,7 @@
         function connectFiles(e) {
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, domainUrl);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.Start(filesNode._id);
@@ -2896,7 +2905,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, domainUrl); // Create our websocket file transport
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl); // Create our websocket file transport
             downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
@@ -2983,7 +2992,7 @@
 
         // Connect again
         function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, domainUrl);
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
             uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;

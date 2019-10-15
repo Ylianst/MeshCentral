@@ -184,9 +184,9 @@
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                            &nbsp;&nbsp;<span id="kvmMultiConnectButtonSpan"><input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;</span>
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
+                            <span id="kvmAutoConnectButtonSpan"><label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label></span>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
@@ -1017,6 +1017,7 @@
         var domain = "{{{domain}}}";
         var domainUrl = "{{{domainurl}}}";
         var authCookie = "{{{authCookie}}}";
+        var authRelayCookie = "{{{authRelayCookie}}}";
         var authCookieRenewTimer = null;
         var multiDesktop = {};
         var multiDesktopFilter = null;
@@ -1466,6 +1467,7 @@
                 case 'authcookie': {
                     // Got an authentication cookie refresh
                     authCookie = message.cookie;
+                    authRelayCookie = message.rcookie;
                     break;
                 }
                 case 'serverinfo': {
@@ -2664,6 +2666,10 @@
                     if (typeof deviceHeaderCount[node.state] == 'undefined') { deviceHeaderCount[node.state] = 1; } else { deviceHeaderCount[node.state]++; }
                 }
 
+                // Display "connect all" and "auto"
+                QV('kvmMultiConnectButtonSpan', (kvmDivs.length < 16));
+                QV('kvmAutoConnectButtonSpan', (kvmDivs.length < 16));
+
                 // If displaying devices by groups, sort the group names and display the devices.
                 if (sort == 3) {
                     if (view == 2) { r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>User<th style=color:gray;width:120px>Address<th style=color:gray;width:100px>Connectivity'; }
@@ -2877,7 +2883,7 @@
                     multiDesktop[nodeid] = desk;
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
-                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, domainUrl);
+                    desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
@@ -5038,7 +5044,7 @@
                     desktop.contype = 2;
                 } else {
                     // Setup the Mesh Agent remote desktop
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, domainUrl);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -5755,7 +5761,7 @@
                         }
                     }
                     if ((e && (e.shiftKey == true)) || (options && (options.powershell))) { termoptions.protocol = 6; }
-                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, domainUrl);
+                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
                     terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
@@ -5891,7 +5897,7 @@
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, domainUrl);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
@@ -6188,7 +6194,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z) {
             if (xxdialogMode) return;
-            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, domainUrl); // Create our websocket file transport
+            downloadFile = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotDownloadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl); // Create our websocket file transport
             downloadFile.ctrlMsgAllowed = false;
             downloadFile.onStateChanged = onFileDownloadStateChange;
             downloadFile.xpath = decodeURIComponent(x);
@@ -6297,7 +6303,7 @@
 
         // Connect again
         function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, domainUrl);
+            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
             uploadFile.ws.attemptWebRTC = false;
             uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
