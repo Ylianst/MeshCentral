@@ -2672,6 +2672,7 @@
                 // Display "connect all" and "auto"
                 QV('kvmMultiConnectButtonSpan', (kvmDivs.length < 16));
                 QV('kvmAutoConnectButtonSpan', (kvmDivs.length < 16));
+                if (kvmDivs.length >= 16) { Q('autoConnectDesktopCheckbox').checked = false; }
 
                 // If displaying devices by groups, sort the group names and display the devices.
                 if (sort == 3) {
