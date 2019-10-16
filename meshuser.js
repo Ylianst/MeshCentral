@@ -33,6 +33,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_NOFILES = 1024;
     const MESHRIGHT_NOAMT = 2048;
     const MESHRIGHT_DESKLIMITEDINPUT = 4096;
+    const MESHRIGHT_LIMITEVENTS = 8192;
+    const MESHRIGHT_CHATNOTIFY = 16384;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -362,7 +364,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Renew the authentication cookie
                     try {
-                        console.log(req.ip);
                         ws.send(JSON.stringify({
                             action: 'authcookie',
                             cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, parent.parent.loginCookieEncryptionKey),
@@ -1604,7 +1605,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             mesh = parent.meshes[node.meshid];
                             if (mesh) {
                                 // Check if this user has rights to do this
-                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & MESHRIGHT_REMOTECONTROL) == 0)) return;
+                                if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & MESHRIGHT_CHATNOTIFY) == 0)) return;
 
                                 // Create the server url
                                 var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
@@ -2223,8 +2224,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 mesh = parent.meshes[node.meshid];
                                 if (mesh) {
                                     // Check if this user has rights to do this
-                                    if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & 8) != 0)) { // "Remote Control permission"
-
+                                    if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & MESHRIGHT_CHATNOTIFY) != 0)) {
                                         // Get this device
                                         var agent = parent.wsagents[node._id];
                                         if (agent != null) {

@@ -2299,7 +2299,7 @@
             //QV('deskkeys', (currentNode.agent) && (currentNode.agent.id < 5));
             //QE('deskkeys', deskState == 3);
             //QE('DeskToolsButton', online);
-            QV('DeskToastButton', (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
+            QV('DeskToastButton', ((meshrights & 16384) != 0) && (currentNode.agent) && (currentNode.agent.id < 5) && (meshrights & 8));
             //QE('DeskToastButton', online);
             QV('deskActionsBtn', meshrights & 8);
             Q('DeskControl').checked = ((meshrights & 8) != 0);

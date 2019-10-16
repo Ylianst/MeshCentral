@@ -9314,7 +9314,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             if (node.conn) {
                 if ((node.conn & 1) != 0) { states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>'); }
                 if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">AMT</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
                 if ((node.conn & 16) != 0) { states.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
             }
@@ -10970,11 +10970,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             QV('deskkeys', inputAllowed);
             QE('deskkeys', deskState == 3);
 
-            QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskChatButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskNotifyButton', (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
+            // Display this only if we have Chat & Notify permissions
+            QV('DeskChatButton', ((meshrights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskNotifyButton', ((meshrights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (mesh.mtype == 2) && online);
 
+            QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
@@ -13377,6 +13378,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>Show Only Own Events</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>Chat & Notify</label><br>';
             x += '</div>';
             if (userid == null) {
                 setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
@@ -13403,6 +13405,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
                     if (meshrights & 64) { Q('p20wakedevices').checked = true; }
                     if (meshrights & 128) { Q('p20editnotes').checked = true; }
                     if (meshrights & 8192) { Q('p20limitevents').checked = true; }
+                    if (meshrights & 16384) { Q('p20chatnotify').checked = true; }
+                    
                 }
             }
             p20validateAddMeshUserDialog();
@@ -13487,6 +13491,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
                     if (Q('p20noamt').checked == true) meshadmin += 2048;
                     if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
                     if (Q('p20limitevents').checked == true) meshadmin += 8192;
+                    if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 }
 
                 if (t == null) {
@@ -13522,6 +13527,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r += ', Limited Input';
                     if ((meshrights & 8192) != 0) r += ', Self Events Only';
+                    if ((meshrights & 16384) != 0) r += ', Chat & Notify';
                 }
                 r = r.substring(2);
                 if (r == '') { r = 'No Rights'; }
