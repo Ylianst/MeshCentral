@@ -126,8 +126,8 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         if (clients == null) return;
         if (typeof message == 'string') { message = new Buffer(message); }
         for (var i in clients) {
-            // if (clients[i].subscriptions[topic] != null) { } // Add this if we only want to send subscribed topics.
-            clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false });
+            // Only publish to client that subscribe to the topic
+            if (clients[i].subscriptions[topic] != null) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
         }
     }
 
