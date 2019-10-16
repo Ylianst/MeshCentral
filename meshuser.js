@@ -2458,6 +2458,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
+            case 'setDeviceEvent':
+                {
+                    // Argument validation
+                    if (common.validateString(command.msg, 1, 4096) == false) break; // Check event
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    var splitid = command.nodeid.split('/');
+                    if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                    var idtype = splitid[0];
+                    if ((idtype != 'node')) return;
+
+                    // Check if this user has rights on this id to set notes
+                    db.Get(command.nodeid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length == 1)) {
+                            meshlinks = user.links[nodes[0].meshid];
+                            if ((meshlinks) && (meshlinks.rights) && (meshlinks.rights != 0)) {
+                                // Add an event for this device
+                                var targets = ['*', 'server-users', user._id, nodes[0].meshid];
+                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: nodes[0]._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
+                                parent.parent.DispatchEvent(targets, obj, event);
+                            }
+                        }
+                    });
+
+                    break;
+                }
             case 'setNotes':
                 {
                     // Argument validation
