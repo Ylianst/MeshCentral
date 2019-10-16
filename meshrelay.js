@@ -28,7 +28,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 
     // Check connection id
-    if (obj.id == null) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no id (' + cleanRemoteAddr(req.ip) + ')'); } catch (e) { console.log(e); } return; }
+    if ((obj.id == null) || (obj.id.length < 8)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no id (' + cleanRemoteAddr(req.ip) + ')'); } catch (e) { console.log(e); } return; }
 
     // If there is no authentication, drop this connection
     if ((obj.id.startsWith('meshmessenger/') == false) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication (' + cleanRemoteAddr(req.ip) + ')'); } catch (e) { console.log(e); } return; }
