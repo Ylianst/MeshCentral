@@ -1,15 +1,13 @@
-﻿<!DOCTYPE html>
-<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
-    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="format-detection" content="telephone=no" />
-    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico" />
-    <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
-    <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
-    <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
+<!DOCTYPE html><html dir="ltr" xmlns="http://www.w3.org/1999/xhtml"><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico">
+    <link keeplink="1" type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS">
+    <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS">
+    <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS">
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
@@ -26,11 +24,11 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/filesaver.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/u2f-api.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/charts.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/filesaver.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/ol.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
     <title>{{{title}}}</title>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">
@@ -42,7 +40,7 @@
         <div id="cxfiles" class="cmtext" onclick="cmaction(4,event)">Files</div>
         <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
         <div id="cxconsole" class="cmtext" onclick="cmaction(6,event)">Console</div>
-        <hr id="cxmgroupsplit" />
+        <hr id="cxmgroupsplit">
         <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style="display:none">Multi-Desktop</div>
     </div>
     <div id="meshContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -58,156 +56,156 @@
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
     </div>
     <!-- main page -->
-    <div id=container>
+    <div id="container">
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
-        <div id=masthead class=noselect>
+        <div id="masthead" class="noselect">
             <div class="title">{{{title}}}</div>
             <div class="title2">{{{title2}}}</div>
             <div style="float:right">
-                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
+                <div id="notificationCount" onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
-            <p id="logoutControl">{{{logoutControl}}}<span id=idleTimeoutNotify style="color:yellow"></span></p>
+            <p id="logoutControl">{{{logoutControl}}}<span id="idleTimeoutNotify" style="color:yellow"></span></p>
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
-            <div id=LeftMenuMyDevices tabindex=0 class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }">
+            <div id="LeftMenuMyDevices" tabindex="0" class="lbbutton lbbuttonsel" title="My Devices" onclick="go(1,event)" onkeypress="if (event.key=='Enter') { go(1); }">
                 <div class="lb2"></div>
             </div>
-            <div id=LeftMenuMyAccount tabindex=0 class="lbbutton" title="My Account" onclick=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }">
+            <div id="LeftMenuMyAccount" tabindex="0" class="lbbutton" title="My Account" onclick="go(2,event)" onkeypress="if (event.key=='Enter') { go(2); }">
                 <div class="lb1"></div>
             </div>
-            <div id=LeftMenuMyEvents tabindex=0 class="lbbutton" title="My Events" onclick=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }">
+            <div id="LeftMenuMyEvents" tabindex="0" class="lbbutton" title="My Events" onclick="go(3,event)" onkeypress="if (event.key=='Enter') { go(3); }">
                 <div class="lb3"></div>
             </div>
-            <div id=LeftMenuMyFiles tabindex=0 class="lbbutton" style="display:none" title="My Files" onclick=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }">
+            <div id="LeftMenuMyFiles" tabindex="0" class="lbbutton" style="display:none" title="My Files" onclick="go(5,event)" onkeypress="if (event.key=='Enter') { go(5); }">
                 <div class="lb4"></div>
             </div>
-            <div id=LeftMenuMyUsers tabindex=0 class="lbbutton" style="display:none" title="My Users" onclick=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }">
+            <div id="LeftMenuMyUsers" tabindex="0" class="lbbutton" style="display:none" title="My Users" onclick="go(4,event)" onkeypress="if (event.key=='Enter') { go(4); }">
                 <div class="lb5"></div>
             </div>
-            <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }">
+            <div id="LeftMenuMyServer" tabindex="0" class="lbbutton" style="display:none" title="My Server" onclick="go(6,event)" onkeypress="if (event.key=='Enter') { go(6); }">
                 <div class="lb6"></div>
             </div>
         </div>
-        <div id=topbar class=noselect>
+        <div id="topbar" class="noselect">
             <div>
                 <div style="position:relative">
-                    <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
-                        &diams;
-                        <div id=uiMenu style="display:none">
-                            <div tabindex=0 id=uiViewButton1 class=uiSelector onclick=userInterfaceSelectMenu(1) title="Left bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)"><div class="uiSelector1"></div></div>
-                            <div tabindex=0 id=uiViewButton2 class=uiSelector onclick=userInterfaceSelectMenu(2) title="Top bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)"><div class="uiSelector2"></div></div>
-                            <div tabindex=0 id=uiViewButton3 class=uiSelector onclick=userInterfaceSelectMenu(3) title="Fixed width interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)"><div class="uiSelector3"></div></div>
-                            <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
+                    <div tabindex="0" id="uiMenuButton" title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
+                        ♦
+                        <div id="uiMenu" style="display:none">
+                            <div tabindex="0" id="uiViewButton1" class="uiSelector" onclick="userInterfaceSelectMenu(1)" title="Left bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)"><div class="uiSelector1"></div></div>
+                            <div tabindex="0" id="uiViewButton2" class="uiSelector" onclick="userInterfaceSelectMenu(2)" title="Top bar interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)"><div class="uiSelector2"></div></div>
+                            <div tabindex="0" id="uiViewButton3" class="uiSelector" onclick="userInterfaceSelectMenu(3)" title="Fixed width interface" onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)"><div class="uiSelector3"></div></div>
+                            <div tabindex="0" id="uiViewButton4" class="uiSelector" onclick="toggleNightMode()" title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
                         </div>
                     </div>
-                    <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
-                        <tr>
-                            <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1,event) onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
-                            <td tabindex=0 id=MainMenuMyAccount class="topbar_td style3x" onclick=go(2,event) onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
-                            <td tabindex=0 id=MainMenuMyEvents class="topbar_td style3x" onclick=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
-                            <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
-                            <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
-                            <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
+                    <table id="MainMenuSpan" cellpadding="0" cellspacing="0" class="style1">
+                        <tbody><tr>
+                            <td tabindex="0" id="MainMenuMyDevices" class="topbar_td style3x" onclick="go(1,event)" onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
+                            <td tabindex="0" id="MainMenuMyAccount" class="topbar_td style3x" onclick="go(2,event)" onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
+                            <td tabindex="0" id="MainMenuMyEvents" class="topbar_td style3x" onclick="go(3,event)" onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
+                            <td tabindex="0" id="MainMenuMyFiles" class="topbar_td style3x" onclick="go(5,event)" onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
+                            <td tabindex="0" id="MainMenuMyUsers" class="topbar_td style3x" onclick="go(4,event)" onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
+                            <td tabindex="0" id="MainMenuMyServer" class="topbar_td style3x" onclick="go(6,event)" onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
-                    </table>
-                    <div id=MainSubMenuSpan style="display:none">
-                        <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onclick=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
-                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onclick=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
-                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onclick=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
-                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onclick=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
-                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onclick=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
-                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onclick=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg; AMT</td>
-                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onclick=go(15,event) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
-                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onclick=go(19,event) onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                    </tbody></table>
+                    <div id="MainSubMenuSpan" style="display:none">
+                        <table id="MainSubMenu" cellpadding="0" cellspacing="0" class="style1">
+                            <tbody><tr>
+                                <td tabindex="0" id="MainDev" class="topbar_td style3x" onclick="go(10,event)" onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                <td tabindex="0" id="MainDevDesktop" class="topbar_td style3x" onclick="go(11,event)" onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                <td tabindex="0" id="MainDevTerminal" class="topbar_td style3x" onclick="go(12,event)" onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                <td tabindex="0" id="MainDevFiles" class="topbar_td style3x" onclick="go(13,event)" onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                <td tabindex="0" id="MainDevEvents" class="topbar_td style3x" onclick="go(16,event)" onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                <td tabindex="0" id="MainDevInfo" class="topbar_td style3x" onclick="go(17,event)" onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                <td tabindex="0" id="MainDevAmt" class="topbar_td style3x" onclick="go(14,event)" onkeypress="if (event.key == 'Enter') go(14)">Intel® AMT</td>
+                                <td tabindex="0" id="MainDevConsole" class="topbar_td style3x" onclick="go(15,event)" onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                <td tabindex="0" id="MainDevPlugins" class="topbar_td style3x" onclick="go(19,event)" onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
-                        </table>
+                        </tbody></table>
                     </div>
-                    <div id=MeshSubMenuSpan style="display:none">
-                        <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=MeshGeneral class="topbar_td style3x" onclick=go(20,event) onkeypress="if (event.key == 'Enter') go(20)">General</td>
+                    <div id="MeshSubMenuSpan" style="display:none">
+                        <table id="MeshSubMenu" cellpadding="0" cellspacing="0" class="style1">
+                            <tbody><tr>
+                                <td tabindex="0" id="MeshGeneral" class="topbar_td style3x" onclick="go(20,event)" onkeypress="if (event.key == 'Enter') go(20)">General</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
-                        </table>
+                        </tbody></table>
                     </div>
-                    <div id=UserSubMenuSpan style="display:none">
-                        <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=UserGeneral class="topbar_td style3x" onclick=go(30,event) onkeypress="if (event.key == 'Enter') go(30)">General</td>
-                                <td tabindex=0 id=UserEvents class="topbar_td style3x" onclick=go(31,event) onkeypress="if (event.key == 'Enter') go(31)">Events</td>
+                    <div id="UserSubMenuSpan" style="display:none">
+                        <table id="UserSubMenu" cellpadding="0" cellspacing="0" class="style1">
+                            <tbody><tr>
+                                <td tabindex="0" id="UserGeneral" class="topbar_td style3x" onclick="go(30,event)" onkeypress="if (event.key == 'Enter') go(30)">General</td>
+                                <td tabindex="0" id="UserEvents" class="topbar_td style3x" onclick="go(31,event)" onkeypress="if (event.key == 'Enter') go(31)">Events</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
-                        </table>
+                        </tbody></table>
                     </div>
-                    <div id=ServerSubMenuSpan style="display:none">
-                        <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">General</td>
-                                <td tabindex=0 id=ServerStats class="topbar_td style3x" onclick=go(40,event) onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
-                                <td tabindex=0 id=ServerConsole class="topbar_td style3x" onclick=go(115,event) onkeypress="if (event.key == 'Enter') go(115)">Console</td>
-                                <td tabindex=0 id=ServerTrace class="topbar_td style3x" onclick=go(41,event) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
+                    <div id="ServerSubMenuSpan" style="display:none">
+                        <table id="ServerSubMenu" cellpadding="0" cellspacing="0" class="style1">
+                            <tbody><tr>
+                                <td tabindex="0" id="ServerGeneral" class="topbar_td style3x" onclick="go(6,event)" onkeypress="if (event.key == 'Enter') go(6)">General</td>
+                                <td tabindex="0" id="ServerStats" class="topbar_td style3x" onclick="go(40,event)" onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
+                                <td tabindex="0" id="ServerConsole" class="topbar_td style3x" onclick="go(115,event)" onkeypress="if (event.key == 'Enter') go(115)">Console</td>
+                                <td tabindex="0" id="ServerTrace" class="topbar_td style3x" onclick="go(41,event)" onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
-                        </table>
+                        </tbody></table>
                     </div>
-                    <div id=UserDummyMenuSpan>
-                        <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr><td class=style3 style="">&nbsp;</td></tr>
-                        </table>
+                    <div id="UserDummyMenuSpan">
+                        <table id="UserDummyMenu" cellpadding="0" cellspacing="0" class="style1">
+                            <tbody><tr><td class="style3" style="">&nbsp;</td></tr>
+                        </tbody></table>
                     </div>
                 </div>
             </div>
         </div>
         <div id="column_l">
-            <div id=p0 style="display:none">
-                <div id=p0message><span id=p0span>Server disconnected</span>, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
+            <div id="p0" style="display:none">
+                <div id="p0message"><span id="p0span">Server disconnected</span>, <href onclick="reload()" style="cursor:pointer"><u>click to reconnect</u></href>.</div>
             </div>
-            <div id=p1 style="display:none">
+            <div id="p1" style="display:none">
                 <div style="display:none" id="devListToolbarViewIcons">
-                    <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
-                    <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
-                    <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
-                    <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"><div class="viewSelector4"></div></div>
+                    <div tabindex="0" id="devViewButton1" class="viewSelector" onclick="onDeviceViewChange(1)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
+                    <div tabindex="0" id="devViewButton2" class="viewSelector" onclick="onDeviceViewChange(2)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
+                    <div tabindex="0" id="devViewButton3" class="viewSelector" onclick="onDeviceViewChange(3)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
+                    <div tabindex="0" id="devViewButton4" class="viewSelector" onclick="onDeviceViewChange(4)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"><div class="viewSelector4"></div></div>
                 </div><div><h1>My Devices</h1></div>
                 <table id="devListToolbarSpan" class="noselect">
-                    <tr>
-                        <td class=h1></td>
-                        <td id=devListToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
-                            <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                            <input id=SearchInput type=text placeholder=Filter onchange=masterUpdate(5) onkeyup=masterUpdate(5) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
-                            <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
+                    <tbody><tr>
+                        <td class="h1"></td>
+                        <td id="devListToolbar" class="style14" style="display:none">
+                            &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All">&nbsp;
+                            <input type="button" id="GroupActionButton" disabled="disabled" value="Group Action" onclick="groupActionFunction()">&nbsp;
+                            <input id="SearchInput" type="text" placeholder="Filter" onchange="masterUpdate(5)" onkeyup="masterUpdate(5)" autocomplete="off" onfocus="onSearchFocus(1)" onblur="onSearchFocus(0)">&nbsp;
+                            <label><input type="checkbox" id="RealNameCheckBox" onclick="onRealNameCheckBox()"><span title="Show devices operating system name">OS Name</span></label>
                         </td>
-                        <td id=kvmListToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<span id="kvmMultiConnectButtonSpan"><input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;</span>
-                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <span id="kvmAutoConnectButtonSpan"><label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label></span>
-                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                        <td id="kvmListToolbar" class="style14" style="display:none">
+                            &nbsp;&nbsp;<span id="kvmMultiConnectButtonSpan"><input type="button" onclick="connectAllKvmFunction()" value="Connect All">&nbsp;</span>
+                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All">&nbsp;
+                            <span id="kvmAutoConnectButtonSpan"><label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect">Auto&nbsp;</label></span>
+                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings">&nbsp;
                         </td>
-                        <td id=devMapToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
-                            <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                            <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
+                        <td id="devMapToolbar" class="style14" style="display:none">
+                            &nbsp;&nbsp;<input type="text" id="mapSearchLocation" placeholder="Search Location" onfocus="onMapSearchFocus(1)" onblur="onMapSearchFocus(0)">
+                            <input type="button" value="Search" title="Search for location" onclick="getSearchLocation()">
+                            <input type="button" id="refreshmap" title="Reset map view" value="Reset" onclick="refreshMap(false,true)">
                         </td>
-                        <td class="auto-style1" style=height:100%>
-                            <div style="display:none" id=devListToolbarView>
+                        <td class="auto-style1" style="height:100%">
+                            <div style="display:none" id="devListToolbarView">
                                 View
-                                <select id=viewselect onchange=onDeviceViewChange()>
-                                    <option value=1>Columns</option>
-                                    <option value=2>List</option>
-                                    <option value=3>Desktops</option>
-                                    <option id=viewselectmapoption value=4>Map</option>
+                                <select id="viewselect" onchange="onDeviceViewChange()">
+                                    <option value="1">Columns</option>
+                                    <option value="2">List</option>
+                                    <option value="3">Desktops</option>
+                                    <option id="viewselectmapoption" value="4">Map</option>
                                 </select>
                             </div>
-                            <div style="display:none" id=devListToolbarSort>
+                            <div style="display:none" id="devListToolbarSort">
                                 Sort
-                                <select id=sortselect onchange=masterUpdate(6)>
+                                <select id="sortselect" onchange="masterUpdate(6)">
                                     <option>Group</option>
                                     <option>Power</option>
                                     <option>Device</option>
@@ -215,142 +213,142 @@
                                 </select>
                                 &nbsp;
                             </div>
-                            <div style="display:none" id=devListToolbarSize>
+                            <div style="display:none" id="devListToolbarSize">
                                 Size
-                                <select id=sizeselect onchange=onDeviceViewChange()>
-                                    <option value=0>Small</option>
-                                    <option value=1>Medium</option>
-                                    <option value=2>Large</option>
+                                <select id="sizeselect" onchange="onDeviceViewChange()">
+                                    <option value="0">Small</option>
+                                    <option value="1">Medium</option>
+                                    <option value="2">Large</option>
                                 </select>
                                 &nbsp;
                             </div>
                         </td>
-                        <td class=h2></td>
+                        <td class="h2"></td>
                     </tr>
-                </table>
-                <div id=NoMeshesPanel style="display:none">
+                </tbody></table>
+                <div id="NoMeshesPanel" style="display:none">
                     <table>
-                        <tr>
+                        <tbody><tr>
                             <td valign="top" style="width: 50px">
-                                <img src="images/info.png" />
+                                <img src="images/info.png">
                             </td>
                             <td>
-                                <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
+                                <div id="getStarted1">To get started, <a href="#" onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
                                 <div id="getStarted2">No device groups.</div>
                             </td>
                         </tr>
-                    </table>
+                    </tbody></table>
                 </div>
                 <div id="xdevices" class="noselect" style="display:none"></div>
                 <div id="xdevicesmap" style="display:none">
-                    <div id=xmapSearchResultsDlg style="display:none">
-                        <div id=xmapSearchResultsBck>
-                            <div id=xmapSearchClose onclick=mapCloseSearchWindow()><b>X</b></div>
-                            <div style=padding:5px>Location Results</div>
-                            <div style=width:100%;margin:6px></div>
+                    <div id="xmapSearchResultsDlg" style="display:none">
+                        <div id="xmapSearchResultsBck">
+                            <div id="xmapSearchClose" onclick="mapCloseSearchWindow()"><b>X</b></div>
+                            <div style="padding:5px">Location Results</div>
+                            <div style="width:100%;margin:6px"></div>
                         </div>
-                        <div id=xmapSearchResults style=margin:6px></div>
+                        <div id="xmapSearchResults" style="margin:6px"></div>
                     </div>
                 </div>
                 <div id="xmap-info-window"></div>
             </div>
-            <div id=p2 style="display:none">
+            <div id="p2" style="display:none">
                 <h1>My Account</h1>
-                <img id="p2AccountImage" alt="" src="images/clipboard-128.png" />
+                <img id="p2AccountImage" alt="" src="images/clipboard-128.png">
                 <div id="p2AccountSecurity" style="display:none">
                     <p><strong>Account security</strong></p>
                     <div style="margin-left:25px">
-                        <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
-                        <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
-                        <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
+                        <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>✓</strong></span></div><span><a href="#" onclick="return account_manageAuthApp()">Manage authenticator app</a><br></span></div>
+                        <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>✓</strong></span></div><span><a href="#" onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br></span></div>
+                        <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>✓</strong></span></div><span><a href="#" onclick="return account_manageOtp(0)">Manage backup codes</a><br></span></div>
                     </div>
                 </div>
                 <div id="p2AccountActions">
                     <p><strong>Account actions</strong></p>
                     <p class="mL">
-                        <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
-                        <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
-                        <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
-                        <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
-                        <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
-                        <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
-                        <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
+                        <span id="verifyEmailId" style="display:none"><a href="#" onclick="return account_showVerifyEmail()">Verify email</a><br></span>
+                        <span id="accountEnableNotificationsSpan" style="display:none"><a href="#" onclick="return account_enableNotifications()">Enable web notifications</a><br></span>
+                        <a href="#" onclick="return account_showLocalizationSettings()">Localization Settings</a><br>
+                        <a href="#" onclick="return account_showAccountNotifySettings()">Notification Settings</a><br>
+                        <span id="accountChangeEmailAddressSpan" style="display:none"><a href="#" onclick="return account_showChangeEmail()">Change email address</a><br></span>
+                        <a href="#" onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br>
+                        <a href="#" onclick="return account_showDeleteAccount()">Delete account</a><br>
                     </p>
-                    <br style=clear:both />
+                    <br style="clear:both">
                 </div>
                 <strong>Device Groups</strong>
-                <span id="p2createMeshLink1">( <a href=# onclick="return account_createMesh()" class="newMeshBtn"> New</a> )</span>
-                <br /><br />
-                <div id=p2meshes></div>
-                <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=# onclick="return account_createMesh()"><strong>Get started here!</strong></a></span></div>
-                <br style=clear:both />
+                <span id="p2createMeshLink1">( <a href="#" onclick="return account_createMesh()" class="newMeshBtn"> New</a> )</span>
+                <br><br>
+                <div id="p2meshes"></div>
+                <div id="p2noMeshFound" style="display:none">No device groups.<span id="p2createMeshLink2"> <a href="#" onclick="return account_createMesh()"><strong>Get started here!</strong></a></span></div>
+                <br style="clear:both">
             </div>
-            <div id=p3 style="display:none">
+            <div id="p3" style="display:none">
                 <h1>My Events</h1>
                 <table class="pTable">
-                    <tr>
+                    <tbody><tr>
                         <td class="h1"></td>
                         <td class="auto-style1">
                             Show
-                            <select id=p3limitdropdown onchange=refreshEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
+                            <select id="p3limitdropdown" onchange="refreshEvents()">
+                                <option value="60">Last 60</option>
+                                <option value="120">Last 120</option>
+                                <option value="250">Last 250</option>
+                                <option value="500">Last 500</option>
+                                <option value="1000">Last 1000</option>
                             </select>&nbsp;
-                            <a href=# onclick=p3showDownloadEventsDialog(2)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href="#" onclick="p3showDownloadEventsDialog(2)"><img src="images/link4.png" height="10" width="10" title="Download Events" style="cursor:pointer"></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
-                </table>
-                <div id=p3events style=""></div>
+                </tbody></table>
+                <div id="p3events" style=""></div>
             </div>
-            <div id=p4 style="display:none">
+            <div id="p4" style="display:none">
                 <h1>My Users</h1>
                 <table class="pTable">
-                    <tr>
+                    <tbody><tr>
                         <td class="h1"></td>
                         <td class="style14">
                             <div style="float:right">
-                                <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
-                                <a href=# onclick=p4downloadUserInfo()><img style="cursor:pointer" title="Download user information" src="images/link4.png" /></a>
-                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
+                                <input type="button" onclick="showUserBroadcastDialog()" style="margin-right:6px" value="Broadcast">
+                                <a href="#" onclick="p4downloadUserInfo()"><img style="cursor:pointer" title="Download user information" src="images/link4.png"></a>
+                                <a href="#" onclick="p4batchAccountCreate()"><img id="p4UserBatchCreate" style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png"></a>
                             </div>
                             <div>
-                                <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
-                                <input id=UserSearchInput type=text style=width:120px;margin-left:6px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
+                                <input id="UserNewAccountButton" type="button" style="margin-left:6px" onclick="showCreateNewAccountDialog()" value="New Account...">
+                                <input id="UserSearchInput" type="text" style="width:120px;margin-left:6px" placeholder="Filter" onchange="onUserSearchInputChanged()" onkeyup="onUserSearchInputChanged()" autocomplete="off" onfocus="onUserSearchFocus(1)" onblur="onUserSearchFocus(0)">
                             </div>
                         </td>
                         <td class="h2"></td>
                     </tr>
-                </table>
+                </tbody></table>
                 <div id="p3users"></div>
             </div>
-            <div id=p5 style="display:none">
+            <div id="p5" style="display:none">
                 <h1>My Files</h1>
                 <table id="p5toolbar" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td id="p5filehead" valign=bottom>
+                    <tbody><tr>
+                        <td id="p5filehead" valign="bottom">
                             <div id="p5rightOfButtons"></div>
                             <div>
-                                <input type=button id=p5FolderUp disabled="disabled" onclick="return p5folderup();" value="Up" />&nbsp;
-                                <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
-                                <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
-                                <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
+                                <input type="button" id="p5FolderUp" disabled="disabled" onclick="return p5folderup();" value="Up">&nbsp;
+                                <input type="button" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile();" value="Select All">&nbsp;
+                                <input type="button" id="p5RenameFileButton" disabled="disabled" value="Rename" onclick="p5renamefile();">&nbsp;
+                                <input type="button" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile();">&nbsp;
                                 <!--<input type=button id=p5ViewFileButton disabled="disabled" value="View" onclick="p5viewfile()" />&nbsp;-->
-                                <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
-                                <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
-                                <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
-                                <input type=button id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
-                                <input type=button id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
+                                <input type="button" id="p5NewFolderButton" disabled="disabled" value="New Folder" onclick="p5createfolder();">&nbsp;
+                                <input type="button" id="p5UploadButton" disabled="disabled" value="Upload" onclick="p5uploadFile()">&nbsp;
+                                <input type="button" id="p5CutButton" disabled="disabled" value="Cut" onclick="p5copyFile(1)">&nbsp;
+                                <input type="button" id="p5CopyButton" disabled="disabled" value="Copy" onclick="p5copyFile(0)">&nbsp;
+                                <input type="button" id="p5PasteButton" disabled="disabled" value="Paste" onclick="p5pasteFile()">&nbsp;
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td id="p5filesubhead">
-                            <div style=float:right>
-                                <select id=p5sortdropdown onchange=updateFiles()>
+                            <div style="float:right">
+                                <select id="p5sortdropdown" onchange="updateFiles()">
                                     <option value="1" selected="selected">Sort by name</option>
                                     <option value="2">Sort by size</option>
                                     <option value="3">Sort by date</option>
@@ -362,7 +360,7 @@
                             <div>&nbsp;&nbsp;<span id="p5currentpath"></span></div>
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
                 <div id="p5filetable">
                     <!--
                     <form id=p5fileCatchAll method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
@@ -372,27 +370,27 @@
                     </form>
                     -->
                     <div id="p5PublicShare" style=""><div>These files are shared publicly, click "link" to get public url.</div></div>
-                    <div id="bigok" style="display:none"><b>&checkmark;</b></div>
-                    <div id="bigfail" style="display:none"><b>&#10007;</b></div>
+                    <div id="bigok" style="display:none"><b>✓</b></div>
+                    <div id="bigfail" style="display:none"><b>✗</b></div>
                     <span id="p5files"></span>
                 </div>
-                <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
-                    <tr><td class=style6>&nbsp;<span id="p5bottomstatus"></span></td></tr>
-                </table>
+                <table id="p5toolbarBottom" style="width:100%" cellpadding="0" cellspacing="0">
+                    <tbody><tr><td class="style6">&nbsp;<span id="p5bottomstatus"></span></td></tr>
+                </tbody></table>
             </div>
-            <div id=p6 style="display:none">
-                <img id=MainMeshImage src="serverpic.ashx">
+            <div id="p6" style="display:none">
+                <img id="MainMeshImage" src="serverpic.ashx">
                 <h1>My Server</h1>
                 <div id="p2ServerActions">
                     <p><strong>Server actions</strong></p>
                     <div class="mL">
                         <div id="p2ServerActionsBackup"><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
-                        <div id="p2ServerActionsRestore"><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
-                        <div id="p2ServerActionsVersion"><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
-                        <div id="p2ServerActionsErrors"><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
+                        <div id="p2ServerActionsRestore"><a href="#" onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
+                        <div id="p2ServerActionsVersion"><a href="#" onclick="return server_showVersionDlg()">Check server version</a></div>
+                        <div id="p2ServerActionsErrors"><a href="#" onclick="return server_showErrorsDlg()">Show server error log</a></div>
                     </div>
                 </div>
-                <br /><strong>Server Statistics</strong><br /><br />
+                <br><strong>Server Statistics</strong><br><br>
                 <div id="serverStats">
                     <div id="serverCpuChartView" style="display:none">
                         <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
@@ -401,161 +399,161 @@
                     <div id="serverMemoryChartView" style="display:none">
                         <div class="chartViewCanvas"><canvas id="serverMemoryChart"></canvas></div>
                         <div class="chartViewText" id="serverMemoryChartText"></div>
-                    </div><br /><br />
+                    </div><br><br>
                     <div id="serverStatsTable"></div>
                 </div>
             </div>
-            <div id=p10 style="display:none">
+            <div id="p10" style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style=width:auto valign=top>
-                            <div id=p10title>
-                                <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                                <h1>General - <span id=p10deviceName></span></h1>
+                    <tbody><tr>
+                        <td style="width:auto" valign="top">
+                            <div id="p10title">
+                                <div id="p10BackButton"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                                <h1>General - <span id="p10deviceName"></span></h1>
                             </div>
-                            <div id=p10html></div>
+                            <div id="p10html"></div>
                         </td>
-                        <td style=width:20px></td>
-                        <td style=width:200px>
-                            <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
-                            <div id=MainComputerState></div>
+                        <td style="width:20px"></td>
+                        <td style="width:200px">
+                            <a href="#" onclick="p10showiconselector()"><img id="MainComputerImage"></a>
+                            <div id="MainComputerState"></div>
                         </td>
                     </tr>
-                </table><br />
-                <div id=p10html2></div>
-                <div id=p10html3></div>
+                </tbody></table><br>
+                <div id="p10html2"></div>
+                <div id="p10html3"></div>
             </div>
-            <div id=p11 class="noselect" style="display:none">
+            <div id="p11" class="noselect" style="display:none">
                 <div id="p11title">
-                    <div id=p11deviceNameHeader>
-                        <div id="p11BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                        <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
-                        <h1>Desktop - <span id=p11deviceName></span></h1>
+                    <div id="p11deviceNameHeader">
+                        <div id="p11BackButton"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                        <div id="devListToolbarViewIcons"><div class="viewSelector" onclick="deskToggleFull(event)" title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
+                        <h1>Desktop - <span id="p11deviceName"></span></h1>
                     </div>
                 </div>
                 <div id="p11warning" onclick="showFeaturesDlg()">
                     <div class="icon2"></div>
-                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p11warninga">, click here to enable it.</span></div>
+                    <div class="warningbox">Intel® AMT Redirection port or KVM feature is disabled<span id="p11warninga">, click here to enable it.</span></div>
                 </div>
                 <div id="p11warning2" onclick="showPowerActionDlg()">
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                 </div>
-                <div id=deskarea0 cellpadding=0 cellspacing=0>
-                    <div id=deskarea1 class="areaHead">
+                <div id="deskarea0" cellpadding="0" cellspacing="0">
+                    <div id="deskarea1" class="areaHead">
                         <div class="toright2">
                             <span id="p11power"></span>&nbsp;
-                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
-                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
-                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
-                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
-                            <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
-                            <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick=deskSaveImage() class="mR" />
-                            <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
-                            <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
-                            <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <div class="deskareaicon" title="Toggle View Mode" onclick="toggleAspectRatio(1)">⇲</div>
+                            <div class="deskareaicon" title="Rotate Left" onclick="drotate(-1)">↺</div>
+                            <div class="deskareaicon" title="Rotate Right" onclick="drotate(1)">↻</div>
+                            <div id="deskRecordIcon" class="deskareaicon" title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
+                            <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
+                            <input id="deskSaveBtn" type="button" title="Save a screenshot of the remote desktop" onkeypress="return false" onkeydown="return false" value="Save..." onclick="deskSaveImage()" class="mR">
+                            <input id="deskActionsBtn" type="button" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()" class="mR">
+                            <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR">
+                            <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
                         </div>
                         <div>
-                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
-                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                            <span id=connectbutton1span><input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                            <div id="idx_deskFullBtn2" onclick="deskToggleFull(event)">&nbsp;✖</div>
+                            <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick="autoConnectDesktop(event)" onkeypress="return false" onkeydown="return false" style="display:none">
+                            <span id="connectbutton1span"><input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                            <span id="connectbutton1hspan">&nbsp;<input type="button" id="connectbutton1h" value="HW Connect" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                            <span id="disconnectbutton1span">&nbsp;<input type="button" id="disconnectbutton1" value="Disconnect" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false"></span>
                             &nbsp;<span id="deskstatus">Disconnected</span>
                         </div>
                     </div>
-                    <div id=deskarea2 style="">
+                    <div id="deskarea2" style="">
                         <div class="areaProgress"><div id="progressbar" style=""></div></div>
                     </div>
-                    <div id=deskarea3x>
-                        <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
-                        <div id=DeskParent>
-                            <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                    <div id="deskarea3x">
+                        <div id="DeskFocus" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)"></div>
+                        <div id="DeskParent">
+                            <canvas id="Desk" width="640" height="480" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)" onmousewheel="dmousewheel(event)"></canvas>
                         </div>
-                        <div id=DeskTools>
-                            <div id=deskToolsAreaTop>
-                                <a id=DeskToolsRefreshButton style="right:2px" onclick="refreshDeskTools()">Refresh</a>
-                                <div id=deskToolsTopTabProcess class="deskToolsTopTab" onclick="changeDeskToolTab(0)" style="left:0px;bottom:0px">Processes</div>
-                                <div id=deskToolsTopTabService class="deskToolsTopTab" onclick="changeDeskToolTab(1)" style="display:none;left:90px;color:gray">Services</div>
+                        <div id="DeskTools">
+                            <div id="deskToolsAreaTop">
+                                <a id="DeskToolsRefreshButton" style="right:2px" onclick="refreshDeskTools()">Refresh</a>
+                                <div id="deskToolsTopTabProcess" class="deskToolsTopTab" onclick="changeDeskToolTab(0)" style="left:0px;bottom:0px">Processes</div>
+                                <div id="deskToolsTopTabService" class="deskToolsTopTab" onclick="changeDeskToolTab(1)" style="display:none;left:90px;color:gray">Services</div>
                             </div>
-                            <div id=deskToolsArea>
+                            <div id="deskToolsArea">
                                 <div id="DeskToolsProcessTab">
-                                    <div id=deskToolsHeader>
-                                        <a class="colmn1" title="Sort by process id" onclick=sortProcess(0)>PID</a>
-                                        <a class="colmn2" title="Sort by name" onclick=sortProcess(1)>Name</a>
+                                    <div id="deskToolsHeader">
+                                        <a class="colmn1" title="Sort by process id" onclick="sortProcess(0)">PID</a>
+                                        <a class="colmn2" title="Sort by name" onclick="sortProcess(1)">Name</a>
                                     </div>
                                     <div id="DeskToolsProcesses" style=""></div>
                                 </div>
                                 <div id="DeskToolsServiceTab" style="display:none">
-                                    <div id=deskToolsServiceHeader>
-                                        <a class="colmn1" style="width:70px" title="Sort by state" onclick=sortService(0)>State</a>
-                                        <a class="colmn2" title="Sort by name" onclick=sortService(1)>Name</a>
+                                    <div id="deskToolsServiceHeader">
+                                        <a class="colmn1" style="width:70px" title="Sort by state" onclick="sortService(0)">State</a>
+                                        <a class="colmn2" title="Sort by name" onclick="sortService(1)">Name</a>
                                     </div>
                                     <div id="DeskToolsServices" style=""></div>
                                 </div>
                             </div>
                         </div>
-                        <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p11clearConsoleMsg()></div>
+                        <div id="p11DeskConsoleMsg" style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick="p11clearConsoleMsg()"></div>
                     </div>
-                    <div id=deskarea4 class="areaFoot">
+                    <div id="deskarea4" class="areaFoot">
                         <div class="toright2">
                             <span id="DeskTimer" title="Session time"></span>&nbsp;
-                            <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
-                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />&nbsp;
-                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img src='images/icon-chat.png' onclick=deviceChat() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskNotifyButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskOpenWebButton title="Open a web address on remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <select id="termdisplays" style="display:none" onchange="deskSetDisplay(event)" onkeypress="return false" onkeydown="return false"></select>&nbsp;
+                            <input id="DeskToolsButton" type="button" value="Tools" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
+                            <span id="DeskChatButton" class="deskarea" title="Open chat window to this computer"><img src="images/icon-chat.png" onclick="deviceChat()" height="16" width="16" style="padding-top:2px"></span>
+                            <span id="DeskNotifyButton" title="Display a notification on the remote computer"><img src="images/icon-notify.png" onclick="deviceToastFunction()" height="16" width="16" style="padding-top:2px"></span>
+                            <span id="DeskOpenWebButton" title="Open a web address on remote computer"><img src="images/icon-url2.png" onclick="deviceUrlFunction()" height="16" width="16" style="padding-top:2px"></span>
                         </div>
                         <div>
                             <select id="deskkeys">
-                                <option value=10>Ctrl+Alt+Del</option>
-                                <option value=5>Win</option>
-                                <option value=0>Win+Down</option>
-                                <option value=1>Win+Up</option>
-                                <option value=2>Win+L</option>
-                                <option value=3>Win+M</option>
-                                <option value=4>Shift+Win+M</option>
-                                <option value=6>Win+R</option>
-                                <option value=7>Alt-F4</option>
-                                <option value=8>Ctrl-W</option>
-                                <option value=9>Alt-Tab</option>
-                                <option value=11>Win+Left</option>
-                                <option value=12>Win+Right</option>
+                                <option value="10">Ctrl+Alt+Del</option>
+                                <option value="5">Win</option>
+                                <option value="0">Win+Down</option>
+                                <option value="1">Win+Up</option>
+                                <option value="2">Win+L</option>
+                                <option value="3">Win+M</option>
+                                <option value="4">Shift+Win+M</option>
+                                <option value="6">Win+R</option>
+                                <option value="7">Alt-F4</option>
+                                <option value="8">Ctrl-W</option>
+                                <option value="9">Alt-Tab</option>
+                                <option value="11">Win+Left</option>
+                                <option value="12">Win+Right</option>
                             </select>
-                            <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
-                            <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
-                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
+                            <input id="DeskWD" type="button" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">
+                            <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()">
+                            <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()">
+                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()">Input</span></label>&nbsp;
                         </div>
                     </div>
                 </div>
             </div>
-            <div id=p12 style="display:none">
+            <div id="p12" style="display:none">
                 <div id="p12title">
-                    <div id="p12BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Terminal - <span id=p12deviceName></span></h1>
+                    <div id="p12BackButton"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Terminal - <span id="p12deviceName"></span></h1>
                 </div>
-                <div id="p12warning" onclick=showFeaturesDlg()>
+                <div id="p12warning" onclick="showFeaturesDlg()">
                     <div class="icon2"></div>
-                    <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
+                    <div class="warningbox">Intel® AMT Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
                 </div>
-                <div id="p12warning2" onclick=showPowerActionDlg()>
+                <div id="p12warning2" onclick="showPowerActionDlg()">
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
                 </div>
-                <div id=termTable style="position:relative">
-                    <table style="width:100%" cellpadding=0 cellspacing=0>
-                        <tr>
+                <div id="termTable" style="position:relative">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tbody><tr>
                             <td class="areaHead">
                                 <div class="toright2">
-                                    <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
-                                    <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <div id="termRecordIcon" class="deskareaicon" title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                    <input id="termActionsBtn" type="button" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()">
                                 </div>
                                 <div>
-                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                                    <span id="connectbutton2span"><input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick="autoConnectTerminal(event)" onkeypress="return false" onkeydown="return false" style="display:none">
+                                    <span id="connectbutton2span"><input type="button" id="connectbutton2" value="Connect" onclick="connectTerminal(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" onclick="connectTerminal(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                                    <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick="connectTerminal(event,0)" onkeypress="return false" onkeydown="return false"></span>
                                     &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
                                 </div>
                             </td>
@@ -575,113 +573,113 @@
                                 <div class="toright2">
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
-                                        <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()" />
-                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
-                                        <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()" />
+                                        <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()">
+                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()">
+                                        <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()">
                                     </span>
                                     <span id="terminalSizeDropDown">
-                                        <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option><option value="3" selected>Auto</option></select>
+                                        <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option><option value="3" selected="">Auto</option></select>
                                     </span>
                                     <select id="specialkeylist" onkeypress="return false"></select>
-                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()">
                                 </div>
                                 <div>
                                     &nbsp;
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
+                                    <input type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()">
                                 </div>
                             </td>
                         </tr>
-                    </table>
-                    <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+                    </tbody></table>
+                    <div id="p12TermConsoleMsg" style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick="p12clearConsoleMsg()"></div>
                 </div>
             </div>
-            <div id=p13 style="display:none">
+            <div id="p13" style="display:none">
                 <div id="p13title">
-                    <div id="p13BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Files - <span id=p13deviceName></span></h1>
+                    <div id="p13BackButton" style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Files - <span id="p13deviceName"></span></h1>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
-                    <tr>
+                    <tbody><tr>
                         <td class="areaHead">
                             <div class="toright2">
-                                <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
-                                <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                <input id="filesActionsBtn" type="button" title="Perform power actions on the device" value="Actions" onclick="deviceActionFunction()">
+                                <div id="filesRecordIcon" class="deskareaicon" title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                             </div>
                             <div>
-                                <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none" />
-                                <input id=p13Connect value="Connect" onclick=connectFiles(event) type="button" />
-                                <span id=p13Status>Disconnected</span>
+                                <input id="p13AutoConnect" value="AutoConnect" onclick="autoConnectFiles(event)" type="button" style="display:none">
+                                <input id="p13Connect" value="Connect" onclick="connectFiles(event)" type="button">
+                                <span id="p13Status">Disconnected</span>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <td class="areaHead2" valign=bottom>
+                        <td class="areaHead2" valign="bottom">
                             <div id="p13rightOfButtons" class="toright2"></div>
                             <div>
-                                <input type=button id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />&nbsp;
-                                <input type=button id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="Select All" />&nbsp;
-                                <input type=button id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" />&nbsp;
-                                <input type=button id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" />&nbsp;
-                                <input type=button id=p13ViewFileButton disabled="disabled" value="Edit" onclick="p13viewfile()" />&nbsp;
-                                <input type=button id=p13NewFolderButton disabled="disabled" value="New Folder" onclick="p13createfolder()" />&nbsp;
-                                <input type=button id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" />&nbsp;
-                                <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
-                                <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" />&nbsp;
-                                <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" />&nbsp;
-                                <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" />&nbsp;
+                                <input type="button" id="p13FolderUp" disabled="disabled" onclick="p13folderup()" value="Up">&nbsp;
+                                <input type="button" id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="Select All">&nbsp;
+                                <input type="button" id="p13RenameFileButton" disabled="disabled" value="Rename" onclick="p13renamefile()">&nbsp;
+                                <input type="button" id="p13DeleteFileButton" disabled="disabled" value="Delete" onclick="p13deletefile()">&nbsp;
+                                <input type="button" id="p13ViewFileButton" disabled="disabled" value="Edit" onclick="p13viewfile()">&nbsp;
+                                <input type="button" id="p13NewFolderButton" disabled="disabled" value="New Folder" onclick="p13createfolder()">&nbsp;
+                                <input type="button" id="p13UploadButton" disabled="disabled" value="Upload" onclick="p13uploadFile()">&nbsp;
+                                <input type="button" id="p13CutButton" disabled="disabled" value="Cut" onclick="p13copyFile(1)">&nbsp;
+                                <input type="button" id="p13CopyButton" disabled="disabled" value="Copy" onclick="p13copyFile(0)">&nbsp;
+                                <input type="button" id="p13PasteButton" disabled="disabled" value="Paste" onclick="p13pasteFile()">&nbsp;
+                                <input type="button" id="p13RefreshButton" disabled="disabled" value="Refresh" onclick="p13folderup(9999)">&nbsp;
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td class="areaHead3">
                             <div class="toright2">
-                                <select id=p13sortdropdown onchange=p13updateFiles()>
-                                    <option value=1 selected="selected">Sort by name</option>
-                                    <option value=2>Sort by size</option>
-                                    <option value=3>Sort by date</option>
-                                    <option value=4>Descend by name</option>
-                                    <option value=5>Descend by size</option>
-                                    <option value=6>Descend by date</option>
+                                <select id="p13sortdropdown" onchange="p13updateFiles()">
+                                    <option value="1" selected="selected">Sort by name</option>
+                                    <option value="2">Sort by size</option>
+                                    <option value="3">Sort by date</option>
+                                    <option value="4">Descend by name</option>
+                                    <option value="5">Descend by size</option>
+                                    <option value="6">Descend by date</option>
                                 </select>
                             </div>
                             <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
                         </td>
                     </tr>
-                </table>
-                <div id=p13FilesConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
+                </tbody></table>
+                <div id="p13FilesConsoleMsg" style="display:none;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick="p13clearConsoleMsg()"></div>
                 <div id="p13filetable" style="">
-                    <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
-                    <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
+                    <div id="p13bigok" style="display:none"><b>✓</b></div>
+                    <div id="p13bigfail" style="display:none"><b>✗</b></div>
                     <span id="p13files"></span>
                 </div>
-                <table id="p13toolbarBottom" cellpadding=0 cellspacing=0>
-                    <tr><td class=style6>&nbsp;<span id="p13bottomstatus"></span></td></tr>
-                </table>
+                <table id="p13toolbarBottom" cellpadding="0" cellspacing="0">
+                    <tbody><tr><td class="style6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
+                </tbody></table>
             </div>
-            <div id=p14 style="display:none">
+            <div id="p14" style="display:none">
                 <div id="p14title">
-                    <div id="p14BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
-                    <h1>Intel&reg; AMT - <span id=p14deviceName></span></h1>
+                    <div id="p14BackButton" style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <div id="devListToolbarViewIcons"><div class="viewSelector" onclick="deskToggleFull(event)" title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
+                    <h1>Intel® AMT - <span id="p14deviceName"></span></h1>
                 </div>
-                <iframe id=p14iframe src="{{{domainurl}}}commander.htm"></iframe>
+                <iframe id="p14iframe" src="{{{domainurl}}}commander.htm"></iframe>
             </div>
-            <div id=p15 style="display:none">
+            <div id="p15" style="display:none">
                 <div id="p15title">
-                    <div id="p15BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1><span id=p15deviceName></span></h1>
+                    <div id="p15BackButton" style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1><span id="p15deviceName"></span></h1>
                 </div>
-                <table id="consoleTable" cellpadding=0 cellspacing=0>
-                    <tr>
+                <table id="consoleTable" cellpadding="0" cellspacing="0">
+                    <tbody><tr>
                         <td class="areaHead">
                             <div class="toright2">
-                                <div id=p15coreName title="Information about current core running on this agent"></div>
-                                <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
-                                <img onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px" title="Download console text" src="images/link4.png" />
+                                <div id="p15coreName" title="Information about current core running on this agent"></div>
+                                <input type="button" id="p15uploadCore" value="Agent Action" onclick="p15uploadCore(event)" title="Change the agent Java Script code module">
+                                <img onclick="p15downloadConsoleText()" style="cursor:pointer;margin-top:6px" title="Download console text" src="images/link4.png">
                             </div>
                             <div id="p15statetext"></div>
                         </td>
@@ -692,165 +690,165 @@
                         </td>
                     </tr>
                     <tr>
-                        <td id=p15agentConsole>
-                            <pre id=p15agentConsoleText></pre>
+                        <td id="p15agentConsole">
+                            <pre id="p15agentConsoleText"></pre>
                         </td>
                     </tr>
                     <tr>
                         <td class="areaFoot">
                             <table style="width:100%">
-                                <tr>
+                                <tbody><tr>
                                     <td style="width:99%">
-                                        <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
+                                        <input id="p15consoleText" style="width:100%" onkeyup="p15consoleSend(event)" onfocus="onConsoleFocus(1)" onblur="onConsoleFocus(0)">
                                     </td>
                                     <td>&nbsp;</td>
                                     <td id="p15outputselecttd">
-                                        <select id=p15outputselect>
-                                            <option value=1>Agent</option>
-                                            <option value=2>MQTT</option>
+                                        <select id="p15outputselect">
+                                            <option value="1">Agent</option>
+                                            <option value="2">MQTT</option>
                                         </select>
                                     </td>
-                                    <td style="width:1%"><input id="id_p15consoleClear" type="button" class="bottombutton" value="Clear" onclick="p15consoleClear()" /></td>
+                                    <td style="width:1%"><input id="id_p15consoleClear" type="button" class="bottombutton" value="Clear" onclick="p15consoleClear()"></td>
                                 </tr>
-                            </table>
+                            </tbody></table>
                         </td>
                     </tr>
-                </table>
+                </tbody></table>
             </div>
-            <div id=p16 style="display:none">
+            <div id="p16" style="display:none">
                 <div id="p16title">
-                    <div id="p16BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Events - <span id=p16deviceName></span></h1>
+                    <div id="p16BackButton" style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Events - <span id="p16deviceName"></span></h1>
                 </div>
                 <table class="pTable">
-                    <tr>
+                    <tbody><tr>
                         <td class="h1"></td>
                         <!--<td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
                             Show
-                            <select id=p16limitdropdown onchange=refreshDeviceEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
+                            <select id="p16limitdropdown" onchange="refreshDeviceEvents()">
+                                <option value="60">Last 60</option>
+                                <option value="120">Last 120</option>
+                                <option value="250">Last 250</option>
+                                <option value="500">Last 500</option>
+                                <option value="1000">Last 1000</option>
                             </select>
-                            <a href=# onclick=p3showDownloadEventsDialog(1)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href="#" onclick="p3showDownloadEventsDialog(1)"><img src="images/link4.png" height="10" width="10" title="Download Events" style="cursor:pointer"></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
-                </table>
-                <div id=p16events></div>
+                </tbody></table>
+                <div id="p16events"></div>
             </div>
-            <div id=p17 style="display:none">
+            <div id="p17" style="display:none">
                 <div id="p17title">
-                    <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Details - <span id=p17deviceName></span></h1>
+                    <div id="p17BackButton" style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Details - <span id="p17deviceName"></span></h1>
                 </div>
-                <div id=p17info></div>
+                <div id="p17info"></div>
             </div>
-            <div id=p20 style="display:none">
-                <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                    <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
-                    <img alt="" width=200 height=200 src=images/mesh-256.png />
+            <div id="p20" style="display:none">
+                <picture id="MainMeshImage" style="border-width:0px;height:200px;width:200px;float:right">
+                    <source type="image/webp" width="200" height="200" srcset="images/webp/mesh-256.webp">
+                    <img alt="" width="200" height="200" src="images/mesh-256.png">
                 </picture>
-                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                <h1>General - <span id=p20meshName></span></h1>
-                <p id=p20info></p>
+                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                <h1>General - <span id="p20meshName"></span></h1>
+                <p id="p20info"></p>
             </div>
-            <div id=p30 style="display:none">
+            <div id="p30" style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style=width:auto valign=top>
+                    <tbody><tr>
+                        <td style="width:auto" valign="top">
                             <div id="p30title">
-                                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                                <h1>General - <span id=p30userName></span></h1>
+                                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                                <h1>General - <span id="p30userName"></span></h1>
                             </div>
-                            <div id=p30html></div>
+                            <div id="p30html"></div>
                         </td>
-                        <td style=width:20px></td>
-                        <td style=width:200px>
-                            <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
-                                <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
-                                <img alt="" width=200 height=200 src=images/user-256.png />
+                        <td style="width:20px"></td>
+                        <td style="width:200px">
+                            <picture id="MainUserImage" style="border-width:0px;height:200px;width:200px;float:right">
+                                <source type="image/webp" width="200" height="200" srcset="images/webp/user-256.webp">
+                                <img alt="" width="200" height="200" src="images/user-256.png">
                             </picture>
-                            <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
+                            <div style="width:100%;text-align:center"><strong><span id="MainUserState"></span></strong></div>
                         </td>
                     </tr>
-                </table><br />
-                <div id=p30html2></div>
-                <div id=p30html3></div>
+                </tbody></table><br>
+                <div id="p30html2"></div>
+                <div id="p30html3"></div>
             </div>
-            <div id=p31 style="display:none">
-                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                <h1>Events - <span id=p31userName></span></h1>
+            <div id="p31" style="display:none">
+                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                <h1>Events - <span id="p31userName"></span></h1>
                 <table class="pTable">
-                    <tr>
+                    <tbody><tr>
                         <td class="h1"></td>
                         <!--<td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
                             Show
-                            <select id=p31limitdropdown onchange=refreshUsersEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
+                            <select id="p31limitdropdown" onchange="refreshUsersEvents()">
+                                <option value="60">Last 60</option>
+                                <option value="120">Last 120</option>
+                                <option value="250">Last 250</option>
+                                <option value="500">Last 500</option>
+                                <option value="1000">Last 1000</option>
                             </select>
-                            <a href=# onclick=p3showDownloadEventsDialog(3)><img src=images/link4.png height=10 width=10 title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href="#" onclick="p3showDownloadEventsDialog(3)"><img src="images/link4.png" height="10" width="10" title="Download Events" style="cursor:pointer"></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
-                </table>
-                <div id=p31events style=""></div>
+                </tbody></table>
+                <div id="p31events" style=""></div>
             </div>
-            <div id=p40 style="display:none">
+            <div id="p40" style="display:none">
                 <h1>My Server Stats</h1>
                 <div class="areaHead">
                     <div class="toright2">
-                        <select id=p40type onchange=updateServerTimelineStats()>
-                            <option value=0>Connections</option>
-                            <option value=1>Memory</option>
+                        <select id="p40type" onchange="updateServerTimelineStats()">
+                            <option value="0">Connections</option>
+                            <option value="1">Memory</option>
                         </select>&nbsp;
-                        <select id=p40time onchange=updateServerTimelineHours()>
-                            <option value=3>Last 3 hours</option>
-                            <option value=8>Last 8 hours</option>
-                            <option value=24>Last day</option>
-                            <option value=168>Last week</option>
-                            <option value=720>Last 30 days</option>
+                        <select id="p40time" onchange="updateServerTimelineHours()">
+                            <option value="3">Last 3 hours</option>
+                            <option value="8">Last 8 hours</option>
+                            <option value="24">Last day</option>
+                            <option value="168">Last week</option>
+                            <option value="720">Last 30 days</option>
                         </select>&nbsp;
-                        <img src=images/link4.png height=10 width=10 title="Download data points (.csv)" style=cursor:pointer onclick=p40downloadEvents()>&nbsp;
+                        <img src="images/link4.png" height="10" width="10" title="Download data points (.csv)" style="cursor:pointer" onclick="p40downloadEvents()">&nbsp;
                     </div>
                     <div>
-                        <input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
-                        &nbsp;<label><input id=p40log type="checkbox" onclick="updateServerTimelineHours()" />Log-X</label>
+                        <input value="Refresh" type="button" onclick="refreshServerTimelineStats()">
+                        &nbsp;<label><input id="p40log" type="checkbox" onclick="updateServerTimelineHours()">Log-X</label>
                     </div>
                 </div>
-                <canvas id=serverMainStats style=""></canvas>
+                <canvas id="serverMainStats" style=""></canvas>
             </div>
-            <div id=p41 style="display:none">
+            <div id="p41" style="display:none">
                 <h1>My Server Tracing</h1>
                 <div class="areaHead">
                     <div class="toright2">
                         Show
-                        <select id=p41limitdropdown onchange=displayServerTrace()>
-                            <option value=100>Last 100</option>
-                            <option value=250>Last 250</option>
-                            <option value=500>Last 500</option>
-                            <option value=1000>Last 1000</option>
+                        <select id="p41limitdropdown" onchange="displayServerTrace()">
+                            <option value="100">Last 100</option>
+                            <option value="250">Last 250</option>
+                            <option value="500">Last 500</option>
+                            <option value="1000">Last 1000</option>
                         </select>
-                        <input value="Clear" type="button" onclick="clearServerTracing()" />
-                        <img src=images/link4.png height=10 width=10 title="Download trace (.csv)" style=cursor:pointer onclick=p41downloadServerTrace()>&nbsp;
+                        <input value="Clear" type="button" onclick="clearServerTracing()">
+                        <img src="images/link4.png" height="10" width="10" title="Download trace (.csv)" style="cursor:pointer" onclick="p41downloadServerTrace()">&nbsp;
                     </div>
                     <div>
-                        <input value="Tracing" type="button" onclick="setServerTracing()" />
+                        <input value="Tracing" type="button" onclick="setServerTracing()">
                         <span id="p41traceStatus">None</span>
                     </div>
                 </div>
-                <div id=p41events style=""></div>
+                <div id="p41events" style=""></div>
             </div>
-            <div id=p19 style="display:none">
-                <h1>Plugins - <span id=p19deviceName></span></h1>
+            <div id="p19" style="display:none">
+                <h1>Plugins - <span id="p19deviceName"></span></h1>
                 <style>
                     #p19headers {
                         padding-right: 7px;
@@ -869,54 +867,54 @@
                         }
                 </style>
                 <div id="p19headers"></div>
-                <div id=p19pages></div>
+                <div id="p19pages"></div>
             </div>
-            <br id="column_l_bottomgap" />
+            <br id="column_l_bottomgap">
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
             <div class="footer2">
-                <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
-                &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                <a id="verifyEmailId2" style="display:none" href="#" onclick="account_showVerifyEmail()">Verify Email</a>
+                &nbsp;<a href="terms">Terms &amp; Privacy</a>
             </div>
         </div>
-        <div id=dialog class="noselect" style="display:none">
-            <div id=dialogHeader>
-                <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
-                <div id=id_dialogtitle></div>
+        <div id="dialog" class="noselect" style="display:none">
+            <div id="dialogHeader">
+                <div tabindex="0" id="id_dialogclose" onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()">✖</div>
+                <div id="id_dialogtitle"></div>
             </div>
-            <div id=dialogBody>
-                <div id=dialog1>
-                    <div id=id_dialogMessage style=""></div>
+            <div id="dialogBody">
+                <div id="dialog1">
+                    <div id="id_dialogMessage" style=""></div>
                 </div>
-                <div id=dialog2 style="">
-                    <div id=id_dialogOptions></div>
+                <div id="dialog2" style="">
+                    <div id="id_dialogOptions"></div>
                 </div>
-                <div id=dialog3 style="">
-                    <div id=d3upload>
+                <div id="dialog3" style="">
+                    <div id="d3upload">
                         <div>File Selection</div>
-                        <select id=d3uploadMode onchange=d3modechange()>
-                            <option value=1>Local file upload</option>
-                            <option value=2>Server file selection</option>
+                        <select id="d3uploadMode" onchange="d3modechange()">
+                            <option value="1">Local file upload</option>
+                            <option value="2">Server file selection</option>
                         </select>
                     </div>
-                    <div id=d3localmode style="display:none">
+                    <div id="d3localmode" style="display:none">
                         <div>Upload File</div>
-                        <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
-                            <input type=text id=d3auth name=auth style="display:none" />
-                            <input type=text id=d3attrib name=attrib style="display:none" />
-                            <input type=file id=d3localFile name=files onchange=d3setActions() />
-                            <input type=submit id=d3submit style="display:none" />
+                        <form id="d3localmodeform" method="post" enctype="multipart/form-data" action="uploadfile.ashx" target="fileUploadFrame">
+                            <input type="text" id="d3auth" name="auth" style="display:none">
+                            <input type="text" id="d3attrib" name="attrib" style="display:none">
+                            <input type="file" id="d3localFile" name="files" onchange="d3setActions()">
+                            <input type="submit" id="d3submit" style="display:none">
                         </form>
                     </div>
-                    <div id=d3servermode>
-                        <div id=d3serveraction valign=bottom>
-                            <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;
+                    <div id="d3servermode">
+                        <div id="d3serveraction" valign="bottom">
+                            <input type="button" id="p3FolderUp" disabled="disabled" onclick="d3folderup()" value="Up">&nbsp;
                         </div>
-                        <div id=d3serverfiles></div>
+                        <div id="d3serverfiles"></div>
                     </div>
                 </div>
-                <div id=dialog7 style="">
+                <div id="dialog7" style="">
                     <div id="d7meshkvm">
                         <h4>Agent Remote Desktop</h4>
                         <div>
@@ -926,28 +924,28 @@
                         <div>
                             <div>Scaling</div>
                             <select id="d7bitmapscaling" style="" dir="rtl">
-                                <option selected=selected value=1024>100%</option>
-                                <option value=896>87.5%</option>
-                                <option value=768>75%</option>
-                                <option value=640>62.5%</option>
-                                <option value=512>50%</option>
-                                <option value=384>37.5%</option>
-                                <option value=256>25%</option>
-                                <option value=128>12.5%</option>
+                                <option selected="selected" value="1024">100%</option>
+                                <option value="896">87.5%</option>
+                                <option value="768">75%</option>
+                                <option value="640">62.5%</option>
+                                <option value="512">50%</option>
+                                <option value="384">37.5%</option>
+                                <option value="256">25%</option>
+                                <option value="128">12.5%</option>
                             </select>
                         </div>
                         <div>
                             <div>Frame rate</div>
                             <select id="d7framelimiter" dir="rtl">
-                                <option selected=selected value=50>Fast</option>
-                                <option value=100>Medium</option>
-                                <option value=400>Slow</option>
-                                <option value=1000>Very slow</option>
+                                <option selected="selected" value="50">Fast</option>
+                                <option value="100">Medium</option>
+                                <option value="400">Slow</option>
+                                <option value="1000">Very slow</option>
                             </select>
                         </div>
                     </div>
                     <div id="d7amtkvm">
-                        <h4>Intel&reg; AMT Hardware KVM</h4>
+                        <h4>Intel® AMT Hardware KVM</h4>
                         <div>
                             <div>Image Encoding</div>
                             <select id="d7desktopmode">
@@ -960,24 +958,24 @@
                         <div>
                             <div>Other Settings</div>
                             <div id="d7otherset" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus Tool</label>
-                                <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse Cursor</label>
-                                <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard Map</label>
+                                <label style="display:block"><input type="checkbox" id="d7showfocus">Show Focus Tool</label>
+                                <label style="display:block"><input type="checkbox" id="d7showcursor">Show Local Mouse Cursor</label>
+                                <label style="display:block"><input type="checkbox" id="d7localKeyMap">Local Keyboard Map</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="idx_dlgButtonBar">
-                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
-                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)" />
-                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)" /></div>
+                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)"></div>
             </div>
         </div>
         <iframe name="fileUploadFrame" style="display:none"></iframe>
-        <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie name="auth" /><input id=p5fileDragSize name="size" /><input id=p5fileDragType name="type" /><input id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" /><input type=submit id=p5loginSubmit2 style="display:none" /></form>
-        <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name" /><input id=p13fileDragSize name="size" /><input id=p13fileDragType name="type" /><input id=p13fileDragData name="data" /><input id=p13fileDragLink name="link" /><input type=submit id=p13loginSubmit2 style="display:none" /></form>
-        <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
+        <form style="display:none" method="post" action="uploadfile.ashx" enctype="multipart/form-data" target="fileUploadFrame"><input id="p5fileDragName" name="name"><input id="p5fileDragAuthCookie" name="auth"><input id="p5fileDragSize" name="size"><input id="p5fileDragType" name="type"><input id="p5fileDragData" name="data"><input id="p5fileDragLink" name="link"><input type="submit" id="p5loginSubmit2" style="display:none"></form>
+        <form style="display:none" method="post" action="uploadnodefile.ashx" enctype="multipart/form-data" target="fileUploadFrame"><input id="p13fileDragName" name="name"><input id="p13fileDragSize" name="size"><input id="p13fileDragType" name="type"><input id="p13fileDragData" name="data"><input id="p13fileDragLink" name="link"><input type="submit" id="p13loginSubmit2" style="display:none"></form>
+        <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3"></audio>
     </div>
     <script type="text/javascript">
         'use strict';
@@ -2673,9 +2671,9 @@
                 }
 
                 // Display "connect all" and "auto"
-                QV('kvmMultiConnectButtonSpan', (kvmDivs.length < 64));
-                QV('kvmAutoConnectButtonSpan', (kvmDivs.length < 64));
-                if (kvmDivs.length >= 64) { Q('autoConnectDesktopCheckbox').checked = false; }
+                QV('kvmMultiConnectButtonSpan', (kvmDivs.length < 16));
+                QV('kvmAutoConnectButtonSpan', (kvmDivs.length < 16));
+                if (kvmDivs.length >= 16) { Q('autoConnectDesktopCheckbox').checked = false; }
 
                 // If displaying devices by groups, sort the group names and display the devices.
                 if (sort == 3) {
@@ -9279,5 +9277,6 @@
             return '<div><span style=float:right>' + value + '</span><span>' + title + '</span></div>';
         }
     </script>
-</body>
-</html>
+
+
+</body></html>
