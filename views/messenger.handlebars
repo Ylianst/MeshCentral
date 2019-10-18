@@ -55,7 +55,7 @@
             var userMediaSupport = 0;
             var notification = null;
             getUserMediaSupport(function (x) { userMediaSupport = x; })
-            var webrtcconfiguration = "{{{webrtconfig}}}";
+            var webrtcconfiguration = '{{{webrtconfig}}}';
             if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: \"' + webrtcconfiguration + '\".'); webrtcconfiguration = null; } }
 
             // File transfer state
@@ -165,10 +165,10 @@
 
                 // If web notifications are granted, use it.
                 if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
-                if (Notification && (Notification.permission == "granted")) {
+                if (Notification && (Notification.permission == 'granted')) {
                     if (notification != null) { notification.close(); notification = null; }
                     if (args.title) {
-                        notification = new Notification("MeshMessenger - " + args.title, { body: msg });
+                        notification = new Notification("MeshMessenger" + ' - ' + args.title, { body: msg });
                     } else {
                         notification = new Notification("MeshMessenger", { body: msg });
                     }
@@ -243,7 +243,7 @@
 
                 // Initiate the WebRTC offer or handle the offer from the peer.
                 if (startDataChannel == true) {
-                    webchannel = webrtc.createDataChannel("DataChannel", {}); // { ordered: false, maxRetransmits: 2 }
+                    webchannel = webrtc.createDataChannel('DataChannel', {}); // { ordered: false, maxRetransmits: 2 }
                     webchannel.onmessage = function (event) { processMessage(event.data, 2); };
                     webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
                     webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
@@ -276,7 +276,7 @@
 
             // Disconnect everything
             function disconnect() {
-                if (state > 0) { displayControl('Connection closed.'); }
+                if (state > 0) { displayControl("Connection closed."); }
                 if (state > 1) { setTimeout(start, 500); }
                 cancelAllFileTransfers();
                 hangUpButtonClick(0, true); // Data channel
@@ -369,9 +369,9 @@
             // File sharing button
             function fileButtonClick() {
                 var chooser = Q('uploadFileInput');
-                if (chooser.getAttribute("eventset") != 1) {
-                    chooser.setAttribute("eventset", "1");
-                    chooser.addEventListener("change", fileSelect, false);
+                if (chooser.getAttribute('eventset') != 1) {
+                    chooser.setAttribute('eventset', '1');
+                    chooser.addEventListener('change', fileSelect, false);
                 }
                 chooser.value = null;
                 chooser.click();
@@ -382,7 +382,7 @@
                 if (state != 2) return;
                 var x = Q('uploadFileInput');
                 if (x.files.length > 10) {
-                    displayControl('Limit of 10 file uploads at the same time.');
+                    displayControl("Limit of 10 file uploads at the same time.");
                 } else {
                     for (var i = 0; i < x.files.length; i++) {
                         if (x.files[i].size > 0) {
@@ -400,7 +400,7 @@
                 haltEvent(e);
                 if ((state != 2) || (e.dataTransfer == null)) return;
                 if (e.dataTransfer.files.length > 10) {
-                    displayControl('Limit of 10 file uploads at the same time.');
+                    displayControl("Limit of 10 file uploads at the same time.");
                 } else {
                     for (var i = 0; i < e.dataTransfer.files.length; i++) {
                         if (e.dataTransfer.files[i].size > 0) {
@@ -515,7 +515,7 @@
 
             // Toggle notification
             function enableNotificationsButtonClick() {
-                if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != "granted"); }); }
+                if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != 'granted'); }); }
                 return false;
             }
 
@@ -559,13 +559,13 @@
                 }
 
                 if (id == 1) {
-                    localVideo.removeAttribute("src");
-                    localVideo.removeAttribute("srcObject");
+                    localVideo.removeAttribute('src');
+                    localVideo.removeAttribute('srcObject');
                     if (localStream != null) { localStream = null; }
                     displayLocalVideo(false);
                 } else if (id == 2) {
-                    remoteVideo.removeAttribute("src");
-                    remoteVideo.removeAttribute("srcObject");
+                    remoteVideo.removeAttribute('src');
+                    remoteVideo.removeAttribute('srcObject');
                     displayRemoteVideo(false);
                 }
 
@@ -605,10 +605,10 @@
                 // Get started
                 updateControls();
                 if ((typeof args.id == 'string') && (args.id.length > 0)) {
-                    var url = window.location.protocol.replace("http", "ws") + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id;
+                    var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id;
                     if ((args.auth != null) && (args.auth != '')) { url += '&auth=' + args.auth; }
                     socket = new WebSocket(url);
-                    socket.onopen = function () { state = 1; displayControl('Waiting for other user...'); }
+                    socket.onopen = function () { state = 1; displayControl("Waiting for other user..."); }
                     socket.onerror = function (e) { /*console.error(e);*/ }
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
@@ -616,7 +616,7 @@
                             hangUpButtonClick(0, true);
                             hangUpButtonClick(1, true);
                             hangUpButtonClick(2, true);
-                            displayControl('Connected.');
+                            displayControl("Connected.");
                             state = 2;
                             updateControls();
                             sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
@@ -625,7 +625,7 @@
                         if (state == 2) { processMessage(msg.data, 1); }
                     }
                 } else {
-                    displayControl('Error: No connection key specified.');
+                    displayControl("Error: No connection key specified.");
                 }
             }
 

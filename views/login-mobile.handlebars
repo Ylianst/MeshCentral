@@ -267,12 +267,12 @@
     </div>
     <script>
         'use strict';
-        var passhint = "{{{passhint}}}";
+        var passhint = '{{{passhint}}}';
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
         var features = parseInt('{{{features}}}');
-        var passRequirements = "{{{passRequirements}}}";
-        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
+        var passRequirements = '{{{passRequirements}}}';
+        if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         var currentpanel = 0;
@@ -297,8 +297,8 @@
             }
 
             if (features & 0x200000) { // Email is username
-                QH('loginusername', 'Email:');
-                QH('resetAccountSpan', 'Forgot password?');
+                QH('loginusername', "Email:");
+                QH('resetAccountSpan', "Forgot password?");
                 QV('nuUserRow', false);
             }
 
@@ -311,10 +311,10 @@
             validateCreate();
             if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
             QV('newAccountDiv', ('{{{newAccount}}}' === '1') || ('{{{newAccount}}}' === 'true')); // If new accounts are not allowed, don't display the new account link.
-            if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV("showPassHintLink", true); }
-            QV("newAccountPass", (newAccountPass == 1));
-            QV("resetAccountDiv", (emailCheck == true));
-            QV("hrAccountDiv", (emailCheck == true) || (newAccountPass == 1));
+            if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV('showPassHintLink', true); }
+            QV('newAccountPass', (newAccountPass == 1));
+            QV('resetAccountDiv', (emailCheck == true));
+            QV('hrAccountDiv', (emailCheck == true) || (newAccountPass == 1));
 
             if ('{{loginmode}}' == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
@@ -396,7 +396,7 @@
         function go(x) {
             currentpanel = x;
             setDialogMode(0);
-            QV("showPassHintLink", false);
+            QV('showPassHintLink', false);
             QV('loginpanel', x == 1);
             QV('createpanel', x == 2);
             QV('resetpanel', x == 3);
@@ -432,9 +432,9 @@
                 if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('apassword1').value);
-                    if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>Strong Password</b><span>'); }
-                    else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>Good Password</b><span>'); }
-                    else { QH('passWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+                    if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>' + "Strong Password" + '</b><span>'); }
+                    else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>' + "Good Password" + '</b><span>'); }
+                    else { QH('passWarning', '<span style=color:red><b>' + "Weak Password" + '</b><span>'); }
                 } else {
                     // Password requirements provided, use that
                     var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
@@ -442,7 +442,7 @@
                         ok = false;
                         //QS('nuPass1').color = '#7b241c';
                         //QS('nuPass2').color = '#7b241c';
-                        QH('passWarning', '<span style=color:red><b>Password Policy</b><span>'); // TODO: Display problem hint
+                        QH('passWarning', '<span style=color:red><b>' + "Password Policy" + '</b><span>'); // TODO: Display problem hint
                         QV('passwordPolicyCallout', true);
                         QH('passwordPolicyCallout', passwordPolicyText(Q('apassword1').value));
                     } else {
@@ -480,9 +480,9 @@
                 if (!passRequirementsEx) {
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('rapassword1').value);
-                    if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>Strong Password</b><span>'); }
-                    else if (passStrength >= 60) { QH('rpassWarning', '<span style=color:blue><b>Good Password</b><span>'); }
-                    else { QH('rpassWarning', '<span style=color:red><b>Weak Password</b><span>'); }
+                    if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>' + "Strong Password" + '</b><span>'); }
+                    else if (passStrength >= 60) { QH('rpassWarning', '<span style=color:blue><b>' + "Good Password" + '</b><span>'); }
+                    else { QH('rpassWarning', '<span style=color:red><b>' + "Weak Password" + '</b><span>'); }
                 } else {
                     // Password requirements provided, use that
                     var passReq = checkPasswordRequirements(Q('rapassword1').value, passRequirements);
@@ -490,7 +490,7 @@
                         ok = false;
                         QS('rnuPass1').color = '#7b241c';
                         QS('rnuPass2').color = '#7b241c';
-                        QH('rpassWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>Password Policy</b><div>'); // This is also a link to the password policy
+                        QH('rpassWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>' + "Password Policy" + '</b><div>'); // This is also a link to the password policy
                         QV('rpasswordPolicyCallout', true);
                         QH('rpasswordPolicyCallout', passwordPolicyText(Q('rapassword1').value));
                     } else {
@@ -513,21 +513,19 @@
             setDialogMode(0);
             var x = validateEmail(Q('remail').value);
             QE('eresetButton', x);
-            if ((e != null) && (e.keyCode == 13) && (x == true)) {
-                Q('eresetButton').click();
-            }
+            if ((e != null) && (e.keyCode == 13) && (x == true)) { Q('eresetButton').click(); }
             if (e != null) { haltEvent(e); }
         }
 
         function passwordPolicyText(pass) {
             var policy = '<div style=text-align:left>';
             var counts = strCount(pass);
-            if (passRequirements.min && ((pass == null) || (pass.length < passRequirements.min))) { policy += 'Minimum length of ' + passRequirements.min + '<br />'; }
-            if (passRequirements.max && ((pass == null) || (pass.length > passRequirements.max))) { policy += 'Maximum length of ' + passRequirements.max + '<br />'; }
-            if (passRequirements.upper && ((pass == null) || (counts.upper < passRequirements.upper))) { policy += '' + passRequirements.upper + ' upper case<br />'; }
-            if (passRequirements.lower && ((pass == null) || (counts.lower < passRequirements.lower))) { policy += '' + passRequirements.lower + ' lower case<br />'; }
-            if (passRequirements.numeric && ((pass == null) || (counts.numeric < passRequirements.numeric))) { policy += '' + passRequirements.numeric + ' numeric<br />'; }
-            if (passRequirements.nonalpha && ((pass == null) || (counts.nonalpha < passRequirements.nonalpha))) { policy += passRequirements.nonalpha + ' non-alphanumeric<br />'; }
+            if (passRequirements.min && ((pass == null) || (pass.length < passRequirements.min))) { policy += format("Minimum length of {0}", passRequirements.min) + '<br />'; }
+            if (passRequirements.max && ((pass == null) || (pass.length > passRequirements.max))) { policy += format("Maximum length of {0}", passRequirements.max) + '<br />'; }
+            if (passRequirements.upper && ((pass == null) || (counts.upper < passRequirements.upper))) { policy += format("{0} upper case", passRequirements.upper) + '<br />'; }
+            if (passRequirements.lower && ((pass == null) || (counts.lower < passRequirements.lower))) { policy += format("{0} lower case", passRequirements.lower) + '<br />'; }
+            if (passRequirements.numeric && ((pass == null) || (counts.numeric < passRequirements.numeric))) { policy += format("{0} numeric", passRequirements.numeric) + '<br />'; }
+            if (passRequirements.nonalpha && ((pass == null) || (counts.nonalpha < passRequirements.nonalpha))) { policy += format("{0} non-alphanumeric", passRequirements.nonalpha) + '<br />'; }
             policy += '</div>';
             return policy;
         }
@@ -621,13 +619,14 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + "px"); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + 'px'); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function haltReturn(e) { if (e.keyCode == 13) { haltEvent(e); } }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 
     </script>
 </body>
