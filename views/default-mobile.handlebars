@@ -1172,7 +1172,7 @@
 
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
-            var x = "Click ok to send a verification mail to:<br /><div style=padding:8px><b>" + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
+            var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
             setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
         }
 
@@ -1182,7 +1182,7 @@
 
         function account_showChangeEmail() {
             if (xxdialogMode) return;
-            var x = addHtmlValue('Email', '<input id=dp3email style=width:170px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
+            var x = addHtmlValue("Email", '<input id=dp3email style=width:170px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
             setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
             if (userinfo.email != null) { Q('dp3email').value = userinfo.email; }
             account_validateEmail();
@@ -1887,15 +1887,15 @@
                 }
 
                 // Attribute: Description
-                var description = node.desc ? EscapeHtml(node.desc) : "<i>None</i>";
+                var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "None" + '</i>';
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
-                    x += addDeviceAttribute('Description', description);
+                    x += addDeviceAttribute("Description", description);
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ['Unknown', 'Windows 32bit console', 'Windows 64bit console', 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'MacOS 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'MacOS 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l', 'ARMv8 64bit', 'ARMv6l / ARMv7l / NoKVM', 'Unknown', 'Unknown', 'FreeBSD x86-64'];
+                var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'MacOS 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'MacOS 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l', 'ARMv8 64bit', 'ARMv6l / ARMv7l / NoKVM', 'Unknown', 'Unknown', 'FreeBSD x86-64'];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
