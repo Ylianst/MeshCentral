@@ -4586,7 +4586,7 @@
                         var te = Math.min(Math.min(end, block[1]), now);
                         var width = Math.round(((te - ts) * totalWidth) / 86400000);
                         if (width > 0) {
-                            var title = powerStateStrings2[block[2]] + ' from ' + printTime(new Date(ts)) + ' to ' + printTime(new Date(te)) + '.';
+                            var title = format('{0} from {1} to {2}.', powerStateStrings2[block[2]], printTime(new Date(ts)), printTime(new Date(te)));
                             datavalue += '<div class="pwState ' + powerColor(block[2]) + '" title="' + title + '" style="width:' + width + 'px;"></div>';
                         }
                     }
@@ -4693,8 +4693,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return false;
-            var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br />';
-            x += '<label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />Confirm</label>';
+            var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, x, nodeid);
             p10validateDeleteNodeDialog();
             return false;
@@ -5971,7 +5970,7 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">Root</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">' + "Root" + '</a>', fullPath = 'Root';
 
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
@@ -6880,15 +6879,15 @@
             x += '<br /><br />';
             //x += "<form action='" + domainUrl + "changepassword' method=post>";
             x += '<table style=margin-left:60px>';
-            x += '<tr><td align=right>Old password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
-            x += '<tr><td align=right>New password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
-            x += '<tr><td align=right>New password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
+            x += '<tr><td align=right>' + "Old password:" + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
+            x += '<tr><td align=right>' + "New password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
+            x += '<tr><td align=right>' + "New password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
             if (features & 0x00010000) { x += '<tr><td align=right>' + "Password hint:" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
             x += '</table>'
             if (passRequirements) {
                 var r = [], rc = 0;
                 for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
-                if (rc > 0) { x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+                if (rc > 0) { x += '<br /><span style=font-size:x-small>' + "Requirements: " + r.join(', ') + '.</span>'; }
             }
             x += '<br />';
             //x += '<br /><div style=padding:10px;margin-bottom:4px>';
@@ -7175,7 +7174,7 @@
             for (var i in sortedusers) {
                 var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
                 if (r == 0xFFFFFFFF) rights = "Full Administrator"; else if (r == 0) rights = "No Rights";
-                if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="Remote user rights to this device group" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr tabindex=0 onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')" style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title="User" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
@@ -7548,7 +7547,7 @@
                 var buttons = 1, x = addHtmlValue("User Name", EscapeHtml(decodeURIComponent(uname)));
                 if (xuserid.split('/')[2] != uname) { x += addHtmlValue("User Identifier", EscapeHtml(xuserid.split('/')[2])); }
 
-                x += addHtmlValue("Permissions", r);
+                x += addHtmlValue("Permissions", r.join(", "));
                 if (((userinfo._id) != xuserid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
                 setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, xuserid);
             }
@@ -7597,7 +7596,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">Root</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -7801,7 +7800,7 @@
                 p5PerformUpload(1, files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p5PerformUpload, format('Upload will overwrite {0} file{1}. Continue?', overWriteCount, addLetterS(overWriteCount)), files);
+                setDialogMode(2, "Upload File", 3, p5PerformUpload, format("Upload will overwrite {0} file{1}. Continue?", overWriteCount, addLetterS(overWriteCount)), files);
             }
         }
 
