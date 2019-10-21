@@ -202,7 +202,11 @@ DownloadAgent() {
       else
           # unknown
           echo "Unknown Service Platform Type. (ie: init, systemd, etc)"
-          echo "Unable to install meshagent as service."
+          echo "Installing as Pseudo Service (Mesh Daemon)"
+		  /usr/local/mesh/meshagent -exec "require('service-manager').manager.installService({name: 'meshagent', servicePath: process.execPath, files: ['/usr/local/mesh/meshagent.msh']});process.exit();"
+		  /usr/local/mesh_daemons/daemon start meshagent
+		  echo 'To start service: /usr/local/mesh_daemons/daemon start meshagent'
+		  echo 'To stop service: /usr/local/mesh_daemons/daemon stop meshagent'
       fi
       echo "Mesh agent started."
     else
