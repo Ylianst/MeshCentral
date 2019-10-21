@@ -136,6 +136,7 @@
     <Compile Include="public\scripts\common-0.0.1.js" />
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
+    <Compile Include="translate\translate.js" />
     <Compile Include="webauthn.js" />
     <Compile Include="webserver.js" />
     <Compile Include="winservice.js" />
@@ -311,6 +312,7 @@
     <Folder Include="public\styles\font-awesome\fonts\" />
     <Folder Include="public\styles\font-awesome\less\" />
     <Folder Include="public\styles\font-awesome\scss\" />
+    <Folder Include="translate\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\connect-redis\" />

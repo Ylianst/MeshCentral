@@ -84,6 +84,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.dnsDomains = {};
     obj.relaySessionCount = 0;
     obj.relaySessionErrorCount = 0;
+    obj.renderPages = null;
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -173,6 +174,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
     obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
     obj.crypto.randomBytes(48, function (err, buf) { obj.relayRandom = buf; });
+
+    // Get non-english pages
+    getRenderList();
 
     // Setup DNS domain TLS SNI credentials
     {
@@ -1069,28 +1073,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
                     parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
-                    res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
+                    render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid domain. <a href="' + domain.url + '">Go to login page</a>.' });
                 } else {
                     obj.db.Get('user/' + cookie.u.toLowerCase(), function (err, docs) {
                         if (docs.length == 0) {
                             parent.debug('web', 'handleCheckMailRequest: Invalid username.');
-                            res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid username \"' + EscapeHtml(idsplit[1]) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                            render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid username \"' + EscapeHtml(idsplit[1]) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                         } else {
                             var user = docs[0];
                             if (user.email != cookie.e) {
                                 parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
-                                res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
+                                render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid e-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\". <a href="' + domain.url + '">Go to login page</a>.' });
                             } else {
                                 if (cookie.a == 1) {
                                     // Account email verification
                                     if (user.emailVerified == true) {
                                         parent.debug('web', 'handleCheckMailRequest: email already verified.');
-                                        res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                        render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" already verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
                                             if (docs.length > 0) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
-                                                res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" already in use on a different account. Change the email address and try again. <a href="' + domain.url + '">Go to login page</a>.' });
                                             } else {
                                                 parent.debug('web', 'handleCheckMailRequest: email verification success.');
 
@@ -1105,7 +1109,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the confirmation page
-                                                res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'Verified email <b>' + EscapeHtml(user.email) + '</b> for user account <b>' + EscapeHtml(user.name) + '</b>. <a href="' + domain.url + '">Go to login page</a>.' });
 
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(user.email) + '</b>.', nolog: 1 });
@@ -1116,7 +1120,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Account reset
                                     if (user.emailVerified != true) {
                                         parent.debug('web', 'handleCheckMailRequest: email not verified.');
-                                        res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
+                                        render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'E-mail \"' + EscapeHtml(user.email) + '\" for user \"' + EscapeHtml(user.name) + '\" not verified. <a href="' + domain.url + '">Go to login page</a>.' });
                                     } else {
                                         // Set a temporary password
                                         obj.crypto.randomBytes(16, function (err, buf) {
@@ -1141,20 +1145,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the new password
-                                                res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
+                                                render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' });
                                                 parent.debug('web', 'handleCheckMailRequest: send temporary password.');
                                             }, 0);
                                         });
                                     }
                                 } else {
-                                    res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid account check. <a href="' + domain.url + '">Go to login page</a>.' });
+                                    render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid account check. <a href="' + domain.url + '">Go to login page</a>.' });
                                 }
                             }
                         }
                     });
                 }
             } else {
-                res.render(getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid account check, verification url is only valid for 30 minutes. <a href="' + domain.url + '">Go to login page</a>.' });
+                render(req, res, getRenderPage('message', req), { title: domain.title, title2: domain.title2, title3: 'Account Verification', domainurl: domain.url, message: 'ERROR: Invalid account check, verification url is only valid for 30 minutes. <a href="' + domain.url + '">Go to login page</a>.' });
             }
         }
     }
@@ -1176,7 +1180,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
-            res.render(getRenderPage('agentinvite', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
+            render(req, res, getRenderPage('agentinvite', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -1185,7 +1189,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
-            res.render(getRenderPage('agentinvite', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
+            render(req, res, getRenderPage('agentinvite', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags });
         }
     }
 
@@ -1523,7 +1527,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
                 var webstate = (states.length == 1) ? states[0].state : '';
-                res.render(getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null)?'null':parent.pluginHandler.prepExports() });
+                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null)?'null':parent.pluginHandler.prepExports() });
             });
         } else {
             // Send back the login application
@@ -1595,7 +1599,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Render the login page
-        res.render(getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null, hwstate: hwstate });
+        render(req, res, getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null, hwstate: hwstate });
     }
 
     // Handle a post request on the root
@@ -1656,9 +1660,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var user = obj.users[req.session.userid];
                 var logoutcontrol = 'Welcome ' + user.name + '.';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: logoutcontrol });
+                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: logoutcontrol });
             } else {
-                res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
+                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
             }
         } else {
             // See if there is a terms.txt file in meshcentral-data
@@ -1674,9 +1678,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         var user = obj.users[req.session.userid];
                         var logoutcontrol = 'Welcome ' + user.name + '.';
                         if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                        res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControl: logoutcontrol });
+                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControl: logoutcontrol });
                     } else {
-                        res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data) });
+                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data) });
                     }
                 });
             } else {
@@ -1688,9 +1692,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var user = obj.users[req.session.userid];
                     var logoutcontrol = 'Welcome ' + user.name + '.';
                     if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                    res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControl: logoutcontrol });
+                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControl: logoutcontrol });
                 } else {
-                    res.render(getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url });
+                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url });
                 }
             }
         }
@@ -1705,7 +1709,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        res.render(getRenderPage('messenger', req), { webrtconfig: webRtcConfig, domainurl: domain.url });
+        render(req, res, getRenderPage('messenger', req), { webrtconfig: webRtcConfig, domainurl: domain.url });
     }
 
     // Returns the server root certificate encoded in base64
@@ -1847,10 +1851,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                res.render(getRenderPage('download', req), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, domainurl: domain.url, message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." });
+                render(req, res, getRenderPage('download', req), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, domainurl: domain.url, message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." });
             }
         } else {
-            res.render(getRenderPage('download', req), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, domainurl: domain.url, message: "Invalid file link, please check the URL again." });
+            render(req, res, getRenderPage('download', req), { rootCertLink: getRootCertLink(), title: domain.title, title2: domain.title2, domainurl: domain.url, message: "Invalid file link, please check the URL again." });
         }
     }
 
@@ -3856,6 +3860,54 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 command.fromNodeid = nodeid;
                 command.meshid = meshid;
                 parent.multiServer.DispatchMessage(command);
+            }
+        }
+    }
+
+    // Render a page using the proper language
+    function render(req, res, filename, args) {
+        if ((obj.parent.webViewsOverridePath == null) && (obj.renderPages != null)) {
+            // Get a list of acceptable languages in order
+            var acceptLanguages = [];
+            if (req.query.lang != null) {
+                acceptLanguages.push(req.query.lang.toLowerCase());
+            } else {
+                if (req.headers['accept-language'] != null) {
+                    var acceptLanguageSplit = req.headers['accept-language'].split(';');
+                    for (var i in acceptLanguageSplit) {
+                        var acceptLanguageSplitEx = acceptLanguageSplit[i].split(',');
+                        for (var j in acceptLanguageSplitEx) { if (acceptLanguageSplitEx[j].startsWith('q=') == false) { acceptLanguages.push(acceptLanguageSplitEx[j].toLowerCase()); } }
+                    }
+                }
+            }
+
+            // Take a look at the options we have for this file
+            var fileOptions = obj.renderPages[obj.path.basename(filename)];
+            for (var i in acceptLanguages) {
+                if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
+                if (fileOptions[acceptLanguages[i]] != null) { res.render(fileOptions[acceptLanguages[i]], args); return; } // Found a match.
+            }
+        }
+
+        // No matches found, render the default english page.
+        res.render(filename, args);
+    }
+
+    // Get the list of pages with different languages that can be rendered
+    function getRenderList() {
+        if (obj.fs.existsSync('views/translations')) {
+            obj.renderPages = {};
+            var files = obj.fs.readdirSync('views/translations');
+            for (var i in files) {
+                var name = files[i];
+                if (name.endsWith('.handlebars')) {
+                    name = name.substring(0, name.length - 11);
+                    var xname = name.split('_');
+                    if (xname.length == 2) {
+                        if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
+                        obj.renderPages[xname[0]][xname[1]] = obj.path.join('translations', name);
+                    }
+                }
             }
         }
     }
