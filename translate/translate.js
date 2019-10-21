@@ -25,8 +25,6 @@ var meshCentralSourceFiles = [
     "../views/login-mobile.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
-    "../views/terms.handlebars",
-    "../views/terms-mobile.handlebars",
     "../public/player.htm"
 ];
 

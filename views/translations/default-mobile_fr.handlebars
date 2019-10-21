@@ -1,12 +1,10 @@
-﻿<!DOCTYPE html>
-<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="format-detection" content="telephone=no" />
-    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico" />
+<!DOCTYPE html><html dir="ltr" xmlns="http://www.w3.org/1999/xhtml"><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico">
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1.js"></script>
@@ -18,7 +16,7 @@
     <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/filesaver.js"></script>
+    <script keeplink="1" type="text/javascript" src="scripts/filesaver.js"></script>
     <title>{{{title}}}</title>
     <style>
         a {
@@ -185,9 +183,9 @@
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
-    <div id=container>
-        <div id=mastheadx></div>
-        <div id=masthead style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
+    <div id="container">
+        <div id="mastheadx"></div>
+        <div id="masthead" style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
             <div style="width:calc(100% - 50px);overflow:hidden">
                 <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
                     <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif">{{{title}}}</font></strong>
@@ -196,43 +194,43 @@
                     <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif">{{{title2}}}</font></strong>
                 </div>
             </div>
-            <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;bottom:50px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
+            <img id="topMenuIcon" class="noselect" style="position:absolute;right:0;top:10px;bottom:50px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick="topMenu()" src="/images/3bars-30.png" width="30" height="30">
         </div>
-        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
-            <div id=column_l style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
-                <div id=p0 style=display:none;width:100%;height:100%>
+        <div id="page_content" style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
+            <div id="column_l" style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
+                <div id="p0" style="display:none;width:100%;height:100%">
                     <div style="display:flex;align-items:center;width:100%;height:100%">
-                        <div id=p0message style=text-align:center;width:100%><span id="p0span">Server disconnected</span>, <href onclick=reload() style=cursor:pointer><u>click to reconnect</u></href>.</div>
+                        <div id="p0message" style="text-align:center;width:100%"><span id="p0span">Server disconnected</span>, <href onclick="reload()" style="cursor:pointer"><u>click to reconnect</u></href>.</div>
                     </div>
                 </div>
-                <div id=p1 style=display:none;width:100%;height:100%>
+                <div id="p1" style="display:none;width:100%;height:100%">
                     <div style="display:flex;align-items:center;width:100%;height:100%">
-                        <div id=p1message style=text-align:center;width:100%></div>
+                        <div id="p1message" style="text-align:center;width:100%"></div>
                     </div>
                 </div>
-                <div id=p2 style=display:none>
-                    <div id=xdevices></div>
+                <div id="p2" style="display:none">
+                    <div id="xdevices"></div>
                 </div>
-                <div id=p3 style=display:none;position:absolute;bottom:0;top:0;width:100%>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
-                        <tr style=padding:0>
-                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                <div id="p3" style="display:none;position:absolute;bottom:0;top:0;width:100%">
+                    <table cellspacing="0" style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tbody><tr style="padding:0">
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width="60px" valign="top" onclick="goBack()">
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
                                     <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
                                 </div>
-                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">◀</div>
                             </td>
                             <td>
-                                <img src="/images/user-50.png" width=50 height=50 />
+                                <img src="/images/user-50.png" width="50" height="50">
                             </td>
                             <td>
-                                <div style=margin-left:5px>
-                                    <strong style="font-size:large"><span id=p3userName></span></strong><br />
+                                <div style="margin-left:5px">
+                                    <strong style="font-size:large"><span id="p3userName"></span></strong><br>
                                 </div>
                             </td>
                         </tr>
-                    </table>
-                    <div id=p3info style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                    </tbody></table>
+                    <div id="p3info" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
                                 <p><strong>Account Security</strong></p>
@@ -247,76 +245,76 @@
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
                                 </div>
-                                <br style=clear:both />
+                                <br style="clear:both">
                             </div>
                             <strong>Device Groups</strong>
-                            <span id="p3createMeshLink1">( <a onclick=account_createMesh() style=cursor:pointer><img src="images/icon-addnew.png" width=12 height=12 border=0 /> New</a> )</span>
-                            <br /><br />
-                            <div id=p3meshes></div>
-                            <div id=p3noMeshFound style=margin-left:9px;display:none>No device groups.<span id="p3createMeshLink2"> <a onclick=account_createMesh() style=cursor:pointer><strong>Get started here!</strong></a></span></div>
-                            <br style=clear:both />
+                            <span id="p3createMeshLink1">( <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> New</a> )</span>
+                            <br><br>
+                            <div id="p3meshes"></div>
+                            <div id="p3noMeshFound" style="margin-left:9px;display:none">No device groups.<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>Get started here!</strong></a></span></div>
+                            <br style="clear:both">
                         </div>
                     </div>
                 </div>
-                <div id=p5 style=display:none>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
-                        <tr style=padding:0>
-                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                <div id="p5" style="display:none">
+                    <table cellspacing="0" style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tbody><tr style="padding:0">
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width="60px" valign="top" onclick="goBack()">
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
                                     <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
                                 </div>
-                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">◀</div>
                             </td>
                             <td>
-                                <img src="/images/user-50.png" width=50 height=50 />
+                                <img src="/images/user-50.png" width="50" height="50">
                             </td>
                             <td>
-                                <div style=margin-left:5px>
-                                    <strong style="font-size:large">My Files</strong><br />
+                                <div style="margin-left:5px">
+                                    <strong style="font-size:large">My Files</strong><br>
                                 </div>
                             </td>
                         </tr>
-                    </table>
-                    <div id=p5myfiles style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                    </tbody></table>
+                    <div id="p5myfiles" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <table id="p5toolbar" style="width:100%;height:78px" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
+                            <tbody><tr>
+                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign="bottom">
                                     <div style="width:100%;text-align:center">
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5FolderUp disabled="disabled" onclick="p5folderup()" value="Up" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5NewFolderButton disabled="disabled" value="Folder" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false" />
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5FolderUp" disabled="disabled" onclick="p5folderup()" value="Up">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RenameFileButton" disabled="disabled" value="Rename" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5NewFolderButton" disabled="disabled" value="Folder" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p5RefreshButton value="Refresh" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false" />
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5UploadButton" disabled="disabled" value="Télécharger" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CutButton" disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CopyButton" disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5PasteButton" disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RefreshButton" value="Refresh" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="background-color:#E4E9E7;height:28px">
                                     <table style="width:100%">
-                                        <tr>
-                                            <td id=p5currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                        <tbody><tr>
+                                            <td id="p5currentpath" style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
                                             <td style="text-align:right;padding-right:4px">
-                                                <select id=p5sortdropdown onchange=updateFiles()>
-                                                    <option value=1 selected="selected">Sort by name</option>
-                                                    <option value=2>Sort by size</option>
-                                                    <option value=3>Sort by date</option>
-                                                    <option value=4>Descend by name</option>
-                                                    <option value=5>Descend by size</option>
-                                                    <option value=6>Descend by date</option>
+                                                <select id="p5sortdropdown" onchange="updateFiles()">
+                                                    <option value="1" selected="selected">Sort by name</option>
+                                                    <option value="2">Sort by size</option>
+                                                    <option value="3">Sort by date</option>
+                                                    <option value="4">Descend by name</option>
+                                                    <option value="5">Descend by size</option>
+                                                    <option value="6">Descend by date</option>
                                                 </select>
                                             </td>
                                         </tr>
-                                    </table>
+                                    </tbody></table>
                                 </td>
                             </tr>
-                        </table>
+                        </tbody></table>
                         <div id="p5filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
                             <!--
                             <div id="p5bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
@@ -324,78 +322,78 @@
                             -->
                             <span id="p5files"></span>
                         </div>
-                        <table id="p5toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px;background-color:#D3D9D6" cellpadding=0 cellspacing=0>
-                            <tr>
+                        <table id="p5toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px;background-color:#D3D9D6" cellpadding="0" cellspacing="0">
+                            <tbody><tr>
                                 <td style="text-align:left;padding:3px">&nbsp;<span id="p5bottomstatus"></span></td>
                                 <td id="p5rightOfButtons" style="text-align:right;padding:3px"></td>
                             </tr>
-                        </table>
+                        </tbody></table>
                     </div>
                 </div>
-                <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
-                        <tr style=padding:0>
-                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                <div id="p10" style="display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden">
+                    <table cellspacing="0" style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
+                        <tbody><tr style="padding:0">
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width="60px" valign="top" onclick="goBack()">
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
                                     <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
                                 </div>
-                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">◀</div>
                             </td>
                             <td>
-                                <a id=MainComputerImage style=cursor:pointer onclick=p10showiconselector()></a>
+                                <a id="MainComputerImage" style="cursor:pointer" onclick="p10showiconselector()"></a>
                             </td>
                             <td>
-                                <div style=margin-left:5px>
-                                    <strong><span id=p10deviceName></span></strong><br />
-                                    <span id=MainComputerState></span>
+                                <div style="margin-left:5px">
+                                    <strong><span id="p10deviceName"></span></strong><br>
+                                    <span id="MainComputerState"></span>
                                 </div>
                             </td>
                         </tr>
-                    </table>
-                    <div id=p10general style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
-                        <div id=p10html style="margin-left:8px;margin-right:8px"></div>
-                        <div id=p10html2></div>
-                        <div id=p10html3></div>
+                    </tbody></table>
+                    <div id="p10general" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <div id="p10html" style="margin-left:8px;margin-right:8px"></div>
+                        <div id="p10html2"></div>
+                        <div id="p10html3"></div>
                     </div>
-                    <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
-                        <div id=deskarea1 style="position:absolute;top:0px;width:100%;height:25px">
+                    <div id="p10desktop" style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                        <div id="deskarea1" style="position:absolute;top:0px;width:100%;height:25px">
                             <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
                                 <div style="float:right;text-align:right">
                                     <span id="p14power"></span>&nbsp;
-                                    <input id=DeskSoftInput type=text style="width:25px;display:none;opacity:.2" onblur="toggleSoftKeys(0)" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)">
+                                    <input id="DeskSoftInput" type="text" style="width:25px;display:none;opacity:.2" onblur="toggleSoftKeys(0)" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)">
                                 </div>
                                 <div style="margin-left:3px">
-                                    <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false">
+                                    <input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                    <input type="button" id="connectbutton1h" value="HW Connect" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                    <input type="button" id="disconnectbutton1" value="Disconnect" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false">
                                     <span id="deskstatus">Disconnected</span>
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea3 style="position:absolute;top:25px;width:100%;height:calc(100% - 50px)">
-                            <div id=deskarea3x style="background:black;text-align:center;height:100%;position:relative">
-                                <div id=DeskParent style="height:100%">
-                                    <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                        <div id="deskarea3" style="position:absolute;top:25px;width:100%;height:calc(100% - 50px)">
+                            <div id="deskarea3x" style="background:black;text-align:center;height:100%;position:relative">
+                                <div id="DeskParent" style="height:100%">
+                                    <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)" onmousewheel="dmousewheel(event)"></canvas>
                                 </div>
-                                <div id=DeskTools style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
-                                    <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
-                                    <div id=DeskToolsBar style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
+                                <div id="DeskTools" style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
+                                    <a id="DeskToolsRefreshButton" style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
+                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
-                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer onclick=sortProcess(0)>PID</a><a style=cursor:pointer onclick=sortProcess(1)>Name</a></div>
+                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style="width:50px;padding-right:5px;float:left;cursor:pointer" onclick="sortProcess(0)">PID</a><a style="cursor:pointer" onclick="sortProcess(1)">Name</a></div>
                                         <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:25px">
-                            <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
-                                <div style=float:right;text-align:right>
-                                    <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
-                                    <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
+                        <div id="deskarea4" style="position:absolute;bottom:0px;width:100%;height:25px">
+                            <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                                <div style="float:right;text-align:right">
+                                    <select id="termdisplays" style="display:none" onchange="deskSetDisplay(event)" onclick="deskGetDisplayNumbers(event)"></select>&nbsp;
+                                    <span id="DeskToastButton"><img src="images/icon-notify.png" onclick="deviceToastFunction()" height="16" width="16" style="padding-top:2px"></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type=button style="margin-left:3px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()">
                                     <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
                                     <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
@@ -405,58 +403,58 @@
                             </div>
                         </div>
                     </div>
-                    <div id=p10files style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                    <div id="p10files" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
                         <table id="p13toolbar" style="width:100%;height:111px" cellpadding="0" cellspacing="0">
-                            <tr>
+                            <tbody><tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type=button onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
+                                        <input id="filesActionsBtn" type="button" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()" style="margin-right:2px">
                                     </div>
                                     <div style="margin-left:2px">
-                                        <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
-                                        <input id=p13Connect value="Connect" onclick=connectFiles(event) onkeypress="return false" onkeydown="return false" type="button">
-                                        <span id=p13Status>Disconnected</span>
+                                        <input id="p13AutoConnect" value="AutoConnect" onclick="autoConnectFiles(event)" onkeypress="return false" onkeydown="return false" type="button" style="display:none">
+                                        <input id="p13Connect" value="Connect" onclick="connectFiles(event)" onkeypress="return false" onkeydown="return false" type="button">
+                                        <span id="p13Status">Disconnected</span>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
+                                <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign="bottom">
                                     <div style="width:100%;text-align:center">
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13FolderUp disabled="disabled" onclick="p13folderup()" value="Up" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13SelectAllButton disabled="disabled" onclick="p13selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13RenameFileButton disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13DeleteFileButton disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13NewFolderButton disabled="disabled" value="Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false" />
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13FolderUp" disabled="disabled" onclick="p13folderup()" value="Up">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="SelectAll" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RenameFileButton" disabled="disabled" value="Rename" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13DeleteFileButton" disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13NewFolderButton" disabled="disabled" value="Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13UploadButton disabled="disabled" value="Upload" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false" />
-                                        <input type=button style="width:calc(100%/5 - 5px)" id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false" />
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13UploadButton" disabled="disabled" value="Télécharger" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CutButton" disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CopyButton" disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13PasteButton" disabled="disabled" value="Paste" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RefreshButton" disabled="disabled" value="Refresh" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="background-color:#E4E9E7;height:28px">
                                     <table style="width:100%">
-                                        <tr>
-                                            <td id=p13currentpath style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
+                                        <tbody><tr>
+                                            <td id="p13currentpath" style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
                                             <td style="text-align:right;padding-right:4px">
-                                                <select id=p13sortdropdown onchange=p13updateFiles()>
-                                                    <option value=1 selected="selected">Sort by name</option>
-                                                    <option value=2>Sort by size</option>
-                                                    <option value=3>Sort by date</option>
-                                                    <option value=4>Descend by name</option>
-                                                    <option value=5>Descend by size</option>
-                                                    <option value=6>Descend by date</option>
+                                                <select id="p13sortdropdown" onchange="p13updateFiles()">
+                                                    <option value="1" selected="selected">Sort by name</option>
+                                                    <option value="2">Sort by size</option>
+                                                    <option value="3">Sort by date</option>
+                                                    <option value="4">Descend by name</option>
+                                                    <option value="5">Descend by size</option>
+                                                    <option value="6">Descend by date</option>
                                                 </select>
                                             </td>
                                         </tr>
-                                    </table>
+                                    </tbody></table>
                                 </td>
                             </tr>
-                        </table>
+                        </tbody></table>
                         <div id="p13filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
                             <!--
                             <div id="p13bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
@@ -464,68 +462,68 @@
                             -->
                             <span id="p13files"></span>
                         </div>
-                        <table id="p13toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px" cellpadding=0 cellspacing=0>
-                            <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
-                        </table>
+                        <table id="p13toolbarBottom" style="width:100%;height:22px;position:absolute;bottom:0px" cellpadding="0" cellspacing="0">
+                            <tbody><tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
+                        </tbody></table>
                     </div>
                 </div>
-                <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
-                        <tr style=padding:0>
-                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
+                <div id="p20" style="display:none;position:absolute;bottom:0;top:0;width:100%">
+                    <table cellspacing="0" style="margin:0;padding:0;border-spacing:0;border:0;">
+                        <tbody><tr style="padding:0">
+                            <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width="60px" valign="top" onclick="goBack()">
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
                                     <div style="background-color:white;width:10px;height:10px;border-radius:10px 0 0 0;border-right:1px solid white;border-bottom:1px solid white"></div>
                                 </div>
-                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">&#9664;</div>
+                                <div style="padding:0;font-size:25px;background-color:#036;width:50px;border-radius:0 0 10px 0;height:36px">◀</div>
                             </td>
                             <td onclick="p20editmesh(1)">
-                                <img src="/images/meshicon50.png" width=50 height=50 />
+                                <img src="/images/meshicon50.png" width="50" height="50">
                             </td>
                             <td onclick="p20editmesh(1)">
-                                <div style=margin-left:5px>
-                                    <strong style="font-size:large"><span id=p20meshName></span></strong><br />
+                                <div style="margin-left:5px">
+                                    <strong style="font-size:large"><span id="p20meshName"></span></strong><br>
                                 </div>
                             </td>
                         </tr>
-                    </table>
-                    <div id=p20info style="margin-left:8px;margin-right:8px"></div>
+                    </tbody></table>
+                    <div id="p20info" style="margin-left:8px;margin-right:8px"></div>
                 </div>
             </div>
         </div>
-        <div id=footer style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
-            <table id=footerMenu cellpadding=0 cellspacing=0 style="height:32px;width:100%;color:white;cursor:pointer;table-layout:fixed"></table>
+        <div id="footer" style="height:32px;width:100%;text-align:center;background-color:#113962;position:absolute;bottom:0px">
+            <table id="footerMenu" cellpadding="0" cellspacing="0" style="height:32px;width:100%;color:white;cursor:pointer;table-layout:fixed"></table>
         </div>
     </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:90px;width:300px;display:none">
+    <div id="dialog" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:90px;width:300px;display:none">
         <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
-            <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
-            <div id=id_dialogtitle style=padding:5px></div>
-            <div style=width:100%;margin:6px></div>
+            <div id="id_dialogclose" style="float:right;padding:5px;cursor:pointer" onclick="setDialogMode()"><b>X</b></div>
+            <div id="id_dialogtitle" style="padding:5px"></div>
+            <div style="width:100%;margin:6px"></div>
         </div>
         <div style="margin-right:16px;margin-left:8px">
-            <div id=dialog1 style="margin:auto;text-align:center;margin:3px">
-                <div id=id_dialogMessage style="padding:10px"></div>
+            <div id="dialog1" style="margin:auto;text-align:center;margin:3px">
+                <div id="id_dialogMessage" style="padding:10px"></div>
             </div>
-            <div id=dialog2 style="margin:auto;margin:3px">
-                <div id=id_dialogOptions></div>
+            <div id="dialog2" style="margin:auto;margin:3px">
+                <div id="id_dialogOptions"></div>
             </div>
-            <div id=dialog3 style="margin:auto;margin:3px">
+            <div id="dialog3" style="margin:auto;margin:3px">
                 <select id="deskkeys" style="width:100%">
-                    <option value=10>Ctrl+Alt+Del</option>
-                    <option value=11>Tab</option>
-                    <option value=5>Win</option>
-                    <option value=0>Win+Down</option>
-                    <option value=1>Win+Up</option>
-                    <option value=2>Win+L</option>
-                    <option value=3>Win+M</option>
-                    <option value=4>Shift+Win+M</option>
-                    <option value=6>Win+R</option>
-                    <option value=7>Alt-F4</option>
-                    <option value=8>Ctrl-W</option>
-                    <option value=9>Alt-Tab</option>
+                    <option value="10">Ctrl+Alt+Del</option>
+                    <option value="11">Tab</option>
+                    <option value="5">Win</option>
+                    <option value="0">Win+Down</option>
+                    <option value="1">Win+Up</option>
+                    <option value="2">Win+L</option>
+                    <option value="3">Win+M</option>
+                    <option value="4">Shift+Win+M</option>
+                    <option value="6">Win+R</option>
+                    <option value="7">Alt-F4</option>
+                    <option value="8">Ctrl-W</option>
+                    <option value="9">Alt-Tab</option>
                 </select>
             </div>
-            <div id=dialog7 style="margin:auto;margin:3px">
+            <div id="dialog7" style="margin:auto;margin:3px">
                 <div id="d7meshkvm">
                     <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
                     <div style="margin:3px 0 3px 0">
@@ -534,30 +532,30 @@
                     </div>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected=selected value=1024>100%</option>
-                            <option value=896>87.5%</option>
-                            <option value=768>75%</option>
-                            <option value=640>62.5%</option>
-                            <option value=512>50%</option>
-                            <option value=384>37.5%</option>
-                            <option value=256>25%</option>
-                            <option value=128>12.5%</option>
+                            <option selected="selected" value="1024">100%</option>
+                            <option value="896">87.5%</option>
+                            <option value="768">75%</option>
+                            <option value="640">62.5%</option>
+                            <option value="512">50%</option>
+                            <option value="384">37.5%</option>
+                            <option value="256">25%</option>
+                            <option value="128">12.5%</option>
                         </select>
                         <div style="height:20px">Scaling</div>
                     </div>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected=selected value=50>Fast</option>
-                            <option value=100>Medium</option>
-                            <option value=400>Slow</option>
-                            <option value=1000>Very slow</option>
+                            <option selected="selected" value="50">Fast</option>
+                            <option value="100">Medium</option>
+                            <option value="400">Slow</option>
+                            <option value="1000">Very slow</option>
                         </select>
                         <div style="height:20px">Rate</div>
                     </div>
                 </div>
                 <div id="d7amtkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
-                    <div style='height:26px'>
+                    <h4 style="width:100%;border-bottom:1px solid gray">Intel® AMT Hardware KVM</h4>
+                    <div style="height:26px">
                         <select id="d7desktopmode" style="float:right;width:200px">
                             <option value="1">RLE8, Fastest</option>
                             <option value="2">RLE16, Recommended</option>
@@ -568,25 +566,25 @@
                     </div>
                     <div style="height:60px">
                         <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
-                            <label><input type="checkbox" id='d7showfocus'>Show Focus Tool<br></label>
-                            <label><input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br</label>>
-                        </div>
+                            <label><input type="checkbox" id="d7showfocus">Show Focus Tool<br></label>
+                            <label><input type="checkbox" id="d7showcursor">Show Local Mouse Cursor<br< label="">&gt;
+                        </br<></label></div>
                         <div>Other</div>
                     </div>
                 </div>
             </div>
         </div>
         <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
-            <input id="idx_dlgCancelButton" type="button" value="Cancel" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
+            <input id="idx_dlgCancelButton" type="button" value="Annuler" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
             <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
         </div>
     </div>
-    <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
-        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Files</div>
-        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
-        <div id="logoutMenuOption"><a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
+    <div id="topMenu" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(2)">My Files</div>
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(1)">My Account</div>
+        <div id="logoutMenuOption"><a href="/logout"><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
     </div>
-    <iframe name="fileUploadFrame" style=display:none></iframe>
+    <iframe name="fileUploadFrame" style="display:none"></iframe>
     <script>
         'use strict';
 
@@ -694,13 +692,13 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', "- Réinitialiser à la prochaine connexion."); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} minute{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} hour{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} day{1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', "- Réinitialiser à la prochaine connexion."); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format("- Réinitialisation en {0} minute {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format("- Réinitialisation dans {0} heure {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format("- Réinitialiser dans le {0} jour {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -1204,7 +1202,7 @@
             x += '<td align=right>' + "Password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr><tr><td align=right>' + "Password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=\"' + "Cancel" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgCancelButton type=button value=\"' + "Annuler" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=\"' + "OK" + '\" style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Delete Account", 0, null, x);
@@ -1483,7 +1481,7 @@
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
-            Q('p5SelectAllButton').value = (cc > 0 ? "None" : "All");
+            Q('p5SelectAllButton').value = (cc > 0 ? "None" : "Tout");
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
@@ -1494,7 +1492,7 @@
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
-        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return format("{0} bytes", size); }
+        function getFileSizeStr(size) { if (size == 1) return "1 octet"; return format("{0} octets", size); }
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); return false; }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
@@ -1779,7 +1777,7 @@
 
         function PowerStateStr2(x) {
             if ((x != 0) && (x < powerStatetable.length)) return powerStatetable[x];
-            return "Unknown";
+            return "Inconnue";
         }
 
         function onSortSelectChange(skipsave) {
@@ -1790,7 +1788,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " node" : " nodes");
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? "nœud" : "noeuds");
             var title = '';
             for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             deviceHeadersTitles['DevxHeader' + deviceHeaderId] = title;
@@ -1878,7 +1876,7 @@
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
+                var agentsStr = ["Inconnue", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Inconnue", "Inconnue", "FreeBSD x86-64"];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
@@ -1889,11 +1887,11 @@
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
-                    var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + node.intelamt.ver; } else
+                    var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activé") };
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Etat inconnu") + '</i>, v' + node.intelamt.ver; } else
 
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
-                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
+                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activé" + '</i>'; }
+                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Version et état inconnus" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
                             if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
@@ -2119,9 +2117,9 @@
             if (xxdialogMode) return;
             var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
             if ((meshrights & 4) == 0) return;
-            x += addHtmlValue("Username", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue("Nom d'utilisateur", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Password", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Security", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
+            x += addHtmlValue("Security", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "Sécurité TLS requise" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
@@ -2797,7 +2795,7 @@
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13SelectAllButton', false);
-                Q('p13SelectAllButton').value = "All";
+                Q('p13SelectAllButton').value = "Tout";
                 QE('p13RefreshButton', false);
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
@@ -2810,7 +2808,7 @@
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
-                Q('p13SelectAllButton').value = (cc > 0 ? "None" : "All");
+                Q('p13SelectAllButton').value = (cc > 0 ? "None" : "Tout");
                 QE('p13RefreshButton', true);
                 QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -3095,7 +3093,7 @@
         function p20updateMesh() {
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
-            var meshtype = format("Unknown #{0}", currentMesh.mtype);
+            var meshtype = format(" #{0} Inconnue", currentMesh.mtype);
             var meshrights = currentMesh.links[userinfo._id].rights;
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
@@ -3110,7 +3108,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Add User" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + "Ajouter un utilisateur" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -3167,7 +3165,7 @@
 
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return false;
-            var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
+            var x = format("Êtes-vous sûr de vouloir supprimer le groupe {0}? La suppression du groupe de périphériques supprimera également toutes les informations relatives aux périphériques de ce groupe.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
@@ -3222,7 +3220,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '</div>';
-            setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
+            setDialogMode(2, "Ajouter un utilisateur au groupe", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
             Q('dp20username').focus();
         }
@@ -3365,7 +3363,7 @@
         function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
-        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return format('{0} bytes', size); }
+        function getFileSizeStr(size) { if (size == 1) return "1 octet"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
@@ -3377,5 +3375,5 @@
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
 
     </script>
-</body>
-</html>
+
+</body></html>
