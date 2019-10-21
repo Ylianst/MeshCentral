@@ -381,7 +381,7 @@
                                     <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
                                     <div id=DeskToolsBar style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
-                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer title="Sort by process id" onclick=sortProcess(0)>PID</a><a style=cursor:pointer title="Sort by name" onclick=sortProcess(1)>Name</a></div>
+                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer onclick=sortProcess(0)>PID</a><a style=cursor:pointer onclick=sortProcess(1)>Name</a></div>
                                         <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
                                     </div>
                                 </div>
@@ -391,16 +391,16 @@
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
                                     <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
-                                    <span id=DeskToastButton title="Display a notification on the remote computer"><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
-                                    <!--<input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
+                                    <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
+                                    <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type=button style="margin-left:3px" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
-                                    <input type="button" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
-                                    <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
+                                    <input id="deskActionsBtn" type=button style="margin-left:3px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
                                     <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
                                     <input id="DeskSoftKeys" type="button" value="Keyboard" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
-                                    <label><span id="DeskControlSpan" style="display:none" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
+                                    <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
                         </div>
@@ -410,7 +410,7 @@
                             <tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
+                                        <input id="filesActionsBtn" type=button onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() style=margin-right:2px />
                                     </div>
                                     <div style="margin-left:2px">
                                         <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) onkeypress="return false" onkeydown="return false" type="button" style="display:none">
@@ -591,19 +591,19 @@
         'use strict';
 
         // Process server-side web state
-        var webState = "{{{webstate}}}";
-        if (webState != "") { webState = JSON.parse(decodeURIComponent(webState)); }
+        var webState = '{{{webstate}}}';
+        if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
         if (!webState.loctag) { delete localStorage.removeItem('loctag'); }
 
         var args = parseUriArgs();
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
-        var sessionTime = parseInt("{{{sessiontime}}}");
-        var domain = "{{{domain}}}";
-        var domainUrl = "{{{domainurl}}}";
-        var authCookie = "{{{authCookie}}}";
-        var authRelayCookie = "{{{authRelayCookie}}}";
+        var sessionTime = parseInt('{{{sessiontime}}}');
+        var domain = '{{{domain}}}';
+        var domainUrl = '{{{domainurl}}}';
+        var authCookie = '{{{authCookie}}}';
+        var authRelayCookie = '{{{authRelayCookie}}}';
         var authCookieRenewTimer = null;
         var meshserver = null;
         var xdr = null;
@@ -615,13 +615,13 @@
         var serverinfo = null;
         var users = null;
         var nodeShortIdent = 0;
-        var serverPublicNamePort = "{{{serverDnsName}}}:{{{serverPublicPort}}}";
+        var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
-        var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected', 'Intel&reg; AMT Connected'];
+        var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var files;
-        var passRequirements = "{{{passRequirements}}}";
-        if (passRequirements != "") { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        var passRequirements = '{{{passRequirements}}}';
+        if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var sessionActivity = Date.now();
 
         function startup() {
@@ -637,7 +637,7 @@
             window.onresize = center;
             center();
             QV('changeEmailId', (features & 0x200000) == 0);
-            QH('p1message', 'Connecting...');
+            QH('p1message', "Connecting...");
             go(1);
 
             // Connect to the mesh server
@@ -657,8 +657,8 @@
                 // Control web socket disconnected
                 setDialogMode(0); // Close any dialog boxes if present
                 go(0); // Go to disconnection panel
-                if (errorCode == 'noauth') { QH('p0span', 'Unable to perform authentication'); return; }
-                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', 'Unable to connect web socket'); }
+                if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
+                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
                 // Clean up here
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
@@ -697,10 +697,10 @@
                 if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 60) + ' minute' + addLetterS(Math.floor(seconds / 60)) + '.'); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 3600) + ' hour' + addLetterS(Math.floor(seconds / 3600)) + '.'); }
-                    else { QH('p2nextPasswordUpdateTime', ' - Reset in ' + Math.floor(seconds / 86400) + ' day' + addLetterS(Math.floor(seconds / 86400)) + '.'); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} minute{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} hour{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} day{1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -792,7 +792,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', 'Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                        QH('d2optinfo', "Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login." + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
                         Q('d2otpauthinput').focus();
@@ -812,7 +812,7 @@
                 case 'otpauth-getpasswords': {
                     if (xxdialogMode) return;
                     var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
-                    x += "<div style='border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px'><div style='padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold'><table style=width:100%;text-align:center>";
+                    x += '<div style=\'border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px\'><div style=\'padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold\'><table style=width:100%;text-align:center>';
                     if (message.passwords) {
                         var j = 0;
                         for (var i in message.passwords) {
@@ -822,13 +822,13 @@
                             if (message.passwords[i].u === true) { x += '<td>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); } else { x += '<td><strike style=color:#BBB>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); + '</strike>'; }
                         }
                     } else {
-                        x += '<tr><td>No Active Tokens';
+                        x += '<tr><td>' + "No Active Tokens";
                     }
-                    x += "</table></div></div><br />";
-                    x += "<div><input type=button value='Close' onclick=setDialogMode(0) style=float:right></input>";
-                    x += "<input type=button value='New Tokens' onclick='account_manageOtp(1);'></input>";
-                    if (message.passwords != null) { x += "<input type=button value='Clear' onclick='account_manageOtp(2);'></input>"; }
-                    x += "</div><br />";
+                    x += '</table></div></div><br />';
+                    x += '<div><input type=button value=\'' + "Close" + '\' onclick=setDialogMode(0) style=float:right></input>';
+                    x += '<input type=button value=\'' + "New Tokens" + '\' onclick=\'account_manageOtp(1);\'></input>';
+                    if (message.passwords != null) { x += '<input type=button value=\'' + "Clear" + '\' onclick=\'account_manageOtp(2);\'></input>'; }
+                    x += '</div><br />';
                     setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
                     break;
                 }
@@ -1149,7 +1149,7 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, "<div id=d2optinfo>Loading...</div>", 'otpauth-request');
+            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Loading..." + '</div>', 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -1172,7 +1172,7 @@
 
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
-            var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + "</b></div>Please wait a few minute to receive the verification.";
+            var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + '</b></div>' + "Please wait a few minute to receive the verification.";
             setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
         }
 
@@ -1200,12 +1200,12 @@
 
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
-            var x = "<form method=post><table style=margin-left:10px><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=" + authCookie + " /><tr>";
-            x += "<td align=right>Password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
-            x += "</tr><tr><td align=right>Password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>";
+            var x = '<form method=post><table style=margin-left:10px><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=' + authCookie + ' /><tr>';
+            x += '<td align=right>' + "Password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
+            x += '</tr><tr><td align=right>' + "Password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
+            x += '<input id=account_dlgCancelButton type=button value=\"' + "Cancel" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value=\"' + "OK" + '\" style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Delete Account", 0, null, x);
             account_validateDeleteAccount();
@@ -1216,15 +1216,15 @@
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = "<table style=margin-left:10px>";
-            x += "<tr><td align=right>Old&nbsp;password:</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>";
-            x += "<tr><td align=right>New&nbsp;password:</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>";
-            x += "<tr><td align=right>New&nbsp;password:</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>";
-            if (features & 0x00010000) { x += "<tr><td align=right>Password hint:</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>"; }
+            x += '<tr><td align=right>' + "Old&nbsp;password:" + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
+            x += '<tr><td align=right>' + "New&nbsp;password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
+            x += '<tr><td align=right>' + "New&nbsp;password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
+            if (features & 0x00010000) { x += '<tr><td align=right>' + "Password hint:" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
             x += '</table>'
             if (passRequirements) {
                 var r = [], rc = 0;
                 for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
-                if (rc > 0) { x += '<br /><span style=font-size:x-small>Requirements: ' + r.join(', ') + '.</span>'; }
+                if (rc > 0) { x += '<br /><span style=font-size:x-small>' + format("Requirements: {0}.", r.join(', ')) + '</span>'; }
             }
             x += '<br />';
             setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
@@ -1254,9 +1254,9 @@
             if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
 
             // We are allowed, let's prompt to information
-            var x = addHtmlValue('Name', '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
-            x += addHtmlValue('Type', '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>Software Agent Group</option><option value=1>Intel&reg; AMT only</option></select></div>');
-            x += addHtmlValue('Description', '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            var x = addHtmlValue("Name", '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
+            x += addHtmlValue("Type", '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>' + "Software Agent Group" + '</option><option value=1>' + "Intel&reg; AMT only" + '</option></select></div>');
+            x += addHtmlValue("Description", '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "Create Device Group", 3, account_createMeshEx, x);
             account_validateMeshCreate();
             Q('dp3meshname').focus();
@@ -1285,7 +1285,7 @@
                 } else {
                     // Password requirements provided, use that
                     var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
-                    if (passReq == false) { ok = false; r = '<span style=color:red>Policy<span>' }
+                    if (passReq == false) { ok = false; r = '<span style=color:red>' + "Policy" + '<span>' }
                 }
             }
             QH('dxPassWarn', r);
@@ -1328,8 +1328,8 @@
 
                 // Mesh rights
                 var meshrights = meshes[i].links[userinfo._id].rights;
-                var rights = 'Partial Rights';
-                if (meshrights == 0xFFFFFFFF) rights = 'Full Administrator'; else if (meshrights == 0) rights = 'No Rights';
+                var rights = "Partial Rights";
+                if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
                 r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
@@ -1350,31 +1350,6 @@
             go(20);
         }
 
-        function server_showRestoreDlg() {
-            if (xxdialogMode) return;
-            var x = 'Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing.<br /><br />';
-            x += '<form action="/restoreserver.ashx" enctype="multipart/form-data" method="post"><div>';
-            x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
-            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=OK style=float:right;width:80px onclick=dialogclose(1)>';
-            x += '</div><br /><br /></form>';
-            setDialogMode(2, "Restore Server", 0, null, x);
-            account_validateServerRestore();
-        }
-
-        function account_validateServerRestore() {
-            QE('account_dlgOkButton', Q('account_dlgFileInput').files.length == 1);
-        }
-
-        function server_showVersionDlg() {
-            if (xxdialogMode) return;
-            setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
-            meshserver.send({ action: 'serverversion' });
-        }
-
-        function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
-        function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
-
         //
         // MY FILES
         //
@@ -1387,7 +1362,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>Root</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -1414,7 +1389,7 @@
                 }
             }
             filetreelocation = filetreelocation2; // In case we could not go down the full path, we set the new path location here.
-            var publicfolder = fullPath.toLowerCase().startsWith("root / " + userinfo._id + " / public");
+            var publicfolder = fullPath.toLowerCase().startsWith('root / ' + userinfo._id + ' / public');
 
             // Sort the files
             var filetreexx = p5sort_files(filetreex.f);
@@ -1424,7 +1399,7 @@
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
                 shortname = name;
-                if (name.length > 40) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 40)) + "...</span>"; } else { shortname = EscapeHtml(name); }
+                if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 40)) + "..."; } else { shortname = EscapeHtml(name); }
                 name = EscapeHtml(name);
 
                 // Figure out the date
@@ -1437,14 +1412,14 @@
 
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
-                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = "<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + name + "'>&nbsp;<span style=float:right;padding-right:4px title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p5folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + "</span><span><div class=fileIcon" + f.t + '></div><a style=cursor:pointer onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>Link</a>)'; }
-                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>" + publiclink; }
-                    h = "<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Link" + '</a>)'; }
+                    if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -1472,8 +1447,7 @@
         function p5getQuotabar(f) {
             while (f.t > 1 && f.t != 4) { f = f.parent; }
             if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
-            var tf = Math.floor(f.s / 1024), tq = Math.floor((f.maxbytes - f.s) / 1024);
-            return '<span title="' + tf + "k in " + f.c + " file" + (f.c > 1 ? 's' : '') + ". " + (Math.floor(f.maxbytes / 1024)) + 'k maxinum">' + ((tq < 0) ? ('Storage limit exceed') : (tq + 'k remaining')) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' /></span>';
+            return getNiceSize(tq) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
@@ -1501,30 +1475,32 @@
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
-            Q('p5SelectAllButton').value = (cc > 0 ? 'None' : 'All');
+            Q('p5SelectAllButton').value = (cc > 0 ? "None" : "All");
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
         }
 
-        function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
+        function getFileSelCount(includeDirs) { var cc = 0, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
+        function getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
-        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
-        function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); }
-        function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); }
+        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return format("{0} bytes", size); }
+        function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); return false; }
+        function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
         function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
-        function p5deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?') : ('Delete selected item?')); }
-        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles }); }
+        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
         function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
-        function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e.keyCode == 13)) { dialogclose(1); } }
+        function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
@@ -1573,12 +1549,12 @@
 
         function p5fileDragLeave(e) {
             haltEvent(e);
-            if (e.target.id != "p5filetable") {
+            if (e.target.id != 'p5filetable') {
                 QV('bigfail', false);
                 QV('bigok', false);
                 //QV('p5fileCatchAllInput', false);
             } else {
-                p5dragtimer = setTimeout("QV('bigfail',false);QV('bigok',false);p5dragtimer=null;", 200);
+                p5dragtimer = setTimeout('QV(\'bigfail\',false);QV(\'bigok\',false);p5dragtimer=null;', 200);
             }
         }
 
@@ -1682,7 +1658,7 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>, Intel&reg; AMT only</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
@@ -1707,11 +1683,11 @@
 
                 count++;
                 var title = EscapeHtml(nodes[i].name);
-                if (title.length == 0) { title = '<i>None</i>'; }
+                if (title.length == 0) { title = '<i>' + "None" + '</i>'; }
                 if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
-                if (name.length == 0) { name = '<i>None</i>'; }
+                if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
 
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
@@ -1751,8 +1727,8 @@
                             r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                             //r += getMeshActions(mesh, meshrights);
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
-                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>No Intel&reg; AMT devices in this group'; }
-                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>No devices in this group'; }
+                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "No Intel&reg; AMT devices in this group"; }
+                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "No devices in this group"; }
                             r += '.</i></div></div>';
                             current = mesh._id;
                             count++;
@@ -1762,7 +1738,7 @@
             }
 
             if (count == 0) {
-                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">No devices</span><br /><br />Use the desktop version of this website to add devices.</div>');
+                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "No devices" + '</span><br /><br />' + "Use the desktop version of this website to add devices." + '</div>');
             } else {
                 QH('xdevices', r);
             }
@@ -1772,18 +1748,18 @@
         }
 
         var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
-        var powerStateStrings = ['', '<span title="Device is powered on.">Powered</span>', '<span title="Device is in sleep state (S1).">Sleeping</span>', '<span title="Device is in sleep state (S2).">Sleeping</span>', '<span title="Device is in deep sleep state (S3).">Deep Sleep</span>', '<span title="Device is in hibernating state (S4).">Hibernating</span>', '<span title="Device is in powered off state (S5).">Soft-Off</span>', '<span title="Device is detected but power state could not be obtained.">Present</span>'];
-        var powerStateStrings2 = ['', 'Device is powered', 'Device is in sleep state (S1)', 'Device is in sleep state (S2)', 'Device is in deep sleep state (S3)', 'Device is hibernating (S4)', 'Device is in soft-off state (S5)', 'Device is present, but power state cannot be determined'];
+        var powerStateStrings = ['', "Powered", "Sleeping", "Sleeping", "Deep Sleep", "Hibernating", "Soft-Off", "Present"];
+        var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
         function NodeStateStr(node) {
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { states.push('<span title="Mesh agent is connected and ready for use.">Agent</span>'); }
-                if ((node.conn & 2) != 0) { states.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">CIRA</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span title="Intel&reg; AMT is routable.">Intel&reg; AMT</span>'); }
-                if ((node.conn & 8) != 0) { states.push('<span title="Mesh agent is reachable using another agent as relay.">Relay</span>'); }
-                if ((node.conn & 16) != 0) { states.push('<span title="MQTT connection to the device is active.">MQTT</span>'); }
+                if ((node.conn & 1) != 0) { states.push('<span>' + "Agent" + '</span>'); }
+                if ((node.conn & 2) != 0) { states.push('<span>' + "CIRA" + '</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel&reg; AMT" + '</span>'); }
+                if ((node.conn & 8) != 0) { states.push('<span>' + "Relay" + '</span>'); }
+                if ((node.conn & 16) != 0) { states.push('<span>' + "MQTT" + '</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
@@ -1796,21 +1772,21 @@
 
         function PowerStateStr2(x) {
             if ((x != 0) && (x < powerStatetable.length)) return powerStatetable[x];
-            return 'Unknown';
+            return "Unknown";
         }
 
         function onSortSelectChange(skipsave) {
-            sort = document.getElementById("sortselect").selectedIndex;
-            if (!skipsave) { putstore("sort", sort); }
+            sort = document.getElementById('sortselect').selectedIndex;
+            if (!skipsave) { putstore('sort', sort); }
             updateDevicesEx();
         }
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders["DevxHeader" + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? ' node' : ' nodes');
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " node" : " nodes");
             var title = '';
             for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
-            deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
+            deviceHeadersTitles['DevxHeader' + deviceHeaderId] = title;
             deviceHeaderId++;
             deviceHeaderCount = {};
             deviceHeaderTotal = 0;
@@ -1860,7 +1836,7 @@
 
                 // Add node name
                 var nname = EscapeHtml(node.name);
-                if (nname.length == 0) { nname = '<i>None</i>'; }
+                if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
                 if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
                 QH('p10deviceName', nname);
 
@@ -1868,28 +1844,28 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span title="The name of the device group this computer belong to">Group</span>', '<a  title="The name of the device group this computer belong to" onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span>' + "Group" + '</span>', '<a onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
-                if (node.rname != null) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
+                if (node.rname != null) { x += addDeviceAttribute('<span>' + "Name" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
                 if ((mesh.mtype == 1) || (node.name != node.host)) {
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
-                            x += addDeviceAttribute('Hostname', '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
+                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
                         } else {
-                            x += addDeviceAttribute('Hostname', '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>None</i></span>');
+                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>None</i></span>');
                         }
                     } else {
-                        x += addDeviceAttribute('Hostname', EscapeHtml(node.host));
+                        x += addDeviceAttribute("Hostname", EscapeHtml(node.host));
                     }
                 }
 
                 // Attribute: Description
                 var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "None" + '</i>';
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute('Description', '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
+                    x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
                     x += addDeviceAttribute("Description", description);
                 }
@@ -1906,36 +1882,36 @@
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
-                    var provisioningStates = { 0: 'Not&nbsp;Activated&nbsp;(Pre)', 1: 'Not&nbsp;Activated&nbsp;(In)', 2: 'Activated' };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>Unknown&nbsp;State</i>, v' + node.intelamt.ver; } else
+                    var provisioningStates = { 0: "Not&nbsp;Activated&nbsp;(Pre)", 1: "Not&nbsp;Activated&nbsp;(In)", 2: "Activated" };
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + "Unknown&nbsp;State" + '</i>, v' + node.intelamt.ver; } else
 
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>Activated</i>'; }
-                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>Unknown Version & State</i>'; }
+                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
+                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
-                            if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span title="Intel AMT is activated in Client Control Mode">CCM</span>'; } else if (node.intelamt.flags & 4) { str = ' <span title="Intel AMT is activated in Admin Control Mode">ACM</span>'; } }
+                            if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
                             str += (', v' + node.intelamt.ver);
                         }
 
-                    if (node.intelamt.tls == 1) { str += ', <span  title="Intel AMT is setup with TLS network security">TLS</span>'; }
+                    if (node.intelamt.tls == 1) { str += ', <span>' + "TLS" + '</span>'; }
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer title="Edit Intel&reg; AMT credentials" onclick=editDeviceAmtSettings("' + node._id + '")>No&nbsp;Credentials</i>';
+                                str += ', <i style=color:#FF0000;cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>' + "No&nbsp;Credentials" + '</i>';
                             } else {
-                                str += ', <i style=color:#FF0000>No Credentials</i>';
+                                str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
                             }
                         }
                         str += ' ';
                         if ((meshrights & 4) != 0) {
-                            str += '<img src=images/link4.png height=10 width=10 title="Edit Intel&reg; AMT credentials" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
+                            str += '<img src=images/link4.png height=10 width=10 style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
 
-                    var meName = 'Intel&reg; ME';
+                    var meName = "Intel&reg; ME";
                     if (typeof node.intelamt.sku == 'number') {
-                        if ((node.intelamt.sku & 8) != 0) { meName = 'Intel&reg; AMT'; }
-                        else if ((node.intelamt.sku & 16) != 0) { meName = 'Intel&reg; SM'; }
+                        if ((node.intelamt.sku & 8) != 0) { meName = "Intel&reg; AMT"; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = "Intel&reg; SM"; }
                     }
                     x += addDeviceAttribute(meName, str);
                 }
@@ -1944,7 +1920,7 @@
                 if ((node.agent != null) && (node.agent.tag != null) && (node.agent.tag != 'mailto:')) {
                     var tag = EscapeHtml(node.agent.tag);
                     if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
-                    x += addDeviceAttribute('Agent Tag', tag);
+                    x += addDeviceAttribute("Agent Tag", tag);
                 }
 
                 // Attribute: Intel AMT
@@ -1954,28 +1930,28 @@
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
-                    if ((node.conn & 1) != 0) cstate.push('<span title="Software agent is connected and ready for use.">Agent</span>');
-                    if ((node.conn & 2) != 0) cstate.push('<span title="Intel&reg; AMT CIRA is connected and ready for use.">Intel&reg; AMT CIRA</span>');
-                    else if ((node.conn & 4) != 0) cstate.push('<span title="Intel&reg; AMT is routable and ready for use.">Intel&reg; AMT</span>');
-                    if ((node.conn & 8) != 0) cstate.push('<span title="Software agent is reachable using another agent as relay.">Agent Relay</span>');
-                    if ((node.conn & 16) != 0) cstate.push('<span title="MQTT connection to the device is active.">MQTT</span>');
-                    x += addDeviceAttribute('Connectivity', cstate.join(', '));
+                    if ((node.conn & 1) != 0) cstate.push('<span>' + "Agent" + '</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel&reg; AMT CIRA" + '</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel&reg; AMT" + '</span>');
+                    if ((node.conn & 8) != 0) cstate.push('<span>' + "Agent Relay" + '</span>');
+                    if ((node.conn & 16) != 0) cstate.push('<span>' + "MQTT" + '</span>');
+                    x += addDeviceAttribute("Connectivity", cstate.join(', '));
                 }
 
                 // Node tags
-                var groupingTags = '<i>None</i>';
+                var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
                 } else {
-                    x += addDeviceAttribute('Tags', groupingTags);
+                    x += addDeviceAttribute("Tags", groupingTags);
                 }
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions title="Perform power actions on the device" onclick=deviceActionFunction() />'; }
-                //x += '<input type=button value=Notes title="View notes about this device" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
-                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
+                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions onclick=deviceActionFunction() />'; }
+                //x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -1984,10 +1960,10 @@
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '") title="Remove this device">Delete Device</a>';
+                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "Delete Device" + '</a>';
                 x += '</div><div style=font-size:x-small>';
-                //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '") title="Show device network interface information">Interfaces</a>&nbsp;';
-                //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '") title="Show device locations information">Location</a>&nbsp;';
+                //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
+                //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -1995,10 +1971,10 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Agent connected">Mesh Agent</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT connected">Intel&reg; AMT connected</span>'; }
-                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px title="Intel&reg; AMT detected">Intel&reg; AMT detected</span>'; }
-                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="MQTT connected">MQTT channel connected</span>'; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Mesh Agent" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT connected" + '</span>'; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT detected" + '</span>'; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTT channel connected" + '</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
@@ -2045,12 +2021,12 @@
         function deviceActionFunction() {
             if (xxdialogMode) return;
             var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
-            var x = "Select an operation to perform on this device.<br /><br />";
+            var x = "Select an operation to perform on this device." + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:170px>';
-            if ((meshrights & 64) != 0) { y += '<option value=100>Wake-up</option>'; } // Wake-up permission
-            if ((meshrights & 8) != 0) { y += '<option value=4>Sleep</option><option value=3>Reset</option><option value=2>Power off</option>'; } // Remote control permission
+            if ((meshrights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
+            if ((meshrights & 8) != 0) { y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; } // Remote control permission
             y += '</select>';
-            x += addHtmlValue('Operation', y);
+            x += addHtmlValue("Operation", y);
             setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
         }
 
@@ -2107,10 +2083,7 @@
                         var ts = Math.max(start, block[0]);
                         var te = Math.min(Math.min(end, block[1]), now);
                         var width = Math.round(((te - ts) * totalWidth) / 86400000);
-                        if (width > 0) {
-                            var title = powerStateStrings2[block[2]] + ' from ' + printTime(new Date(ts)) + ' to ' + printTime(new Date(te)) + '.';
-                            datavalue += '<div title="' + title + '" style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>';
-                        }
+                        if (width > 0) { datavalue += '<div style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>'; }
                     }
                 }
                 x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
@@ -2139,9 +2112,9 @@
             if (xxdialogMode) return;
             var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
             if ((meshrights & 4) == 0) return;
-            x += addHtmlValue('Username', '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue('Password', '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue('Security', '<select id=dp10tls style=width:176px><option value=0>No TLS security</option><option value=1>TLS security required</option></select>');
+            x += addHtmlValue("Username", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue("Password", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue("Security", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
@@ -2172,7 +2145,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, "Delete \"" + EscapeHtml(currentNode.name) + "\"?<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />Confirm", nodeid);
+            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, format("Delete {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm", nodeid);
             p10validateDeleteNodeDialog();
         }
 
@@ -2206,9 +2179,9 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        var showEditNodeValueDialog_modes = ['Device Name', 'Hostname', 'Description', 'Tags'];
+        var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
-        var showEditNodeValueDialog_modes3 = ['', '', '', 'Group1, Group2, Group3'];
+        var showEditNodeValueDialog_modes3 = ['', '', '', "Group1, Group2, Group3"];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:170px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
@@ -2348,7 +2321,7 @@
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
-            if ((desktop != null) && (desktop.webRtcActive == true)) { str += ', WebRTC'; }
+            if ((desktop != null) && (desktop.webRtcActive == true)) { str += ", WebRTC"; }
             //if (desktop.m.stopInput == true) { str += ', Loopback'; }
             QH('deskstatus', str);
             switch (state) {
@@ -2590,7 +2563,7 @@
                 for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
-                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=stopProcess(' + p[i].p + ',"' + p[i].c + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + p[i].c + '</div></div>'; } }
+                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a style=float:right;padding-right:5px;cursor:pointer onclick=stopProcess(' + p[i].p + ',"' + p[i].c + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + p[i].c + '</div></div>'; } }
                 QH('DeskToolsProcesses', x);
             }
         }
@@ -2599,8 +2572,8 @@
         function deskSaveImage() {
             setSessionActivity();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
-            Q("Desk")['toBlob'](function (blob) { saveAs(blob, n + ".jpg"); });
+            var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
+            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.jpg'); });
         }
 
         function deskDisplayInfo(sender, info, selDisplay, selItem) {
@@ -2623,7 +2596,7 @@
         function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousemove(e) }
         function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, 'Stop process #' + id + ' "' + name + '"?', id); }
+        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
@@ -2642,9 +2615,9 @@
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            p13Connect.value = (state == 0) ? 'Connect' : 'Disconnect';
+            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
             var str = StatusStrs[state];
-            if (files.webRtcActive == true) { str += ', WebRTC'; }
+            if (files.webRtcActive == true) { str += ", WebRTC"; }
             Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
@@ -2734,7 +2707,7 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>Root</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "Root" + '</a>', fullPath = 'Root';
 
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
@@ -2751,7 +2724,7 @@
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
                 shortname = name;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "...</span>"; } else { shortname = EscapeHtml(name); }
+                if (name.length > 70) { shortname = EscapeHtml(name.substring(0, 70)) + "..."; } else { shortname = EscapeHtml(name); }
                 name = EscapeHtml(name);
 
                 // Figure out the size
@@ -2760,12 +2733,12 @@
 
                 var h = '';
                 if (f.t < 3) {
-                    var right = '', title = '';
-                    h = "<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right title=\"" + title + "\">" + right + "</span><span><div class=fileIcon" + f.t + "></div><a style=cursor:pointer onclick=p13folderset(\"" + encodeURIComponent(f.nx) + "\")>" + shortname + "</a></span></div>";
+                    var right = '';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
-                    if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile('" + encodeURIComponent(newlinkpath + '/' + name) + "','" + encodeURIComponent(name) + "'," + f.s + ")\">" + shortname + "</a>"; }
-                    h = "<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value='" + f.nx + "'>&nbsp;<span style=float:right;padding-right:4px>" + fsize + "</span><span><div class=fileIcon" + f.t + "></div>" + link + "</span></div>";
+                    if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + shortname + '</a>'; }
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -2817,7 +2790,7 @@
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13SelectAllButton', false);
-                Q('p13SelectAllButton').value = 'All';
+                Q('p13SelectAllButton').value = "All";
                 QE('p13RefreshButton', false);
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
@@ -2830,7 +2803,7 @@
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
-                Q('p13SelectAllButton').value = (cc > 0 ? 'None' : 'All');
+                Q('p13SelectAllButton').value = (cc > 0 ? "None" : "All");
                 QE('p13RefreshButton', true);
                 QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -2838,26 +2811,66 @@
             }
         }
 
-        function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
+        function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
+        function p13getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = getFileSelCount(); setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? ('Delete ' + cc + ' selected items?') : ('Delete selected item?')); }
-        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles }); p13folderup(999); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : "<input type=checkbox id=p13recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+        function p13viewfile() {
+            var checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
+                        p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
+                    } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
+                    break;
+                }
+            }
+        }
 
         var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
-        function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
-        function p13pasteFile() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Confim ' + (p13clipboardCut == 0 ? 'copy' : 'move') + ' of ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1) ? 's' : '') + ' to this location?' } setDialogMode(2, "Paste", 3, p13pasteFileEx, x); }
+        function p13copyFile(cut) { var checkboxes = document.getElementsByName('fd'); p13clipboard = []; p13clipboardCut = cut, p13clipboardFolder = p13targetpath; for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p13clipboard.push(p13filetree.dir[checkboxes[i].value].n); } } p13updateClipview(); }
+        function p13pasteFile() {
+            var x = '';
+            if ((p13clipboard != null) && (p13clipboard.length > 0)) {
+                if (p13clipboardCut == 0) {
+                    if (p13clipboard.length > 1) { x = format("Confirm copy of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm copy of 1 entrie to this location?"); }
+                } else {
+                    if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
+                }
+            }
+            setDialogMode(2, "Paste", 3, p13pasteFileEx, x);
+        }
         function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
-        function p13updateClipview() { var x = ''; if ((p13clipboard != null) && (p13clipboard.length > 0)) { x = 'Holding ' + p13clipboard.length + ' entrie' + ((p13clipboard.length > 1) ? 's' : '') + ' for ' + (p13clipboardCut == 0 ? 'copy' : 'move') + ', <a onclick=p13clearClip() style=cursor:pointer>Clear</a>.' } QH('p13bottomstatus', x); p13setActions(); }
-        function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); }
-        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+        function p13updateClipview() {
+            var x = '';
+            if ((p13clipboard != null) && (p13clipboard.length > 0)) {
+                if (p13clipboardCut == 0) {
+                    if (p13clipboard.length > 1) {
+                        x = format("Holding {0} entries for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                    } else {
+                        x = format("Holding 1 entrie for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                    }
+                } else {
+                    if (p13clipboard.length > 1) {
+                        x = format("Holding {0} entries for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                    } else {
+                        x = format("Holding 1 entrie for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                    }
+                }
+            }
+            QH('p13bottomstatus', x);
+            p13setActions();
+        }
+        function p13clearClip() { p13clipboard = null; p13clipboardFolder = null; p13clipboardCut = 0; p13updateClipview(); return false; } function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
         function getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == "3"))) cc++; } return cc; }
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
 
@@ -2975,7 +2988,7 @@
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
-            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>Connecting...</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
             p13uploadReconnect();
         }
 
@@ -3075,31 +3088,31 @@
         function p20updateMesh() {
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
-            var meshtype = 'Unknown #' + currentMesh.mtype;
+            var meshtype = format("Unknown #{0}", currentMesh.mtype);
             var meshrights = currentMesh.links[userinfo._id].rights;
-            if (currentMesh.mtype == 1) meshtype = 'Intel&reg; AMT group';
-            if (currentMesh.mtype == 2) meshtype = 'Software agent group';
+            if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
+            if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
 
             var x = '';
-            x += addHtmlValue('Name', addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
-            x += addHtmlValue('Description', addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : '<i>None</i>'), 'p20editmesh(2)', (meshrights & 1) != 0));
-            x += addHtmlValue('Type', meshtype);
+            x += addHtmlValue("Name", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
+            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
-            //x += '<br><input type=button value=Notes title="View notes about this mesh" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
+            //x += '<br><input type=button value=Notes onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> Add User</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Add User" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
                 if (currentMesh.mtype == 1) {
-                    x += '<a onclick=addCiraDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new Intel&reg; AMT computer that is located on the internet."><img src=images/icon-installmesh.png border=0 height=12 width=12> Install CIRA</a>';
-                    x += '<a onclick=addDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new Intel&reg; AMT computer that is located on the local network."><img src=images/icon-installmesh.png border=0 height=12 width=12> Install local</a>';
+                    x += '<a onclick=addCiraDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install CIRA</a>';
+                    x += '<a onclick=addDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install local</a>';
                 }
                 if (currentMesh.mtype == 2) {
-                    x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px title="Add a new computer to this mesh by installing the mesh agent."><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
+                    x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
                 }
             }
             */
@@ -3109,17 +3122,17 @@
                 if ((meshrights & 4) == 0) return '';
                 var r = '';
                 if (mesh.mtype == 1) {
-                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the internet." onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
-                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new Intel&reg; AMT computer that is located on the local network." onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
                 }
                 if (mesh.mtype == 2) {
-                    r += ' <a style=cursor:pointer;font-size:10px title="Add a new computer to this mesh by installing the mesh agent." onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
                 }
                 return r;
             }
             */
 
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>User Authorizations</th></tr>';
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Authorizations" + '</th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -3128,9 +3141,9 @@
 
             // Display all users for this mesh
             for (var i in sortedusers) {
-                var trash = '', rights = 'Partial&nbsp;Rights', r = sortedusers[i].rights;
-                if (r == 0xFFFFFFFF) rights = 'Full&nbsp;Administrator'; else if (r == 0) rights = 'No&nbsp;Rights';
-                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") title="Remote user rights to this mesh" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
+                if (r == 0xFFFFFFFF) rights = "Full Administrator"; else if (r == 0) rights = "No Rights";
+                if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
                 x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
                 x += '</td></tr>';
@@ -3140,18 +3153,18 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>Delete Mesh</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
 
             QH('p20info', x);
         }
 
-
         function p20showDeleteMeshDialog() {
-            if (xxdialogMode) return;
-            var x = "Are you sure you want to delete mesh \"" + EscapeHtml(currentMesh.name) + "\"? Deleting the mesh will also delete all information about computers within this mesh.<br /><br />";
-            x += "<input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />Confirm";
-            setDialogMode(2, "Delete Mesh", 3, p20showDeleteMeshDialogEx, x);
+            if (xxdialogMode) return false;
+            var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
+            x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
+            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
+            return false;
         }
 
         function p20validateDeleteMeshDialog() {
@@ -3164,8 +3177,8 @@
 
         function p20editmesh(focus) {
             if (xxdialogMode) return;
-            var x = addHtmlValue('Name', '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
-            x += addHtmlValue('Description', '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
+            var x = addHtmlValue("Name", '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
+            x += addHtmlValue("Description", '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
             setDialogMode(2, "Edit Device Group", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
             if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
@@ -3185,19 +3198,22 @@
             if (xxdialogMode) return;
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>Full Administrator<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>Edit Device Group<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>Manage Device Group Users<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>Manage Device Group Computers<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>Remote Control<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>Remote View Only<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>No Terminal Access<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>No File Access<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>No Intel&reg; AMT<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>Mesh Agent Console<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>Server Files<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>Wake Devices<br>';
-            x += '<input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>Edit Device Notes<br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "Wake Devices" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -3244,30 +3260,32 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = '', cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
-            if (meshrights == 0xFFFFFFFF) r = ', Full Administrator'; else {
-                if ((meshrights & 1) != 0) r += ', Edit Device Group';
-                if ((meshrights & 2) != 0) r += ', Manage Device Group Users';
-                if ((meshrights & 4) != 0) r += ', Manage Device Group Computers';
-                if ((meshrights & 8) != 0) r += ', Remote Control';
-                if ((meshrights & 16) != 0) r += ', Agent Console';
-                if ((meshrights & 32) != 0) r += ', Server Files';
-                if ((meshrights & 64) != 0) r += ', Wake Devices';
-                if ((meshrights & 128) != 0) r += ', Edit Notes';
-                if ((meshrights & 256) != 0) r += ', Remote View Only';
-                if ((meshrights & 512) != 0) r += ', No Terminal';
-                if ((meshrights & 1024) != 0) r += ', No Files';
-                if ((meshrights & 2048) != 0) r += ', No Intel&reg; AMT';
+            var r = [], cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
+            if (meshrights == 0xFFFFFFFF) r.push("Full Administrator"); else {
+                if ((meshrights & 1) != 0) r.push("Edit Device Group");
+                if ((meshrights & 2) != 0) r.push("Manage Device Group Users");
+                if ((meshrights & 4) != 0) r.push("Manage Device Group Computers");
+                if ((meshrights & 8) != 0) r.push("Remote Control");
+                if ((meshrights & 16) != 0) r.push("Agent Console");
+                if ((meshrights & 32) != 0) r.push("Server Files");
+                if ((meshrights & 64) != 0) r.push("Wake Devices");
+                if ((meshrights & 128) != 0) r.push("Edit Notes");
+                if ((meshrights & 256) != 0) r.push("Remote View Only");
+                if ((meshrights & 512) != 0) r.push("No Terminal");
+                if ((meshrights & 1024) != 0) r.push("No Files");
+                if ((meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
+                if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
+                if ((meshrights & 8192) != 0) r.push("Self Events Only");
+                if ((meshrights & 16384) != 0) r.push("Chat & Notify");
             }
-            r = r.substring(2);
-            if (r == '') { r = 'No Rights'; }
-            var buttons = 1, x = addHtmlValue('User', EscapeHtml(decodeURIComponent(userid.split('/')[2])));
-            x += addHtmlValue('Permissions', r);
+            if (r.length == 0) { r.push("No Rights"); }
+            var buttons = 1, x = addHtmlValue("User", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            x += addHtmlValue("Permissions", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
-            setDialogMode(2, "Mesh User", buttons, p20viewuserEx, x, userid);
+            setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
         }
 
-        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, "Confirm removal of user " + userid.split('/')[2] + "?", userid); }
+        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, format("Confirm removal of user {0}?", userid.split('/')[2]), userid); }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
@@ -3326,7 +3344,7 @@
 
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + "px"); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
+        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
@@ -3337,10 +3355,10 @@
         function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
-        function addLink(x, f) { return "<a style=cursor:pointer;color:darkblue;text-decoration:none onclick='" + f + "'>&diams; " + x + "</a>"; }
+        function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
-        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return "" + size + " bytes"; }
+        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
@@ -3348,6 +3366,7 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 
     </script>
 </body>
