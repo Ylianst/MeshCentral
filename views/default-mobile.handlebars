@@ -677,7 +677,7 @@
             xdr = null;
             try { xdr = new XDomainRequest(); } catch (e) { }
             if (!xdr) xdr = new XMLHttpRequest();
-            xdr.open("HEAD", window.location.href);
+            xdr.open('HEAD', window.location.href);
             xdr.timeout = 15000;
             xdr.onload = function () { reload(); };
             xdr.onerror = xdr.ontimeout = function () { setTimeout(serverPoll, 10000); };
@@ -694,7 +694,7 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', ' - Reset on next login.'); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
                     if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
@@ -1215,7 +1215,7 @@
 
         function account_showChangePassword() {
             if (xxdialogMode) return false;
-            var x = "<table style=margin-left:10px>";
+            var x = '<table style=margin-left:10px>';
             x += '<tr><td align=right>' + "Old&nbsp;password:" + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
             x += '<tr><td align=right>' + "New&nbsp;password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
             x += '<tr><td align=right>' + "New&nbsp;password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
@@ -1413,7 +1413,7 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + "</span><span><div class=fileIcon" + f.t + '></div><a style=cursor:pointer onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
@@ -1501,13 +1501,12 @@
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
-
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
-        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == "3")) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Confim ' + (p5clipboardCut == 0 ? 'copy' : 'move') + ' of ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1) ? 's' : '') + ' to this location?' } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = 'Holding ' + p5clipboard.length + ' entrie' + ((p5clipboard.length > 1) ? 's' : '') + ' for ' + (p5clipboardCut == 0 ? 'copy' : 'move') + ', <a onclick=p5clearClip() style=cursor:pointer>Clear</a>.' } QH('p5bottomstatus', x); p5setActions(); }
-        function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
 
         function p5fileDragDrop(e) {
             haltEvent(e);
@@ -1747,7 +1746,7 @@
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
         }
 
-        var powerStatetable = ['', 'Powered', 'Sleep', 'Sleep', 'Sleep', 'Hibernating', 'Power off', 'Present'];
+        var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var powerStateStrings = ['', "Powered", "Sleeping", "Sleeping", "Deep Sleep", "Hibernating", "Soft-Off", "Present"];
         var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
@@ -1855,7 +1854,7 @@
                         if (node.host) {
                             x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
                         } else {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>None</i></span>');
+                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "None" + '</i></span>');
                         }
                     } else {
                         x += addDeviceAttribute("Hostname", EscapeHtml(node.host));
@@ -1871,12 +1870,12 @@
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", 'Windows 32bit service', 'Windows 64bit service', 'Linux 32bit', 'Linux 64bit', 'MIPS', 'XENx86', 'Android ARM', 'Linux ARM', 'MacOS 32bit', 'Android x86', 'PogoPlug ARM', 'Android APK', 'Linux Poky x86-32bit', 'MacOS 64bit', 'ChromeOS', 'Linux Poky x86-64bit', 'Linux NoKVM x86-32bit', 'Linux NoKVM x86-64bit', 'Windows MinCore console', 'Windows MinCore service', 'NodeJS', 'ARM-Linaro', 'ARMv6l / ARMv7l', 'ARMv8 64bit', 'ARMv6l / ARMv7l / NoKVM', 'Unknown', 'Unknown', 'FreeBSD x86-64'];
+                var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    x += addDeviceAttribute('Agent', str);
+                    x += addDeviceAttribute("Agent", str);
                 }
 
                 // Attribute: Intel AMT
