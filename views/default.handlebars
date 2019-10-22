@@ -2721,7 +2721,7 @@
                                     if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
                                 }
                                 if (mesh.mtype == 2) {
-                                    r += '<td><div style=padding:10px><i>' + "No devices in this mesh";
+                                    r += '<td><div style=padding:10px><i>' + "No devices in this group";
                                     if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
                                 }
                                 r += '.</i></div></td>';
@@ -3271,7 +3271,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders['DevxHeader' + deviceHeaderId] = deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " node" : " nodes");
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ((deviceHeaderTotal == 1) ? "1 node" : format("{0} nodes", deviceHeaderTotal));
             //var title = '';
             //for (x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             //deviceHeadersTitles["DevxHeader" + deviceHeaderId] = title;
@@ -8887,7 +8887,7 @@
             if (typeof message.cpuavg == 'object') {
                 var m = Math.min(message.cpuavg[0], 1);
                 window.serverStatCpu.config.data.datasets[0].data = [m, 1 - m];
-                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title=\"' + "CPU load in the last minute" + '\">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the last 5 minutes" + '\">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the 15 minutes" + '\">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
+                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title=\"' + "CPU load in the last minute" + '\">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the last 5 minutes" + '\">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the last 15 minutes" + '\">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
                 QS('serverCpuChartView')['display'] = 'inline-block';
                 window.serverStatCpu.update();
             }

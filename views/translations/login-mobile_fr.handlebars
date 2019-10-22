@@ -56,17 +56,17 @@
                                             <td><input id="username" type="text" maxlength="64" name="username" onchange="validateLogin(1)" onkeyup="validateLogin(1,event)"></td>
                                         </tr>
                                         <tr>
-                                            <td align="right">Password:</td>
+                                            <td align="right">Mot de passe:</td>
                                             <td><input id="password" type="password" maxlength="256" name="password" autocomplete="off" onchange="validateLogin(2)" onkeyup="validateLogin(2,event)"></td>
                                         </tr>
                                         <tr>
-                                            <td><div id="showPassHintLink" style="display:none"><a onclick="showPassHint()" style="cursor:pointer">Show Hint</a></div></td>
+                                            <td><div id="showPassHintLink" style="display:none"><a onclick="showPassHint()" style="cursor:pointer">Dévoiler indice</a></div></td>
                                             <td align="right"><input id="loginButton" type="submit" value="Log In" disabled="disabled"></td>
                                         </tr>
                                     </tbody></table>
                                     <div id="hrAccountDiv" style="display:none"><hr></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        <span id="resetAccountSpan">Forgot user/password?</span> <a onclick="xgo(3)" style="cursor:pointer">Reset account</a>.
+                                        <span id="resetAccountSpan">Forgot user/password?</span> <a onclick="xgo(3)" style="cursor:pointer">Réinitialiser le compte</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Don't have an account? <a onclick="xgo(2)" style="cursor:pointer">Create one</a>.
@@ -95,11 +95,11 @@
                                                 <td><input id="aemail" type="text" name="email" onchange="validateCreate(2)" maxlength="256" onkeydown="haltReturn(event)" onkeyup="validateCreate(2,event)"></td>
                                             </tr>
                                             <tr>
-                                                <td align="right">Password:</td>
+                                                <td align="right">Mot de passe:</td>
                                                 <td><input id="apassword1" type="password" name="password1" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validateCreate(3)" onkeyup="validateCreate(3,event)"></td>
                                             </tr>
                                             <tr>
-                                                <td align="right">Password:</td>
+                                                <td align="right">Mot de passe:</td>
                                                 <td><input id="apassword2" type="password" name="password2" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validateCreate(4)" onkeyup="validateCreate(4,event)"></td>
                                             </tr>
                                             <tr id="createPanelHint" style="display:none">
@@ -138,7 +138,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <div style="float:right"><input id="eresetButton" type="submit" value="Reset Account" disabled="disabled"></div>
+                                                <div style="float:right"><input id="eresetButton" type="submit" value="Réinitialiser le Compte" disabled="disabled"></div>
                                                 <div id="passWarning" style="padding-top:6px"></div>
                                             </td>
                                         </tr>
@@ -207,11 +207,11 @@
                                     <div id="rpasswordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
                                     <table>
                                         <tbody><tr>
-                                            <td id="rnuPass1" width="100" align="right">Password:</td>
+                                            <td id="rnuPass1" width="100" align="right">Mot de passe:</td>
                                             <td><input id="rapassword1" type="password" name="rpassword1" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validatePassReset(3,event)" onkeyup="validatePassReset(3,event)"></td>
                                         </tr>
                                         <tr>
-                                            <td id="rnuPass2" align="right">Password:</td>
+                                            <td id="rnuPass2" align="right">Mot de passe:</td>
                                             <td><input id="rapassword2" type="password" name="rpassword2" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validatePassReset(4,event)" onkeyup="validatePassReset(4,event)"></td>
                                         </tr>
                                         <tr id="resetpasswordpanelHint" style="display:none">
@@ -220,7 +220,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <div style="float:right"><input id="resetPassButton" type="submit" value="Reset Password" disabled="disabled"></div>
+                                                <div style="float:right"><input id="resetPassButton" type="submit" value="Réinitialiser le mot de passe" disabled="disabled"></div>
                                                 <div id="rpassWarning" style="padding-top:6px"></div>
                                             </td>
                                         </tr>
@@ -431,7 +431,7 @@
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('apassword1').value);
                     if (passStrength >= 80) { QH('passWarning', '<span style=color:green><b>' + "Mot de passe fort" + '</b><span>'); }
-                    else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>' + "Good Password" + '</b><span>'); }
+                    else if (passStrength >= 60) { QH('passWarning', '<span style=color:blue><b>' + "Bon mot de passe" + '</b><span>'); }
                     else { QH('passWarning', '<span style=color:red><b>' + "Mot de passe faible" + '</b><span>'); }
                 } else {
                     // Password requirements provided, use that
@@ -479,7 +479,7 @@
                     // No password requirements, display password strength
                     var passStrength = checkPasswordStrength(Q('rapassword1').value);
                     if (passStrength >= 80) { QH('rpassWarning', '<span style=color:green><b>' + "Mot de passe fort" + '</b><span>'); }
-                    else if (passStrength >= 60) { QH('rpassWarning', '<span style=color:blue><b>' + "Good Password" + '</b><span>'); }
+                    else if (passStrength >= 60) { QH('rpassWarning', '<span style=color:blue><b>' + "Bon mot de passe" + '</b><span>'); }
                     else { QH('rpassWarning', '<span style=color:red><b>' + "Mot de passe faible" + '</b><span>'); }
                 } else {
                     // Password requirements provided, use that
