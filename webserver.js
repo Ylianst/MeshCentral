@@ -3867,6 +3867,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render a page using the proper language
     function render(req, res, filename, args) {
         if ((obj.parent.webViewsOverridePath == null) && (obj.renderPages != null)) {
+            // If a user set a localization, use that
+            /*
+            if (req.session.userid) {
+                var user = obj.users[req.session.userid];
+                if (user != null) { console.log(user); } // TODO
+            };
+            */
+
             // Get a list of acceptable languages in order
             var acceptLanguages = [];
             if (req.query.lang != null) {
@@ -3883,9 +3891,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Take a look at the options we have for this file
             var fileOptions = obj.renderPages[obj.path.basename(filename)];
-            for (var i in acceptLanguages) {
-                if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
-                if (fileOptions[acceptLanguages[i]] != null) { res.render(fileOptions[acceptLanguages[i]], args); return; } // Found a match.
+            if (fileOptions != null) {
+                for (var i in acceptLanguages) {
+                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
+                    if (fileOptions[acceptLanguages[i]] != null) { res.render(fileOptions[acceptLanguages[i]], args); return; } // Found a match.
+                }
             }
         }
 
