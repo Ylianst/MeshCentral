@@ -323,6 +323,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Build server information object
             var serverinfo = { name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1)), domainauth: ((domain.auth == 'sspi') || (domain.auth == 'ldap')), serverTime: Date.now() };
+            serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
                 var matchingDomains = [];
@@ -977,6 +978,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
                     try { ws.send(JSON.stringify({ action: 'users', users: docs, tag: command.tag })); } catch (ex) { }
+                    break;
+                }
+            case 'changelang':
+                {
+                    if (common.validateString(command.lang, 1, 6) == false) return;
+
+                    // Always lowercase the email address
+                    command.lang = command.lang.toLowerCase();
+
+                    // Update the user's email
+                    var oldlang = user.lang;
+                    if (command.lang == '*') { delete user.lang; } else { user.lang = command.lang; }
+                    parent.db.SetUser(user);
+
+                    // Event the change
+                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
+                    if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    message.msg = 'Changed language of user ' + user.name + ' from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
+
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    parent.parent.DispatchEvent(targets, obj, message);
+
                     break;
                 }
             case 'changeemail':

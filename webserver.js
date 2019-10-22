@@ -85,6 +85,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.relaySessionCount = 0;
     obj.relaySessionErrorCount = 0;
     obj.renderPages = null;
+    obj.renderLanguages = [];
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -3868,12 +3869,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function render(req, res, filename, args) {
         if ((obj.parent.webViewsOverridePath == null) && (obj.renderPages != null)) {
             // If a user set a localization, use that
-            /*
             if (req.session.userid) {
                 var user = obj.users[req.session.userid];
-                if (user != null) { console.log(user); } // TODO
+                if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
             };
-            */
 
             // Get a list of acceptable languages in order
             var acceptLanguages = [];
@@ -3907,6 +3906,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function getRenderList() {
         if (obj.fs.existsSync('views/translations')) {
             obj.renderPages = {};
+            obj.renderLanguages = ['en'];
             var files = obj.fs.readdirSync('views/translations');
             for (var i in files) {
                 var name = files[i];
@@ -3916,6 +3916,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (xname.length == 2) {
                         if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
                         obj.renderPages[xname[0]][xname[1]] = obj.path.join('translations', name);
+                        if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
                     }
                 }
             }
