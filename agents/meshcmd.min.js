@@ -153,6 +153,7 @@ function run(argv) {
     if ((typeof args.tag) == 'string') { settings.tag = args.tag; }
     if ((typeof args.scan) == 'string') { settings.scan = args.scan; }
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
+    if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
     if (args.debug === true) { settings.debuglevel = 1; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
@@ -355,6 +356,7 @@ function run(argv) {
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --tls                  Specifies that TLS must be used.');
+            console.log('  --uuidoutput           Output with unique identifier as the filename.');
             console.log('  --json                 Output as a JSON format.');
         } else if (action == 'amtauditlog') {
             console.log('AmtAuditLog action will fetch the local or remote audit log. If used localy, no username/password is required. Example usage:\r\n\r\n  meshcmd amtauditlog --host 1.2.3.4 --user admin --pass mypassword --tls --output audit.json');
@@ -364,6 +366,7 @@ function run(argv) {
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --tls                  Specifies that TLS must be used.');
+            console.log('  --uuidoutput           Output with unique identifier as the filename.');
             console.log('  --json                 Output as a JSON format.');
         } else if (action == 'amtider') {
             console.log('AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:\r\n\r\n  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso');
@@ -665,9 +668,10 @@ function run(argv) {
         } else { settings.hostname = '127.0.0.1'; }
         readAmtAuditLog();
     } else if (settings.action == 'amteventlog') { // Read the Intel AMT audit log
-        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
-        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
-        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if (settings.hostname != null) { 
+            if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+            if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        } else { settings.hostname = '127.0.0.1'; }
         readAmtEventLog();
     } else if (settings.action == 'amtider') { // Remote mount IDER image
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [password].'); exit(1); return; }
@@ -838,15 +842,46 @@ function readAmtEventLogEx2(stack, messages) {
         if (settings.json) {
             out = JSON.stringify(messages, 4, ' ');
         } else {
-            for (var i in messages) { out += messages[i].Time + ', ' + messages[i].EntityStr + ', ' + messages[i].Desc + '\r\n'; }
+            for (var i in messages) { out += messages[i].Time + ', ' + messages[i].EntityStr + ', ' + messages[i].Desc + ', ' + messages[i].EventSeverity + '\r\n'; }
         }
-        if (settings.output == null) { console.log(out); } else {
-            var file = fs.openSync(settings.output, 'w');
-            fs.writeSync(file, Buffer.from(out));
-            fs.closeSync(file);
+        if ((settings.output == null || settings.output == "") && !settings.uuidoutput) { console.log(out); exit(1); }
+        else {
+            try {
+                if (settings.output) {
+                    var file = fs.openSync(settings.output, 'w');
+                    fs.writeSync(file, Buffer.from(out));
+                    fs.closeSync(file);
+                    exit(1);
+                }
+                else if (settings.uuidoutput) {
+                    var destpath = null; //Dest path where messagelog file will be saved
+                    if ((typeof settings.uuidoutput) == 'string') {
+                        fs.statSync(settings.uuidoutput).isDirectory();//Validate directory path
+                        destpath = settings.uuidoutput;
+                    }
+                    //Generate uuid and append it to dest path
+                    stack.Get('CIM_ComputerSystemPackage', function (obj, name, response, xstatus, tag) {
+                        if (xstatus == 200) {
+                            var eventlogsfile = path.join(destpath, guidToStr(response.Body.PlatformGUID.toLowerCase() + '_Event' + (settings.json ? '.json' : '.csv')));
+                            var file = fs.openSync(eventlogsfile, 'w');
+                            fs.writeSync(file, Buffer.from(out));
+                            fs.closeSync(file);
+                        } else {
+                            console.log('Intel AMT is not available or not activated, status = ' + status + '.');
+                        } exit(1);
+                    });
+                }
+                else{
+                    console.log('Invalid action, usage:\r\n\r\n meshcmd help amtauditlog');
+                    exit(1);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                exit(1);
+            }
         }
     }
-    exit(1);
 }
 
 //
@@ -888,13 +923,44 @@ function readAmtAuditLogEx2(stack, response, status) {
                 out += (response[i].Time + ' - ' + name + response[i].Event + '\r\n');
             }
         }
-        if (settings.output == null) { console.log(out); } else {
-            var file = fs.openSync(settings.output, 'w');
-            fs.writeSync(file, Buffer.from(out));
-            fs.closeSync(file);
+        if ((settings.output == null || settings.output == "") && !settings.uuidoutput) { console.log(out); exit(1); }
+        else {
+            try {
+                if (settings.output) {
+                    var file = fs.openSync(settings.output, 'w');
+                    fs.writeSync(file, Buffer.from(out));
+                    fs.closeSync(file);
+                    exit(1);
+                }
+                else if (settings.uuidoutput) {
+                    var destpath = null; //Dest path where auditlog file will be saved
+                    if ((typeof settings.uuidoutput) == 'string') {
+                        fs.statSync(settings.uuidoutput).isDirectory();//Validate directory path
+                        destpath = settings.uuidoutput;
+                    }
+                    //Generate uuid and append it to dest path
+                    stack.Get('CIM_ComputerSystemPackage', function (obj, name, response, xstatus, tag) {
+                        if (xstatus == 200) {
+                            var auditlogsfile = path.join(destpath, guidToStr(response.Body.PlatformGUID.toLowerCase() + '_Audit' + (settings.json ? '.json' : '.csv')));
+                            var file = fs.openSync(auditlogsfile, 'w');
+                            fs.writeSync(file, Buffer.from(out));
+                            fs.closeSync(file);
+                        } else {
+                            console.log('Intel AMT is not available or not activated, status = ' + status + '.');
+                        } exit(1);
+                    });
+                }
+                else{
+                    console.log('Invalid action, usage:\r\n\r\n meshcmd help amtauditlog');
+                    exit(1);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                exit(1);
+            }
         }
     }
-    exit(1);
 }
 
 //
