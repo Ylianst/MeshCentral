@@ -2854,7 +2854,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (argentInfo == null) { res.sendStatus(404); return; }
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
-                res.sendFile(argentInfo.path);
+                if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.end(argentInfo.data); }
             } else {
                 // We are going to embed the .msh file into the Windows executable (signed or not).
                 // First, fetch the mesh object to build the .msh file
