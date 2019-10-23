@@ -1494,7 +1494,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
             if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
             if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-            if (parent.config.settings.allowframing == true) { features += 0x00000020; } // Allow site within iframe
+            if ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string')) { features += 0x00000020; } // Allow site within iframe
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
             if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
@@ -1570,7 +1570,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         parent.debug('web', 'handleRootRequestLogin()');
         var features = 0;
-        if ((parent.config != null) && (parent.config.settings != null) && (parent.config.settings.allowframing == true)) { features += 32; } // Allow site within iframe
+        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string'))) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         var loginmode = '';
@@ -3233,14 +3233,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Use default security headers
                 var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = ((args.notls !== true) ? (" wss://" + req.headers.host) : (" ws://" + req.headers.host)); 
-                res.set({
-                    "X-Frame-Options": "sameorigin",
-                    "Referrer-Policy": "no-referrer",
-                    "X-XSS-Protection": "1; mode=block",
-                    "X-Content-Type-Options": "nosniff",
-                    "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
-                });
+                var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host)); 
+                var headers = {
+                    'Referrer-Policy': 'no-referrer',
+                    'X-XSS-Protection': '1; mode=block',
+                    'X-Content-Type-Options': 'nosniff',
+                    'Content-Security-Policy': "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+                };
+                if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
+                res.set(headers);
             }
 
             // Check the session if bound to the external IP address
