@@ -1600,7 +1600,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Render the login page
-        render(req, res, getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext) : null, hwstate: hwstate });
+        render(req, res, getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate });
     }
 
     // Handle a post request on the root
@@ -3904,10 +3904,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Get the list of pages with different languages that can be rendered
     function getRenderList() {
-        if (obj.fs.existsSync('views/translations')) {
+        var translateFolder = null;
+        if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
+        if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
+
+        if (translateFolder != null) {
             obj.renderPages = {};
             obj.renderLanguages = ['en'];
-            var files = obj.fs.readdirSync('views/translations');
+            var files = obj.fs.readdirSync(translateFolder);
             for (var i in files) {
                 var name = files[i];
                 if (name.endsWith('.handlebars')) {
@@ -3915,7 +3919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var xname = name.split('_');
                     if (xname.length == 2) {
                         if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
-                        obj.renderPages[xname[0]][xname[1]] = obj.path.join('translations', name);
+                        obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
                         if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
                     }
                 }

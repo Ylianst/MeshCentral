@@ -144,7 +144,6 @@
     <Content Include="agents\compressModules.bat" />
     <Content Include="agents\MeshAgentOSXPackager.zip" />
     <Content Include="agents\meshagent_arm" />
-    <Content Include="agents\meshagent_arm-linaro" />
     <Content Include="agents\meshagent_arm64" />
     <Content Include="agents\meshagent_armhf" />
     <Content Include="agents\meshagent_mips" />
