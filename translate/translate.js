@@ -13,7 +13,8 @@ var translationTable = null;
 var sourceStrings = null;
 var jsdom = null; //require('jsdom');
 var esprima = null; //require('esprima'); // https://www.npmjs.com/package/esprima
-//var { JSDOM } = jsdom;
+var minifyLib = 2; // 0 = None, 1 = minify-js, 2 = HTMLMinifier
+var minify = null;
 
 var meshCentralSourceFiles = [
     "../views/agentinvite.handlebars",
@@ -21,6 +22,7 @@ var meshCentralSourceFiles = [
     "../views/default-mobile.handlebars",
     "../views/download.handlebars",
     "../views/error404.handlebars",
+    "../views/error404-mobile.handlebars",
     "../views/login.handlebars",
     "../views/login-mobile.handlebars",
     "../views/message.handlebars",
@@ -32,15 +34,20 @@ var meshCentralSourceFiles = [
 // node translate.json EXTRACT bob.json ../meshcentral/views/default.handlebars
 // node translate.js TRANSLATE fr test2.json ../meshcentral/views/default.handlebars
 
-InstallModules(['jsdom', 'esprima'], start);
+var libs = ['jsdom', 'esprima', 'minify-js'];
+if (minifyLib == 1) { libs.push('minify-js'); }
+if (minifyLib == 2) { libs.push('html-minifier'); }
+InstallModules(libs, start);
 
 function start() {
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
+    if (minifyLib == 1) { minify = require('minify-js'); }
+    if (minifyLib == 2) { minify = require('html-minifier').minify; }
 
     var command = null;
     if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }
-    if (['check', 'extract', 'extractall', 'translate', 'translateall'].indexOf(command) == -1) { command = null; }
+    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall'].indexOf(command) == -1) { command = null; }
 
     console.log('MeshCentral web site translator');
     if (command == null) {
@@ -61,6 +68,9 @@ function start() {
         console.log('');
         console.log('  TRANSLATEALL');
         console.log('    Translate all MeshCentral strings using the languages.json file.');
+        console.log('');
+        console.log('  MINIFYALL');
+        console.log('    Minify the main MeshCentral english web pages.');
         process.exit();
         return;
     }
@@ -111,6 +121,44 @@ function start() {
 
         translate(lang, langFile, sources, false);
     }
+
+    if (command == 'minifyall') {
+        for (var i in meshCentralSourceFiles) {
+            var outname = meshCentralSourceFiles[i];
+            var outnamemin = null;
+            if (outname.endsWith('.handlebars')) {
+                outnamemin = (outname.substring(0, outname.length - 11) + '-min.handlebars');
+            } else if (outname.endsWith('.html')) {
+                outnamemin = (outname.substring(0, outname.length - 5) + '-min.html');
+            } else if (outname.endsWith('.htm')) {
+                outnamemin = (outname.substring(0, outname.length - 4) + '-min.htm');
+            } else {
+                outnamemin = (outname, outname + '.min');
+            }
+            console.log('Generating ' + outnamemin + '...');
+
+            // Minify the file
+            if (minifyLib = 2) {
+                var minifiedOut = minify(fs.readFileSync(outname).toString(), {
+                    collapseBooleanAttributes: true,
+                    collapseInlineTagWhitespace: true,
+                    collapseWhitespace: true,
+                    minifyCSS: true,
+                    minifyJS: true,
+                    removeComments: true,
+                    removeOptionalTags: true,
+                    removeEmptyAttributes: true,
+                    removeAttributeQuotes: true,
+                    removeRedundantAttributes: true,
+                    removeScriptTypeAttributes: true,
+                    removeTagWhitespace: true,
+                    preserveLineBreaks: false,
+                    useShortDoctype: true
+                });
+                fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+            }
+        }
+    }
 }
 
 function translate(lang, langFile, sources, createSubDir) {
@@ -129,7 +177,7 @@ function translate(lang, langFile, sources, createSubDir) {
         for (var i in langs) { translateEx(i, langFileData, sources, createSubDir); }
     }
 
-    process.exit();
+    //process.exit();
     return;
 }
 
@@ -252,13 +300,58 @@ function translateFromHtml(lang, file, createSubDir) {
     var out = dom.serialize();
 
     var outname = file;
+    var outnamemin = null;
     if (createSubDir != null) { outname = path.join(path.dirname(file), createSubDir, path.basename(file)); }
-    if (outname.endsWith('.handlebars')) { outname = (outname.substring(0, outname.length - 11) + '_' + lang + '.handlebars'); }
-    else if (outname.endsWith('.html')) { outname = (outname.substring(0, outname.length - 5) + '_' + lang + '.html'); }
-    else if (outname.endsWith('.htm')) { outname = (outname.substring(0, outname.length - 4) + '_' + lang + '.htm'); }
-    else { outname = (outname + '_' + lang); }
+    if (outname.endsWith('.handlebars')) {
+        outnamemin = (outname.substring(0, outname.length - 11) + '-min_' + lang + '.handlebars');
+        outname = (outname.substring(0, outname.length - 11) + '_' + lang + '.handlebars');
+    } else if (outname.endsWith('.html')) {
+        outnamemin = (outname.substring(0, outname.length - 5) + '-min_' + lang + '.html');
+        outname = (outname.substring(0, outname.length - 5) + '_' + lang + '.html');
+    } else if (outname.endsWith('.htm')) {
+        outnamemin = (outname.substring(0, outname.length - 4) + '-min_' + lang + '.htm');
+        outname = (outname.substring(0, outname.length - 4) + '_' + lang + '.htm');
+    } else {
+        outnamemin = (outname + '_' + lang + '.min');
+        outname = (outname + '_' + lang);
+    }
     fs.writeFileSync(outname, out, { flag: 'w+' });
+
+    // Minify the file
+    if (minifyLib == 1) {
+        minify.file({
+            file: outname,
+            dist: outnamemin
+        }, (e, compress) => {
+            if (e) { console.log('ERROR ', e); return done(); }
+            compress.run((e) => { e ? console.log('Minification fail', e) : console.log('Minification sucess'); minifyDone(); });
+        }
+        );
+    }
+
+    // Minify the file
+    if (minifyLib = 2) {
+        var minifiedOut = minify(out, {
+            collapseBooleanAttributes: true,
+            collapseInlineTagWhitespace: true,
+            collapseWhitespace: true,
+            minifyCSS: true,
+            minifyJS: true,
+            removeComments: true,
+            removeOptionalTags: true,
+            removeEmptyAttributes: true,
+            removeAttributeQuotes: true,
+            removeRedundantAttributes: true,
+            removeScriptTypeAttributes: true,
+            removeTagWhitespace: true,
+            preserveLineBreaks: false,
+            useShortDoctype: true
+        });
+        fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+    }
 }
+
+function minifyDone() { console.log('Completed minification.'); }
 
 function translateStrings(name, node) {
     for (var i = 0; i < node.childNodes.length; i++) {

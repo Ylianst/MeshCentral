@@ -271,6 +271,8 @@
     <Content Include="readme.md" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
+    <Content Include="translate\readme.txt" />
+    <Content Include="translate\translate.json" />
     <Content Include="views\agentinvite.handlebars" />
     <Content Include="views\default-min.handlebars" />
     <Content Include="views\default-mobile-min.handlebars" />
