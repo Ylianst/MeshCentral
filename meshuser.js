@@ -50,6 +50,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     var obj = {};
     obj.user = user;
     obj.domain = domain;
+    obj.ws = ws;
 
     // Server side Intel AMT stack
     const WsmanComm = require('./amt/amt-wsman-comm.js');
@@ -3105,7 +3106,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.routeToNode === true) {
                   routeCommandToNode(command);
                 } else {
-                  // TODO
+                  try { 
+                    var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
+                    pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                  } catch (e) { console.log('Error loading plugin handler (' + e + ')'); }
                 }
                 
               break;
