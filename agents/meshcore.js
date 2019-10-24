@@ -754,6 +754,15 @@ function createMeshCore(agent) {
                     for (var i in data.macs) { sendWakeOnLan(data.macs[i]); }
                     break;
                 }
+                case 'uninstallagent':
+                    // Uninstall this agent
+                    var agentName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    if (require('service-manager').manager.getService(agentName).isMe()) {
+                        try { diagnosticAgent_uninstall(); } catch (x) { }
+                        var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
+                        this.child = require('child_process').execFile(process.execPath, [process.platform == 'win32' ? (process.execPath.split('\\').pop()) : (process.execPath.split('/').pop()), '-b64exec', Buffer.from(js).toString('base64')], { type: 4, detached: true });
+                    }
+                    break;
                 case 'poweraction': {
                     // Server telling us to execute a power action
                     if ((mesh.ExecPowerState != undefined) && (data.actiontype)) {
@@ -1942,17 +1951,12 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
-                case 'uninstallagent':
+                case 'uninstallagent': // Uninstall this agent
                     var agentName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
                     if (!require('service-manager').manager.getService(agentName).isMe()) {
                         response = 'Uininstall failed, this instance is not the service instance';
-                    }
-                    else {
-                        try {
-                            diagnosticAgent_uninstall();
-                        }
-                        catch (x) {
-                        }
+                    } else {
+                        try { diagnosticAgent_uninstall(); } catch (x) { }
                         var js = "require('service-manager').manager.getService('" + agentName + "').stop(); require('service-manager').manager.uninstallService('" + agentName + "'); process.exit();";
                         this.child = require('child_process').execFile(process.execPath, [process.platform == 'win32' ? (process.execPath.split('\\').pop()) : (process.execPath.split('/').pop()), '-b64exec', Buffer.from(js).toString('base64')], { type: 4, detached: true });
                     }

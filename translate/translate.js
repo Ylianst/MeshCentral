@@ -43,7 +43,7 @@ function start() {
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
     if (minifyLib == 1) { minify = require('minify-js'); }
-    if (minifyLib == 2) { minify = require('html-minifier').minify; }
+    if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
 
     var command = null;
     if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }

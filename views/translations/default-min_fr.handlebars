@@ -2349,13 +2349,24 @@
         }
 
         function groupActionFunction() {
-            var mqttx = '';
-            if (features & 0x00400000) { // Check if any of the selected devices have a MQTT connection active
+            var addedOptions = '';
+
+            // Check if any of the selected devices have a MQTT connection active
+            if (features & 0x00400000) {
                 var nodeids = getCheckedDevices();
-                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { mqttx = '<option value=103>' + "Envoyer un Message MQTT" + '</option>'; } }
+                for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions += '<option value=103>' + "Envoyer un Message MQTT" + '</option>'; break; } }
             }
+
+            // Display the "Uninstall Agent" option if allowed and we selected connected devices.
+            for (var i in nodeids) {
+                var node = getNodeFromId(nodeids[i]);
+                var mesh = meshes[node.meshid];
+                var meshrights = mesh.links[userinfo._id].rights;
+                if (((node.conn & 1) != 0) && ((meshrights & 32768) != 0)) { addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; break; }
+            }
+
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Opération", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Réinitialiser les appareils" + '</option><option value=2>' + "Éteindre les appareils" + '</option><option value=102>' + "Move to device group" + '</option>' + mqttx + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Opération", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Réinitialiser les appareils" + '</option><option value=2>' + "Éteindre les appareils" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
             setDialogMode(2, "Action de groupe", 3, groupActionFunctionEx, x);
         }
 
@@ -2383,6 +2394,9 @@
             } else if (op == 103) {
                 // Send MQTT Message
                 p10showSendMqttMsgDialog(getCheckedDevices());
+            } else if (op == 104) {
+                // Uninstall agent
+                p10showSendUninstallAgentDialog(getCheckedDevices());
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -3523,6 +3537,7 @@
             if ((meshrights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
             if ((meshrights & 8) != 0) { y += '<option value=4>' + "Dormir" + '</option><option value=3>' + "Réinitialiser" + '</option><option value=2>' + "Éteindre" + '</option>'; } // Remote control permission
             if ((currentNode.conn & 16) != 0) { y += '<option value=103>' + "Envoyer un Message MQTT" + '</option>'; }
+            if (((currentNode.conn & 1) != 0) && ((meshrights & 32768) != 0)) { y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Opération", y);
             setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
@@ -3536,6 +3551,9 @@
             } else if (op == 103) {
                 // Send MQTT Message
                 p10showSendMqttMsgDialog([currentNode._id]);
+            } else if (op == 104) {
+                // Uninstall agent
+                p10showSendUninstallAgentDialog([currentNode._id]);
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
@@ -3681,6 +3699,21 @@
         function p10showSendMqttMsgDialogEx(b, nodeids) {
             meshserver.send({ action: 'sendmqttmsg', nodeids: nodeids, topic: Q('dp2topic').value, msg: Q('dp2msg').value });
         }
+
+        function p10showSendUninstallAgentDialog(nodeids) {
+            if (xxdialogMode) return false;
+            var x = '';
+            if (nodeids.length > 1) { x = format("Are you sure you want to uninstall the selected {0} agents?", nodeids.length); } else { x = "Are you sure you want to uninstall selected agent?"; }
+            x += '<br /><br />';
+            if (nodeids.length > 1) { x += "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connect for this command to work."; } else { x += "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work."; }
+            x += '<br /><br /><label style=color:red><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
+            setDialogMode(2, "Uninstall agent", 3, p10showSendUninstallAgentDialogEx, x, nodeids);
+            p10validateSendUninstallAgentDialog();
+            return false;
+        }
+
+        function p10validateSendUninstallAgentDialog() { QE('idx_dlgOkButton', Q('p10check').checked); }
+        function p10showSendUninstallAgentDialogEx(b, nodeids) { meshserver.send({ action: 'uninstallagent', nodeids: nodeids }); }
 
         function p10showChangeGroupDialog(nodeids) {
             if (xxdialogMode) return false;
@@ -6424,6 +6457,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
             x += '</div>';
             if (userid == null) {
                 setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
@@ -6451,7 +6485,7 @@
                     if (meshrights & 128) { Q('p20editnotes').checked = true; }
                     if (meshrights & 8192) { Q('p20limitevents').checked = true; }
                     if (meshrights & 16384) { Q('p20chatnotify').checked = true; }
-
+                    if (meshrights & 32768) { Q('p20uninstall').checked = true; }
                 }
             }
             p20validateAddMeshUserDialog();
@@ -6499,21 +6533,24 @@
             }
             QE('idx_dlgOkButton', ok);
 
+            var nc = !Q('p20fulladmin').checked;
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
-            QE('p20editmesh', (!Q('p20fulladmin').checked) && (meshrights == 0xFFFFFFFF));
-            QE('p20manageusers', !Q('p20fulladmin').checked);
-            QE('p20managecomputers', !Q('p20fulladmin').checked);
-            QE('p20remotecontrol', !Q('p20fulladmin').checked);
-            QE('p20meshagentconsole', !Q('p20fulladmin').checked);
-            QE('p20meshserverfiles', !Q('p20fulladmin').checked);
-            QE('p20wakedevices', !Q('p20fulladmin').checked);
-            QE('p20editnotes', !Q('p20fulladmin').checked);
-            QE('p20limitevents', !Q('p20fulladmin').checked);
-            QE('p20remoteview', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
-            QE('p20remotelimitedinput', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
-            QE('p20noterminal', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
-            QE('p20nofiles', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
-            QE('p20noamt', !Q('p20fulladmin').checked && Q('p20remotecontrol').checked);
+            QE('p20editmesh', nc && (meshrights == 0xFFFFFFFF));
+            QE('p20manageusers', nc);
+            QE('p20managecomputers', nc);
+            QE('p20remotecontrol', nc);
+            QE('p20meshagentconsole', nc);
+            QE('p20meshserverfiles', nc);
+            QE('p20wakedevices', nc);
+            QE('p20editnotes', nc);
+            QE('p20limitevents', nc);
+            QE('p20remoteview', nc && Q('p20remotecontrol').checked);
+            QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
+            QE('p20noterminal', nc && Q('p20remotecontrol').checked);
+            QE('p20nofiles', nc && Q('p20remotecontrol').checked);
+            QE('p20noamt', nc && Q('p20remotecontrol').checked);
+            QE('p20chatnotify', nc);
+            QE('p20uninstall', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -6537,6 +6574,7 @@
                     if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
                     if (Q('p20limitevents').checked == true) meshadmin += 8192;
                     if (Q('p20chatnotify').checked == true) meshadmin += 16384;
+                    if (Q('p20uninstall').checked == true) meshadmin += 32768;
                 }
 
                 if (t == null) {
@@ -6573,6 +6611,7 @@
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
+                    if ((meshrights & 32768) != 0) r.push("Uninstall");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
