@@ -35,6 +35,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_DESKLIMITEDINPUT = 4096;
     const MESHRIGHT_LIMITEVENTS = 8192;
     const MESHRIGHT_CHATNOTIFY = 16384;
+    const MESHRIGHT_UNINSTALL = 32768;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -2186,6 +2187,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         // Confirm we may be doing something (TODO)
                         try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
+                    }
+
+                    break;
+                }
+            case 'uninstallagent':
+                {
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    for (i in command.nodeids) {
+                        nodeid = command.nodeids[i];
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                            // Get the device
+                            db.Get(nodeid, function (err, nodes) {
+                                if ((nodes == null) || (nodes.length != 1)) return;
+                                var node = nodes[0];
+
+                                // Get the mesh for this device
+                                mesh = parent.meshes[node.meshid];
+                                if (mesh) {
+                                    // Check if this user has rights to do this
+                                    if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & MESHRIGHT_UNINSTALL) != 0)) {
+                                        // Send uninstall command to connected agent
+                                        var agent = parent.wsagents[node._id];
+                                        if (agent != null) {
+                                            //console.log('Asking agent ' + agent.dbNodeKey + ' to uninstall.');
+                                            try { agent.send(JSON.stringify({ action: 'uninstallagent' })); } catch (ex) { }
+                                        }
+                                    }
+                                }
+                            });
+                        }
                     }
 
                     break;
