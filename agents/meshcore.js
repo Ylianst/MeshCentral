@@ -819,15 +819,7 @@ function createMeshCore(agent) {
                 case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
                 case 'pong': { break; }
                 case 'plugin': {
-                    if (typeof data.pluginaction == 'string') {
-                        try {
-                            MeshServerLog('Plugin called', data);
-                            // Not yet implemented
-                            // require(data.plugin.name).serveraction(data);
-                        } catch (e) {
-                            MeshServerLog('Error calling plugin', data);
-                        }
-                    }
+                    try { require(data.plugin).consoleaction(data, data.rights, data.sessionid, this); } catch (e) { throw e; }
                     break;
                 }
                 default:
