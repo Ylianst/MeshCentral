@@ -4687,7 +4687,7 @@
             var x = '';
             if (nodeids.length > 1) { x = format("Are you sure you want to uninstall the selected {0} agents?", nodeids.length); } else { x = "Are you sure you want to uninstall selected agent?"; }
             x += '<br /><br />';
-            if (nodeids.length > 1) { x += "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connect for this command to work."; } else { x += "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work."; }
+            if (nodeids.length > 1) { x += "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connected for this command to work."; } else { x += "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work."; }
             x += '<br /><br /><label style=color:red><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Uninstall agent", 3, p10showSendUninstallAgentDialogEx, x, nodeids);
             p10validateSendUninstallAgentDialog();
